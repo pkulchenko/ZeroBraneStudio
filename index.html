@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="ZeroBraneStudio : A lightweight Lua-based IDE for Lua with code completion, syntax highlighting, live coding, remote debugger, and code analyzer" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>ZeroBraneStudio</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/pkulchenko/ZeroBraneStudio">View on GitHub</a>
+
+          <h1 id="project_title">ZeroBraneStudio</h1>
+          <h2 id="project_tagline">A lightweight Lua-based IDE for Lua with code completion, syntax highlighting, live coding, remote debugger, and code analyzer</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/pkulchenko/ZeroBraneStudio/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/pkulchenko/ZeroBraneStudio/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Project Description</h1>
+
+<p>A simple and extensible Lua IDE and debugger. It supports multiple file formats, "api" for autocompletion and tooltips, and custom command-line tools. Its main focus is extensibility for target applications using Lua.</p>
+
+<h2>Features</h2>
+
+<ul>
+<li>Written in Lua, so easily customizable</li>
+<li>Automatically loads several 'plugin' like classes
+
+<ul>
+<li>applications: overall control of applications settings</li>
+<li>specs (spec/): file syntax, lexer, keywords</li>
+<li>apis (api/): for code-completion and tool-tips</li>
+<li>interpreters (interpreters/): how a project is run</li>
+<li>config (cfg/): contains style and basic editor settings</li>
+<li>tools (tools/): additional tools, e.g. cg compiler, dx fxc compiler</li>
+</ul>
+</li>
+<li>Auto-completion for functions, keywords...</li>
+<li>Function tips</li>
+<li>Function list in file (quick jump to)</li>
+<li>Function call highlighting</li>
+<li>Bracket matching/highlighting</li>
+<li>Project file browser</li>
+<li>Experimental type/class guessing for auto-completion</li>
+<li>Support for different editor styles</li>
+<li>Console to directly test code snippets with local and remote execution</li>
+<li>Integrated debugger (with support for local and remote debugging)</li>
+</ul><h2>Installation</h2>
+
+<div class="highlight"><pre><span class="nv">$ </span>git clone git://github.com/pkulchenko/ZeroBraneStudio.git zbstudio
+</pre></div>
+
+<h2>Usage</h2>
+
+<pre><code>Open File(s):
+  &lt;exe&gt; &lt;filename&gt; [&lt;filename&gt;...]
+  any non-option will be treated as filename
+
+Overriding Config:
+  &lt;exe&gt; [...] -cfg "&lt;luacode overriding config&gt;" [...]
+  e.g.: zbstudio.exe -cfg "singleinstance=false;" somefile.lua
+</code></pre>
+
+<h2>Author</h2>
+
+<h3>ZeroBrane Studio and MobDebug</h3>
+
+<p><strong>ZeroBrane LLC:</strong> Paul Kulchenko (<a href="mailto:paul@kulchenko.com">paul@kulchenko.com</a>)</p>
+
+<h2>License</h2>
+
+<p>See LICENSE file.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">ZeroBraneStudio maintained by <a href="https://github.com/pkulchenko">pkulchenko</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-20709313-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
