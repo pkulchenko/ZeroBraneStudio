@@ -1,0 +1,457 @@
+@import url(screen.css);
+
+/* add indentation for multi level lists */
+.widget-list-item ul {
+  border: 0 none;
+  padding-left: 8px;
+}
+
+/* make list padding a bit smaller */
+.widget-archive ul li a {
+  padding: 2px;
+}
+/* no padding for slider items */
+.widget-archive #slider ul li a {
+  padding: 0;
+}
+
+/* move post date to the right */
+.entry-meta-date .day {
+  display: inline;
+  margin: 0;
+  font-size: 1.6em;
+  line-height: 1em;
+}
+.entry-asset .asset-meta {
+  width: 100px;
+  float: right;
+  margin-top: -28px;
+}
+.entry-asset .entry-title,
+.entry-asset .asset-header h1#page-title {
+  padding-right: 100px; /* to leave space for the date */
+}
+
+/* format header */
+#header {
+  padding-right: 0em;
+}
+
+/* 2-column fluid layout */ 
+#content {
+  width: auto;
+  border-right: 28em solid transparent;
+  border-left-width: 0;
+  padding: 0;
+}
+#content-inner {
+  width: auto;
+  margin: 0;
+  width: 100%;
+}
+#alpha, .layout-wtt #alpha, .layout-twt #alpha, .layout-wt #alpha, .layout-tw #alpha, .layout-wm #alpha, .layout-mw #alpha {
+  float: left; 
+  width: 100%;
+  overflow: hidden;
+  padding-left: 2px;
+  margin: 0 -3px 0 -2px;
+}
+#beta, .layout-wtt #beta, .layout-twt #beta, .layout-wt #beta, .layout-tw #beta, .layout-wm #beta, .layout-mw #beta {
+  float: left;
+  margin-right: -28em;
+  max-width: 28em;
+  width: 28em;
+}
+
+/* fix width for elements with images in background */
+/* keep comment boxes/ballon properly formatted */
+.comment .comment-content,
+.comment-by-author .comment-content,
+.comments-open form #comments-form-inner { 
+  width: 525px;
+}
+/* remove width constraints */
+#header-inner, #content-inner, #footer-inner {
+  width: 100%;
+}
+.comments-open form #comments-form-inner {
+  padding-left: 0;
+  padding-right: 0;
+}
+ul.recent-comments-list li {
+  width: 150px;
+}
+
+/* make sidebars narrower */
+#beta-columns-left {
+  margin-right: 2em;
+  width: 12em;
+}
+#beta-columns-right {
+  width: 12em;
+}
+#beta-columns-left, #beta-columns-right {
+  float: left;
+}
+
+/* make footer smaller */
+#footer {
+  padding: 0;
+}
+#footer-content {
+  padding: 0 2em;
+}
+
+/* make comment box wider */
+#comments-form input.ti, #comments-form textarea {
+  width: 400px;
+}
+
+/* remove left margin and set it correctly */
+.entry-asset .asset-body, .page-asset .asset-body,
+.entry-asset .asset-header h1#page-title, .entry-asset .entry-title,
+.entry-asset .asset-footer,
+.widget-tag-cloud .widget-list,
+.comments-open-header, .comments-header, .trackbacks-header, .trackbacks-info, .comments-open-content, .comments-content,
+h1#page-title, h2.archive-title, /* page title on categories and tags */
+.message, /* error message on comment submission and other */
+.entry-listing {
+  margin-left: 0;
+}
+.entry-listing li span.entry-listing-date {
+  padding-left: 10px;
+}
+#alpha-inner {
+  margin-left: 1em;
+  margin-right: 0;
+  padding-right: 0;
+}
+#beta-inner {
+  margin-left: 2em;
+}
+
+/* tweak fonts */
+body {
+  font-family: Georgia,Verdana,Geneva,Chicago,Arial,Sans-serif,"MS Sans Serif";
+  font-size: 12px;
+}
+#beta {
+  font-family: Arial;
+}
+.entry-asset .asset-header h1#page-title, .entry-asset .entry-title {
+  font-size: 2.5em;
+}
+h1#page-title, h2.archive-title {
+  font-size: 2em;
+  line-height: 25px;
+}
+
+/* fix height for the first item in related entries */
+.related-entries-header {
+  padding-bottom: 5px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #DDDDD9;
+}
+
+/* fix header: remove logo and make it bleached */
+#header, #header-name {
+  background: none;
+}
+#header {
+  padding: 0 2px 0 2em;
+}
+#header-name {
+  padding: 0;
+  margin: 16px 0 0;
+  font-family: Georgia,Verdana,Geneva,Chicago,Arial,Sans-serif,"MS Sans Serif";
+  font-size: 1.8em;
+  font-weight: bold;
+  text-transform: none;
+  line-height: 1em;
+}
+#header-content {
+  float: left;
+}
+#header-name {
+  float: none;
+}
+h2#header-description, #header-description {
+  display: block;
+  border: 0 none;
+  margin-top: -5px;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+#header-content a, #header-content a:link, #header-content a:visited {
+  border-bottom: 0 none;
+}
+
+/* fix footer: make the top padding look the same in FF and IE */
+.widget-creative-commons {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+#footer {
+  margin-top: 1em;
+}
+
+/* make bleached colors; color scheme: http://colorschemedesigner.com/#3v31T--p8w0w0 */
+body {
+  background-color: #FFFFFF;
+}
+#container {
+  color: #184460;
+  min-width: 400px;
+}
+#content {
+  margin: 0 1em;
+}
+#header a, #header-description {
+  color: #184460;
+}
+.entry-meta-date .day,
+h1#page-title, h2.archive-title {
+  color: #822100;
+}
+.entry-asset .asset-header h1#page-title, .entry-asset .entry-title {
+  color: #184460;
+}
+
+/* IE compatibility for entry listings (bottom padding) */
+.entry-listing li a {
+  height: 24px;
+  padding: 4px 0 2px;
+}
+.entry-listing li span {
+  padding: 0;
+}
+.entry-listing li {
+  height: 30px;
+}
+
+/* fix sub/sup formatting */
+sub {
+  vertical-align: bottom;
+}
+sup {
+  vertical-align: top;
+}
+
+/* fix bottom padding for p and <pre> elements */
+.asset .asset-body blockquote,
+.asset .asset-body pre,
+.asset .asset-body ul,
+.asset .asset-body p,
+.asset .asset-body ol {
+  margin-bottom: 1em;
+}
+.asset .asset-body p {
+  margin-top: 1em;
+}
+
+/* fix ul/ol bottom padding for lists inside lists */
+.asset .asset-body li ol,  .asset .asset-body li ul,
+li ol, li ul { 
+  margin-bottom: 0; 
+}
+
+/* format code/pre tags */
+.asset .asset-body pre, 
+.asset .asset-body code {
+  background-color: #E7EEF3;
+}
+.asset .asset-body code {
+  line-height: 1.2; 
+  font-size: 90%;
+}
+.asset .asset-body pre {
+  padding: 10px;
+}
+
+#logo-wrapper {
+  float: left;
+  padding: 1px 14px 1px 0;
+}
+
+#header .buy {
+  padding-right: 12px;
+}
+
+#header .button {
+  -moz-user-select: none;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+
+  border: 1px solid #7799BB;
+  color: #184460;
+  font-family: Helvetica,arial,sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+#header .button:hover {
+  background: #7799BB;
+  color: #FFF;
+  text-decoration: none;
+}
+
+#content {
+  border-top: none;
+}
+#nav {
+  border-bottom: 1px solid #7799BB;
+  border-top: 1px solid #7799BB;
+  font-weight: bold;
+}
+#nav ul {
+  margin-left: 0px;
+}
+#header-description {
+  margin-top: 0px;
+  font-size: 1em;
+  font-weight: normal;
+}
+#header-name {
+  margin-top: 20px;
+}
+.asset-body h1 {
+  color: #184460;
+  font-size: 2em;
+  font-weight: normal;
+  font-family: Georgia;
+  padding: 0;
+  border: none;
+}
+
+#beta .Testimonials p {
+  width: 25em;
+  padding: 2px 0;
+}
+
+#menu-wrapper ul li {
+  float: left;
+}
+#menu-wrapper ul li a, #menu-wrapper ul li a:visited, #menu-wrapper ul li span {
+  display: block;
+  padding: 0px 10px;
+  border-right: 1px solid #7799BB;
+  text-decoration: none;
+  font-weight: bold;
+}
+#menu-wrapper ul li span, #menu-wrapper ul li a:hover {
+  color: #184460;
+  background: #fff;
+}
+
+#header {
+  border-bottom: 1px solid #7799BB;
+  background: none repeat scroll 0 0 #EEEEEA;
+}
+#footer {
+  border-top: 1px solid #7799BB;
+}
+#header-buttons {
+  top: 2px;
+  right: 2px;
+  position: absolute;
+}
+
+/* single-column 
+#content {
+  border-right: 0px;
+}
+#beta, .layout-wtt #beta, .layout-twt #beta, .layout-wt #beta, .layout-tw #beta, .layout-wm #beta, .layout-mw #beta {
+  display: none;
+} */
+
+#beta-columns-left {
+  width: 25em;
+  padding-top: 1em;
+  margin-right: 4px;
+}
+#beta-columns-right {
+  width: 0em;
+}
+.Testimonials .q {
+  font-family: Georgia,Palatino,Palatino Linotype,Times,Times New Roman,serif;
+  font-size: 2em;
+  line-height: 0.5em;
+  padding: 0 3px;
+  position: relative;
+  top: 10px;
+}
+#footer {
+  margin-top: 1em;
+}
+.widget-header .more {
+  font-size: 15px;
+}
+#menu-wrapper  {
+  float: right;
+  padding-top: 36px;
+}
+#menu-wrapper h1 {
+  color: #184460;
+  font-size: 2em;
+  font-weight: normal;
+  font-family: Georgia,Palatino,Palatino Linotype,Times,Times New Roman,serif;
+  padding-right: 2em;
+}
+.download a { line-height: 24px; padding: 6px 16px 6px 28px; }
+.download a.winexe {background: url("../images/winexe.png") no-repeat scroll 0px 0px transparent;}
+.download a.winzip {background: url("../images/winzip.png") no-repeat scroll 0px 0px transparent;}
+.download a.mac    {background: url("../images/mac.png") no-repeat scroll 0px 0px transparent;}
+
+.Testimonials p, .Tutorials p, .Screenshots p, .Features p {
+  width: 280px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 0px 30px 0px 0px;
+  float: left;
+}
+.Tutorials p strong, .Screenshots p strong, .Features p strong {
+  display: block;
+}
+.Tutorials p img, .Screenshots p img {
+  padding: 7px 0px;
+}
+
+.github-btn {
+  padding-left: 3px;
+}
+.gh-btn {
+  font: bold 11px/14px "Helvetica Neue",Helvetica,Arial,sans-serif;
+
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+
+  color: #555555;
+  cursor: pointer;
+  padding: 2px 5px 2px 4px;
+  text-decoration: none;
+  text-shadow: 0 1px 0 #FFFFFF;
+  white-space: nowrap;
+
+  background-color: #E6E6E6;
+  background-repeat: no-repeat;
+  border-color: #D4D4D4 #D4D4D4 #BCBCBC;
+  border-image: none;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: none;
+}
+.gh-btn:hover {
+  background-color: #3072B3;
+  border-color: #518CC6 #518CC6 #2A65A0;
+  color: #FFFFFF;
+  text-decoration: none;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* make items a bit more compact in the sidebar */
+.widget {
+  margin-bottom: 10px;
+}
