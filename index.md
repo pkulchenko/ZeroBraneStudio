@@ -2,9 +2,9 @@
 layout: default
 ---
 
-ZeroBrane Studio is a lightweight Lua IDE with code completion, syntax
-highlighting, remote debugger, code analyzer, live coding, and
-integration with several Lua engines ([LuaJIT](http://luajit.org/),
+ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
+highlighting, remote debugger, code analyzer, live coding, and debugging
+support for several Lua engines ([LuaJIT](http://luajit.org/),
 [Löve 2D](http://love2d.org/), [Moai](http://getmoai.com/),
 [MobileLua](https://github.com/divineprog/mobilelua), and others).
 
@@ -27,7 +27,7 @@ to debug Moai applications.
 
 ## Feature highlights
 
-* Portable (no installation required) and cross-platform (Windows, Mac, and Linux).
+* Small, portable (no installation required) and cross-platform (Windows, Mac, and Linux).
 * Auto-completion for functions, keywords, and custom APIs.
 * Interactive console to directly test code snippets with local and remote execution.
 * Integrated debugger (with support for local and remote debugging).

@@ -455,3 +455,8 @@ li ol, li ul {
 .widget {
   margin-bottom: 10px;
 }
+
+.inset {
+  width: 280px;
+  height: 120px;
+}
