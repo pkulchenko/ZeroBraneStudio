@@ -28,31 +28,31 @@ Execute your application as you are coding it. Detect syntax and run-time errors
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
 **Function and expression calltip**
-<a href="images/debugging.png"><img style="background:url(../images/debugging.png) -270px -310px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -270px -310px" src="images/t.gif" class="inset"/></a>
 Quickly access function description or variable/expression values while debugging.
 
 **Watch view**
-<a href="images/debugging.png"><img style="background:url(../images/debugging.png) -640px -250px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -250px" src="images/t.gif" class="inset"/></a>
 The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
 
 **Static analyzer**
-<a href="images/static-analysis.png"><img style="background:url(../images/static-analysis.png) -30px -280px" src="images/t.gif" class="inset"/></a>
+<a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -30px -280px" src="images/t.gif" class="inset"/></a>
 Detect typos, non-localized variables, and unused parameters before running your code.
 
 **Multi-file editing**
-<a href="images/integrated-materials.png"><img style="background:url(../images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
+<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
 Keep as many files open as you need and navigate them using the file browser or the editor tabs.
 
 **Pretty printing**
-<a href="images/debugging.png"><img style="background:url(../images/debugging.png) -10px -450px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -10px -450px" src="images/t.gif" class="inset"/></a>
 If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss the integrated pretty printing of any value in a line or block form.
 
 **Project file browser**
-<a href="images/debugging.png"><img style="background:url(../images/debugging.png) -10px -70px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -10px -70px" src="images/t.gif" class="inset"/></a>
 Don't worry about creating a new project, simply open a folder. The current file will be highlighted in the project tree (as long as it is in one of the subfolders).
 
 **Stack view**
-<a href="images/debugging.png"><img style="background:url(../images/debugging.png) -640px -80px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -80px" src="images/t.gif" class="inset"/></a>
 The Stack view provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames. You can even drill down to get values of individual elements in tables.
 
 **Remote console**
