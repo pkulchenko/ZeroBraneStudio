@@ -20,10 +20,10 @@ immediate feedback, **Markdown formatting** in comments for providing
 instructions with minimal context switching, and **integrated interactive
 materials** for those learning Lua or getting familiar with programming.
 
-For those interested in game development, it supports debugging and
-auto-complete for [Löve 2D](http://love2d.org/). For those interested in mobile
-development, it integrates with [Moai](http://getmoai.com/) and allows
-to debug Moai applications.
+For those interested in **game development**, it supports debugging and
+auto-complete for [Löve 2D](http://love2d.org/). For those interested in 
+**mobile development**, it integrates with [Moai](http://getmoai.com/) to
+debug Moai applications.
 
 ## Feature highlights
 
