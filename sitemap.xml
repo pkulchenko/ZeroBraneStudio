@@ -3,7 +3,7 @@ layout: sitemap
 ---
 {% for page in site.pages %}{% if page.url != '/sitemap.xml' %}<url>
   <loc>http://studio.zerobrane.com{% if page.url == '/index.html' %}/{% else %}{{ page.url }}{% endif %}</loc>
-  <lastmod>{{ site.time | date: "%Y-%d-%mT09:00:00-08:00" }}</lastmod>
+  <lastmod>{{ site.time | date: "%Y-%m-%dT09:00:00-08:00" }}</lastmod>
   <changefreq>daily</changefreq>
   <priority>1.0</priority>
 </url>{% endif %}{% endfor %}
