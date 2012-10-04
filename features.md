@@ -1,13 +1,16 @@
 ---
 layout: default
-title: Features
+title: Features and Benefits
 ---
 
 **Cross-platform**
 Windows, Mac, or Linux: your choice.
 
+**Open source**
+Written in Lua. Extensible in Lua.
+
 **Portable**
-Runs from any folder. No installation required.
+Run it from any folder. No installation required.
 
 **Small**
 With the windows installation package being less than 4MB, it is one of the smallest if not _the smallest_ fully featured IDE.
@@ -27,8 +30,16 @@ Execute your application as you are coding it. Detect syntax and run-time errors
 **Custom intepreters**
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
+**Lightweight**
+<a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -620px -600px" src="images/t.gif" class="inset"/></a>
+Run it without fearing it will take over your computer.
+
+**Unicode friendly**
+<a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -245px -205px" src="images/t.gif" class="inset"/></a>
+Edit files in Unicode and run scripts with Unicode file names.
+
 **Function and expression calltip**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -270px -310px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -265px -300px" src="images/t.gif" class="inset"/></a>
 Quickly access function description or variable/expression values while debugging.
 
 **Watch view**
@@ -55,5 +66,6 @@ Don't worry about creating a new project, simply open a folder. The current file
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -80px" src="images/t.gif" class="inset"/></a>
 The Stack view provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames. You can even drill down to get values of individual elements in tables.
 
-**Remote console**
+**Interactive console**
+<a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -10px -500px" src="images/t.gif" class="inset"/></a>
 Want to test something quickly? Run it in the console with full access to your application state and all variables; execute code fragments and change variable values without restarting your application.

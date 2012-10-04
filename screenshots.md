@@ -18,3 +18,7 @@ title: Screenshots
 **Integrated Markdown formatting**
 <a href="images/integrated-materials.png">
 <img src="images/scr-integrated-materials.png" /></a>
+
+**Interactive console and Unicode**
+<a href="images/unicode-console.png">
+<img src="images/scr-unicode-console.png" /></a>
