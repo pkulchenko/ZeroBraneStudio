@@ -383,7 +383,7 @@ li ol, li ul {
   top: 10px;
 }
 #footer {
-  margin-top: 1em;
+  margin-top: .5em;
 }
 .widget-header .more {
   font-size: 15px;
@@ -459,4 +459,10 @@ li ol, li ul {
 .inset {
   width: 280px;
   height: 120px;
+}
+
+/* reduce margin bottom as it's too large and there is footer margin anyway */
+.entry-asset, .page-asset,
+.entry-asset .asset-body, .page-asset .asset-body {
+  margin-bottom: 0px;
 }
