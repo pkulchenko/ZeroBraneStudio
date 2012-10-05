@@ -4,10 +4,10 @@ title: Features and Benefits
 ---
 
 **Cross-platform**
-Windows, Mac, or Linux: your choice.
+[Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png): your choice.
 
 **Open source**
-Written in Lua. Extensible in Lua.
+Written in Lua. Extensible and open.
 
 **Portable**
 Run it from any folder. No installation required.
@@ -24,15 +24,16 @@ Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides
 **Debug any Lua application**
 Set breakpoints before or after you start debugging. Step in, over, and out. Break and continue your script. Inspect and modify variables.
 
-**Live coding**
-Execute your application as you are coding it. Detect syntax and run-time errors quickly; change numeric parameters on the fly with sliders.
-
 **Custom intepreters**
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
 **Lightweight**
 <a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -620px -600px" src="images/t.gif" class="inset"/></a>
 Run it without fearing it will take over your computer.
+
+**Auto-complete**
+<a href="images/autocomplete-osx.png"><img style="background:url(images/autocomplete-osx.png) -310px -290px" src="images/t.gif" class="inset"/></a>
+Spend less time typing and more time thinking.
 
 **Unicode friendly**
 <a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -245px -205px" src="images/t.gif" class="inset"/></a>
@@ -53,6 +54,10 @@ Detect typos, non-localized variables, and unused parameters before running your
 **Multi-file editing**
 <a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
 Keep as many files open as you need and navigate them using the file browser or the editor tabs.
+
+**Live coding**
+<a href="images/scratchpad-linux-mint.png"><img style="background:url(images/scratchpad-linux-mint.png) -580px -300px" src="images/t.gif" class="inset"/></a>
+Execute your application as you are coding it. Detect syntax and run-time errors quickly; change numeric parameters on the fly with sliders.
 
 **Pretty printing**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -10px -450px" src="images/t.gif" class="inset"/></a>

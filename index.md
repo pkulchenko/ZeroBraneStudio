@@ -27,7 +27,7 @@ debug Moai applications.
 
 ## Feature highlights
 
-* Small, portable (no installation required) and cross-platform (Windows, Mac, and Linux).
+* Small, portable (no installation required) and cross-platform ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png)).
 * Auto-completion for functions, keywords, and custom APIs.
 * Interactive console to directly test code snippets with local and remote execution.
 * Integrated debugger (with support for local and remote debugging).
