@@ -15,13 +15,17 @@ title: Screenshots
 <a href="images/unicode-console.png">
 <img src="images/scr-unicode-console.png" /></a>
 
-**Scratchpad on Linux**
-<a href="images/scratchpad-linux-mint.png">
-<img src="images/scr-scratchpad-linux-mint.png" /></a>
-
 **Auto-complete on Mac OSX**
 <a href="images/autocomplete-osx.png">
 <img src="images/scr-autocomplete-osx.png" /></a>
+
+**Live coding on Linux**
+<a href="images/scratchpad-linux-mint.png">
+<img src="images/scr-scratchpad-linux-mint.png" /></a>
+
+**Live coding on a mobile device**
+<a href="images/live-coding-gideros-zerobrane-studio.png">
+<img src="images/tut-live-coding-gideros-zerobrane-studio.png" /></a>
 
 **Integrated Markdown formatting**
 <a href="images/integrated-materials.png">
