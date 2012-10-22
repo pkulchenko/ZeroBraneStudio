@@ -403,6 +403,7 @@ li ol, li ul {
 .download a.winexe {background: url("../images/winexe.png") no-repeat scroll 0px 0px transparent;}
 .download a.winzip {background: url("../images/winzip.png") no-repeat scroll 0px 0px transparent;}
 .download a.mac    {background: url("../images/mac.png") no-repeat scroll 0px 0px transparent;}
+.download a.linux  {background: url("../images/linux.png") no-repeat scroll 0px 0px transparent;}
 
 .Testimonials p, .Tutorials p, .Screenshots p, .Features p {
   width: 280px;
@@ -466,3 +467,40 @@ li ol, li ul {
 .entry-asset .asset-body, .page-asset .asset-body {
   margin-bottom: 0px;
 }
+
+/* payment-related styles */
+.payment .amount {
+  text-align: right;
+  padding-right: 2px;
+}
+.payment .description {
+  padding-left: 2px;
+}
+.payment .description, .payment .amount {
+  font-size: 120%;
+}
+#payment-options, #next-step {
+  margin: 20px;
+}
+a#no-payment-text {
+  padding-left: 30px;
+  font-size: 90%;
+  text-decoration: none;
+}
+a#no-payment-text:hover {
+  text-decoration: underline;
+}
+.payment-button {
+  vertical-align: middle;
+}
+div.separator {
+  height: 3px;
+  border-top: 1px solid #7799BB;
+  padding-bottom: 12px;
+  clear: both;
+}
+.thank-you { font-size: 120%; margin-top: 1em; margin-bottom: 0.5em; }
+ul#download-options { 
+  list-style: none;
+}
+ul.download a { font-size: 120%; line-height: 30px; }

@@ -28,7 +28,7 @@ requires the latest code from the repository).
 
 ## Feature highlights
 
-* Small, portable, open-source, and cross-platform ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png)).
+* Small, portable, **open-source**, and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png)).
 * Auto-completion for functions, keywords, and custom APIs.
 * Interactive console to directly test code snippets with local and remote execution.
 * Integrated debugger (with support for local and remote debugging).
