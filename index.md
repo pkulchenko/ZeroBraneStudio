@@ -2,11 +2,9 @@
 layout: default
 ---
 
-ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
+ZeroBrane&reg; Studio is a **lightweight Lua IDE** with code completion, syntax
 highlighting, remote debugger, code analyzer, live coding, and debugging
-support for several Lua engines ([LuaJIT](http://luajit.org/),
-[Löve 2D](http://love2d.org/), [Moai](http://getmoai.com/), [Gideros](http://http://giderosmobile.com/),
-[MobileLua](https://github.com/divineprog/mobilelua), and others).
+support for several Lua engines.
 
 It is **simple and instantly usable** for beginners (as tested with middle and
 high school students with no programming experience), yet
@@ -23,8 +21,7 @@ materials** for those learning Lua or getting familiar with programming.
 For those interested in **game and mobile development**, it supports debugging
 and auto-complete for Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/love2d-debugging)),
 Moai ([demo](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)),
-and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide);
-requires the latest code from the repository).
+and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)).
 
 ## Feature highlights
 

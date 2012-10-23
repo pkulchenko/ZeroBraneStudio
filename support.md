@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Payment
+title: Support
 ---
 
 # Support ZeroBrane Studio. Pay what you want. Download and run in 30 seconds.

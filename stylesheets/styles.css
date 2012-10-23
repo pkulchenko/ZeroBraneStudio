@@ -247,6 +247,7 @@ sup {
 }
 .asset .asset-body p {
   margin-top: 1em;
+  font-size: 110%;
 }
 
 /* fix ul/ol bottom padding for lists inside lists */
@@ -399,9 +400,10 @@ li ol, li ul {
   font-family: Georgia,Palatino,Palatino Linotype,Times,Times New Roman,serif;
   padding-right: 2em;
 }
-.download a { line-height: 24px; padding: 6px 16px 6px 28px; }
+.download a { line-height: 24px; padding: 6px 12px 6px 28px; }
 .download a.winexe {background: url("../images/winexe.png") no-repeat scroll 0px 0px transparent;}
 .download a.winzip {background: url("../images/winzip.png") no-repeat scroll 0px 0px transparent;}
+.download a.win    {background: url("../images/win.png") no-repeat scroll 0px 0px transparent;}
 .download a.mac    {background: url("../images/mac.png") no-repeat scroll 0px 0px transparent;}
 .download a.linux  {background: url("../images/linux.png") no-repeat scroll 0px 0px transparent;}
 
@@ -478,6 +480,12 @@ li ol, li ul {
 }
 .payment .description, .payment .amount {
   font-size: 120%;
+}
+.payment .description label {
+  padding-left: 7px;
+}
+table#payment-options {
+  width: 400px;
 }
 #payment-options, #next-step {
   margin: 20px;
