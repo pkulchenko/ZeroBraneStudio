@@ -5,6 +5,8 @@ title: Support
 
 # Support ZeroBrane Studio. Pay what you want. Download and run in 30 seconds.
 
+**Update 10/23/2012**: Amazon has suspended ZeroBrane LLC account after several payments claiming they do not support "Pay what you want" business models. Please continue to the download page while we are working on resolving this with Amazon.
+
 <img style="float: right; padding: 10px 40px 10px 0px" src="images/lua-ide-benefits-screenshot.png" />
 
 <form action="https://authorize.payments.amazon.com/pba/paypipeline" method="post">
