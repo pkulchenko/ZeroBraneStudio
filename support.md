@@ -5,34 +5,30 @@ title: Support
 
 # Support ZeroBrane Studio. Pay what you want. Download and run in 30 seconds.
 
-**Update 10/23/2012**: Amazon has suspended ZeroBrane LLC account after several payments claiming they do not support "Pay what you want" business models. Please continue to the download page while we are working on resolving this with Amazon.
-
 <img style="float: right; padding: 10px 40px 10px 0px" src="images/lua-ide-benefits-screenshot.png" />
 
-<form action="https://authorize.payments.amazon.com/pba/paypipeline" method="post">
-  <input type="hidden" name="returnUrl" value="http://studio.zerobrane.com/download.html" />
-  <input type="hidden" name="processImmediate" value="1" />
-  <input type="hidden" name="accessKey" value="11SEM03K88SD016FS1G2" />
-  <input type="hidden" name="collectShippingAddress" value="0" />
-  <input type="hidden" name="isDonationWidget" value="0" />
-  <input type="hidden" name="amazonPaymentsAccountId" value="OJTYLZFEJNKY1APV69AUQEB63URVVVN6GMMA8V" />
-  <input type="hidden" name="referenceId" value="ZeroBraneStudio" />
-  <input type="hidden" name="cobrandingStyle" value="logo" />
-  <input type="hidden" name="immediateReturn" value="1" />
-  <input type="hidden" name="description" value="ZeroBrane Studio" />
-<table class="payment" id="payment-options">
-<tr><td class="amount">  $1</td><td class="description"><input name="amount" id="amount1" value="USD 1" type="radio" /><label for="amount1">I will give you my entire weekly allowance</label></td></tr>
-<tr><td class="amount">  $5</td><td class="description"><input name="amount" id="amount5" value="USD 5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
-<tr><td class="amount"> $10</td><td class="description"><input name="amount" id="amount10" value="USD 10" type="radio" /><label for="amount10">I will pay more when my game sells</label></td></tr>
-<tr><td class="amount"> $24</td><td class="description"><input name="amount" id="amount24" checked="checked" value="USD 24" type="radio" /><label for="amount24"><strong>Exactly what I was looking for</strong></label></td></tr>
-<tr><td class="amount"> $50</td><td class="description"><input name="amount" id="amount50" value="USD 50" type="radio" /><label for="amount50">I feel lucky and generous today</label></td></tr>
-<tr><td class="amount">$100</td><td class="description"><input name="amount" id="amount100" value="USD 100" type="radio" /><label for="amount100">Take my money; just keep working on it</label></td></tr>
-<tr><td class="amount">$500</td><td class="description"><input name="amount" id="amount500" value="USD 500" type="radio" /><label for="amount500">I will email you the feature I want to have</label></td></tr>
-</table>
-<div id="next-step">
-  <input class="payment-button" type="image" src="http://g-ecx.images-amazon.com/images/G/01/asp/beige_small_paynow_withlogo_whitebg.gif" border="0" />
+<form action="https://checkout.google.com/api/checkout/v2/checkoutForm/Merchant/266673609981574" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm" target="_top">
+ <table class="payment" id="payment-options">
+  <tr><td class="amount">  $1</td><td class="description"><input name="item_price_1" id="amount1" value="1" type="radio" /><label for="amount1">I will give you my entire weekly allowance</label></td></tr>
+  <tr><td class="amount">  $5</td><td class="description"><input name="item_price_1" id="amount5" value="5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
+  <tr><td class="amount"> $10</td><td class="description"><input name="item_price_1" id="amount10" value="10" type="radio" /><label for="amount10">I will pay more when my game sells</label></td></tr>
+  <tr><td class="amount"> $24</td><td class="description"><input name="item_price_1" id="amount24" checked="checked" value="24" type="radio" /><label for="amount24"><strong>Exactly what I was looking for</strong></label></td></tr>
+  <tr><td class="amount"> $50</td><td class="description"><input name="item_price_1" id="amount50" value="50" type="radio" /><label for="amount50">I feel lucky and generous today</label></td></tr>
+  <tr><td class="amount">$100</td><td class="description"><input name="item_price_1" id="amount100" value="100" type="radio" /><label for="amount100">Take my money; just keep working on it</label></td></tr>
+  <tr><td class="amount">$500</td><td class="description"><input name="item_price_1" id="amount500" value="500" type="radio" /><label for="amount500">I will email you the feature I want to have</label></td></tr>
+ </table>
+
+ <input name="item_name_1" type="hidden" value="ZeroBrane Studio"/>
+ <input name="item_description_1" type="hidden" value=""/>
+ <input name="item_quantity_1" type="hidden" value="1"/>
+ <input name="item_currency_1" type="hidden" value="USD"/>
+ <input name="shopping-cart.items.item-1.digital-content.url" type="hidden" value="http://studio.zerobrane.com/download.html?google-wallet"/>
+ <input name="_charset_" type="hidden" value="utf-8"/>
+
+ <div id="next-step">
+  <input class="payment-button" alt="" src="https://checkout.google.com/buttons/buy.gif?merchant_id=266673609981574&amp;w=117&amp;h=48&amp;style=white&amp;variant=text&amp;loc=en_US" type="image"/>
   <a href="download.html?not-this-time" id="no-payment-text">Take me to the download page this time &#187;</a>
-</div>
+ </div>
 </form>
 
 <div class="separator">&nbsp;</div>
