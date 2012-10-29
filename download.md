@@ -15,7 +15,9 @@ title: Download
       <a class="winexe" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudioEduPack-0.33-win32.exe">
     Windows 32bit (exe installer)</a></li>
   <li><a class="linux" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudio-0.33-linux-i386.sh">
-    Linux 32bit (shell archive for Debian/Ubuntu/Mint)</a></li>
+    Linux 32bit (shell archive for Debian/Ubuntu/Mint)</a>
+      <a class="linux" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudio-0.33-linux-amd64.sh">
+    Linux 64bit (shell archive for Debian/Ubuntu/Mint)</a></li>
 </ul>
 
 <div class="separator" >&nbsp;</div>
