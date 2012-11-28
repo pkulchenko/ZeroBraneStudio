@@ -197,7 +197,8 @@ local function activateDocument(file, line)
     end
   end
 
-  if not activated and not indebugger and ide.config.editor.autoactivate then
+  if not activated and not indebugger and not debugger.loop
+  and ide.config.editor.autoactivate then
     -- found file, but can't activate yet (because this part may be executed
     -- in a different co-routine), so schedule pending activation.
     if wx.wxFileName(file):FileExists() then
@@ -284,7 +285,7 @@ debugger.shell = function(expression, isstatement)
         end
 
         -- refresh Stack and Watch windows if executed a statement (and no err)
-        if isstatement and not err and not addret and #values == 0 then
+        if isstatement and not err and not addedret and #values == 0 then
           updateStackSync() updateWatchesSync() end
       end)
   end
@@ -372,11 +373,7 @@ debugger.listen = function()
             ..":\n"..err)
           return debugger.terminate()
         end
-      elseif (options.run) then
-        -- do nothing here
-      elseif (debugger.scratchpad) then
-        debugger.scratchpad.updated = true
-      else
+      elseif not (options.run or debugger.scratchpad) then
         local file, line, err = debugger.loadfile(startfile)
         -- "load" can work in two ways: (1) it can load the requested file
         -- OR (2) it can "refuse" to load it if the client was started
@@ -425,14 +422,17 @@ debugger.listen = function()
 
       DisplayOutputLn(TR("Debugging session started in '%s'."):format(debugger.basedir))
 
-      if (options.runstart and not debugger.scratchpad) then
-        ClearAllCurrentLineMarkers()
-        debugger.run()
-      end
-
-      if (options.run) then
-        local file, line = debugger.handle("run")
-        activateDocument(file, line)
+      if (debugger.scratchpad) then
+        debugger.scratchpad.updated = true
+      else
+        if (options.runstart) then
+          ClearAllCurrentLineMarkers()
+          debugger.run()
+        end
+        if (options.run) then
+          local file, line = debugger.handle("run")
+          activateDocument(file, line)
+        end
       end
     end)
   debugger.listening = true
@@ -463,12 +463,20 @@ debugger.exec = function(command)
         local out
         local attempts = 0
         while true do
+          -- clear markers before running the command
+          -- don't clear if running trace as the marker is then invisible,
+          -- and it needs to be visible during tracing
+          if not debugger.loop then ClearAllCurrentLineMarkers() end
           debugger.breaking = false
           local file, line, err = debugger.handle(out or command)
           if out then out = nil end
           if line == nil then
             if err then DisplayOutputLn(err) end
             DebuggerStop()
+            return
+          elseif not debugger.server then
+            -- it is possible that while debugger.handle call was executing
+            -- the debugging was terminated; simply return in this case.
             return
           else
             if activateDocument(file, line) then
@@ -481,6 +489,8 @@ debugger.exec = function(command)
                 return
               end
             else
+              -- clear the marker as it wasn't cleared earlier
+              if debugger.loop then ClearAllCurrentLineMarkers() end
               -- we may be in some unknown location at this point;
               -- If this happens, stop and report allowing users to set
               -- breakpoints and step through.
