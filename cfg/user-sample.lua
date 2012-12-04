@@ -43,6 +43,9 @@ path.corona = 'd:/path/to/Corona SDK/Corona Simulator.exe'
 -- to specify full path to lua interpreter if you need to use your own version
 path.lua = 'd:/lua/lua'
 
+-- to specify full path to GSL-shell *executable* if it's not in one of PATH folders
+path.gslshell = [[D:\Lua\gsl-shell\gsl-shell.exe]]
+
 -- to provide output filter for those engines that support redirecting
 -- of "print" output to the IDE (like Corona SDK and Gideros)
 debugger.outputfilter = function(m) return #m < 124 and m or m:sub(1,120).."...\n" end
@@ -77,10 +80,8 @@ language = "ru"
 -- see cfg/tomorrow.lua for example/details on what other colors to change
 styles.text = {bg = {240,240,220}}
 
--- to change the default color scheme to Tomorrow-based scheme
--- (https://github.com/chriskempson/tomorrow-theme)
--- check tomorrow.lua for the list of supported schemes
--- or use cfg/scheme-picker.lua to pick a scheme.
+-- to change the default color scheme; check tomorrow.lua for the list
+-- of supported schemes or use cfg/scheme-picker.lua to pick a scheme.
 local G = ...
 styles = G.loadfile('cfg/tomorrow.lua')('Tomorrow')
 -- also apply the same scheme to Output and Console windows
