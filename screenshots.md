@@ -30,3 +30,11 @@ title: Screenshots
 **Integrated Markdown formatting**
 <a href="images/integrated-materials.png">
 <img src="images/scr-integrated-materials.png" /></a>
+
+**Internationalization support**
+<a href="images/internationalization-russian.png">
+<img src="images/scr-internationalization-russian.png" /></a>
+
+**Color schemes**
+<a href="images/colors-zenburn.png">
+<img src="images/scr-colors-zenburn.png" /></a>

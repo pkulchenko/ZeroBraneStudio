@@ -9,13 +9,11 @@ title: Support
 
 <form action="https://checkout.google.com/api/checkout/v2/checkoutForm/Merchant/266673609981574" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm" target="_top">
  <table class="payment" id="payment-options">
-  <tr><td class="amount">  $1</td><td class="description"><input name="item_price_1" id="amount1" value="1" type="radio" /><label for="amount1">I will give you my entire weekly allowance</label></td></tr>
   <tr><td class="amount">  $5</td><td class="description"><input name="item_price_1" id="amount5" value="5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
   <tr><td class="amount"> $10</td><td class="description"><input name="item_price_1" id="amount10" value="10" type="radio" /><label for="amount10">I will pay more when my game sells</label></td></tr>
   <tr><td class="amount"> $24</td><td class="description"><input name="item_price_1" id="amount24" checked="checked" value="24" type="radio" /><label for="amount24"><strong>Exactly what I was looking for</strong></label></td></tr>
   <tr><td class="amount"> $50</td><td class="description"><input name="item_price_1" id="amount50" value="50" type="radio" /><label for="amount50">I feel lucky and generous today</label></td></tr>
   <tr><td class="amount">$100</td><td class="description"><input name="item_price_1" id="amount100" value="100" type="radio" /><label for="amount100">Take my money; just keep working on it</label></td></tr>
-  <tr><td class="amount">$500</td><td class="description"><input name="item_price_1" id="amount500" value="500" type="radio" /><label for="amount500">I will email you the feature I want to have</label></td></tr>
  </table>
 
  <input name="item_name_1" type="hidden" value="ZeroBrane Studio"/>

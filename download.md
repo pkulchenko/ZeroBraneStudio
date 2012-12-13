@@ -5,29 +5,30 @@ title: Download
 
 <div class="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
 
-# Download ZeroBrane Studio v0.33 (Oct 22 2012)
+# Download ZeroBrane Studio v0.34 (Dec 12 2012)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudioEduPack-0.33-macos.dmg">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.34-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.34-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudioEduPack-0.33-win32.zip">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.34-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.34-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudioEduPack-0.33-win32.exe">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.34-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.34-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudio-0.33-linux-i386.sh">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudio-0.34-linux-i386.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudio-0.34-linux-i386.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32bit (shell archive for Debian/Ubuntu/Mint)</a>
-      <a class="linux" href="https://github.com/downloads/pkulchenko/ZeroBraneStudio/ZeroBraneStudio-0.33-linux-amd64.sh">
+      <a class="linux" href="https://download.zerobrane.com/ZeroBraneStudio-0.34-linux-amd64.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudio-0.34-linux-amd64.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 64bit (shell archive for Debian/Ubuntu/Mint)</a></li>
 </ul>
 
 <div class="separator" >&nbsp;</div>
 
 ## What are the most significant changes in this version?
-- Added **Linux support**.
-- Added **Moai auto-complete**.
-- Added **Gideros debugging, auto-complete, and live coding**.
-- Added **syntax aware indentation**.
-- Added **re/storing open files and interpreter** when switching project folders.
+- Added [internationalization](http://notebook.kulchenko.com/zerobrane/zerobrane-studio-in-your-language) support (with Russian, Italian, Spanish, and French translations).
+- Added **Corona SDK integration** with debugging and auto-complete.
+- Added **key binding** configuration for menu and toolbar items.
+- Added [Moai scratchpad support](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio).
+- Added [color scheme support](http://notebook.kulchenko.com/zerobrane/zerobrane-studio-in-zenburn-and-tomorrow-colors) with several schemes included.
+- Added [GSL-shell](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio) support.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 

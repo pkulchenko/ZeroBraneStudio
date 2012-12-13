@@ -2,7 +2,7 @@
 layout: default
 ---
 
-ZeroBrane&reg; Studio is a **lightweight Lua IDE** with code completion, syntax
+ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
 highlighting, remote debugger, code analyzer, live coding, and debugging
 support for several Lua engines.
 
@@ -21,7 +21,8 @@ materials** for those learning Lua or getting familiar with programming.
 For those interested in **game and mobile development**, it supports debugging
 and auto-complete for Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/love2d-debugging)),
 Moai ([demo](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)),
-and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)).
+Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)),
+and Corona SDK.
 
 ## Feature highlights
 
@@ -29,5 +30,5 @@ and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-debugging-wi
 * Auto-completion for functions, keywords, and custom APIs.
 * Interactive console to directly test code snippets with local and remote execution.
 * Integrated debugger (with support for local and remote debugging).
-* Live coding with Lua ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)), Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)), and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)).
+* Live coding with Lua ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)), Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)), Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)), and Moai ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio)).
 * [and many more >>](features.html)

@@ -43,17 +43,25 @@ Edit files in Unicode and run scripts with Unicode file names.
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -265px -300px" src="images/t.gif" class="inset"/></a>
 Quickly access function description or variable/expression values while debugging.
 
-**Watch view**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -250px" src="images/t.gif" class="inset"/></a>
-The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
+**Multi-file editing**
+<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
+Keep as many files open as you need and navigate them using the file browser or the editor tabs.
+
+**Color scheme support**
+<a href="images/colors-zenburn.png"><img style="background:url(images/colors-zenburn.png) -30px -350px" src="images/t.gif" class="inset"/></a>
+Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) or create your own.
+
+**Translatable interface**
+<a href="images/internationalization-russian.png"><img style="background:url(images/internationalization-russian.png) -220px -30px" src="images/t.gif" class="inset"/></a>
+Use one of the provided translations (English, French, Spanish, Russian, and Italian) or creare your own.
 
 **Static analyzer**
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -30px -280px" src="images/t.gif" class="inset"/></a>
 Detect typos, non-localized variables, and unused parameters before running your code.
 
-**Multi-file editing**
-<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
-Keep as many files open as you need and navigate them using the file browser or the editor tabs.
+**Watch view**
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -250px" src="images/t.gif" class="inset"/></a>
+The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
 
 **Live coding**
 <a href="images/scratchpad-linux-mint.png"><img style="background:url(images/scratchpad-linux-mint.png) -580px -300px" src="images/t.gif" class="inset"/></a>
