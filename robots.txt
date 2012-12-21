@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /download.html
+Sitemap: http://studio.zerobrane.com/sitemap.xml

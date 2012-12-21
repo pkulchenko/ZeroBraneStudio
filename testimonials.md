@@ -15,6 +15,9 @@ Superb! ZeroBrane just became my **lua/moai IDE of choice**. Thanks for integrat
 I like your Lua IDE. It is **simple to use and has very good debugging features**.
 ([pwegscheider](https://github.com/pwegscheider))
 
+ZBS is beautiful experience. I am using it usually **10 hrs every day w/o problems**.
+([Srdjan Markovic](https://github.com/srdjan-m))
+
 Thank you for contributing such an excellent project. This is the **first truly useful Lua IDE for Mac** that I've found.
 (Steve Weiss) 
 

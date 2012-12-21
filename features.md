@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Features and Benefits
+title: Features
 ---
 
 **Cross-platform**

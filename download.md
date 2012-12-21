@@ -32,6 +32,6 @@ title: Download
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
-## Can I get notifications of product updates?
+## What do I do if I have questions or want to receive product updates?
 
-You can [follow ZeroBrane on Twitter here](https://twitter.com/zerobrane).
+Several ways to stay in touch are listed [here](community.html).

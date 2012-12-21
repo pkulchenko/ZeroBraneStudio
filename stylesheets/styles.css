@@ -188,8 +188,8 @@ h2#header-description, #header-description {
 
 /* fix footer: make the top padding look the same in FF and IE */
 .widget-creative-commons {
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 #footer {
   margin-top: 1em;
@@ -206,7 +206,7 @@ body {
 #content {
   margin: 0 1em;
 }
-#header a, #header-description {
+#header a, #header-description, #header {
   color: #184460;
 }
 .entry-meta-date .day,
@@ -245,7 +245,7 @@ sup {
 .asset .asset-body ol {
   margin-bottom: 1em;
 }
-.asset .asset-body p {
+.asset .asset-body p, .asset .asset-body ul, .asset .asset-body ol {
   margin-top: 1em;
   font-size: 110%;
 }
@@ -281,7 +281,6 @@ li ol, li ul {
 #header .button {
   -moz-user-select: none;
   border-radius: 3px;
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
 
   border: 1px solid #7799BB;
@@ -391,16 +390,19 @@ li ol, li ul {
 }
 #menu-wrapper  {
   float: right;
-  padding-top: 36px;
 }
 #menu-wrapper h1 {
   color: #184460;
   font-size: 2em;
   font-weight: normal;
   font-family: Georgia,Palatino,Palatino Linotype,Times,Times New Roman,serif;
-  padding-right: 2em;
+  text-align: right;
 }
-.download a { line-height: 24px; padding: 6px 12px 6px 28px; }
+.download a {
+  line-height: 24px;
+  padding: 6px 12px 6px 28px;
+  font-size: 120%;
+}
 .download a.winexe {background: url("../images/winexe.png") no-repeat scroll 0px 0px transparent;}
 .download a.winzip {background: url("../images/winzip.png") no-repeat scroll 0px 0px transparent;}
 .download a.win    {background: url("../images/win.png") no-repeat scroll 0px 0px transparent;}
@@ -428,7 +430,6 @@ li ol, li ul {
   font: bold 11px/14px "Helvetica Neue",Helvetica,Arial,sans-serif;
 
   border-radius: 3px;
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
 
   color: #555555;
@@ -457,11 +458,6 @@ li ol, li ul {
 /* make items a bit more compact in the sidebar */
 .widget {
   margin-bottom: 10px;
-}
-
-.inset {
-  width: 280px;
-  height: 120px;
 }
 
 /* reduce margin bottom as it's too large and there is footer margin anyway */
@@ -512,3 +508,52 @@ ul#download-options {
   list-style: none;
 }
 ul.download a { font-size: 120%; line-height: 30px; }
+
+/* make Download font larger */
+.widget h3 {
+  font-size: 120%;
+  margin-bottom: 6px;
+}
+
+/* position menu at the top of the header */
+div#menu-links {
+  position: relative;
+  top: 41px;
+  right: 12px;
+}
+
+/* position menu links in the header */
+div#menu-links a {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+#menu-wrapper h1 {
+  padding-right: 12px;
+  margin-top: 0px;
+}
+
+/* position TOC title and remove top margin for TOC */
+ul#toc span {
+  font-size: 120%;
+  font-weight: bold;
+  margin-left: -1em;
+}
+ul#toc {
+  font-size: 100%;
+  margin-top: 0px;
+}
+
+/* set size of inline images */
+.inset {
+  width: 280px;
+  height: 120px;
+}
+.inline {
+  float: right;
+  margin: 12px;
+  width: 280px;
+  height: 120px;
+}
+h2 {
+  clear: right;
+}

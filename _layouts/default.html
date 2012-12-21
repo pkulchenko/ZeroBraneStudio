@@ -25,8 +25,22 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
  </script>
+ <script type="text/javascript">//<![CDATA[
+  function generateTOC(toc, tag) {
+    if (!toc) { return; }
+    var tags = document.getElementsByTagName(tag)
+    for (var i = 0; i < tags.length; ++i) {
+      var node = tags[i];
+      var a = document.createElement("a");
+      a.setAttribute("href", "#" + node.id);
+      a.innerHTML = node.innerHTML;
+      toc.appendChild(document.createElement("li")).appendChild(a);
+    }
+  }
+ //]]></script>
 </head>
-<body id="blogbase" class="mt-entry-archive layout-wtt">
+<body id="blogbase" class="mt-entry-archive layout-wtt"
+  onload="generateTOC(document.getElementById('toc'), 'h2');">
  <div id="container">
   <div id="container-inner">
    <div id="header">
@@ -37,7 +51,17 @@
       <div id="header-description">Lightweight IDE for your Lua needs</div>
      </div>
      <div id="menu-wrapper">
-      <h1>{% if page.title %}<span>{{page.title}}</span>{% endif %}</h1>
+      <div id="menu-links">
+        {% if page.url == '/features.html'%}<strong>Features</strong>{% else %}<a href="features.html">Features</a>{% endif %}
+        {% if page.url == '/screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="screenshots.html">Screenshots</a>{% endif %}
+        {% if page.url == '/support.html' or page.url == '/download.html'%}<strong>Download</strong>{% else %}<a href="support.html">Download</a>{% endif %}
+        {% if page.url == '/tutorials.html'%}<strong>Tutorials</strong>{% else %}<a href="tutorials.html">Tutorials</a>{% endif %}
+        {% if page.url == '/documentation.html'%}<strong>Documentation</strong>{% else %}<a href="documentation.html">Documentation</a>{% endif %}
+        {% if page.url == '/testimonials.html'%}<strong>Testimonials</strong>{% else %}<a href="testimonials.html">Testimonials</a>{% endif %}
+        {% if page.url == '/community.html'%}<strong>Community</strong>{% else %}<a href="community.html">Community</a>{% endif %}
+        <a href="http://notebook.kulchenko.com">Blog</a>
+      </div>
+      {% if page.title %}<h1><span>{{page.title}}</span></h1>{% endif %}
      </div>
     </div>
    </div>
@@ -58,50 +82,27 @@
        <div id="beta-columns">
         <div id="beta-columns-left">
          <div class="widget">
-          <h3 class="widget-header">Download v0.34 (Dec 12 2012)</h3>
-          <div class="widget-content download">
-           <a class="mac" href="support.html">OSX 10.6.8+</a>
-           <a class="linux" href="support.html">Linux Debian/Ubuntu/Mint</a><br />
-           <a class="winzip" href="support.html">Win32 archive</a>
-           <a class="winexe" href="support.html">Win32 installer</a>
-          </div>
-         </div>
-         <div class="widget">
-          <h3 class="widget-header">Project
-           <span class="github-btn">
-            <a href="http://notebook.kulchenko.com" class="gh-btn">
-             <span class="gh-text">Blog</span></a>
-           </span>
+          <h3 class="widget-header">Download v0.34 (Dec 12 2012)
            <span class="github-btn">
             <a href="https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md" class="gh-btn">
              <span class="gh-text">Changelog</span></a>
            </span>
-           <span class="github-btn">
-            <a href="https://github.com/pkulchenko/ZeroBraneStudio/issues" class="gh-btn">
-             <span class="gh-text">Issues</span></a>
-           </span>
           </h3>
-         </div>
-         <div class="widget">
-          <h3 class="widget-header"><a href="tutorials.html">Tutorials <span class="more">»</span></a> and <a href="screenshots.html">Screenshots <span class="more">»</span></a></h3>
-          <div class="widget-content">
-           <ul class="widget-list">
-            <li class="widget-list-item">
-             <a href="http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style">Lua live coding</a></li>
-            <li class="widget-list-item">
-             <a href="http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio">Moai debugging</a></li>
-            <li class="widget-list-item">
-             <a href="http://notebook.kulchenko.com/zerobrane/love2d-debugging">Löve debugging</a> and <a href="http://notebook.kulchenko.com/zerobrane/live-coding-with-love">live coding</a></li>
-            <li class="widget-list-item">
-             <a href="http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide">Gideros debugging</a> and <a href="http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide">live coding</a></li>
-           </ul>
+          <div class="widget-content download">
+           <a class="mac" href="support.html">OSX (.dmg)</a>
+           <a class="linux" href="support.html">Linux (.sh/.deb)</a><br />
+           <a class="winzip" href="support.html">Win32 (.zip)</a>
+           <a class="winexe" href="support.html">Win32 (.exe)</a>
           </div>
          </div>
          <div class="widget">
-          <h3 class="widget-header"><a href="testimonials.html">Praise from ZeroBrane Studio users <span class="more">»</span></a></h3>
+          <a href="screenshots.html"><img style="background:url(images/colors-zenburn.png) -30px -350px" src="images/t.gif" class="inset"/></a>
+         </div>
+         <div class="widget">
           <div class="widget-content Testimonials">
-           <p><span class="q">“</span>I love ZBS. <strong>I use it for all of the work I&#8217;ve started doing in Lua</strong> and even tossed it on my PortableApps installation for work while I&#8217;m in the office! This IDE is fantastic!<span class="q">”</span> (<a href='https://github.com/EddieDover'>Eddie Dover</a>)</p>
            <p><span class="q">“</span>Thanks again for your awesome IDE. <strong>I&#8217;ve moved over to it, forsaking my previous investment in Decoda</strong>!<span class="q">”</span> (Stephen Nichols)</p>
+           <p><span class="q">“</span>ZBS is beautiful experience. I am using it usually <strong>10 hrs every day</strong> w/o problems.<span class="q">”</span> (<a href='https://github.com/srdjan-m'>Srdjan Markovic</a>)</p>
+           <p><span class="q">“</span>I love ZBS. <strong>I use it for all of the work I&#8217;ve started doing in Lua</strong> and even tossed it on my PortableApps installation for work while I&#8217;m in the office! This IDE is fantastic!<span class="q">”</span> (<a href='https://github.com/EddieDover'>Eddie Dover</a>)</p>
            <p><span class="q">“</span>ZeroBrane Studio has got a <strong>working debugger, full IDE feature set, small footprint, and is completely customizable in lua.</strong> You have no idea how excited I was to find this little gem!<span class="q">”</span> (<a href='https://github.com/Odie'>Jonathan Shieh</a>)</p>
            <p><span class="q">“</span>It’s a joy to use; compared to the debugger in Scite, ZBS is <strong>totally rock solid</strong>.<span class="q">”</span> (Jeff Smith)</p>
           </div>

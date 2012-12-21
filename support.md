@@ -47,5 +47,5 @@ run it from a cloned copy or an archive. We would still **appreciate your
 payment in support of this project.** If you decide not to provide financial
 support this time, please consider spreading the word, contributing code,
 helping with [fixes](https://github.com/pkulchenko/ZeroBraneStudio/issues)
-or [documentation](https://github.com/pkulchenko/ZeroBraneStudio/tree/gh-pages),
+or [documentation](documentation.html),
 and answering questions other users may have.
