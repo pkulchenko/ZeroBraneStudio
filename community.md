@@ -19,6 +19,7 @@ title: Community
 <input type='submit' value='Subscribe' /></p>
 </form>
 
+To **post a message** send it to `zerobrane@freelists.org`.
 Make sure you **confirm your subscription** by clicking on the link in the confirmation mail or your messages to the maillist will be rejected.
 The maillist is hosted by freelists.org and the confirmation email may show its `from` address as `FreeLists Mailing List Manager`.
 You can also **unsubscribe or change your subscription** settings [here](http://www.freelists.org/cgi-bin/lsg2.cgi/l=zerobrane).
