@@ -123,7 +123,7 @@ You can **close** the `Project` and `Output/Console` windows if you are not usin
 
 You can **resize** the windows by dragging the splitters between them. You can also **move** the windows by clicking and holding the mouse on the window caption area and dragging the window to a new location. You can release the mouse when one side of the main window changes its color to light blue. The new configuration will then be used until you reset or change it.
 
-You can change the [color scheme](doc-color-schemes.html), 
+You can change the color scheme,
 [general preferences](doc-general-preferences.html),
 [editor preferences](doc-editor-preferences.html),
-and the [IDE keymap](doc-menu-keymap.html).
+and the [IDE keymap](doc-faq.html#how_to_modify_a_key_mapping).
