@@ -26,7 +26,7 @@ title: Documentation
 - Corona debugging
 - [Wireshark debugging](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio)
 - [GSL-shell debugging](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio)
-- Remote debugging
+- [Remote debugging](doc-remote-debugging.html)
 
 ## Live coding
 
