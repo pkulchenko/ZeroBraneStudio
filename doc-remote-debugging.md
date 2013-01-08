@@ -54,5 +54,5 @@ In some rare cases the domain name detected by ZeroBrane Studio cannot be resolv
 You can specify the domain name or address you want to use by [configuring](doc-configuration.html) the IDE with `debugger.hostname="domain"`.
 * **I get "Debugger error: unexpected response after EXEC/LOAD '201 Started ...'".**
 This is caused by not having a filename associated with a dynamic chunk loaded by your application.
-If you are using `loadstring()`, you should pass a second parameter that is a filename for the fragment (and that file can then be debugged in ZBS if it's placed in the project directory).
-If you are using `luaL_loadstring` (which has no option to label the chunk with it's file path), you can switch to using `luaL_loadbuffer` to pass that information.
+If you are using `loadstring()`, you should pass a second parameter that is a filename for the fragment (and that file can then be debugged in ZeroBrane Studio if it's placed in the project directory).
+If you are using `luaL_loadstring` (which has no option to label the chunk with its file path), you can switch to using `luaL_loadbuffer` to pass that information.
