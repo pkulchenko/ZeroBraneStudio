@@ -12,7 +12,7 @@ The application may be running on the same or a different computer from the one 
 * Open ZeroBrane Studio. 
 Go to `Project | Start Debugger Server` and **start the debugger server** (if this menu item is disabled, the server is already started).
 * **Open the Lua file** you want to debug.
-* **Select the project folder** by going to `Project | Project Directory | Choose...`
+* **Select the project directory** by going to `Project | Project Directory | Choose...`
 or using `Project | Project Directory | Set From Current File`.
 * Add `require('mobdebug').start()` call to your file.
 If the application is running on a **different computer**, you need to specify an address of the computer where ZeroBrane Studio is running as the first parameter to the `start()` call: `require('mobdebug').start("12.345.67.89")` or `require('mobdebug').start("domain.name")`.
@@ -45,8 +45,8 @@ See [Debugging Wireshark lua scripts](http://notebook.kulchenko.com/zerobrane/de
 ## Troubleshooting
 
 * **How do I find a path to `mobdebug.lua`?**
-`mobdebug.lua` is located in `lualibs/mobdebug` folder under your ZeroBrane Studio installation folder.
-The location of ZeroBrane Studio is system dependent; on **Windows** it is the location of the folder you installed ZeroBrane Studio to; on **Linux** it is `/usr/lib/zbstudio`; and on **Mac OS X** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio`.
+`mobdebug.lua` is located in `lualibs/mobdebug` directory under your ZeroBrane Studio installation directory.
+The location of ZeroBrane Studio is system dependent; on **Windows** it is the location of the directory you installed ZeroBrane Studio to; on **Linux** it is `/usr/lib/zbstudio`; and on **Mac OS X** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio`.
 * **I can't step into functions defined in other files in my project.**
 You either need to open them in the IDE before you want to step through them, or to [configure](doc-configuration.html) the IDE to auto-open files requested during debugging using `editor.autoactivate = true`.
 * **The host name is detected incorrectly.**

@@ -17,7 +17,7 @@ The values shown are the default values.
 - `savebak = false`: create backup on file save.
 - `filehistorylength = 20`: set history length for files.
 - `projecthistorylength = 15`: set history length for projects.
-- `language = "ru"`: set the language to use in the IDE; this requires `ru.lua` file in cfg/i18n folder.
+- `language = "ru"`: set the language to use in the IDE; this requires `ru.lua` file in cfg/i18n directory.
 
 ## Debugger
 

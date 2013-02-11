@@ -14,7 +14,7 @@ or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/
 
 ## How to specify a directory my script should be executed in for `require` commands to work?
 
-You can set the [project folder](doc-getting-started.html#project_folder), which will be used to set the current folder when your application is run or debugged.
+You can set the [project directory](doc-getting-started.html#project_directory), which will be used to set the current directory when your application is run or debugged.
 
 ## How to change background color in the editor?
 
