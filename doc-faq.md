@@ -27,12 +27,15 @@ You can also configure the IDE to [auto-open files](https://github.com/pkulchenk
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
-Yes; you can specify a filename as the second parameter to `loadstring` and have that file in your project folder with the same content as what's loaded with `loadstring`.
+Yes; you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
 You can then open that file in the IDE or configure it to auto-open it for you.
 
 ## Is debugging of Lua 5.2 applications supported?
 
-Yes; you need to add `getfenv` and `setfenv` functions from [compat_env](https://github.com/davidm/lua-compat-env) to the application you want to debug.
+Starting from v0.35 the debugging of Lua 5.2 applications is supported out-of-the-box.
+You can set your Lua interpreter to point to a Lua 5.2 executable (`path.lua = [[d:/path/to/lua52.exe]]`) and as long as you have luasocket compiled with Lua 5.2, you should be able to debug Lua 5.2 applications.
+Note that the internal Lua engine in ZeroBrane Studio is still Lua 5.1 and you will not be able to compile any code that uses Lua 5.2 features (like goto statements).
+To work around that you can copy the existing Lua interpreter (`interpreters/luadeb.lua` into a different file) and add `skipcompile = true,` option to it, which will skip a required compilation step before executing your script.
 
 ## How to accept keyboard input for applications started from the IDE?
 
