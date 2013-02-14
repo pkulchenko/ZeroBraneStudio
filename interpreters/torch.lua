@@ -34,6 +34,11 @@ return {
     if cpath then
        wx.wxSetEnv("LUA_CPATH", luacpath..";"..cpath)
     end
+    local luacpath64 = "bin/clibs64/?.dylib"
+    local _, cpath64 = wx.wxGetEnv("LUA_CPATH")
+    if cpath64 then
+       wx.wxSetEnv("LUA_CPATH", luacpath64..";"..cpath64)
+    end
     --  end of cpath modifications for osx
     local filepath = wfilename:GetFullPath()
     local script
@@ -61,7 +66,7 @@ return {
       script = ('dofile [[%s]]'):format(filepath)
     end
     local code = ([[xpcall(function() io.stdout:setvbuf('no'); %s end,function(err) print(debug.traceback(err)) end)]]):format(script)
-    local cmd = '"'..torch..'" -onethread -e "'..code..'"'
+    local cmd = '"'..torch..'"-e "'..code..'"'
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() ide.debugger.pid = nil end)
@@ -72,7 +77,7 @@ return {
   fworkdir = function(self,wfilename)
     return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
-  hasdebugger = true,
+  hasdebugger = false,
   fattachdebug = function(self) DebuggerAttachDefault() end,
   skipcompile = true,
   scratchextloop = true,
