@@ -27,6 +27,7 @@ return {
       end
     end
     -- end of search for torch
+    torch = torch
     -- make minor modifications to the cpath to take care of OSX
     local luacpath = "/usr/local/lib/lua/5.1/?.dylib"
     local _, cpath = wx.wxGetEnv("LUA_CPATH")
@@ -60,7 +61,7 @@ return {
       script = ('dofile [[%s]]'):format(filepath)
     end
     local code = ([[xpcall(function() io.stdout:setvbuf('no'); %s end,function(err) print(debug.traceback(err)) end)]]):format(script)
-    local cmd = '"'..torch..'" -e "'..code..'"'
+    local cmd = '"'..torch..'" -onethread -e "'..code..'"'
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() ide.debugger.pid = nil end)
