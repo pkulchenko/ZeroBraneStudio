@@ -864,7 +864,13 @@ local function controller(controller_host, controller_port)
         elseif err and not tostring(err):find(deferror) then
           -- report the error back
           -- err is not necessarily a string, so convert to string to report
-          report(debug.traceback(coro_debugee), tostring(err))
+	   local function report(trace, err)
+	      local msg = err .. "\n" .. trace
+	      server:send("401 Error in Execution " .. #msg .. "\n")
+	      server:send(msg)
+	      return err
+	   end
+	   report(debug.traceback(coro_debugee), tostring(err))
           if exitonerror then break end
           -- resume once more to clear the response the debugger wants to send
           -- need to use capture_vars(2) as three would be the level of
