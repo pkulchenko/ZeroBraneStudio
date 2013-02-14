@@ -1,65 +1,70 @@
 # Project Description
 
-[ZeroBrane Studio](http://studio.zerobrane.com/) is a lightweight Lua IDE with code completion, syntax
-highlighting, remote debugger, code analyzer, live coding, and debugging
-support for several Lua engines (LuaJIT, Löve 2D, Moai, Gideros, Corona,
-MobileLua, GSL-shell, and others). It originated from the [Estrela Editor](http://www.luxinia.de/index.php/Estrela/).
+ZBS-torch is a fork of ZeroBrane Studio to get it to work with Torch-7
+For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith/zbs-torch/blob/master/README-zbs.md)
 
-## Features
+## What works for torch-7?
+* Visual debugging (see usage, slightly convoluted instructions)
+* Full torch support
 
-* Written in Lua, so easily customizable.
-* Small, portable, and cross-platform (Windows, Mac OSX, and Linux).
-* Auto-completion for functions, keywords, and custom APIs.
-* Interactive console to directly test code snippets with local and remote execution.
-* Integrated debugger (with support for local and remote debugging).
-* Live coding with Lua ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)), Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)), and Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)).
-* Support for plugin-like components:
-  - applications: overall control of applications settings;
-  - specs (spec/): file syntax, lexer, keywords (e.g. glsl);
-  - apis (api/): for code-completion and tool-tips;
-  - interpreters (interpreters/): how a project is run;
-  - config (cfg/): contains style and basic editor settings;
-  - tools (tools/): additional tools (e.g. DirectX/Cg shader compiler...).
+## Installation
 
-## Screenshot
+* Get Torch with luarocks (You can automate this with this [script](https://github.com/clementfarabet/torchinstall/blob/master/install) thanks to Clement)
+* Install mobdebug with luarocks with
 
-![ZeroBrane Studio debugger screenshot](http://studio.zerobrane.com/images/debugging.png)
+```bash
+$ luarocks install mobdebug
+```
+
+```bash
+$ git clone https://github.com/soumith/zbs-torch.git
+$ cd zbs-torch
+$ bash zbstudio.sh
+```
 
 ## Usage
 
+To debug a torch file,
+
+* Start zbs from the zbs-torch directory with the command
+
+```bash
+$ bash zbstudio.sh
 ```
-Open file(s):
-  zbstudio <filename> [<filename>...]
-  any non-option will be treated as filename
+* Start the debugger server from "Project->Start Debugger Server"
 
-Overriding default configuration:
-  zbstudio -cfg "<luacode overriding config>" [<filename>]
-  e.g.: zbstudio -cfg "editor.fontsize=12" somefile.lua
+* Add the following line to the top of the file you are debugging
 
-Loading custom configuration:
-  zbstudio -cfg config/file.lua [<filename>]
-  e.g.: zbstudio -cfg cfg/estrela.lua
+```lua
+require('mobdebug').start()
+```
+For Example, this file
+```lua
+require 'image'
+print('Wheres Waldo?')
+a=image.rotate(image.lena(), 1.0)
+image.display(a)
+print('OK Bye')
+```
+becomes
+```lua
+require('mobdebug').start()
+require 'image'
+print('Wheres Waldo?')
+a=image.rotate(image.lena(), 1.0)
+image.display(a)
+print('OK Bye')
 ```
 
-## Author
+* Run the file from the menu "Project->Run"
+* You should see the debugger stop at the first line of the file, then you can set breakpoints, continue, step etc.
+
+## Original Author
 
 ### ZeroBrane Studio and MobDebug
 
   **ZeroBrane LLC:** Paul Kulchenko (paul@kulchenko.com)
 
-### Estrela Editor
-
-  **Luxinia Dev:** Christoph Kubisch (crazybutcher@luxinia.de)
-
-## Where is Estrela?
-
-The projects have been merged again and zbstudio will lead the future.
-Please reassociate files with zbstudio. To keep your history of files and
-projects copy the contents of the `EstrelaEditor.ini` in your HOME directory
-to `ZeroBraneStudio.ini`. If you have used Estrela for graphics shader
-authoring or luxinia, create/modify the `cfg/user.lua` to include the content
-of `cfg/estrela.lua` to load all tools and specifications by default again.
-  
 ## License
 
 See LICENSE file.
