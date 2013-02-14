@@ -77,7 +77,7 @@ return {
   fworkdir = function(self,wfilename)
     return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
-  hasdebugger = false,
+  hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,
   skipcompile = true,
   scratchextloop = true,
