@@ -2,7 +2,7 @@ local torch
 local win = false
 
 return {
-  name = "Torch",
+  name = "Torch-7",
   description = "Torch machine learning package",
   api = {"baselib", "torch"},
   frun = function(self,wfilename,rundebug)
