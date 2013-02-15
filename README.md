@@ -1,6 +1,7 @@
 # Project Description
 
 ZBS-torch is a fork of ZeroBrane Studio to get it to work with Torch-7
+
 For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith/zbs-torch/blob/master/README-zbs.md)
 
 ## What works for torch-7?
@@ -19,7 +20,7 @@ $ luarocks install mobdebug
 ```bash
 $ git clone https://github.com/soumith/zbs-torch.git
 $ cd zbs-torch
-$ bash zbstudio.sh
+$ sh zbstudio.sh
 ```
 
 ## Usage
@@ -29,7 +30,7 @@ To debug a torch file,
 * Start zbs from the zbs-torch directory with the command
 
 ```bash
-$ bash zbstudio.sh
+$ sh zbstudio.sh
 ```
 * Start the debugger server from "Project->Start Debugger Server"
 
