@@ -20,6 +20,9 @@ title: Documentation
 ## Debugging
 
 - Lua debugging
+- [LuaJIT debugging](doc-luajit-debugging.html)
+- [Lua 5.2 debugging](doc-lua52-debugging.html)
+- [Remote debugging](doc-remote-debugging.html)
 - [Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
@@ -27,7 +30,6 @@ title: Documentation
 - [Corona debugging](debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
 - [Wireshark debugging](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio)
 - [GSL-shell debugging](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio)
-- [Remote debugging](doc-remote-debugging.html)
 
 ## Live coding
 
