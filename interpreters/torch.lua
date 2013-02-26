@@ -31,7 +31,7 @@ return {
     -- make minor modifications to the cpath to take care of OSX
     local luapath = "/usr/local/share/torch/lua/?.lua;/usr/local/share/torch/lua/?/init.lua;/usr/local/lib/torch/?.lua;/usr/local/lib/torch/?/init.lua"
     local _, path = wx.wxGetEnv("LUA_PATH")
-    if ppath then
+    if path then
        wx.wxSetEnv("LUA_PATH", luapath..";"..path)
     end
     local luacpath = "/usr/local/lib/lua/5.1/?.dylib;/usr/local/lib/torch/?.dylib"
