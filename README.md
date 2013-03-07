@@ -34,6 +34,8 @@ $ sh zbstudio.sh
 ```
 * Start the debugger server from "Project->Start Debugger Server"
 
+* Change the interpreter to Torch-7 "Project->Lua Interpreter->Torch-7" 
+
 * Add the following line to the top of the file you are debugging
 
 ```lua
