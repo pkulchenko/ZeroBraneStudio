@@ -27,7 +27,7 @@ title: Documentation
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
 - [Marmalade Quick debugging](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio)
-- [Corona debugging](debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
+- [Corona debugging](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
 - [Wireshark debugging](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio)
 - [GSL-shell debugging](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio)
 
@@ -37,7 +37,7 @@ title: Documentation
 - [Love2d live coding](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)
 - [Moai live coding](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio)
 - [Gideros live coding](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)
-- [Corona live coding](debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
+- [Corona live coding](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
 
 ## Extension and Customization
 
