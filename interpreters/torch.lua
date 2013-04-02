@@ -28,13 +28,30 @@ return {
     end
     -- end of search for torch
     torch = torch
+
     -- make minor modifications to the cpath to take care of OSX
-    local luapath = "/usr/local/share/torch/lua/?.lua;/usr/local/share/torch/lua/?/init.lua;/usr/local/lib/torch/?.lua;/usr/local/lib/torch/?/init.lua"
+    -- make sure the root is using Torch exe location
+    local torchroot = GetPathWithSep(torch).. '../'
+    local luapath =      ''
+    luapath = luapath .. torchroot .. "share/lua/5.1/?.lua;"
+    luapath = luapath .. torchroot .. "share/lua/5.1/?/init.lua;"
+    luapath = luapath .. torchroot .. "share/torch/lua/?.lua;"
+    luapath = luapath .. torchroot .. "share/torch/lua/?/init.lua;"
+    luapath = luapath .. torchroot .. "lib/lua/5.1/?.lua;"
+    luapath = luapath .. torchroot .. "lib/lua/5.1/?/init.lua"
     local _, path = wx.wxGetEnv("LUA_PATH")
     if path then
        wx.wxSetEnv("LUA_PATH", luapath..";"..path)
     end
-    local luacpath = "/usr/local/lib/lua/5.1/?.dylib;/usr/local/lib/torch/?.dylib"
+    local luacpath = ''
+    luacpath = luacpath .. torchroot .. "lib/lua/5.1/?.so;"
+    luacpath = luacpath .. torchroot .. "lib/lua/5.1/?.dylib;"
+    luacpath = luacpath .. torchroot .. "lib/torch/?.so;"
+    luacpath = luacpath .. torchroot .. "lib/torch/?.dylib;"
+    luacpath = luacpath .. torchroot .. "lib/lua/5.1/loadall.so;"
+    luacpath = luacpath .. torchroot .. "lib/lua/5.1/loadall.dylib;"
+    luacpath = luacpath .. torchroot .. "lib/torch/loadall.so;"
+    luacpath = luacpath .. torchroot .. "lib/torch/loadall.dylib;"
     local _, cpath = wx.wxGetEnv("LUA_CPATH")
     if cpath then
        wx.wxSetEnv("LUA_CPATH", luacpath..";"..cpath)
@@ -50,10 +67,11 @@ return {
     if rundebug then
        -- make minor modifications to the cpath to take care of OSX 64-bit
        -- as ZBS is shipped with 32-bit socket libs
-       local luacpath64 = "bin/clibs64/?.dylib"
+       local _,pwd = wx.wxGetEnv('PWD')
+       local luacpath64 =  pwd .."/bin/clibs64/?.dylib"
        local _, cpath64 = wx.wxGetEnv("LUA_CPATH")
        if cpath64 then
-	  wx.wxSetEnv("LUA_CPATH", luacpath64..";"..cpath64)
+	  wx.wxSetEnv("LUA_CPATH", luacpath64 .. ';' .. cpath64)
        end
       DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
       script = rundebug
