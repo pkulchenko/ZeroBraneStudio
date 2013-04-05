@@ -1,11 +1,11 @@
 --[[-- Copy required content from this file to `user.lua`
 
-Configuration files are loaded in the following order
+Configuration files are loaded in the following order:
+1. cfg/user.lua (system-wide configuration)
+2. HOME/.zbstudio/user.lua (per-user configuration)
+3. -cfg <lua code fragment|filename> (command line configuration)
 
-1. <application>\config.lua
-2. cfg\user.lua
-3. ~\.zbstudio\user.lua
-4. -cfg commandline strings
+See [configuration](http://studio.zerobrane.com/doc-configuration.html) page for information about location of configuration files.
 
 --]]--
 
@@ -109,7 +109,7 @@ styles.fncall.st = wxstc.wxSTC_INDIC_PLAIN
     wxSTC_INDIC_DIAGONAL Diagonal hatching
     wxSTC_INDIC_STRIKE	 Strike-out
     wxSTC_INDIC_BOX      Box
-    wxSTC_INDIC_ROUNDBOX Rounded Box (not suppored in the current version?)
+    wxSTC_INDIC_ROUNDBOX Rounded Box
   --]]
 
 -- to enable additional spec files (like spec/cpp.lua)

@@ -212,7 +212,12 @@ function EditorAutoComplete(editor)
 
   local lt = linetx:sub(1,localpos)
   lt = lt:gsub("%s*(["..editor.spec.sep.."])%s*", "%1")
-  lt = lt:match("[^%[%(%s]*$")
+  -- strip closed brace scopes
+  lt = lt:gsub("%b()","")
+  lt = lt:gsub("%b[]","")
+  lt = lt:gsub("%b{}","")
+  -- match from starting brace
+  lt = lt:match("[^%[%(%{%s]*$")
 
   -- know now which string is to be completed
   local userList = CreateAutoCompList(editor,lt)
@@ -348,7 +353,7 @@ function CreateEditor()
 
   editor:SetCaretLineVisible(ide.config.editor.caretline and 1 or 0)
 
-  editor:SetVisiblePolicy(wxstc.wxSTC_VISIBLE_SLOP, 3)
+  editor:SetVisiblePolicy(wxstc.wxSTC_VISIBLE_STRICT, 3)
 
   editor:SetMarginWidth(0, editor:TextWidth(32, "99999_")) -- line # margin
 
@@ -367,9 +372,12 @@ function CreateEditor()
   editor:SetFoldFlags(wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED +
     wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
 
-  editor:SetProperty("fold", "1")
-  editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
-  editor:SetProperty("fold.comment", "1")
+  -- allow multiple selection and multi-cursor editing if supported
+  if ide.wxver >= "2.9.5" then
+    editor:SetMultipleSelection(1)
+    editor:SetAdditionalCaretsBlink(1)
+    editor:SetAdditionalSelectionTyping(1)
+  end
 
   do
     local fg, bg = wx.wxWHITE, wx.wxColour(128, 128, 128)
@@ -414,17 +422,17 @@ function CreateEditor()
 
   editor:Connect(wxstc.wxEVT_STC_MODIFIED,
     function (event)
-      SetAutoRecoveryMark()
-
       if (editor.assignscache and editor:GetCurrentLine() ~= editor.assignscache.line) then
         editor.assignscache = false
       end
       local evtype = event:GetModificationType()
       if (bit.band(evtype,wxstc.wxSTC_MOD_INSERTTEXT) ~= 0) then
+        SetAutoRecoveryMark()
         table.insert(editor.ev,{event:GetPosition(),event:GetLinesAdded()})
         DynamicWordsAdd("post",editor,nil,editor:LineFromPosition(event:GetPosition()),event:GetLinesAdded())
       end
       if (bit.band(evtype,wxstc.wxSTC_MOD_DELETETEXT) ~= 0) then
+        SetAutoRecoveryMark()
         table.insert(editor.ev,{event:GetPosition(),0})
         DynamicWordsAdd("post",editor,nil,editor:LineFromPosition(event:GetPosition()),0)
       end
@@ -565,16 +573,31 @@ function CreateEditor()
       SetDocumentModified(editor:GetId(), true)
     end)
 
+  -- "updateStatusText" should be called in UPDATEUI event, but it creates
+  -- several performance problems on Windows (using wx2.9.5+) when
+  -- brackets or backspace is used (very slow screen repaint with 0.5s delay).
+  -- Moving it to PAINTED event creates problems on OSX (using wx2.9.5+),
+  -- where refresh of R/W and R/O status in the status bar is delayed.
+
+  editor:Connect(wxstc.wxEVT_STC_PAINTED,
+    function ()
+      if ide.osname == 'Windows' then updateStatusText(editor) end
+    end)
+
   editor:Connect(wxstc.wxEVT_STC_UPDATEUI,
     function ()
-      updateStatusText(editor)
+      if ide.osname ~= 'Windows' then updateStatusText(editor) end
       updateBraceMatch(editor)
+      local minupdated
       for _,iv in ipairs(editor.ev) do
         local line = editor:LineFromPosition(iv[1])
+        if not minupdated or line < minupdated then minupdated = line end
         IndicateFunctions(editor,line,line+iv[2])
-        if MarkupStyle then MarkupStyle(editor,line,line+iv[2]+1) end
       end
-      if MarkupStyleRefresh then MarkupStyleRefresh(editor, editor.ev) end
+      local firstline = editor:DocLineFromVisible(editor:GetFirstVisibleLine())
+      local lastline = math.min(editor:GetLineCount(),
+        editor:DocLineFromVisible(editor:GetFirstVisibleLine() + editor:LinesOnScreen()))
+      MarkupStyle(editor,minupdated or firstline,lastline)
       editor.ev = {}
     end)
 
@@ -616,9 +639,7 @@ function CreateEditor()
         then notebook:SetSelection(first)
         else notebook:AdvanceSelection(true) end
       elseif (keycode == wx.WXK_DELETE or keycode == wx.WXK_BACK)
-        -- ide.osname == 'Macintosh' has wx.wxMOD_NONE not defined
-        -- for some reason (at least in wxlua 2.8.12.1)
-        and (event:GetModifiers() == (wx.wxMOD_NONE or 0)) then
+        and (event:GetModifiers() == wx.wxMOD_NONE) then
         -- Delete and Backspace behave the same way for selected text
         if #(editor:GetSelectedText()) > 0 then
           editor:SetTargetStart(editor:GetSelectionStart())
@@ -644,6 +665,10 @@ function CreateEditor()
           editor:SetTargetEnd(pos+1)
         end
         editor:ReplaceTarget("")
+      elseif ide.osname == "Unix" and ide.wxver >= "2.9.5"
+      and keycode == ('T'):byte() and event:GetModifiers() == wx.wxMOD_CONTROL then
+        ide.frame:AddPendingEvent(wx.wxCommandEvent(
+          wx.wxEVT_COMMAND_MENU_SELECTED, ID_SHOWTOOLTIP))
       else
         if ide.osname == 'Macintosh' and event:CmdDown() then
           return -- ignore a key press if Command key is also pressed
@@ -825,6 +850,17 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
     editor.spec = ide.specs.none
   end
 
+  -- need to set folding property after lexer is set, otherwise
+  -- the folds are not shown (wxwidgets 2.9.5)
+  editor:SetProperty("fold", "1")
+  editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
+  editor:SetProperty("fold.comment", "1")
+  
+  -- quickfix to prevent weird looks, otherwise need to update styling mechanism for cpp
+  -- cpp "greyed out" styles are  styleid + 64
+  editor:SetProperty("lexer.cpp.track.preprocessor", "0")
+  editor:SetProperty("lexer.cpp.update.preprocessor", "0")
+
   StylesApplyToEditor(styles or ide.config.styles, editor,
     font or ide.font.eNormal,fontitalic or ide.font.eItalic,lexerstyleconvert)
 end
@@ -832,42 +868,50 @@ end
 ----------------------------------------------------
 -- function list for current file
 
--- wx.wxEVT_SET_FOCUS is not triggered for wxChoice on Mac (wx 2.8.12),
--- so use wx.wxEVT_LEFT_DOWN instead
-funclist:Connect(ide.osname == 'Macintosh' and wx.wxEVT_LEFT_DOWN or wx.wxEVT_SET_FOCUS,
-  function (event)
-    event:Skip()
+local function refreshFunctionList(event)
+  event:Skip()
 
-    local editor = GetEditor()
-    if (editor and not (editor.spec and editor.spec.isfndef)) then return end
+  local editor = GetEditor()
+  if (editor and not (editor.spec and editor.spec.isfndef)) then return end
 
-    -- parse current file and update list
-    -- first populate with the current label to minimize flicker
-    -- then populate the list and update the label
-    local current = funclist:GetCurrentSelection()
-    local label = funclist:GetString(current)
-    local default = funclist:GetString(0)
-    funclist:Clear()
-    funclist:Append(current ~= wx.wxNOT_FOUND and label or default, 0)
-    funclist:SetSelection(0)
+  -- parse current file and update list
+  -- first populate with the current label to minimize flicker
+  -- then populate the list and update the label
+  local current = funclist:GetCurrentSelection()
+  local label = funclist:GetString(current)
+  local default = funclist:GetString(0)
+  funclist:Clear()
+  funclist:Append(current ~= wx.wxNOT_FOUND and label or default, 0)
+  funclist:SetSelection(0)
 
-    local lines = 0
-    local linee = (editor and editor:GetLineCount() or 0)-1
-    for line=lines,linee do
-      local tx = editor:GetLine(line)
-      local s,_,cap,l = editor.spec.isfndef(tx)
-      if (s) then
-        local ls = editor:PositionFromLine(line)
-        local style = bit.band(editor:GetStyleAt(ls+s),31)
-        if not (editor.spec.iscomment[style] or editor.spec.isstring[style]) then
-          funclist:Append((l and "  " or "")..cap,line)
-        end
+  local lines = 0
+  local linee = (editor and editor:GetLineCount() or 0)-1
+  for line=lines,linee do
+    local tx = editor:GetLine(line)
+    local s,_,cap,l = editor.spec.isfndef(tx)
+    if (s) then
+      local ls = editor:PositionFromLine(line)
+      local style = bit.band(editor:GetStyleAt(ls+s),31)
+      if not (editor.spec.iscomment[style] or editor.spec.isstring[style]) then
+        funclist:Append((l and "  " or "")..cap,line)
       end
     end
+  end
 
-    funclist:SetString(0, default)
-    funclist:SetSelection(current ~= wx.wxNOT_FOUND and current or 0)
-  end)
+  funclist:SetString(0, default)
+  funclist:SetSelection(current ~= wx.wxNOT_FOUND and current or 0)
+end
+
+-- wx.wxEVT_SET_FOCUS is not triggered for wxChoice on Mac (wx 2.8.12),
+-- so use wx.wxEVT_LEFT_DOWN instead; none of the events are triggered for
+-- wxChoice on Linux (wx 2.9.5+), so use EVT_ENTER_WINDOW attached to the
+-- toolbar itself until something better is available.
+if ide.osname == 'Unix' then
+  ide.frame.toolBar:Connect(wx.wxEVT_ENTER_WINDOW, refreshFunctionList)
+else
+  local event = ide.osname == 'Macintosh' and wx.wxEVT_LEFT_DOWN or wx.wxEVT_SET_FOCUS
+  funclist:Connect(event, refreshFunctionList)
+end
 
 funclist:Connect(wx.wxEVT_COMMAND_CHOICE_SELECTED,
   function (event)

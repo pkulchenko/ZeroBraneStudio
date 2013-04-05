@@ -4,9 +4,18 @@ ZBS-torch is a fork of ZeroBrane Studio to get it to work with Torch-7
 
 For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith/zbs-torch/blob/master/README-zbs.md)
 
-## What works for torch-7?
-* Visual debugging (see usage, slightly convoluted instructions)
-* Full torch support
+* Written in Lua, so easily customizable.
+* Small, portable, and cross-platform (Windows, Mac OSX, and Linux).
+* Auto-completion for functions, keywords, and custom APIs.
+* Interactive console to directly test code snippets with local and remote execution.
+* Integrated debugger (with support for local and remote debugging).
+* Live coding with Lua ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)), Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)), Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)), Moai ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio)), and Corona SDK ([demo](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)).
+* Support for plugin-like components:
+  - specs (spec/): file syntax, lexer, keywords (e.g. glsl);
+  - apis (api/): for code-completion and tool-tips;
+  - interpreters (interpreters/): how a project is run;
+  - config (cfg/): contains style and basic editor settings;
+  - tools (tools/): additional tools (e.g. DirectX/Cg shader compiler...).
 
 ## Installation
 

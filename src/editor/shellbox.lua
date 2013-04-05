@@ -280,8 +280,8 @@ local function executeShellCode(tx)
 
     -- set the project dir as the current dir to allow "require" calls
     -- to work from shell
-    local projectDir, cwd = FileTreeGetDir()
-    if projectDir then
+    local projectDir, cwd = FileTreeGetDir(), nil
+    if projectDir and #projectDir > 0 then
       cwd = wx.wxFileName.GetCwd()
       wx.wxFileName.SetCwd(projectDir)
     end
@@ -292,7 +292,7 @@ local function executeShellCode(tx)
       end))
 
     -- restore the current dir
-    if projectDir then wx.wxFileName.SetCwd(cwd) end
+    if cwd then wx.wxFileName.SetCwd(cwd) end
     
     if ok and (addedret or #res > 0) then
       if addedret then
@@ -431,8 +431,35 @@ out:Connect(wx.wxEVT_KEY_DOWN,
   end)
 
 local function inputEditable(line)
-  return caretOnPromptLine(fale, line) and
+  return caretOnPromptLine(false, line) and
     not (out:LineFromPosition(out:GetSelectionStart()) < getPromptLine())
+end
+
+-- new Scintilla changed the way markers move when the text is updated
+-- ticket: http://sourceforge.net/p/scintilla/bugs/939/
+-- discussion: https://groups.google.com/forum/?hl=en&fromgroups#!topic/scintilla-interest/4giFiKG4VXo
+if ide.wxver >= "2.9.5" then
+  -- this is a workaround that stores a position of the last prompt marker
+  -- before insert and restores the same position after (as the marker)
+  -- could have moved if the text is added at the beginning of the line.
+  local promptAt
+  out:Connect(wxstc.wxEVT_STC_MODIFIED,
+    function (event)
+      local evtype = event:GetModificationType()
+      if bit.band(evtype, wxstc.wxSTC_MOD_BEFOREINSERT) ~= 0 then
+        local promptLine = getPromptLine()
+        if promptLine and event:GetPosition() == out:PositionFromLine(promptLine)
+        then promptAt = promptLine end
+      end
+      if bit.band(evtype, wxstc.wxSTC_MOD_INSERTTEXT) ~= 0 then
+        local promptLine = getPromptLine()
+        if promptLine and promptAt then
+          out:MarkerDelete(promptLine, PROMPT_MARKER)
+          out:MarkerAdd(promptAt, PROMPT_MARKER)
+          promptAt = nil
+        end
+      end
+    end)
 end
 
 out:Connect(wxstc.wxEVT_STC_UPDATEUI,

@@ -93,7 +93,6 @@ return {
       line = line -1
     end
 
-    local added
     while (line <= endline) do
       local ls = editor:PositionFromLine(line)
       local s = bit.band(editor:GetStyleAt(ls),31)
@@ -103,35 +102,47 @@ return {
 
         -- check for assignments
         local varname = "([%w_%.]+)"
-        local identifier = "([%w_%.:]+)"
+        local identifier = "([%w_%.:%s]+)"
 
         -- special hint
         local typ,var = tx:match("%s*%-%-=%s*"..varname.."%s+"..identifier)
         if (var and typ) then
+          typ = typ:gsub("%s","")
           assigns[var] = typ
-          added = true
         else
           -- real assignments
-          local var,typ,rest = tx:match("%s*"..identifier.."%s*=%s*"..identifier.."(.*)")
-          local comment = rest and rest:match(".*%-%-=%s*"..varname.."%s*$")
-          local comma = rest and rest:match(".-%s*([,]*)%s*$")
-          if (var and comment) then
-            assigns[var] = comment
-            added = true
-          elseif (var and typ and comma=="") then
+          local var,typ = tx:match("%s*"..identifier.."%s*=%s*([^;]+)")
+
+          var = var and var:gsub("local","")
+          var = var and var:gsub("%s","")
+          typ = typ and typ:gsub("%b[]","")
+          typ = typ and typ:gsub("%b()","")
+          typ = typ and typ:gsub("%b{}","")
+          if (typ and (typ:match(",") or typ:match("%sor%s") or typ:match("%sand%s"))) then
+            typ = nil
+          end
+          typ = typ and typ:gsub("%s","")
+          if (var and typ) then
             class,func = typ:match(varname.."[%.:]"..varname)
-            if (func) then
+            if (assigns[typ]) then
+              assigns[var] = assigns[typ]
+            elseif (func) then
+              -- FIXME remove this, in favor of proper api definitions
+              local added
               local funcnames = {"new","load","create"}
               for i,v in ipairs(funcnames) do
-                if (func:match("^"..v)) then
+                if (func == v) then
                   assigns[var] = class
                   added = true
                   break
                 end
               end
-            elseif (assigns[typ]) then
-              assigns[var] = assigns[typ]
-              added = true
+              if (not added) then
+                -- let's hope autocomplete info can resolve this
+                assigns[var] = typ
+              end
+            else
+              assigns[var] = typ
             end
           end
         end
