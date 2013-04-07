@@ -56,23 +56,12 @@ return {
     if cpath then
        wx.wxSetEnv("LUA_CPATH", luacpath..";"..cpath)
     end
-    local luacpath64 = "bin/clibs64/?.dylib"
-    local _, cpath64 = wx.wxGetEnv("LUA_CPATH")
-    if cpath64 then
-       wx.wxSetEnv("LUA_CPATH", luacpath64..";"..cpath64)
-    end
-    --  end of cpath modifications for osx
     local filepath = wfilename:GetFullPath()
     local script
     if rundebug then
        -- make minor modifications to the cpath to take care of OSX 64-bit
        -- as ZBS is shipped with 32-bit socket libs
        local _,pwd = wx.wxGetEnv('PWD')
-       local luacpath64 =  pwd .."/bin/clibs64/?.dylib"
-       local _, cpath64 = wx.wxGetEnv("LUA_CPATH")
-       if cpath64 then
-	  wx.wxSetEnv("LUA_CPATH", luacpath64 .. ';' .. cpath64)
-       end
       DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
       script = rundebug
     else
