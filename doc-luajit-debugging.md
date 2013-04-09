@@ -18,4 +18,3 @@ This setup has not been tested extensively, so please report any issues you may 
 Make sure you **use the latest version of LuaJIT** (or at least v2.0.1+) as it is needed to support all debugging features to work.
 Also note that **LuaJIT debugging behavior** is slightly different from Lua 5.1: it may step on the same line several times (which is not a bug);
 Lua 5.1 will only step several times if it leaves the line (for example for a function call), and then returns back to it.
-

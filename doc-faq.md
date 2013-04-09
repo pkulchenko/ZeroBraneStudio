@@ -62,7 +62,7 @@ and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenk
 
 You can **remove the configuration file** ZeroBrane Studio is using to store these settings.
 The location (and the name) of this file is system dependent:
-it is located in `%HOME%\ZeroBraneStudio.ini` on Windows,
+it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `C:\Users\<user>\AppData\Roaming\ZeroBraneStudio.ini` (for v0.36 and later) on Windows,
 `$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.

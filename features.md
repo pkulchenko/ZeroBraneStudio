@@ -13,7 +13,7 @@ Written in Lua. Extensible and open.
 Run it from any folder. No installation required.
 
 **Small**
-With the windows installation package being less than 4MB, it is one of the smallest if not _the smallest_ fully featured IDE.
+With the Windows and OSX installation packages being less than 5MB, it is one of the smallest if not _the smallest_ fully featured IDE.
 
 **Configurable**
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.
