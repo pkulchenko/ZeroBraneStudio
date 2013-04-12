@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v0.36 (Apr 08 2013)
+# Download ZeroBrane Studio v0.361 (Apr 12 2013)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.36-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.36-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.361-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.361-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.36-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.36-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.361-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.361-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.36-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.36-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.361-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudioEduPack-0.361-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.36-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudio-0.36-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.361-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download','ZeroBraneStudio-0.361-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 
