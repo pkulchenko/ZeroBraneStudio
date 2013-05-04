@@ -43,5 +43,5 @@ title: Documentation
 
 - Adding a translation
 - Adding an interpreter
-- Adding an API/auto-complete description
+- [Adding an API/auto-complete description](doc-api-auto-complete.html)
  
