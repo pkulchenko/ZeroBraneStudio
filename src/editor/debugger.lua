@@ -33,7 +33,22 @@ local BREAKPOINT_MARKER_VALUE = 2^BREAKPOINT_MARKER
 
 local activate = {CHECKONLY = 1, NOREPORT = 2}
 
+-- table containing cached data about what data
+-- we gave to remote watches
+local remote_watches = {}
+
 local function q(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+
+-- Helper function because the wxWidgets way
+-- to do it is ridiculous
+local function getListCtrlValue(listctrl, row, col)
+    list_item = wx.wxListItem()
+    list_item:SetId(row)
+    list_item:SetColumn(col)
+    list_item:SetMask(wx.wxLIST_MASK_TEXT)
+    listctrl:GetItem(list_item)
+    return list_item:GetText()
+end
 
 local function updateWatchesSync(num)
   local watchCtrl = debugger.watchCtrl
@@ -46,21 +61,35 @@ local function updateWatchesSync(num)
     for idx = 0, watchCtrl:GetItemCount() - 1 do
       if not num or idx == num then
         local expression = watchCtrl:GetItemText(idx)
+        local breakmode = getListCtrlValue(watchCtrl, idx, 2)
+        local value = getListCtrlValue(watchCtrl, idx, 1)
+        
+        -- make sure the remote isn't outdated
+        if not remote_watches[idx] then
+          remote_watches[idx] = {}
+        end
+        local remote_watch = remote_watches[idx]
+        if remote_watch.expression ~= expression or
+           remote_watch.breakmode ~= breakmode then
+           if remote_watch.expression then
+             debugger.remwatch(idx)
+           end
+           debugger.addwatch(expression, breakmode)
+           
+           remote_watch.expression = expression
+           remote_watch.breakmode = breakmode
+        end
+        
         local _, values, error = debugger.evaluate(expression)
         if error then error = error:gsub("%[.-%]:%d+:%s+","")
         elseif #values == 0 then values = {'nil'} end
 
         local newval = error and ('error: '..error) or values[1]
+        
         -- get the current value from a list item
-        do local litem = wx.wxListItem()
-          litem:SetMask(wx.wxLIST_MASK_TEXT)
-          litem:SetId(idx)
-          litem:SetColumn(1)
-          watchCtrl:GetItem(litem)
-          watchCtrl:SetItemBackgroundColour(idx,
-            watchCtrl:GetItem(litem) and newval ~= litem:GetText()
+        watchCtrl:SetItemBackgroundColour(idx,
+            value and newval ~= value
             and hicl or bgcl)
-        end
 
         watchCtrl:SetItem(idx, 1, newval)
       end
@@ -557,7 +586,7 @@ debugger.listen = function()
 end
 
 debugger.handle = function(command, server, options)
-  local verbose = ide.config.debugger.verbose
+  local verbose = ide.config.debugger.verbose 
   local osexit, gprint
   osexit, os.exit = os.exit, function () end
   gprint, _G.print = _G.print, function (...) if verbose then DisplayOutputLn(...) end end
@@ -648,6 +677,19 @@ debugger.loadfile = function(file)
 end
 debugger.loadstring = function(file, string)
   return debugger.handle("loadstring '" .. file .. "' " .. string)
+end
+debugger.clearwatches = function()
+  return debugger.handle("delallw")
+end
+debugger.addwatch = function(expression, breakmode)
+  if breakmode == "Condition" then breakmode = "t"
+  elseif breakmode == "Update" then breakmode = "u"
+  else return
+  end
+  return debugger.handle("setwb "..breakmode.." "..expression)
+end
+debugger.remwatch = function(idx)
+  return debugger.handle("remw "..tostring(idx))
 end
 debugger.update = function()
   copas.step(0)
@@ -780,6 +822,75 @@ function debuggerCreateStackWindow()
   mgr.defaultPerspective = mgr:SavePerspective() -- resave default perspective
 end
 
+local function debuggerCreateEditWatchDialog(title, watchCtrl, row)
+  local position = wx.wxGetMousePosition()
+  position.x = position.x - 60; position.y = position.y - 30
+  local ID_BUTTON_OK = 1
+
+  local editWatchDialog = wx.wxDialog(ide.frame, wx.wxID_ANY, title,
+    position, wx.wxSize(300, 125), wx.wxDEFAULT_DIALOG_STYLE)
+
+  -- Create watch expression text entry sizer
+  local expressionStaticText = wx.wxStaticText(editWatchDialog, wx.wxID_ANY, TR("Expression")..": ")
+  local expressionTextInput = wx.wxTextCtrl(editWatchDialog, wx.wxID_ANY)
+  expressionTextInput:SetFocus()
+  expressionTextInput:SetValue(watchCtrl:GetItemText(row))
+
+  local expressionSizer = wx.wxFlexGridSizer(2, 3, 0, 0)
+  expressionSizer:AddGrowableCol(1)
+  expressionSizer:Add(expressionStaticText, 0, wx.wxALL + wx.wxALIGN_RIGHT + wx.wxALIGN_CENTER_VERTICAL, 0)
+  expressionSizer:Add(expressionTextInput, 1, wx.wxALL + wx.wxGROW + wx.wxCENTER+ wx.wxALIGN_CENTER_VERTICAL, 0)
+  
+  -- Create break mode radiobox
+  local breakmodeRadioBox = wx.wxRadioBox(editWatchDialog, wx.wxID_ANY, TR("Break"), wx.wxDefaultPosition,
+      wx.wxDefaultSize, {TR("&Never"), TR("&Value Changed"), TR("&Expression True")}, 1, wx.wxRA_SPECIFY_COLS)
+    
+  -- Get the contents of the break mode column, this is quite horrible.
+  local currentBreakMode = getListCtrlValue(watchCtrl, row, 2)
+  if currentBreakMode == "Update" then
+    breakmodeRadioBox:SetStringSelection("Value Changed")
+  elseif currentBreakMode == "Condition" then
+    breakmodeRadioBox:SetStringSelection("Expression True")
+  end
+    
+  
+  local breakmodeSizer = wx.wxBoxSizer(wx.wxVERTICAL)
+  breakmodeSizer:Add(breakmodeRadioBox, 0, 0, 0)
+
+  -- Put it together.
+  local bottomSizer = wx.wxBoxSizer(wx.wxHORIZONTAL)
+  bottomSizer:Add(breakmodeSizer, 0, 0, 0)
+  bottomSizer:Add(1, 0, 1)
+  
+  local buttonOK = wx.wxButton(editWatchDialog, ID_BUTTON_OK, TR("OK"))
+  bottomSizer:Add(buttonOK, 0, wx.wxALL + wx.wxALIGN_RIGHT + wx.wxALIGN_BOTTOM, 0);
+  
+  local mainSizer = wx.wxBoxSizer(wx.wxVERTICAL)
+  mainSizer:Add(expressionSizer, 0, wx.wxALL + wx.wxGROW + wx.wxCENTER, 0)
+  mainSizer:Add(bottomSizer, 0, wx.wxALL + wx.wxEXPAND, 0)
+  editWatchDialog:SetSizer(mainSizer)
+
+  editWatchDialog:Connect(ID_BUTTON_OK, wx.wxEVT_COMMAND_BUTTON_CLICKED,
+    function()
+      local expression = expressionTextInput:GetValue()
+      local breakmodeSelection = breakmodeRadioBox:GetStringSelection()
+      local breakmode = "Never"
+      if breakmodeSelection == "Value Changed" then
+         breakmode = "Update"
+      elseif breakmodeSelection == "Expression True" then
+         breakmode = "Condition"
+      end
+      
+      watchCtrl:SetItem(row, 0, expression)
+      watchCtrl:SetItem(row, 2, breakmode)
+      editWatchDialog:Close()
+    end
+  )
+
+  editWatchDialog:Show(true)
+  return editWatchDialog
+end
+
 local function debuggerCreateWatchWindow()
   local watchCtrl = wx.wxListCtrl(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
@@ -794,8 +905,12 @@ local function debuggerCreateWatchWindow()
   watchCtrl:InsertColumn(0, info)
 
   info:SetText(TR("Value"))
-  info:SetWidth(width * 0.56)
+  info:SetWidth(width * 0.45)
   watchCtrl:InsertColumn(1, info)
+  
+  info:SetText(TR("Break"))
+  info:SetWidth(width * 0.23)
+  watchCtrl:InsertColumn(2, info)
 
   local watchMenu = wx.wxMenu{
     { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
@@ -818,18 +933,24 @@ local function debuggerCreateWatchWindow()
   local function addWatch()
     local row = watchCtrl:InsertItem(watchCtrl:GetItemCount(), TR("Expr"))
     watchCtrl:SetItem(row, 0, defaultExpr)
-    watchCtrl:SetItem(row, 1, TR("Value"))
-    watchCtrl:EditLabel(row)
+    watchCtrl:SetItem(row, 1, TR("nil"))
+    watchCtrl:SetItem(row, 2, TR("Never"))
+    debuggerCreateEditWatchDialog("Add Watch", watchCtrl, row)
   end
 
   local function editWatch()
     local row = findSelectedWatchItem()
-    if row >= 0 then watchCtrl:EditLabel(row) end
+    
+    if row >= 0 then
+      debuggerCreateEditWatchDialog("Add Watch", watchCtrl, row)
+    end
   end
 
   local function deleteWatch()
     local row = findSelectedWatchItem()
-    if row >= 0 then watchCtrl:DeleteItem(row) end
+    if row >= 0 then 
+      watchCtrl:DeleteItem(row)
+    end
   end
 
   watchCtrl:Connect(wx.wxEVT_CONTEXT_MENU,
@@ -928,6 +1049,7 @@ end
 
 function DebuggerStop()
   if (debugger.server) then
+    remote_watches = {} -- clear remote watch cache
     debugger.server = nil
     debugger.pid = nil
     SetAllEditorsReadOnly(false)
