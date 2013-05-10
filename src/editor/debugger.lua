@@ -781,26 +781,47 @@ function debuggerCreateStackWindow()
 end
 
 local function debuggerCreateWatchWindow()
-  local watchCtrl = wx.wxListCtrl(frame, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxDefaultSize,
-    wx.wxLC_REPORT + wx.wxLC_EDIT_LABELS)
+  local ID_BUTTON_ADDWATCH = 1
+  local ID_BUTTON_REMWATCH = 2
+  
+  local watchpanel = wx.wxPanel(ide.frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
+  local watchSizer = wx.wxBoxSizer(wx.wxVERTICAL)
+  local watchCtrl = wx.wxGrid(watchpanel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize( 150, 100 ) )
+  
+  watchCtrl:CreateGrid(0, 3)
+  watchCtrl:SetSelectionMode(wx.wxGrid.wxGridSelectRows)
+  
+  -- Set the column labels
+  watchCtrl:SetColLabelValue(0, "Expression")
+  watchCtrl:SetColLabelValue(1, "Value")
+  watchCtrl:SetColLabelValue(2, "Break?")
+  
+  -- Hide the row labels
+  watchCtrl:SetRowLabelSize(0)
+  
+  -- Make the second column read only
+  local cellAttr = wx.wxGridCellAttr()
+  cellAttr:SetReadOnly(true)
+  watchCtrl:SetColAttr(1, cellAttr)
+  
+  -- Turn the break column into checkbox format.
+  watchCtrl:SetColFormatBool(2)
 
   debugger.watchCtrl = watchCtrl
-
-  local info = wx.wxListItem()
-  info:SetMask(wx.wxLIST_MASK_TEXT + wx.wxLIST_MASK_WIDTH)
-  info:SetText(TR("Expression"))
-  info:SetWidth(width * 0.32)
-  watchCtrl:InsertColumn(0, info)
-
-  info:SetText(TR("Value"))
-  info:SetWidth(width * 0.56)
-  watchCtrl:InsertColumn(1, info)
-
-  local watchMenu = wx.wxMenu{
-    { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
-    { ID_EDITWATCH, TR("&Edit Watch")..KSC(ID_EDITWATCH) },
-    { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) }}
+  
+  -- Add grid to sizer
+  watchSizer:Add(watchCtrl, 0, wx.wxALL + wx.wxEXPAND, 0)
+  
+  -- Add buttons
+  local watchButtonSizer = wx.wxBoxSizer(wx.wxHORIZONTAL)
+  local buttonAddWatch = wx.wxButton(watchpanel, ID_BUTTON_ADDWATCH, TR("Add"))
+  local buttonRemWatch = wx.wxButton(watchpanel, ID_BUTTON_REMWATCH, TR("Remove"))
+  watchButtonSizer:Add(buttonAddWatch, 0, 0, 0)
+  watchButtonSizer:Add(buttonRemWatch, 0, 0, 0)
+  
+  watchSizer:Add(watchCtrl, 1, wx.wxALL + wx.wxEXPAND, 0)
+  watchSizer:Add(watchButtonSizer, 0, 0, 0)
+  watchpanel:SetSizer(watchSizer)
 
   local function findSelectedWatchItem()
     local count = watchCtrl:GetSelectedItemCount()
@@ -813,29 +834,20 @@ local function debuggerCreateWatchWindow()
     end
     return -1
   end
+  
 
   local defaultExpr = ""
   local function addWatch()
-    local row = watchCtrl:InsertItem(watchCtrl:GetItemCount(), TR("Expr"))
-    watchCtrl:SetItem(row, 0, defaultExpr)
-    watchCtrl:SetItem(row, 1, TR("Value"))
-    watchCtrl:EditLabel(row)
-  end
-
-  local function editWatch()
-    local row = findSelectedWatchItem()
-    if row >= 0 then watchCtrl:EditLabel(row) end
+    local row = watchCtrl:GetNumberRows()
+    watchCtrl:InsertRows(row, 1, true)
+    watchCtrl:SetCellValue(row, 0, defaultExpr)
+    watchCtrl:SetCellValue(row, 1, TR(""))
   end
 
   local function deleteWatch()
     local row = findSelectedWatchItem()
-    if row >= 0 then watchCtrl:DeleteItem(row) end
+    if row >= 0 then watchCtrl:DeleteRows(row, 1, true) end
   end
-
-  watchCtrl:Connect(wx.wxEVT_CONTEXT_MENU,
-    function (event)
-      watchCtrl:PopupMenu(watchMenu)
-    end)
 
   watchCtrl:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
@@ -847,16 +859,10 @@ local function debuggerCreateWatchWindow()
       event:Skip()
     end)
 
-  watchCtrl:Connect(ID_ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, addWatch)
+  watchpanel:Connect(ID_BUTTON_ADDWATCH, wx.wxEVT_COMMAND_BUTTON_CLICKED, addWatch)
+  watchpanel:Connect(ID_BUTTON_REMWATCH, wx.wxEVT_COMMAND_BUTTON_CLICKED, deleteWatch)
 
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, editWatch)
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_UPDATE_UI,
-    function (event) event:Enable(watchCtrl:GetSelectedItemCount() > 0) end)
-
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, deleteWatch)
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_UPDATE_UI,
-    function (event) event:Enable(watchCtrl:GetSelectedItemCount() > 0) end)
-
+    --[[
   watchCtrl:Connect(wx.wxEVT_COMMAND_LIST_END_LABEL_EDIT,
     function (event)
       local row = event:GetIndex()
@@ -870,12 +876,13 @@ local function debuggerCreateWatchWindow()
       end
       event:Skip()
     end)
+]]
 
   local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:AddPage(watchCtrl, TR("Watch"), true)
+  notebook:AddPage(watchpanel, TR("Watch"), true)
 
   local mgr = ide.frame.uimgr
   mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
