@@ -474,23 +474,12 @@ local function debug_hook(event, line)
     local vars, status, res
     if (watchescnt > 0) then
       vars = capture_vars()
-      for index, watch in pairs(watches) do
-        setfenv(watch.func, vars)
-        local ok, result = pcall(watch.func)
-        if ok then
-          local dobreak = false
-          if watch.breakmode == "true" then
-            dobreak = not not result
-          elseif watch.breakmode == "update" then
-            dobreak = (watch.last_value ~= result)
-            watch.last_value = result
-          end
-          
-          if dobreak then
-            status, res = coroutine.resume(coro_debugger, events.WATCH, vars, file, line, index)
-            -- don't break the loop, continue iterating over watches to make sure all last_value's
-            -- are updated properly
-          end
+      for index, value in pairs(watches) do
+        setfenv(value, vars)
+        local ok, fired = pcall(value)
+        if ok and fired then
+          status, res = coroutine.resume(coro_debugger, events.WATCH, vars, file, line, index)
+          break -- any one watch is enough; don't check multiple times
         end
       end
     end
@@ -555,7 +544,7 @@ local function debugger_loop(sev, svars, sfile, sline)
   local command
   local app, osname
   local eval_env = svars or {}
-  local emptyWatch = { func = function() return false end, breakmode = nil }
+  local function emptyWatch () return false end
   local loaded = {}
   for k in pairs(package.loaded) do loaded[k] = true end
 
@@ -677,35 +666,7 @@ local function debugger_loop(sev, svars, sfile, sline)
         if func then
           watchescnt = watchescnt + 1
           local newidx = #watches + 1
-          watches[newidx] = { func = func, breakmode = nil }
-          server:send("200 OK " .. newidx .. "\n") 
-        else
-          server:send("401 Error in Expression " .. #res .. "\n")
-          server:send(res)
-        end
-      else
-        server:send("400 Bad Request\n")
-      end
-    elseif command == "SETWB" then
-      local _, _, brk, exp = string.find(line, "^[A-Z]+%s+([unt])%s+(.+)%s*$")
-      if brk and exp then 
-        local func, res = loadstring("return(" .. exp .. ")")
-        
-        if brk == "u" then
-          -- break on value change
-          brk = "update"
-        elseif brk == "t" then
-          -- break on value true
-          brk = "true"
-        else 
-          -- never break
-          brk = nil
-        end
-        
-        if func then
-          watchescnt = watchescnt + 1
-          local newidx = #watches + 1
-          watches[newidx] = { func = func, breakmode = brk }
+          watches[newidx] = func
           server:send("200 OK " .. newidx .. "\n") 
         else
           server:send("401 Error in Expression " .. #res .. "\n")
@@ -726,15 +687,6 @@ local function debugger_loop(sev, svars, sfile, sline)
       end
     elseif command == "RUN" then
       server:send("200 OK\n")
-      
-      -- set all the last_value's for watches to the
-      -- default at program start
-      for _, watch in pairs(watches) do
-        local ok, result = pcall(watch.func)
-        if ok then
-          watch.last_value = result
-        end
-      end
 
       local ev, vars, file, line, idx_watch = coroutine.yield()
       eval_env = vars
@@ -1089,27 +1041,6 @@ local function handle(params, client, options)
     else
       print("Invalid command")
     end
-  elseif command == "setwb" then
-    local _, _, breakmode, exp = string.find(params, "^[a-z]+%s+([utn])%s+(.+)$")
-    if breakmode and exp then
-      client:send("SETWB " .. breakmode .. " " .. exp .. "\n")
-      local answer = client:receive()
-      local _, _, watch_idx = string.find(answer, "^200 OK (%d+)%s*$")
-      if watch_idx then
-        watches[watch_idx] = exp
-        print("Inserted watch exp no. " .. watch_idx)
-      else
-        local _, _, size = string.find(answer, "^401 Error in Expression (%d+)$")
-        if size then
-          local err = client:receive(tonumber(size)):gsub(".-:%d+:%s*","")
-          print("Error: watch expression not set: " .. err)
-        else
-          print("Error: watch expression not set")
-        end
-      end
-    else
-      print("Invalid command")
-    end
   elseif command == "delb" then
     _, _, _, file, line = string.find(params, "^([a-z]+)%s+(.-)%s+(%d+)%s*$")
     if file and line then
@@ -1334,7 +1265,6 @@ local function handle(params, client, options)
     print("delb <file> <line>    -- removes a breakpoint")
     print("delallb               -- removes all breakpoints")
     print("setw <exp>            -- adds a new watch expression")
-    print("setwb <u|t|n> <exp>   -- adds a new watch expression that breaks on (update|true|never)")
     print("delw <index>          -- removes the watch expression at index")
     print("delallw               -- removes all watch expressions")
     print("run                   -- runs until next breakpoint")
