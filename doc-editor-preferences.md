@@ -21,6 +21,10 @@ The values shown are the default values.
 - `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
 - `editor.autoactivate = true`: auto-activate files during debugging.
 - `editor.smartindent = true`: use smart indentation.
+- `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
+- `editor.checkeol = false`: turn off checking for mixed end-of-line encodings in loaded files.
+- `editor.foldcompact = true`: set compact fold that doesn't include empty lines after a block.
+- `editor.nomousezoom = true`: disable zoom with mouse wheel as it may be too sensitive.
 
 ## Output and Console
 

@@ -23,6 +23,7 @@ The values shown are the default values.
 
 - `debugger.verbose = false`: enable verbose output.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname.
+- `debugger.runonstart = true`: execute immediately after starting debugging.
 
 ## Auto-complete
 
@@ -31,3 +32,18 @@ The values shown are the default values.
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
 when set to `false` will collect all words from all open editor tabs and offer them as part of the auto-complete list.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
+
+## Interpreter Path
+
+These settings can be used to change the location of the executable file for different interpreters.
+In most cases you don't need to specify this as ZeroBrane Studio will check default locations for the executable, but in those cases when auto-detection fails, you can specify the path yourself.
+You can use this setting to specify an alternative interpreter you want to use (for example, LuaJIT instead of Lua interpreter).
+
+Note that the **full executable name** is expected, not a directory name. The values shown are examples, not default values.
+
+- `path.lua = 'd:/lua/lua'`: specify path to Lua interpreter.
+- `path.love2d = 'd:/lua/love/love'`: specify path to love2d executable.
+- `path.moai = 'd:/lua/moai/moai'`: specify path to Moai executable.
+- `path.gideros = 'd:/Program Files/Gideros/GiderosPlayer.exe'`: specify path to Gideros executable.
+- `path.corona = 'd:/path/to/Corona SDK/Corona Simulator.exe'`: specify path to Corona executable.
+- `path.gslshell = [[D:\Lua\gsl-shell\gsl-shell.exe]]`: specify path to GSL-shell executable.
