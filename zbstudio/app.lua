@@ -23,7 +23,7 @@ local app = {
 
   postinit = function ()
     local bundle = wx.wxIconBundle()
-    local files = FileSysGet("zbstudio/res/*.ico", wx.wxFILE)
+    local files = FileSysGetRecursive("zbstudio/res", false, "*.ico")
     local icons = 0
     for i,file in ipairs(files) do
       icons = icons + 1
@@ -58,6 +58,7 @@ local app = {
     statuswelcome = "Welcome to ZeroBrane Studio",
     settingsapp = "ZeroBraneStudio",
     settingsvendor = "ZeroBraneLLC",
+    logo = "res/zerobrane.png",
   },
 }
 

@@ -1,6 +1,6 @@
---[[-- Copy required content from this file to `user.lua`
+--[[-- This file shows examples of settings you can adjust.
 
-Configuration files are loaded in the following order:
+Configuration files with preferences are loaded in the following order:
 1. cfg/user.lua (system-wide configuration)
 2. HOME/.zbstudio/user.lua (per-user configuration)
 3. -cfg <lua code fragment|filename> (command line configuration)
@@ -47,7 +47,7 @@ path.lua = 'd:/lua/lua'
 path.gslshell = [[D:\Lua\gsl-shell\gsl-shell.exe]]
 
 -- to provide output filter for those engines that support redirecting
--- of "print" output to the IDE (like Corona SDK and Gideros)
+-- of "print" output to the IDE (like Corona SDK or Gideros)
 debugger.outputfilter = function(m) return #m < 124 and m or m:sub(1,120).."...\n" end
 
 -- to fix an issue with 0d0d0a line endings in MOAI examples,
@@ -117,8 +117,8 @@ load.specs(function(file) return file:find('spec[/\\]cpp%.lua$') end)
 
 -- to specify a default EOL encoding to be used for new files:
 -- `wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`;
--- `nil` means OS default: CRLF on Windows and OSX and LF on Linux/Unix.
--- CRLF as a default on OSX is a bug and is likely to change in future versions.
+-- `nil` means OS default: CRLF on Windows and LF on Linux/Unix and OSX.
+-- (OSX had CRLF as a default until v0.36, which fixed it).
 editor.defaulteol = wxstc.wxSTC_EOL_LF
 
 -- to turn off checking for mixed end-of-line encodings in loaded files
@@ -132,3 +132,6 @@ debugger.runonstart = true
 
 -- to set compact fold that doesn't include empty lines after a block
 editor.foldcompact = true
+
+-- to disable zoom with mouse wheel as it may be too sensitive on OSX
+editor.nomousezoom = true

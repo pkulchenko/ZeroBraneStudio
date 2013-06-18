@@ -24,9 +24,13 @@ BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib $FPIC"
 WXWIDGETS_BASENAME="wxWidgets"
 WXWIDGETS_URL="http://svn.wxwidgets.org/svn/wx/wxWidgets/trunk"
 
-LIBPNG_BASENAME="libpng-1.6.0"
+LIBPNG_BASENAME="libpng-1.6.2"
 LIBPNG_FILENAME="$LIBPNG_BASENAME.tar.gz"
-LIBPNG_URL="http://sourceforge.net/projects/libpng/files/libpng16/1.6.0/libpng-1.6.0.tar.gz/download"
+LIBPNG_URL="http://sourceforge.net/projects/libpng/files/libpng16/1.6.2/libpng-1.6.2.tar.gz/download"
+
+ZLIB_BASENAME="zlib-1.2.8"
+ZLIB_FILENAME="$ZLIB_BASENAME.tar.gz"
+ZLIB_URL="https://github.com/madler/zlib/archive/v1.2.8.tar.gz"
 
 LUA_BASENAME="lua-5.1.5"
 LUA_FILENAME="$LUA_BASENAME.tar.gz"
@@ -35,9 +39,9 @@ LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://wxlua.svn.sourceforge.net/svnroot/wxlua/trunk"
 
-LUASOCKET_BASENAME="luasocket-2.0.2"
-LUASOCKET_FILENAME="$LUASOCKET_BASENAME.tar.gz"
-LUASOCKET_URL="http://files.luaforge.net/releases/luasocket/luasocket/luasocket-2.0.2/$LUASOCKET_FILENAME"
+LUASOCKET_BASENAME="luasocket-2.0.3"
+LUASOCKET_FILENAME="$LUASOCKET_BASENAME-rc2.zip"
+LUASOCKET_URL="https://github.com/downloads/diegonehab/luasocket/$LUASOCKET_FILENAME"
 
 # exit if the command line is empty
 if [ $# -eq 0 ]; then
@@ -103,20 +107,30 @@ mkdir -p "$INSTALL_DIR" || { echo "Error: cannot create directory $INSTALL_DIR";
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
   # first build get/configure libpng as v1.6 is needed
-  wget -c "$LIBPNG_URL" -O "$LIBPNG_FILENAME" || { echo "Error: failed to download lbpng"; exit 1; }
+  wget -c "$LIBPNG_URL" -O "$LIBPNG_FILENAME" || { echo "Error: failed to download libpng"; exit 1; }
   tar -xzf "$LIBPNG_FILENAME"
   (cd "$LIBPNG_BASENAME"; ./configure --with-libpng-prefix=wxpng_; make $MAKEFLAGS)
+
+  wget -c "$ZLIB_URL" -O "$ZLIB_FILENAME" || { echo "Error: failed to download zlib"; exit 1; }
+  tar -xzf "$ZLIB_FILENAME"
+  (cd "$ZLIB_BASENAME"; ./configure; make $MAKEFLAGS)
 
   svn co "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to checkout wxWidgets"; exit 1; }
   # replace src/png with the libpng folder
   rm -rf "$WXWIDGETS_BASENAME/src/png"
   mv "$LIBPNG_BASENAME" "$WXWIDGETS_BASENAME/src/png"
 
+  # replace src/zlib with the zlib folder
+  rm -rf "$WXWIDGETS_BASENAME/src/zlib"
+  mv "$ZLIB_BASENAME" "$WXWIDGETS_BASENAME/src/zlib"
+
   cd "$WXWIDGETS_BASENAME"
   ./configure --prefix="$INSTALL_DIR" --disable-debug --disable-shared --enable-unicode \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
     --with-zlib=builtin --disable-richtext --with-gtk=2 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
+  # update gzio to gzlib as this has changed between zlib 1.2.3 to 1.2.8
+  sed -i 's/gzio.c/gzlib.c/' Makefile
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
   cd ..
@@ -157,8 +171,8 @@ fi
 
 # build LuaSocket
 if [ $BUILD_LUASOCKET ]; then
-  wget -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
-  tar -xzf "$LUASOCKET_FILENAME"
+  wget --no-check-certificate -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
+  unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/5.1/"{mime,socket}
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/5.1/mime/core.so" src/mime.c -llua \

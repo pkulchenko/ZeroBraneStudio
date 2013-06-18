@@ -1,18 +1,192 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Mar 29 2013)
+## Current master (June 17 2013)
 
 ### Highlights
-  - Added **Linux binaries with support for 32bit and 64bit systems**.
-  - Added **multiple selection and multi-cursor editing**.
+  - Added source code debugging (to support LuaJava and other engines).
+  - Added scope-aware global/local/masked/masking variable highlighting.
+  - Added 'Go To Definition' and 'Rename All Instances'.
+  - Added package/plugin API.
+  - Added Retina display support (can be enabled with `hidpi` option).
+  - Improved auto-complete API with inheritance and table index support.
+
+### Special thanks
+  - To George Pimm for line of code navigation in the Stack Window.
+  - To Fringale for updated French translation.
+
+### Improvements
+  - Added inheritance support for auto-complete API.
+  - Added package onEditor* events (closes #166).
+  - Added package onInterpreterLoad/onInterpreterClose events (ref #166).
+  - Added package onProjectLoad/onProjectClose events (ref #166).
+  - Added package onMenu* events (ref #166).
+  - Added package onRegister/onUnRegister events (ref #166).
+  - Added 'Show Location' to the Project/Filetree menu.
+  - Added `hidpi` option to enable HiDPI/Retina display support (closes #160).
+  - Added breakpoint support for unnamed code fragments.
+  - Added support for debugging (stepping through) unnamed code fragments.
+  - Added LuaSec to win32 build script.
+  - Added package/plugin processing.
+  - Added support for 'silent' execution of shell commands in markup.
+  - Added `Find Next/Previous` over selected variable instances (ref #163).
+  - Added `debugger.allowediting` option to allow editing while debugging.
+  - Added skiping binary files during file search (ref #162).
+  - Added yield to update search results during file search (ref #162).
+  - Added showing default extensions in the file search (ref #162).
+  - Added support for multiple file extensions in the file search (ref #162).
+  - Added saving folder to search files in (ref #162).
+  - Added selecting all instances with a double-click on a variable.
+  - Added `autoanalizer` option for dynamic static analysis.
+  - Added 'Go To Definition' and 'Rename All Instances'.
+  - Added initial support for indicating local/global variables.
+  - Added showing tooltip in any position over a term and showing 'values' (ref #101).
+  - Added disabling tooltip when context menu is shown.
+  - Added 'fixing' path returned by wxDirDialog; may be incorrect in 2.9.x.
+  - Added constant initialization missing on ArchLinux with wxlua 2.8.12.2 (fixes #155; ref #128).
+  - Added support for table valuetypes in auto-complete for `foo[index]:` (ref #101).
+  - Added navigation to the line of code in the Stack Window (thanks to George Pimm; closes #134).
+  - Added `Show Location` to the editor tab menu.
+  - Added support for absolute filenames in Markdown links.
+  - Allowed tab width and indentation to be set independently.
+  - Allowed closing editor tabs while debugger is running.
+  - Disabled showing tooltip when the app is in the background (fixes #158).
+  - Disabled 'value' tooltip over variables that match known function names (ref #101).
+  - Improved error reporting in interpreters on failures to copy the debugger.
+  - Improved focus on the debugger when a breakpoint hits on OSX (fixes #141).
+  - Removed sorting in the Stack view to keep the order of table elements.
+  - Updated Stack view navigation to use clicked on instead of active item.
+  - Updated Gideros API/auto-complete reference.
+  - Updated markup to allow opening files from new buffers ('untitled').
+  - Updated build scripts to use luasocket 2.0.3.
+  - Updated linux build files to use latest zlib/libpng to fix png load on Gentoo.
+  - Updated 'Find in Files' to start in the project folder by default.
+  - Updated French translation with latest string changes (mostly for find/replace dialogs).
+  - Updated Marmalade Quick auto-complete API to use class inheritance.
+  - Updated Gideros auto-complete API to use class inheritance.
+  - Upgraded Mobdebug to 0.534 for debugging of source code fragments.
+
+### Fixes
+    Fixed missing numerical keys in serialized tables (upgraded Mobdebug to 0.535).
+    Fixed styling of markup that can be affected by folded lines.
+    Fixed value selection with multiple active selections.
+    Fixed style compatibility with wxwidgets 2.8 (ref #128).
+    Fixed error reporting by (internal) file operations.
+    Fixed styling comments that start with markup symbols.
+    Fixed restoring a session with one of the files deleted on disk (fixes #161).
+    Fixed reporting variable instances for comment/string fragments.
+    Fixed 'Rename Instances' to always reset previous selection.
+    Fixed auto-complete error for '%dddd' strings (fixes #156).
+    Fixed an issue with showing filenames that include '"?*:<>' on OSX/Linux.
+    Fixed current line marker being shown using 'Run as Scratchpad' with 'runonstart' option.
+    Fixed looping in auto-complete (fixes #151).
+    Fixed incorrect localization that led to an error in 'Save' from tab menu.
+
+## v0.37 (May 09 2013)
+
+### Highlights
+  - Added Marmalade Quick auto-complete support and API documentation.
+  - Added full Marmalade Quick debugging support (requires Quick 1.1+).
+  - Improved Find/Replace behavior and functionality.
+  - Added Recent File history navigation.
+  - Added Preferences menu to simplify access to system/user settings.
+
+### Special thanks
+  - To Samuel Dionne-Riel for wxwidgets 2.8 compatibility updates.
+  - To Mat Hopwood for assistance with Marmalade Quick integration.
+
+### Improvements
+  - Added Preferences menu to simplify access to system/user settings.
+  - Added Russian translation for Find/Replace dialog and (ref #70).
+  - Added Russian translation for the Preferences menu (ref #70).
+  - Added 'shaking' Find/Replace window when text is not found (closes #146).
+  - Added 'wlua' to the list of recognized Lua extensions.
+  - Added disabling Recent Files menu if the list is empty.
+  - Added TomorrowContrast color scheme (thanks to Sergey Lerg).
+  - Added detaching a child process to avoid crash when exiting during debugging.
+  - Added Recent File history navigation (closes #66).
+  - Added Marmalade auto-complete support and API documentation.
+  - Added processing of `runonstart` when using remote debugging (closes #138).
+  - Added suggesting proper extension after 'Save/Save As' based on current spec.
+  - Added translation setup for Find/Replace dialog (closes #133).
+  - Added `nomousezoom` option to disable zoom with mouse wheel in the editor.
+  - Added selecting text and Cmd-F shortcut in Find dialog on OSX (ref #127).
+  - Improved file activation when debugging is started (closes #137).
+  - Reduced the minimum size of the Output/Console panel.
+  - Refactored Recent Files history to make it faster and simpler.
+  - Refactored and optimized directory scanning when loading IDE files.
+  - Separated settings for function dropdown and project tree fonts (fixes #148).
+  - Updated documentation about default EOL on OSX (ref #102).
+  - Updated highlighting in Watch windows to not use editor styles.
+  - Updated documentation for user settings (ref #113, #55).
+  - Updated Monokai color scheme to fix current line color.
+
+### Incompatibilities
+  - (dev) `FileSysGet` has been replaced with `FileSysGetRecursive` with a different signature.
+
+### Fixes
+  - Fixed hiding all panels when switching to Full Screen mode.
+  - Fixed loading a non-existing file.
+  - Fixed activation of non-existing files/folders in the Project tree.
+  - Fixed search results for lines without newline.
+  - Fixed Find/Replace in folders with Unicode names (fixes #147); improved performance.
+  - Fixed Un/Comment commands executed for empty lines.
+  - Fixed fold/unfold for files starting with block/comment.
+  - Fixed history after activating non-existing file in Recent Files.
+  - Fixed scrolling to restored cursor position on OSX (when `usewrap` = false).
+  - Fixed Find/Replace dialog to take Enter on OSX (fixes #140).
+  - Fixed 'breaking' after executing OUT command that never reaches the target level.
+  - Fixed stopping at a breakpoint at the initial line when `startwith` option is specified.
+  - Fixed activation of a file loaded into active tab.
+  - Fixed incorrect tab activation on OSX after using 'Open File'.
+  - Fixed editor activation when file is loaded into an existing tab.
+  - Fixed an error after opening non-existing file from 'Recent Files'.
+  - Fixed blocking on reading app output without processing other events.
+  - Fixed an issue with duplicate lines shown in the editor.
+  - Fixed 'Replace All' to take 'Wrap Around' into account (fixes #132).
+  - Fixed off-by-one error in searching consecutive matches.
+  - Fixed 'Quick Find' not working without current selection (fixes #131).
+  - Fixed looping in auto-complete on mistyped class (fixes #130).
+  - Fixed compatibility with wx2.8 (thanks to Samuel Dionne-Riel; closes #128).
+  - Fixed replacement logic in Find/Replace that could replace selected fragment (ref #127).
+  - Fixed an error caused by allowing multiple Search/Replace windows (fixes #127).
+
+## v0.361 (Apr 12 2013)
+
+### Improvements
+  - Added handling of Ctrl-Home and Ctrl-End on OSX (ref #89).
+  - Added line copy/cut for Ctrl-C/Ctrl-X with no selection.
+  - Updated About screen to be more configurable and flexible.
+  - Updated Russian translation (thanks to toiffel).
+
+### Fixes
+  - Fixed launch command for Corona debugging on Windows.
+  - Fixed 'control' check on OSX that changed with wx2.9.2+ (ref #89).
+  - Fixed wrong tab activated on OSX after using New file in some cases.
+  - Fixed cursor not being visible in some cases after file is loaded (ref #116).
+
+## v0.36 (Apr 08 2013)
+
+### Highlights
+  - Added 32bit and 64bit **Linux binaries**.
   - Enabled **full debugging for Corona on OSX**.
-  - Made Stack and Watch windows dockable.
+  - Improved **debugger performance**.
+  - Improved **performance of tab and project switching**.
+  - Added **multiple selection and multi-cursor editing**.
+  - Made Stack and Watch windows dockable and toggleable.
 
 ### Special thanks
   - To toiffel for build improvements and continuous work on wxwidgets 2.9 and Linux support.
   - To Marcel van Herk for testing and feedback on Stack and Watch windows behavior.
+  - To Leo Bartoloni for Italian translation update.
+  - To Fringale for updated French translation.
+  - To neomantra for adding cdata processing in the serializer.
 
 ### Improvements
+  - Added handling of case-insensitive filenames on OSX.
+  - Added cdata processing (thanks to neomantra).
+  - Added universal binaries for luasocket on OSX to allow debugging of 64bit applications (for example, LuaJIT) on OSX.
+  - Added update of Stack and Watch windows after 'Debugging suspended' message.
+  - Added toggling for View menu items.
   - Added auto-show/hide Stack and Watch windows during debugging (closes #110).
   - Added ignoring `-psn...` parameter on OSX when reading file names from command line.
   - Added migration of configuration file on Windows (helps #89).
@@ -23,7 +197,9 @@
   - Added centering of current line during debugging.
   - Added multiple selection and multi-cursor editing (wx2.9.5+).
   - Added dll proxy to make LfW libraries to work with the IDE.
+  - Disabled showing 'value' in auto-complete after 'a:' (helps #101).
   - Enabled full debugging for Corona on OSX.
+  - Improved debugging performance.
   - Improved performance of tab switching and project tree population.
   - Improved handling of upvalues with __tostring method in the Stack window.
   - Increased default font size for OSX; set 'Monaco' as default font (helps #89).
@@ -33,6 +209,11 @@
   - Removed binary libraries not currently used.
   - Set 'Courier New' as the default font on Linux (ref #89).
   - Switched to 'native' menu on OSX and added 24x24 icons required (helps #89).
+  - Updated Italian translation (thanks to Leo Bartoloni)
+  - Updated 'method' type in auto-complete to only allow a:b syntax (closes #101).
+  - Updated language files (es, it, ru) with new messages (ref #70).
+  - Updated French translation with latest string changes, fixed a few typos (thanks to Fringale).
+  - Updated Stack and Watch window to not refresh when not visible.
   - Upgraded Mobdebug (0.5222) to add serialization with metamethods and notification on incomplete output (closes #109).
   - Updated error messages from loading configuration files.
   - Updated Linux binaries to use libpng 1.6 with wxwidgets (helps #89).
@@ -46,8 +227,19 @@
 
 ### Incompatibilities
   - Configuration file (.ini) location has changed on Windows. The current file will be copied to the new location.
+  - The debugger now stops on the next executable line after `.start()` call.
 
 ### Fixes
+  - Fixed activating files in the project tree on a case insensitive system.
+  - Fixed the Stack view being partially hidden when the root item is too wide (ref #110).
+  - Fixed left side of the project panel being hidden when a file is activated (fixes #122).
+  - Fixed breakpoint not firing on the first executable line in debugging (helps #121).
+  - Fixed terminating debugging of an empty script.
+  - Fixed reporting of initial line during debugging.
+  - Fixed editor tab activation after closing another tab on Linux (ref #89).
+  - Fixed 'Show tooltip' shortcut not working on Linux (fixes #118; ref #89).
+  - Fixed cursor position being incorrectly restored (fixes #116; ref #89).
+  - Fixed a warning about empty project directory in local console.
   - Fixed an issue with Enter used to select an item in project dropdown (ref #89).
   - Fixed an issue with the Project tree when project and app directories are the same.
   - Fixed debugger output not being suppressed on Linux and using wlua.

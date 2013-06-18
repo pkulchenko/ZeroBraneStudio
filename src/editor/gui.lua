@@ -5,7 +5,7 @@ local ide = ide
 
 -- Pick some reasonable fixed width fonts to use for the editor
 local function setFont(style, config)
-  return wx.wxFont(config.fontsize or size or 10, wx.wxFONTFAMILY_MODERN, style,
+  return wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, style,
     wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
     config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 end
@@ -16,16 +16,24 @@ ide.font.oNormal = setFont(wx.wxFONTSTYLE_NORMAL, ide.config.outputshell)
 ide.font.oItalic = setFont(wx.wxFONTSTYLE_ITALIC, ide.config.outputshell)
 
 -- treeCtrl font requires slightly different handling
-local gui, config = wx.wxTreeCtrl():GetFont(), ide.config.filetree
-if config.fontsize then gui:SetPointSize(config.fontsize) end
-if config.fontname then gui:SetFaceName(config.fontname) end
-ide.font.fNormal = gui
+do local gui, config = wx.wxTreeCtrl():GetFont(), ide.config.filetree
+  if config.fontsize then gui:SetPointSize(config.fontsize) end
+  if config.fontname then gui:SetFaceName(config.fontname) end
+  ide.font.fNormal = gui
+end
+
+-- funcList font requires similar handling
+do local gui, config = wx.wxTreeCtrl():GetFont(), ide.config.funclist
+  if config.fontsize then gui:SetPointSize(config.fontsize) end
+  if config.fontname then gui:SetFaceName(config.fontname) end
+  ide.font.dNormal = gui
+end
 
 -- ----------------------------------------------------------------------------
 -- Create the wxFrame
 -- ----------------------------------------------------------------------------
 local function createFrame()
-  frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, GetIDEString("editor"),
+  local frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, GetIDEString("editor"),
     wx.wxDefaultPosition, wx.wxSize(1000, 700))
   -- wrap into protected call as DragAcceptFiles fails on MacOS with
   -- wxwidgets 2.8.12 even though it should work according to change notes
@@ -113,11 +121,23 @@ local function createNotebook(frame)
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
-      -- if there is no document yet, the editor tab was just added,
-      -- so no changes needed as there will be a proper later call
       local ed = GetEditor(notebook:GetSelection())
       local doc = ed and ed:GetId() and ide.openDocuments[ed:GetId()]
-      if doc then SetEditorSelection(notebook:GetSelection()) end
+
+      -- skip activation when any of the following is true:
+      -- (1) there is no document yet, the editor tab was just added,
+      -- so no changes needed as there will be a proper later call;
+      -- (2) the page change event was triggered after a tab is closed;
+      -- (3) on OSX from AddPage event when changing from the last tab
+      -- (this is to work around a duplicate event generated in this case
+      -- that first activates the added tab and then some other tab (2.9.5)).
+
+      local double = (ide.osname == 'Macintosh'
+        and event:GetOldSelection() == notebook:GetPageCount()
+        and debug:traceback():find("'AddPage'"))
+
+      if doc and event:GetOldSelection() ~= -1 and not double then
+        SetEditorSelection(notebook:GetSelection()) end
     end)
 
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
@@ -152,6 +172,11 @@ local function createNotebook(frame)
       menu:AppendSeparator()
       menu:Append(ID_SAVE, TR("&Save"))
       menu:Append(ID_SAVEAS, TR("Save &As..."))
+      menu:AppendSeparator()
+      menu:Append(ID_SHOWLOCATION, TR("Show Location"))
+
+      PackageEventHandle("onMenuEditorTab", menu, notebook, event)
+
       notebook:PopupMenu(menu)
     end)
 
@@ -160,7 +185,7 @@ local function createNotebook(frame)
 
   notebook:Connect(ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, function ()
       local editor = GetEditor(selection)
-      SaveFile(editor, openDocuments[editor:GetId()].filePath)
+      SaveFile(editor, ide.openDocuments[editor:GetId()].filePath)
     end)
   notebook:Connect(ID_SAVE, wx.wxEVT_UPDATE_UI, IfModified)
   notebook:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
@@ -181,6 +206,10 @@ local function createNotebook(frame)
   notebook:Connect(ID_CLOSEOTHER, wx.wxEVT_UPDATE_UI, function (event)
       event:Enable(notebook:GetPageCount() > 1)
     end)
+  notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ShowLocation(ide:GetDocument(GetEditor(selection)):GetFilePath())
+    end)
+  notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
   frame.notebook = notebook
   return notebook
@@ -239,7 +268,7 @@ do
               CloseButton(true):MaximizeButton(false):PinButton(true))
   mgr:AddPane(frame.bottomnotebook, wxaui.wxAuiPaneInfo():
               Name("bottomnotebook"):
-              MinSize(200,200):FloatingSize(400,250):
+              MinSize(100,100):BestSize(200,200):FloatingSize(400,200):
               Bottom():Layer(1):Position(1):
               CloseButton(true):MaximizeButton(false):PinButton(true))
 

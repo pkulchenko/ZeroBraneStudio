@@ -25,7 +25,14 @@ local editMenu = wx.wxMenu{
   { },
   { ID_FOLD, TR("&Fold/Unfold All")..KSC(ID_FOLD), TR("Fold or unfold all code folds") },
   { ID_CLEARDYNAMICWORDS, TR("Clear &Dynamic Words")..KSC(ID_CLEARDYNAMICWORDS), TR("Resets the dynamic word list for autocompletion") },
+  { },
 }
+
+local preferencesMenu = wx.wxMenu{
+  {ID_PREFERENCESSYSTEM, TR("Settings: System")..KSC(ID_PREFERENCESSYSTEM)},
+  {ID_PREFERENCESUSER, TR("Settings: User")..KSC(ID_PREFERENCESUSER)},
+}
+editMenu:Append(ID_PREFERENCES, TR("Preferences"), preferencesMenu)
 menuBar:Append(editMenu, TR("&Edit"))
 
 editMenu:Check(ID_AUTOCOMPLETEENABLE, ide.config.autocomplete)
@@ -47,12 +54,11 @@ function OnUpdateUIEditMenu(event)
   if editor == nil then event:Enable(false); return end
 
   local alwaysOn = { [ID_SELECTALL] = true, [ID_FOLD] = true,
+    -- allow Cut and Copy commands as these work on a line if no selection
+    [ID_COPY] = true, [ID_CUT] = true,
     [ID_COMMENT] = true, [ID_AUTOCOMPLETE] = true}
   local menu_id = event:GetId()
   local enable =
-    ((menu_id == ID_COPY or menu_id == ID_CUT) and
-     (editor:GetClassInfo():GetClassName() ~= 'wxStyledTextCtrl'
-      or editor:GetSelectionStart() ~= editor:GetSelectionEnd())) or
     menu_id == ID_PASTE and editor:CanPaste() or
     menu_id == ID_UNDO and editor:CanUndo() or
     menu_id == ID_REDO and editor:CanRedo() or
@@ -74,8 +80,12 @@ function OnEditMenu(event)
     then event:Skip(); return end
 
   local menu_id = event:GetId()
-  if menu_id == ID_CUT then editor:Cut()
-  elseif menu_id == ID_COPY then editor:Copy()
+  if menu_id == ID_CUT then
+    if editor:GetSelectionStart() == editor:GetSelectionEnd()
+      then editor:LineCut() else editor:Cut() end
+  elseif menu_id == ID_COPY then
+    if editor:GetSelectionStart() == editor:GetSelectionEnd()
+      then editor:LineCopy() else editor:Copy() end
   elseif menu_id == ID_PASTE then editor:Paste()
   elseif menu_id == ID_SELECTALL then editor:SelectAll()
   elseif menu_id == ID_UNDO then editor:Undo()
@@ -87,6 +97,32 @@ for _, event in pairs({ID_CUT, ID_COPY, ID_PASTE, ID_SELECTALL, ID_UNDO, ID_REDO
   frame:Connect(event, wx.wxEVT_COMMAND_MENU_SELECTED, OnEditMenu)
   frame:Connect(event, wx.wxEVT_UPDATE_UI, OnUpdateUIEditMenu)
 end
+
+local function generateConfigMessage(type)
+  return ([==[--[[--
+  Use this file to specify %s preferences.
+  Review [examples](+%s) or check [online documentation](%s) for details.
+--]]--
+]==])
+    :format(type, MergeFullPath(ide.editorFilename, "../cfg/user-sample.lua"),
+      "http://studio.zerobrane.com/documentation.html")
+end
+
+frame:Connect(ID_PREFERENCESSYSTEM, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    local editor = LoadFile(ide.configs.system)
+    if editor and #editor:GetText() == 0 then
+      editor:AddText(generateConfigMessage("System")) end
+  end)
+
+frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    local editor = LoadFile(ide.configs.user)
+    if editor and #editor:GetText() == 0 then
+      editor:AddText(generateConfigMessage("User")) end
+  end)
+frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_UPDATE_UI,
+  function (event) event:Enable(ide.configs.user ~= nil) end)
 
 frame:Connect(ID_CLEARDYNAMICWORDS, wx.wxEVT_COMMAND_MENU_SELECTED,
   function () DynamicWordsReset() end)
@@ -126,9 +162,9 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     end
     local lc = editor.spec.linecomment
     for line in string.gmatch(editor:GetSelectedText()..'\n', "(.-)\r?\n") do
-      if string.sub(line,1,2) == lc then
-        line = string.sub(line,3)
-      else
+      if string.sub(line,1,#lc) == lc then
+        line = string.sub(line,#lc+1)
+      elseif #line > 0 then
         line = lc..line
       end
       table.insert(buf, line)

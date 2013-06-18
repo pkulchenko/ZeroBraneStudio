@@ -5,8 +5,8 @@
 -- Generate a unique new wxWindowID
 local ID_IDCOUNTER = wx.wxID_HIGHEST + 1
 function NewID()
-	ID_IDCOUNTER = ID_IDCOUNTER + 1
-	return ID_IDCOUNTER
+  ID_IDCOUNTER = ID_IDCOUNTER + 1
+  return ID_IDCOUNTER
 end
 
 -- File menu
@@ -15,10 +15,13 @@ ID_OPEN             = wx.wxID_OPEN
 ID_CLOSE            = NewID()
 ID_CLOSEALL         = NewID()
 ID_CLOSEOTHER       = NewID()
+ID_SHOWLOCATION     = NewID()
 ID_SAVE             = wx.wxID_SAVE
 ID_SAVEAS           = wx.wxID_SAVEAS
 ID_SAVEALL          = NewID()
 ID_RECENTFILES      = NewID()
+ID_RECENTFILESPREV  = NewID()
+ID_RECENTFILESNEXT  = NewID()
 ID_EXIT             = wx.wxID_EXIT
 -- Edit menu
 ID_CUT              = wx.wxID_CUT
@@ -33,6 +36,11 @@ ID_AUTOCOMPLETEENABLE = NewID()
 ID_COMMENT          = NewID()
 ID_FOLD             = NewID()
 ID_CLEARDYNAMICWORDS = NewID()
+-- don't use wx.wxID_PREFERENCES to avoid merging with OSX app menu, because
+-- Apple guidelines describe Preferences as a "normal" item without submenus.
+ID_PREFERENCES      = NewID()
+ID_PREFERENCESSYSTEM = NewID()
+ID_PREFERENCESUSER  = NewID()
 -- Search menu
 ID_FIND             = wx.wxID_FIND
 ID_FINDNEXT         = NewID()
@@ -75,6 +83,8 @@ ID_ADDWATCH         = NewID()
 ID_EDITWATCH        = NewID()
 ID_DELETEWATCH      = NewID()
 -- Editor popup menu items
+ID_GOTODEFINITION   = NewID()
+ID_RENAMEALLINSTANCES = NewID()
 ID_QUICKADDWATCH    = NewID()
 ID_QUICKEVAL        = NewID()
 ID_ADDTOSCRATCHPAD  = NewID()

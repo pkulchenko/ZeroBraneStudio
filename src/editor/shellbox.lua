@@ -17,8 +17,8 @@ local MESSAGE_MARKER = StylesGetMarker("message")
 
 out:SetFont(ide.font.oNormal)
 out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
+out:SetBufferedDraw(not ide.config.hidpi and true or false)
 out:StyleClearAll()
-out:SetBufferedDraw(true)
 
 out:SetTabWidth(ide.config.editor.tabwidth or 2)
 out:SetIndent(ide.config.editor.tabwidth or 2)
@@ -264,6 +264,7 @@ local function executeShellCode(tx)
 
   local addedret, forceexpression = true, tx:match("^%s*=%s*")
   tx = tx:gsub("^%s*=%s*","")
+  local fn
   fn, err = loadstring("return "..tx)
   if not forceexpression and err and
      (err:find("'?<eof>'? expected near '") or
@@ -331,6 +332,7 @@ function ShellExecuteFile(wfilename)
   ShellExecuteCode(cmd)
 end
 
+ShellExecuteInline = executeShellCode
 function ShellExecuteCode(code)
   local index = bottomnotebook:GetPageIndex(bottomnotebook.shellbox)
   if ide.config.activateoutput and bottomnotebook:GetSelection() ~= index then

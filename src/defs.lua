@@ -105,6 +105,7 @@ config = {
                      -- also report mixed eol encodings
     defaulteol = nil, -- default line-endings for new files; valid values are
                       -- wxstc.wxSTC_EOL_CRLF, wxstc.wxSTC_EOL_LF and nil (OS default)
+    nomousezoom = nil, -- disable zooming using mouse wheel
   },
 
   default = {
@@ -140,6 +141,7 @@ config = {
   interpreter = "luadeb", -- the default "project" lua interpreter
 
   autocomplete = true, -- whether autocomplete is on by default
+  autoanalizer = true, -- whether auto syntax analizer is on by default
 
   acandtip = {
     shorttip = false,   -- tooltips are compact during typing
@@ -167,6 +169,7 @@ config = {
   allowinteractivescript = false, -- allow interaction in the output window
   projectautoopen = false, -- allow auto open/close files on a project switch
   autorecoverinactivity = nil, -- period of inactivity (s) for autorecover
+  hidpi = false, -- HiDPI/Retina display support
 }
 
 -- application engine

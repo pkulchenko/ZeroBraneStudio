@@ -16,6 +16,7 @@ local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 errorlog:Show(true)
 errorlog:SetFont(ide.font.oNormal)
 errorlog:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
+errorlog:SetBufferedDraw(not ide.config.hidpi and true or false)
 errorlog:StyleClearAll()
 errorlog:SetMarginWidth(1, 16) -- marker margin
 errorlog:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL);
@@ -60,9 +61,15 @@ local streamouts = {}
 local customprocs = {}
 local textout = '' -- this is a buffer for any text sent to external scripts
 
+function DetachChildProcess()
+  for _, custom in pairs(customprocs) do
+    if (custom and custom.proc) then custom.proc:Detach() end
+  end
+end
+
 function CommandLineRunning(uid)
   for pid,custom in pairs(customprocs) do
-    if (custom.uid == uid and custom.proc and custom.proc.Exists(tonumber(tostring(pid))) )then
+    if (custom.uid == uid and custom.proc and custom.proc.Exists(tonumber(tostring(pid)))) then
       return true
     end
   end
@@ -203,11 +210,17 @@ local function updateInputMarker()
   inputBound = #getInputText()
 end
 
+local readonce = 4096
+local maxread = readonce * 10 -- maximum number of bytes to read before pausing
 local function getStreams()
   local function readStream(tab)
     for _,v in pairs(tab) do
-      while(v.stream:CanRead()) do
-        local str = v.stream:Read(4096)
+      -- periodically stop reading to get a chance to process other events
+      local processed = 0
+      while (v.stream:CanRead() and processed <= maxread) do
+        local str = v.stream:Read(readonce)
+        processed = processed + #str
+
         local pfn
         if (v.callback) then
           str,pfn = v.callback(str)

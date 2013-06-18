@@ -1,3 +1,4 @@
+-- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 ----------
@@ -12,7 +13,7 @@
 -- i italic - boolean
 -- fill fill to end - boolean
 -- fn font Face Name - string ("Lucida Console")
--- fx font size - number (11)
+-- fs font size - number (11)
 -- hs turn hotspot on - true or {r,g,b} 0-255
 -- v visibility for symbols of the current style - boolean
 
@@ -53,8 +54,9 @@ function StylesGetDefault()
     fold = {fg = {90, 90, 80}, bg = {250, 250, 250}},
     whitespace = nil,
 
-    fncall = {fg = {128, 128, 255},
-      st = ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT},
+    -- deprecated; allowed for backward compatibility in case someone does
+    -- fncall.fg = {...}
+    fncall = {},
 
     -- markup
     ['|'] = {fg = {127, 0, 127}},
@@ -69,7 +71,16 @@ function StylesGetDefault()
       output = {},
       prompt = {},
       error = {},
-    }
+    },
+
+    -- indicators
+    indicator = {
+      fncall = {},
+      varlocal = {},
+      varglobal = {},
+      varmasking = {},
+      varmasked = {},
+    },
   }
 end
 
@@ -103,6 +114,8 @@ local specialmapping = {
     else
       editor:SetSelBackground(0,wx.wxWHITE)
     end
+    -- set alpha for additional selecton: 0 - transparent, 255 - opaque
+    if ide.wxver >= "2.9.5" then editor:SetAdditionalSelAlpha(127) end
   end,
 
   caret = function(editor,style)
@@ -248,8 +261,24 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   end
 
   do
-    editor:IndicatorSetStyle(0,styles.fncall and styles.fncall.st or wxstc.wxSTC_INDIC_BOX)
-    editor:IndicatorSetForeground(0,wx.wxColour(unpack(styles.fncall and styles.fncall.fg or {128,128,128})))
+    local defaultfg = styles.text and styles.text.fg or {127,127,127}
+    local indic = styles.indicator or {}
+
+    -- use styles.fncall if not empty and if indic.fncall is empty
+    -- for backward compatibility
+    if type(styles.fncall) == 'table' and next(styles.fncall)
+    and not (type(indic.fncall) == 'table' and next(indic.fncall)) then indic.fncall = styles.fncall end
+
+    editor:IndicatorSetStyle(0, indic.fncall and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(0, wx.wxColour(unpack(indic.fncall and indic.fncall.fg or {128, 128, 255})))
+    editor:IndicatorSetStyle(1, indic.varlocal and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(1, wx.wxColour(unpack(indic.varlocal and indic.varlocal.fg or defaultfg)))
+    editor:IndicatorSetStyle(2, indic.varglobal and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
+    editor:IndicatorSetForeground(2, wx.wxColour(unpack(indic.varglobal and indic.varglobal.fg or defaultfg)))
+    editor:IndicatorSetStyle(3, indic.varmasking and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)
+    editor:IndicatorSetForeground(3, wx.wxColour(unpack(indic.varmasking and indic.varmasking.fg or defaultfg)))
+    editor:IndicatorSetStyle(4, indic.varmasked and indic.varmasked.st or wxstc.wxSTC_INDIC_STRIKE)
+    editor:IndicatorSetForeground(4, wx.wxColour(unpack(indic.varmasked and indic.varmasked.fg or defaultfg)))
   end
 end
 

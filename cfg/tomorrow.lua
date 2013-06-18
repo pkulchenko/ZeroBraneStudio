@@ -37,6 +37,20 @@ local colors = {
     Blue        = H'4271ae',
     Purple      = H'8959a8',
   },
+  TomorrowContrast = { -- contributed by Sergey Lerg
+    Background  = H'f7f7f7',
+    CurrentLine = H'efefef',
+    Selection   = H'd6d6d6',
+    Foreground  = H'202020',
+    Comment     = H'8e908c',
+    Red         = H'4669ff', --numbers
+    Orange      = H'f5871f',
+    Yellow      = H'eab700',
+    Green       = H'108010', --strings
+    Aqua        = H'4060b0', --built in functions
+    Blue        = H'101080', --keywords
+    Purple      = H'a01090',
+  },
   TomorrowNight = {
     Background  = H'1d1f21',
     CurrentLine = H'282a2e',
@@ -109,7 +123,7 @@ local colors = {
   },
   Monokai = {
     Background  = H'272822',
-    CurrentLine = H'49483E',
+    CurrentLine = H'2D2F29',
     Selection   = H'49483E',
     Foreground  = H'F8F8F2',
     Comment     = H'75715E',
@@ -182,15 +196,15 @@ return {
   -- wxstc.wxSTC_LUA_NUMBER
   number = {fg = C.Red},
 
-  -- wxstc.wxSTC_LUA_WORD, wxstc.wxSTC_LUA_WORD#
+  -- wxstc.wxSTC_LUA_WORD, wxstc.wxSTC_LUA_WORD2-8
   keywords0 = {fg = C.Blue, b = true},
   keywords1 = {fg = C.Aqua, b = false},
   keywords2 = {fg = C.Aqua, b = true},
-  keywords3 = {fg = C.Purple, b = true},
-  keywords4 = {fg = C.Purple, b = true},
-  keywords5 = {fg = C.Purple, b = true},
-  keywords6 = {fg = C.Purple, b = true},
-  keywords7 = {fg = C.Purple, b = true},
+  keywords3 = {fg = C.Purple, b = false},
+  keywords4 = {fg = C.Purple, b = false},
+  keywords5 = {fg = C.Purple, b = false},
+  keywords6 = {fg = C.Purple, b = false},
+  keywords7 = {fg = C.Purple, b = false},
 
   -- common (inherit fg/bg from text)
   -- wxstc.wxSTC_LUA_IDENTIFIER
@@ -210,16 +224,23 @@ return {
   fold = {fg = C.Comment, bg = C.Background},
   whitespace = {fg = C.Comment, bg = C.Background},
 
-  fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_PLAIN},
-  --[[ other possible values are:
-    wxSTC_INDIC_PLAIN	 Single-line underline
-    wxSTC_INDIC_SQUIGGLE Squiggly underline
-    wxSTC_INDIC_TT	 Line of small T-shapes
-    wxSTC_INDIC_DIAGONAL Diagonal hatching
-    wxSTC_INDIC_STRIKE	 Strike-out
-    wxSTC_INDIC_BOX      Box
-    wxSTC_INDIC_ROUNDBOX Rounded Box
-  --]]
+  indicator = {
+    fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_ROUNDBOX},
+    --[[ other possible values are:
+      wxSTC_INDIC_PLAIN	 Single-line underline
+      wxSTC_INDIC_SQUIGGLE Squiggly underline
+      wxSTC_INDIC_TT	 Line of small T-shapes
+      wxSTC_INDIC_DIAGONAL Diagonal hatching
+      wxSTC_INDIC_STRIKE	 Strike-out
+      wxSTC_INDIC_BOX      Box
+      wxSTC_INDIC_ROUNDBOX Rounded Box
+    --]]
+    -- these indicators have all different default styles
+    varlocal = {fg = C.Foreground},
+    varglobal = {fg = C.Foreground},
+    varmasked = {fg = C.Foreground},
+    varmasking = {fg = C.Foreground},
+  },
 
   -- markup
   ['['] = {hs = mixer(C.Comment, 3, 64)},

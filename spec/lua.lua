@@ -27,7 +27,7 @@ local function isfndef(str)
 end
 
 return {
-  exts = {"lua", "rockspec"},
+  exts = {"lua", "rockspec", "wlua"},
   lexer = wxstc.wxSTC_LEX_LUA,
   apitype = "lua",
   linecomment = "--",
@@ -58,6 +58,32 @@ return {
     local ended = (term + func > 0) and str:match("[^%w]+end%s*$") and 1 or 0
 
     return opened - closed + func + term - ended
+  end,
+  markvars = function(code, pos, vars)
+    local PARSE = require 'lua_parser_loose'
+    local LEX = require 'lua_lexer_loose'
+    local lx = LEX.lexc(code, nil, pos)
+    return coroutine.wrap(function()
+      local varnext = {}
+      PARSE.parse_scope_resolve(lx, function(op, name, lineinfo, vars)
+        if not(op == 'Id' or op == 'Statement' or op == 'Var'
+            or op == 'VarNext' or op == 'VarInside' or op == 'VarSelf'
+            or op == 'FunctionCall' or op == 'Scope' or op == 'EndScope') then
+          return end -- "normal" return; not interested in other events
+
+        -- level needs to be adjusted for VarInside as it comes into scope
+        -- only after next block statement
+        local at = vars[0] and (vars[0] + (op == 'VarInside' and 1 or 0))
+        if op == 'Statement' then
+          for _, token in pairs(varnext) do coroutine.yield(unpack(token)) end
+          varnext = {}
+        elseif op == 'VarNext' or op == 'VarInside' then
+          table.insert(varnext, {'Var', name, lineinfo, vars, at})
+        end
+
+        coroutine.yield(op, name, lineinfo, vars, at)
+      end, vars)
+    end)
   end,
 
   typeassigns = function(editor)
@@ -115,9 +141,9 @@ return {
 
           var = var and var:gsub("local","")
           var = var and var:gsub("%s","")
-          typ = typ and typ:gsub("%b[]","")
           typ = typ and typ:gsub("%b()","")
           typ = typ and typ:gsub("%b{}","")
+          typ = typ and typ:gsub("%b[]",".0")
           if (typ and (typ:match(",") or typ:match("%sor%s") or typ:match("%sand%s"))) then
             typ = nil
           end

@@ -41,7 +41,7 @@ end
 local function q(s) return s:gsub('(.)','%%%1') end
 
 local MD_MARK_PTRN = ''  -- combination of all markup marks that can start styling
-for key,value in pairs(markup) do
+for key in pairs(markup) do
   if key ~= MD_MARK_MARK then MD_MARK_PTRN = MD_MARK_PTRN .. q(key) end
 end
 MarkupAddStyles(ide.config.styles)
@@ -61,11 +61,15 @@ function MarkupHotspotClick(pos, editor)
   if text then
     text = text:gsub("^"..q(MD_MARK_LINA), ""):gsub(q(MD_MARK_LINT).."$", "")
     local filepath = ide.openDocuments[editor:GetId()].filePath
-    local _,_,shell = string.find(text, [[^macro:shell%((.*%S)%)$]])
+      or FileTreeGetDir()
     local _,_,http = string.find(text, [[^(https?:%S+)$]])
-    local _,_,command = string.find(text, [[^macro:(%w+)$]])
-    if shell then
-      ShellExecuteCode(shell)
+    local _,_,command,code = string.find(text, [[^macro:(%w+)%((.*%S)%)$]])
+    if not command then _,_,command = string.find(text, [[^macro:(%w+)$]]) end
+
+    if command == 'shell' then
+      ShellExecuteCode(code)
+    elseif command == 'inline' then
+      ShellExecuteInline(code)
     elseif command == 'run' then -- run the current file
       ProjectRun()
     elseif command == 'debug' then -- debug the current file
@@ -76,12 +80,9 @@ function MarkupHotspotClick(pos, editor)
       -- check if requested to open in a new window
       local newwindow = string.find(text, MD_LINK_NEWWINDOW, 1, true) -- plain search
       if newwindow then text = string.gsub(text, "^%" .. MD_LINK_NEWWINDOW, "") end
-      local name = wx.wxFileName(filepath):GetPath(wx.wxPATH_GET_VOLUME
-        + wx.wxPATH_GET_SEPARATOR) .. text
-      -- load/activate file
-      local filename = wx.wxFileName(name)
-      filename:Normalize() -- remove .., ., and other similar elements
-      if filename:FileExists() and
+      local filename = GetFullPathIfExists(
+        wx.wxFileName(filepath):GetPath(wx.wxPATH_GET_VOLUME), text)
+      if filename and
         (newwindow or SaveModifiedDialog(editor, true) ~= wx.wxID_CANCEL) then
         if not newwindow and ide.osname == 'Macintosh' then editor:GotoPos(0) end
         LoadFile(filename,not newwindow and editor or nil,true)
@@ -135,14 +136,17 @@ function MarkupStyle(editor, lines, linee)
   -- always style to the end as there may be comments that need re-styling
   -- technically, this should be GetLineCount()-1, but we want to style
   -- beyond the last line to make sure it is styled correctly
-  local linee = linee or editor:GetLineCount()
+  local linec = editor:GetLineCount()
+  local linee = linee or linec
 
+  local linecomment = editor.spec.linecomment
   local iscomment = {}
   for i,v in pairs(editor.spec.iscomment) do
     iscomment[i] = v
   end
 
   local es = editor:GetEndStyled()
+  local needfix = false
 
   for line=lines,linee do
     local tx = editor:GetLine(line)
@@ -150,6 +154,10 @@ function MarkupStyle(editor, lines, linee)
 
     local from = 1
     local off = -1
+
+    -- doing WrapCount(line) when line == linec (which may be beyond
+    -- the last line) occasionally crashes the application on OSX.
+    local wrapped = line < linec and editor:WrapCount(line) or 0
 
     while from do
       tx = string.sub(tx,from)
@@ -160,7 +168,8 @@ function MarkupStyle(editor, lines, linee)
         local s = bit.band(editor:GetStyleAt(p), 31)
         -- only style comments and only those that are not at the beginning
         -- of the file to avoid styling shebang (#!) lines
-        if iscomment[s] and p > 0 then
+        -- also ignore matches for line comments (as defined in the spec)
+        if iscomment[s] and p > 0 and mark ~= linecomment then
           local smark = #mark
           local emark = #mark -- assumes end mark is the same length as start mark
           if mark == MD_MARK_HEAD then
@@ -181,6 +190,19 @@ function MarkupStyle(editor, lines, linee)
       end
       from = t and (t+1)
     end
+
+    -- has this line changed its wrapping because of invisible styling?
+    if wrapped > 1 and editor:WrapCount(line) < wrapped then needfix = true end
   end
   editor:StartStyling(es, 31)
+
+  -- if any wrapped lines have changed, then reset WrapMode to fix the drawing
+  if needfix then
+    -- this fixes an issue with duplicate lines in Scintilla when
+    -- invisible styles hide some of the content that would be wrapped.
+    local wrapmode = editor:GetWrapMode()
+    if wrapmode ~= wxstc.wxSTC_WRAP_NONE then editor:SetWrapMode(wrapmode) end
+    -- if some of the lines have folded, this can make not styled lines visible
+    MarkupStyle(editor, linee+1) -- style to the end in this case
+  end
 end

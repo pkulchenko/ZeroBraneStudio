@@ -35,7 +35,6 @@ char_Tab = string.byte("\t")
 char_Sp = string.byte(" ")
 
 string_Pathsep = string.char(wx.wxFileName.GetPathSeparator())
-stringset_File = '[^"%?%*:\\/<>|]'
 
 function StripCommentsC(tx)
   local out = ""
@@ -161,39 +160,24 @@ function FileSysHasContent(dir)
   return #f>0
 end
 
-function FileSysGet(dir, spec)
-  local content = {}
-  local browse = wx.wxFileSystem()
-  if not wx.wxFileName(dir):DirExists() then return content end
-
-  local f = browse:FindFirst(dir,spec)
-  while #f>0 do
-    if f:match("^file:") then -- remove file: protocol (wx2.9+)
-      f = f:gsub(ide.osname == "Windows" and "^file:/?" or "^file:","")
-        :gsub('%%(%x%x)', function(n) return string.char(tonumber(n, 16)) end)
-    end
-    local file = wx.wxFileName(f)
-    -- normalize path if possible to correct separators for the local FS
-    table.insert(content,
-      file:Normalize(wx.wxPATH_NORM_ALL) and file:GetFullPath() or f)
-    f = browse:FindNext()
-  end
-  if ide.osname == 'Unix' then table.sort(content) end
-  return content
-end
-
 function FileSysGetRecursive(path, recursive, spec, skip)
+  spec = spec or "*"
   local content = {}
-  if not wx.wxFileName(path):DirExists() then return content end
-
   local sep = string.char(wx.wxFileName.GetPathSeparator())
+
+  -- recursion is done in all folders but only those folders that match
+  -- the spec are returned. This is the pattern that matches the spec.
+  local specmask = spec:gsub("%.", "%%."):gsub("%*", ".*").."$"
+
   local function getDir(path, spec)
     local dir = wx.wxDir(path)
-    local found, file = dir:GetFirst(spec, wx.wxDIR_DIRS)
+    if not dir:IsOpened() then return end
+
+    local found, file = dir:GetFirst("*", wx.wxDIR_DIRS)
     while found do
       if not skip or not file:find(skip) then
         local fname = wx.wxFileName(path, file):GetFullPath()
-        table.insert(content, fname..sep)
+        if fname:find(specmask) then table.insert(content, fname..sep) end
         if recursive then getDir(fname, spec) end
       end
       found, file = dir:GetNext()
@@ -207,7 +191,8 @@ function FileSysGetRecursive(path, recursive, spec, skip)
       found, file = dir:GetNext()
     end
   end
-  getDir(path, spec or "")
+  getDir(path, spec)
+
   return content
 end
 
@@ -218,7 +203,8 @@ function GetFullPathIfExists(p, f)
   -- f = 'xyz/main.lua' work correctly. Normalize() returns true if done.
   return (file:Normalize(wx.wxPATH_NORM_ALL, p)
     and file:FileExists()
-    and file:GetFullPath())
+    and file:GetFullPath()
+    or nil)
 end
 
 function MergeFullPath(p, f)
@@ -227,10 +213,11 @@ function MergeFullPath(p, f)
   -- Normalize call is needed to make the case of p = '/abc/def' and
   -- f = 'xyz/main.lua' work correctly. Normalize() returns true if done.
   return (file:Normalize(wx.wxPATH_NORM_ALL, p)
-    and file:GetFullPath())
+    and file:GetFullPath()
+    or nil)
 end
 
-function FileWrite(file,content)
+function FileWrite(file, content)
   local log = wx.wxLogNull() -- disable error reporting; will report as needed
   local file = wx.wxFile(file, wx.wxFile.write)
   if not file:IsOpened() then return nil, wx.wxSysErrorMsg() end
@@ -243,7 +230,7 @@ end
 function FileRead(file)
   local log = wx.wxLogNull() -- disable error reporting; will report as needed
   local file = wx.wxFile(file, wx.wxFile.read)
-  if not file:IsOpened() then return end
+  if not file:IsOpened() then return nil, wx.wxSysErrorMsg() end
 
   local _, content = file:Read(file:Length())
   file:Close()
@@ -294,7 +281,13 @@ end
 
 function RequestAttention()
   local frame = ide.frame
-  if not frame:IsActive() then frame:RequestUserAttention() end
+  if not frame:IsActive() then
+    frame:RequestUserAttention()
+    if ide.osname == "Macintosh" then
+      local cmd = [[osascript -e 'tell application "%s" to activate']]
+      wx.wxExecute(cmd:format(ide.editorApp:GetAppName()), wx.wxEXEC_ASYNC)
+    end
+  end
 end
 
 local messages, lang, counter
@@ -305,4 +298,50 @@ function TR(msg, count)
   local message = messages[lang] and messages[lang][msg]
   return count and counter and message and type(message) == 'table'
     and message[counter(count)] or message or msg
+end
+
+-- wxwidgets 2.9.x may report the last folder twice (depending on how the
+-- user selects the folder), which makes the selected folder incorrect.
+-- check if the last segment is repeated and drop it.
+function FixDir(path)
+  if wx.wxDirExists(path) then return path end
+
+  local dir = wx.wxFileName.DirName(path)
+  local dirs = dir:GetDirs()
+  if #dirs > 1 and dirs[#dirs] == dirs[#dirs-1] then dir:RemoveLastDir() end
+  return dir:GetFullPath()
+end
+
+function ShowLocation(fname)
+  local osxcmd = [[osascript -e 'tell application "Finder" to reveal POSIX file "%s"']]
+    .. [[ -e 'tell application "Finder" to activate']]
+  local wincmd = [[explorer /select,"%s"]]
+  local lnxcmd = [[xdg-open "%s"]] -- takes path, not a filename
+  local cmd =
+    ide.osname == "Windows" and wincmd:format(fname) or
+    ide.osname == "Macintosh" and osxcmd:format(fname) or
+    ide.osname == "Unix" and lnxcmd:format(wx.wxFileName(fname):GetPath())
+  if cmd then wx.wxExecute(cmd, wx.wxEXEC_ASYNC) end
+end
+
+function LoadLuaFileExt(tab, file, proto)
+  local cfgfn,err = loadfile(file)
+  if not cfgfn then
+    print(("Error while loading file: '%s'."):format(err))
+  else
+    local name = file:match("([a-zA-Z_0-9]+)%.lua$")
+    local success, result = pcall(function()return cfgfn(assert(_G or _ENV))end)
+    if not success then
+      print(("Error while processing file: '%s'."):format(result))
+    elseif name then
+      if (tab[name]) then
+        local out = tab[name]
+        for i,v in pairs(result) do
+          out[i] = v
+        end
+      else
+        tab[name] = proto and result and setmetatable(result, proto) or result
+      end
+    end
+  end
 end

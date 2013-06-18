@@ -27,38 +27,56 @@ function OnUpdateUISearchMenu(event) event:Enable(GetEditor() ~= nil) end
 
 frame:Connect(ID_FIND, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    findReplace:GetSelectedString()
     findReplace:Show(false)
   end)
 frame:Connect(ID_FIND, wx.wxEVT_UPDATE_UI, OnUpdateUISearchMenu)
 
 frame:Connect(ID_REPLACE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    findReplace:GetSelectedString()
     findReplace:Show(true)
   end)
 frame:Connect(ID_REPLACE, wx.wxEVT_UPDATE_UI, OnUpdateUISearchMenu)
 
 frame:Connect(ID_FINDINFILES, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    findReplace:GetSelectedString()
     findReplace:Show(false,true)
   end)
 frame:Connect(ID_REPLACEINFILES, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    findReplace:GetSelectedString()
     findReplace:Show(true,true)
   end)
 
 frame:Connect(ID_FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) findReplace:GetSelectedString() findReplace:FindString() end)
+  function (event)
+    local editor = GetEditor()
+    if editor and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
+      local selection = editor:GetMainSelection() + 1
+      if selection >= editor:GetSelections() then selection = 0 end
+      editor:SetMainSelection(selection)
+      editor:EnsureCaretVisible()
+    else
+      findReplace:GetSelectedString()
+      findReplace:FindString()
+    end
+  end)
 frame:Connect(ID_FINDNEXT, wx.wxEVT_UPDATE_UI,
-  function (event) event:Enable(findReplace:GetSelectedString() and findReplace:HasText()) end)
+  function (event) event:Enable(findReplace:GetSelectedString() or findReplace:HasText()) end)
 
 frame:Connect(ID_FINDPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) findReplace:GetSelectedString() findReplace:FindString(true) end)
+  function (event)
+    local editor = GetEditor()
+    if editor and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
+      local selection = editor:GetMainSelection() - 1
+      if selection < 0 then selection = editor:GetSelections() - 1 end
+      editor:SetMainSelection(selection)
+      editor:EnsureCaretVisible()
+    else
+      findReplace:GetSelectedString()
+      findReplace:FindString(true)
+    end
+  end)
 frame:Connect(ID_FINDPREV, wx.wxEVT_UPDATE_UI,
-  function (event) event:Enable(findReplace:GetSelectedString() and findReplace:HasText()) end)
+  function (event) event:Enable(findReplace:GetSelectedString() or findReplace:HasText()) end)
 
 -------------------- Find replace end
 
