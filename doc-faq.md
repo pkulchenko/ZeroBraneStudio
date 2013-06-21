@@ -27,7 +27,8 @@ You can also configure the IDE to [auto-open files](https://github.com/pkulchenk
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
-Yes; you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
+Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window with the code you can then step through.
+If you use an older version, you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
 You can then open that file in the IDE or configure it to auto-open it for you.
 
 ## Is debugging of Lua 5.2 applications supported?

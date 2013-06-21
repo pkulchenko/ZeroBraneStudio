@@ -21,7 +21,7 @@ You can see the **domain name** to connect to in the Output window when you star
 (1) Set `LUA_PATH` and `LUA_CPATH` before starting your application (see [Setup environment for debugging](#setup_environment_for_debugging));
 (2) Reference path to `mobdebug.lua` and `luasocket` using `package.path` and `package.cpath` (see [Configure path for debugging](#configure_path_for_debugging)); or
 (3) Include `mobdebug.lua` with your application by copying it from `lualibs/mobdebug/mobdebug.lua` (this assumes your application already provides `luasocket` support).
-* **Run your application**. You should see a green arrow next to the `start()` call in ZeroBrane Studio and should be able to step through the code.
+* **Run your application**. You should see a green arrow pointing to the next statement after the `start()` call in ZeroBrane Studio and should be able to step through the code.
 
 ## Setup environment for debugging
 
@@ -52,7 +52,7 @@ You either need to open them in the IDE before you want to step through them, or
 * **The host name is detected incorrectly.**
 In some rare cases the domain name detected by ZeroBrane Studio cannot be resolved, which prevents the debugger from working.
 You can specify the domain name or address you want to use by [configuring](doc-configuration.html) the IDE with `debugger.hostname="domain"`.
-* **I get "Debugger error: unexpected response after EXEC/LOAD '201 Started ...'".**
+* (Note: you should not see this error if you are using v0.38 or later) **I get "Debugger error: unexpected response after EXEC/LOAD '201 Started ...'".**
 This is caused by not having a filename associated with a dynamic chunk loaded by your application.
 If you are using `loadstring()`, you should pass a second parameter that is a filename for the fragment (and that file can then be debugged in ZeroBrane Studio if it's placed in the project directory).
 If you are using `luaL_loadstring` (which has no option to label the chunk with its file path), you can switch to using `luaL_loadbuffer` to pass that information.
