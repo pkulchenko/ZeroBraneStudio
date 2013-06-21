@@ -10,21 +10,21 @@ The values shown are the default values.
 
 ## Editor
 
+- `editor.autoactivate = true`: auto-activate files during debugging.
+- `editor.autotabs = false`: use tabs if detected.
+- `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
+- `editor.caretline = true`: show caret line.
+- `editor.checkeol = false`: turn off checking for mixed end-of-line encodings in loaded files.
+- `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
+- `editor.foldcompact = false`: set compact fold that doesn't include empty lines after a block.
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 10`: set font size.
-- `editor.caretline = true`: show caret line.
+- `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
+- `editor.smartindent = true`: use smart indentation.
 - `editor.showfncall = true`: mark function calls.
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
-- `editor.autotabs = false`: use tabs if detected.
 - `editor.usewrap = true`: wrap long lines in the editor.
-- `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
-- `editor.autoactivate = true`: auto-activate files during debugging.
-- `editor.smartindent = true`: use smart indentation.
-- `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
-- `editor.checkeol = false`: turn off checking for mixed end-of-line encodings in loaded files.
-- `editor.foldcompact = true`: set compact fold that doesn't include empty lines after a block.
-- `editor.nomousezoom = true`: disable zoom with mouse wheel as it may be too sensitive.
 
 ## Output and Console
 

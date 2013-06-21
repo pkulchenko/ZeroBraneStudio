@@ -11,27 +11,29 @@ The values shown are the default values.
 ## General
 
 - `activateoutput = true`: activate Output or Console window on new content added.
-- `projectautoopen = true`: auto-open windows on project switch.
-- `autorecoverinactivity = 10`: trigger saving auto-recovery after N seconds of inactivity.
 - `allowinteractivescript = true`: allow interaction in the output window.
-- `savebak = false`: create backup on file save.
+- `autoanalizer = true`: enable autoanalizer that adds scope aware indicators to variables.
+- `autorecoverinactivity = 10`: trigger saving auto-recovery after N seconds of inactivity.
 - `filehistorylength = 20`: set history length for files.
+- `language = "en"`: set the language to use in the IDE; this requires a language file in cfg/i18n directory.
+- `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 15`: set history length for projects.
-- `language = "ru"`: set the language to use in the IDE; this requires `ru.lua` file in cfg/i18n directory.
+- `savebak = false`: create backup on file save.
+- `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 
 ## Debugger
 
-- `debugger.verbose = false`: enable verbose output.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname.
 - `debugger.runonstart = true`: execute immediately after starting debugging.
+- `debugger.verbose = false`: enable verbose output.
 
 ## Auto-complete
 
-- `autocomplete = true`: enable auto-complete.
-- `acandtip.shorttip = true`: show short calltip when typing; shows long calltip when set to `false`.
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
 when set to `false` will collect all words from all open editor tabs and offer them as part of the auto-complete list.
+- `acandtip.shorttip = true`: show short calltip when typing; shows long calltip when set to `false`.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
+- `autocomplete = true`: enable auto-complete.
 
 ## Interpreter Path
 
