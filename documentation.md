@@ -14,7 +14,7 @@ title: Documentation
 - [General preferences](doc-general-preferences.html)
 - [Editor preferences](doc-editor-preferences.html)
 - [Editor keyboard shortcuts](doc-editor-keyboard-shortcuts.html)
-- Color schemes
+- [Styles and color schemes](doc-styles-color-schemes.html)
 - [Configuration](doc-configuration.html)
 
 ## Debugging
