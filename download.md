@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v0.37 (May 09 2013)
+# Download ZeroBrane Studio v0.38 (Jun 21 2013)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.37-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-0.37-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.38-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-0.38-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.37-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.37-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.38-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.38-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.37-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.37-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.38-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.38-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.37-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.37-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.38-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.38-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 
@@ -21,11 +21,12 @@ title: Download
 <div class="separator" >&nbsp;</div>
 
 ## What are the most significant changes in this version?
-- Added Marmalade Quick auto-complete support and API documentation.
-- Added full Marmalade Quick debugging support (requires Quick 1.1+).
-- Improved Find/Replace behavior and functionality.
-- Added Recent File history navigation.
-- Added Preferences menu to simplify access to system/user settings.
+- Added source code debugging (to support LuaJava and other engines).
+- Added scope-aware global/local/masked/masking variable highlighting.
+- Added 'Go To Definition' and 'Rename All Instances'.
+- Added package/plugin API.
+- Added Retina display support (can be enabled with `hidpi` option).
+- Improved auto-complete API with inheritance and table index support.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
