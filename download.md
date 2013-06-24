@@ -21,8 +21,8 @@ title: Download
 <div class="separator" >&nbsp;</div>
 
 ## What are the most significant changes in this version?
-- Added source code debugging (to support LuaJava and other engines).
-- Added scope-aware global/local/masked/masking variable highlighting.
+- Added [source code debugging](http://notebook.kulchenko.com/zerobrane/debugging-embedded-code-fragments-zerobrane-studio) (to support LuaJava and other engines).
+- Added [scope-aware global/local/masked/masking variable highlighting](http://notebook.kulchenko.com/zerobrane/scope-aware-variable-indicators-zerobrane-studio).
 - Added 'Go To Definition' and 'Rename All Instances'.
 - Added package/plugin API.
 - Added Retina display support (can be enabled with `hidpi` option).
