@@ -817,6 +817,9 @@ function CreateEditor()
   editor:Connect(wx.wxEVT_KILL_FOCUS,
     function (event)
       if editor:AutoCompActive() then editor:AutoCompCancel() end
+      if edcfg. saveonfocusloss then
+        SaveAll()
+      end
       event:Skip()
     end)
 
