@@ -26,9 +26,9 @@ The following configuration will set text background to be light red: `styles.te
 
 See [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua#L185-L225) for the complete list.
 
-## Indicators (0.38+)
+## Indicators
 
-Indicators add visual elements to the text in the editor, for example, a dotted underline for local variables or a solid line for global ones.
+(0.38+) Indicators add visual elements to the text in the editor, for example, a dotted underline for local variables or a solid line for global ones.
 
 - `styles.indicator.fncall`: function call
 - `styles.indicator.varlocal`: local variable
