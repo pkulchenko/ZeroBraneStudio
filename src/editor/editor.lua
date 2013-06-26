@@ -109,7 +109,7 @@ local function isFileAlteredOnDisk(editor)
           GetIDEString("editormessage"),
           wx.wxOK + wx.wxCENTRE, ide.frame)
       elseif not editor:GetReadOnly() and modTime:IsValid() and oldModTime:IsEarlierThan(modTime) then
-        local ret = wx.wxMessageBox(
+        local ret = (edcfg.autoreload and wx.wxYES) or wx.wxMessageBox(
           TR("File '%s' has been modified on disk."):format(fileName)
           .."\n"..TR("Do you want to reload it?"),
           GetIDEString("editormessage"),
@@ -717,7 +717,7 @@ function CreateEditor()
         table.insert(editor.ev,{event:GetPosition(),0})
         DynamicWordsAdd("post",editor,nil,editor:LineFromPosition(event:GetPosition()),0)
       end
-      
+
       if ide.config.acandtip.nodynwords then return end
       -- only required to track changes
       if (bit.band(evtype,wxstc.wxSTC_MOD_BEFOREDELETE) ~= 0) then
@@ -835,6 +835,9 @@ function CreateEditor()
   editor:Connect(wx.wxEVT_KILL_FOCUS,
     function (event)
       if editor:AutoCompActive() then editor:AutoCompCancel() end
+      if edcfg. saveonfocusloss then
+        SaveAll()
+      end
       event:Skip()
     end)
 
