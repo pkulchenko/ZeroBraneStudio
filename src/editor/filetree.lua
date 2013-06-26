@@ -150,6 +150,9 @@ local function treeSetConnectorsAndIcons(tree)
       menu:Append(ID_SHOWLOCATION, TR("Show Location"))
       tree:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED,
         function() ShowLocation(tree:GetItemFullName(item_id)) end)
+
+      PackageEventHandle("onMenuFiletree", menu, tree, event)
+
       tree:PopupMenu(menu)
     end)
   -- toggle a folder on a single click
@@ -234,13 +237,22 @@ function filetree:updateProjectDir(newdir, cboxsel)
   -- strip the last path separator if any
   local newdir = dirname:GetPath(wx.wxPATH_GET_VOLUME)
 
+  if filetree.projdir and #filetree.projdir > 0 then
+    PackageEventHandle("onProjectClose", filetree.projdir) end
+
   if ide.config.projectautoopen and filetree.projdir then
     StoreRestoreProjectTabs(filetree.projdir, newdir)
   end
 
   filetree.projdir = newdir
 
-  PrependStringToArray(filetree.projdirlist,newdir,ide.config.projecthistorylength)
+  PackageEventHandle("onProjectLoad", filetree.projdir)
+
+  PrependStringToArray(
+    filetree.projdirlist,
+    newdir,
+    ide.config.projecthistorylength,
+    function(s1, s2) return dirname:SameAs(wx.wxFileName.DirName(s2)) end)
   projcombobox:Clear()
   projcombobox:Append(filetree.projdirlist)
   if (not cboxsel) then

@@ -108,12 +108,13 @@ function FileLines(f)
   end
 end
 
-function PrependStringToArray(t, s, maxstrings)
+function PrependStringToArray(t, s, maxstrings, issame)
   if string.len(s) == 0 then return end
-  for i, v in ipairs(t) do
-    if v == s then
+  for i = #t, 1, -1 do
+    local v = t[i]
+    if v == s or issame and issame(s, v) then
       table.remove(t, i) -- remove old copy
-      break
+      -- don't break here in case there are multiple copies to remove
     end
   end
   table.insert(t, 1, s)
@@ -173,7 +174,7 @@ function FileSysGetRecursive(path, recursive, spec, skip)
     local dir = wx.wxDir(path)
     if not dir:IsOpened() then return end
 
-    local found, file = dir:GetFirst("*", wx.wxDIR_DIRS)
+    local found, file = dir:GetFirst("*", wx.wxDIR_DIRS + wx.wxDIR_NO_FOLLOW)
     while found do
       if not skip or not file:find(skip) then
         local fname = wx.wxFileName(path, file):GetFullPath()
@@ -192,6 +193,17 @@ function FileSysGetRecursive(path, recursive, spec, skip)
     end
   end
   getDir(path, spec)
+
+  -- explicitly sort files on Linux; directories first
+  if ide.osname == 'Unix' then
+    table.sort(content, function(a,b)
+      local ad, bd = a:sub(-1) == sep, b:sub(-1) == sep
+      -- both are folders or both are files
+      if ad and bd or not ad and not bd then return a < b
+      -- only one is folder; return true if it's the first one
+      else return ad end
+    end)
+  end
 
   return content
 end
@@ -322,4 +334,26 @@ function ShowLocation(fname)
     ide.osname == "Macintosh" and osxcmd:format(fname) or
     ide.osname == "Unix" and lnxcmd:format(wx.wxFileName(fname):GetPath())
   if cmd then wx.wxExecute(cmd, wx.wxEXEC_ASYNC) end
+end
+
+function LoadLuaFileExt(tab, file, proto)
+  local cfgfn,err = loadfile(file)
+  if not cfgfn then
+    print(("Error while loading file: '%s'."):format(err))
+  else
+    local name = file:match("([a-zA-Z_0-9]+)%.lua$")
+    local success, result = pcall(function()return cfgfn(assert(_G or _ENV))end)
+    if not success then
+      print(("Error while processing file: '%s'."):format(result))
+    elseif name then
+      if (tab[name]) then
+        local out = tab[name]
+        for i,v in pairs(result) do
+          out[i] = v
+        end
+      else
+        tab[name] = proto and result and setmetatable(result, proto) or result
+      end
+    end
+  end
 end

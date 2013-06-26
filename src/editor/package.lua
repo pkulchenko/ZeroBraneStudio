@@ -3,14 +3,48 @@
 local ide = ide
 
 function PackageEventHandle(event, ...)
-  for file, package in pairs(ide.packages) do
+  local success
+  for _, package in pairs(ide.packages) do
     if type(package[event]) == 'function' then
       local ok, res = pcall(package[event], package, ...)
-      if not ok then
-        DisplayOutputLn(("%s event failed: %s"):format(event, res))
+      if ok then
+        if res == false then success = false end
+      else
+        DisplayOutputLn(TR("%s event failed: %s"):format(event, res))
       end
     end
   end
+  return success
+end
+
+local function PackageEventHandleOne(file, event, ...)
+  local package = ide.packages[file]
+  if package and type(package[event]) == 'function' then
+    local ok, res = pcall(package[event], package, ...)
+    if ok then
+      if res == false then return false end
+    else
+      DisplayOutputLn(TR("%s event failed: %s"):format(event, res))
+    end
+  end
+end
+
+function PackageUnRegister(file, ...)
+  PackageEventHandleOne(file, "onUnRegister", ...)
+  -- remove from the list of installed packages
+  ide.packages[file] = nil
+end
+
+function PackageRegister(file, ...)
+  if not ide.packages[file] then
+    local packages = {}
+    local package = MergeFullPath(
+      GetPathWithSep(ide.editorFilename), "packages/"..file..".lua")
+    LoadLuaFileExt(packages, package, ide.proto.Plugin)
+    packages[file].fname = file
+    ide.packages[file] = packages[file]
+  end
+  return PackageEventHandleOne(file, "onRegister", ...)
 end
 
 function ide:GetEditor() return GetEditor() end
