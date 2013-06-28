@@ -243,13 +243,31 @@ local function activateDocument(file, line, activatehow)
   -- to avoid showing filenames that may look like valid lua code
   -- (for example: 'mobdebug.lua').
   local content
-  if not wx.wxFileName(file):FileExists() and file:find('^"') then
-    local ok, res = loadsafe("return "..file)
-    if ok then content = res end
-  end
 
-  if not content and not wx.wxIsAbsolutePath(file) and debugger.basedir then
-    file = debugger.basedir .. file
+  -- create a copy of "file" without quotes (if any)
+  local _,stripped = file:match([=[^(["'])(.*)%1$]=])
+
+  -- stripped is nil if there were no quotes
+  if stripped then
+    if wx.wxFileName(stripped):FileExists() then
+      -- if the file passed in is just in quotes and exists as is, then
+      -- set file to equal the path with no quotes
+      file = stripped
+    elseif debugger.basedir then
+      -- if there's a basedir, then add that to the file and, if it
+      -- exists, assign it to file. If not, leave file as-is.
+      file = GetFullPathIfExists(debugger.basedir,stripped) or file
+    end
+
+    -- if we still can't find the file, then it's serialized content
+    if not wx.wxFileName(file):FileExists() then
+      local ok, res = loadsafe("return "..file)
+      if ok then content = res end
+    end
+  elseif debugger.basedir and not wx.wxFileName(file):FileExists() then
+    -- no quotes here, but not finding the file, so see if we can
+    -- find it under basedir
+    file = GetFullPathIfExists(debugger.basedir,file) or file
   end
 
   local activated
@@ -1220,7 +1238,7 @@ function DebuggerScratchpadOn(editor)
       do nend = nend + 1 end
 
     -- check if there is minus sign right before the number and include it
-    if nstart >= 0 and scratchpadEditor:GetTextRange(nstart,nstart+1) == '-' then 
+    if nstart >= 0 and scratchpadEditor:GetTextRange(nstart,nstart+1) == '-' then
       nstart = nstart - 1
     end
     scratchpad.start = nstart + 1
