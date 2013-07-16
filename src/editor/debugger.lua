@@ -248,7 +248,13 @@ local function activateDocument(file, line, activatehow)
     if ok then content = res end
   end
 
-  if not content and not wx.wxIsAbsolutePath(file) and debugger.basedir then
+  -- in some cases filename can be returned quoted if the chunk is loaded with
+  -- loadstring(chunk, "filename") instead of loadstring(chunk, "@filename")
+  if content then
+    -- if the returned content can be matched with a file, it's a file name
+    local fname = GetFullPathIfExists(debugger.basedir, content) or content
+    if wx.wxFileName(fname):FileExists() then file, content = fname, nil end
+  elseif not wx.wxIsAbsolutePath(file) and debugger.basedir then
     file = debugger.basedir .. file
   end
 
@@ -297,6 +303,20 @@ local function activateDocument(file, line, activatehow)
       SetEditorSelection(selection)
 
       if content then
+        -- it's possible that the current editor tab already has
+        -- breakpoints that have been set based on its filepath;
+        -- if the content has been matched, then existing breakpoints
+        -- need to be removed and new ones set, based on the content.
+        if not debugger.editormap[editor] and document.filePath then
+          local filePath = document.filePath
+          local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
+          while filePath and line ~= -1 do
+            debugger.handle("delb " .. filePath .. " " .. (line+1))
+            debugger.handle("setb " .. file .. " " .. (line+1))
+            line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
+          end
+        end
+
         -- keep track of those editors that have been activated based on
         -- content rather than file names as their breakpoints have to be
         -- specified in a different way

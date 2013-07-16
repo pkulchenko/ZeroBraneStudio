@@ -49,13 +49,15 @@ return {
     return match and 1 or 0, match and term and 1 or 0
   end,
   isincindent = function(str)
-    local term = str:match("^%s*(%w+)[^%w]*")
+    local term = str:match("^%s*(%w+)%W*")
     term = term and incindent[term] and 1 or 0
+    str = str:gsub("'.-'",""):gsub('".-"','')
     local _, opened = str:gsub("([%{%(])", "%1")
     local _, closed = str:gsub("([%}%)])", "%1")
-    local func = (isfndef(str) or str:match("[^%w]+function%s*%(")) and 1 or 0
+    local func = (isfndef(str) or str:match("%W+function%s*%(")) and 1 or 0
     -- ended should only be used to negate term and func effects
-    local ended = (term + func > 0) and str:match("[^%w]+end%s*$") and 1 or 0
+    local anon = str:match("%W+function%s*%(.+%Wend%W")
+    local ended = (term + func > 0) and (str:match("%W+end%s*$") or anon) and 1 or 0
 
     return opened - closed + func + term - ended
   end,
@@ -141,9 +143,12 @@ return {
 
           var = var and var:gsub("local","")
           var = var and var:gsub("%s","")
-          typ = typ and typ:gsub("%b()","")
-          typ = typ and typ:gsub("%b{}","")
-          typ = typ and typ:gsub("%b[]",".0")
+          typ = typ and typ
+            :gsub("%b()","")
+            :gsub("%b{}","")
+            :gsub("%b[]",".0")
+            -- remove comments; they may be in strings, but that's okay here
+            :gsub("%-%-.*","")
           if (typ and (typ:match(",") or typ:match("%sor%s") or typ:match("%sand%s"))) then
             typ = nil
           end

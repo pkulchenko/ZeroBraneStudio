@@ -189,6 +189,11 @@ function SaveFile(editor, filePath)
       st = GetConfigIOFilter("output")(filePath,st)
     end
 
+    local file = wx.wxFileName(filePath)
+    if not file:FileExists() then
+      file:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL)
+    end
+
     local ok, err = FileWrite(filePath, st)
     if ok then
       editor:SetSavePoint()
@@ -258,12 +263,13 @@ function SaveFileAs(editor)
   return saved
 end
 
-function SaveAll()
+function SaveAll(quiet)
   for id, document in pairs(openDocuments) do
     local editor = document.editor
     local filePath = document.filePath
 
-    if document.isModified or not document.filePath then
+    if (document.isModified or not document.filePath) -- need to save
+    and (document.filePath or not quiet) then -- have path or can ask user
       SaveFile(editor, filePath) -- will call SaveFileAs if necessary
     end
   end
@@ -696,11 +702,14 @@ function StoreRestoreProjectTabs(curdir, newdir)
     local projdocs, closdocs = {}, {}
     for _, document in ipairs(GetOpenFiles()) do
       local dpath = win and string.lower(document.filename) or document.filename
-      if dpath:find(lowcurdir, 1, true) then
+      -- check if the filename is in the same folder
+      if dpath:find(lowcurdir, 1, true) == 1
+      and dpath:find("^[\\/]", #lowcurdir+1) then
         table.insert(projdocs, document)
         closing = closing + (document.id < current and 1 or 0)
         -- only close if the file is not in new project as it would be reopened
-        if not dpath:find(lownewdir, 1, true) then
+        if not dpath:find(lownewdir, 1, true)
+        or not dpath:find("^[\\/]", #lownewdir+1) then
           table.insert(closdocs, document)
         end
       elseif document.id == current then restore = true end
@@ -791,6 +800,15 @@ end
 frame:Connect(wx.wxEVT_CLOSE_WINDOW, closeWindow)
 
 frame:Connect(wx.wxEVT_TIMER, saveAutoRecovery)
+
+ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
+  function(event)
+    if not ide.exitingProgram then
+      local event = event:GetActive() and "onAppFocusSet" or "onAppFocusLost"
+      PackageEventHandle(event, ide.editorApp)
+    end
+    event:Skip()
+  end)
 
 if ide.config.autorecoverinactivity then
   ide.session.timer = wx.wxTimer(frame)

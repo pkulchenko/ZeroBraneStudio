@@ -144,6 +144,8 @@ if not wx.wxMOD_RAW_CONTROL then
 end
 -- ArchLinux running 2.8.12.2 doesn't have wx.wxMOD_SHIFT defined
 if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
+-- wxDIR_NO_FOLLOW is missing in wxlua 2.8.12 as well
+if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
 
 for _, file in ipairs({"ids", "style", "keymap", "proto"}) do
   dofile("src/editor/"..file..".lua")
@@ -155,12 +157,12 @@ ide.config.stylesoutshell = StylesGetDefault()
 local function setLuaPaths(mainpath, osname)
   -- use LUA_DEV to setup paths for Lua for Windows modules if installed
   local luadev = osname == "Windows" and os.getenv('LUA_DEV')
-  local luadev_path = (luadev
+  local luadev_path = (luadev and wx.wxDirExists(luadev)
     and ('LUA_DEV/?.lua;LUA_DEV/?/init.lua;LUA_DEV/lua/?.lua;LUA_DEV/lua/?/init.lua')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
-  local luadev_cpath = (luadev
-    and ('LUA_DEV/?.dll;LUA_DEV/clibs/?.dll')
+  local luadev_cpath = (luadev and wx.wxDirExists(luadev)
+    and ('LUA_DEV/?.dll;LUA_DEV/?51.dll;LUA_DEV/clibs/?.dll;LUA_DEV/clibs/?51.dll')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
 
@@ -358,7 +360,7 @@ loadSpecs()
 loadTools()
 
 do
-  local home = os.getenv("HOME")
+  local home = os.getenv("HOME") or (iswindows and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH')))
   ide.configs = {
     system = MergeFullPath("cfg", "user.lua"),
     user = home and MergeFullPath(home, ".zbstudio/user.lua"),

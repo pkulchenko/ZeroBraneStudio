@@ -1,6 +1,47 @@
 # ZeroBrane Studio Changelog
 
-## Current master (June 17 2013)
+## Current master (Jul 14 2013)
+
+### Special thanks
+  - To Chow CheeWen for Chinese translation.
+  - To [Riidom](https://github.com/Riidom) for German translation.
+  - To [ardente](https://github.com/ardente) for user home patch for Windows.
+  - To [Mika Attila](https://github.com/crumblingstatue) for code folding patch.
+  - To [Tim Mensch](https://github.com/TimMensch) for auto-save, auto-reload, and debugger improvements.
+
+### Improvements
+  - Added German translation (thanks to Riidom; ref #70).
+  - Added default value to package config (ref #176).
+  - Added handling of ?51.dll and required DLLs for LuaForWindows interpreter.
+  - Added plugin::GetConfig method (ref #166).
+  - Added erasing current line in Console (ref #173).
+  - Added search/completion in the local and remote console (closes #173).
+  - Added package onAppFocus* events (ref #166; ref #172).
+  - Added Chinese translation (thanks to Chow CheeWen; ref #70).
+  - Added `editor.autoreload` to enable reload of updated files (ref #172).
+  - Added creating (missing) folders when saving a file (fixes #171).
+  - Added an example of styling individual keywords.
+  - Added fold indication of a current block (ref #168).
+  - Added reporting of process id for a conflicting process.
+  - Disabled 'Fold' menu instead of removing when no folding is allowed (ref #169).
+  - Make code folding optional (thanks to [Mika Attila](https://github.com/crumblingstatue))
+  - Moved 'Sort' menu to 'Edit'.
+  - Replaced package onEditorActivated event with onEditorFocus* events (ref #166).
+  - Set search in subdirectories as default in Find in Files dialog (ref #162).
+  - Updated `SaveAll` to allow saving (only) files with filenames (ref #172).
+  - windows: adopt native user home (thanks to [ardente](https://github.com/ardente))
+
+### Fixes
+  - Fixed indentation after lines with brackets in strings.
+  - Fixed indentation after lines with anonymous functions.
+  - Fixed indicator showing at the end of not terminated long comment.
+  - Fixed an issue with LUA_DEV including files instead of directories.
+  - Fixed project switching to close all files when switching to a subdirectory.
+  - Fixed saving projects that do not have any open files.
+  - Fixed debugger to accept filenames without '@'; thanks to Tim Mensch (closes #174).
+  - Fixed sorting when the sorted fragment ends with a newline.
+
+## v0.38 (Jun 21 2013)
 
 ### Highlights
   - Added source code debugging (to support LuaJava and other engines).
@@ -13,8 +54,13 @@
 ### Special thanks
   - To George Pimm for line of code navigation in the Stack Window.
   - To Fringale for updated French translation.
+  - To Tom Burgel for LuaForWindows interpreter.
 
 ### Improvements
+  - Added sorting of file lists on Linux (used in the filetree and file search).
+  - Added LuaForWindows interpreter (thanks to Tom Burgel).
+  - Added package onEditorCharAdded/onEditorKeyDown events (ref #166).
+  - Added support for changing the Corona simulator skin (closes #151).
   - Added inheritance support for auto-complete API.
   - Added package onEditor* events (closes #166).
   - Added package onInterpreterLoad/onInterpreterClose events (ref #166).
@@ -49,11 +95,14 @@
   - Added support for absolute filenames in Markdown links.
   - Allowed tab width and indentation to be set independently.
   - Allowed closing editor tabs while debugger is running.
+  - Disabled following symlinks during directory scanning to avoid infinite loops.
   - Disabled showing tooltip when the app is in the background (fixes #158).
   - Disabled 'value' tooltip over variables that match known function names (ref #101).
   - Improved error reporting in interpreters on failures to copy the debugger.
   - Improved focus on the debugger when a breakpoint hits on OSX (fixes #141).
   - Removed sorting in the Stack view to keep the order of table elements.
+  - Set default directory for Find in Files opened from a new file (#ref 162).
+  - Updated configuration example for variable indicators.
   - Updated Stack view navigation to use clicked on instead of active item.
   - Updated Gideros API/auto-complete reference.
   - Updated markup to allow opening files from new buffers ('untitled').
@@ -66,20 +115,22 @@
   - Upgraded Mobdebug to 0.534 for debugging of source code fragments.
 
 ### Fixes
-    Fixed missing numerical keys in serialized tables (upgraded Mobdebug to 0.535).
-    Fixed styling of markup that can be affected by folded lines.
-    Fixed value selection with multiple active selections.
-    Fixed style compatibility with wxwidgets 2.8 (ref #128).
-    Fixed error reporting by (internal) file operations.
-    Fixed styling comments that start with markup symbols.
-    Fixed restoring a session with one of the files deleted on disk (fixes #161).
-    Fixed reporting variable instances for comment/string fragments.
-    Fixed 'Rename Instances' to always reset previous selection.
-    Fixed auto-complete error for '%dddd' strings (fixes #156).
-    Fixed an issue with showing filenames that include '"?*:<>' on OSX/Linux.
-    Fixed current line marker being shown using 'Run as Scratchpad' with 'runonstart' option.
-    Fixed looping in auto-complete (fixes #151).
-    Fixed incorrect localization that led to an error in 'Save' from tab menu.
+  - Fixed looping in auto-complete when indexes are used (fixes #143).
+  - Fixed possible duplicate paths in the filetree.
+  - Fixed missing numerical keys in serialized tables (upgraded Mobdebug to 0.535).
+  - Fixed styling of markup that can be affected by folded lines.
+  - Fixed value selection with multiple active selections.
+  - Fixed style compatibility with wxwidgets 2.8 (ref #128).
+  - Fixed error reporting by (internal) file operations.
+  - Fixed styling comments that start with markup symbols.
+  - Fixed restoring a session with one of the files deleted on disk (fixes #161).
+  - Fixed reporting variable instances for comment/string fragments.
+  - Fixed 'Rename Instances' to always reset previous selection.
+  - Fixed auto-complete error for '%dddd' strings (fixes #156).
+  - Fixed an issue with showing filenames that include '"?*:<>' on OSX/Linux.
+  - Fixed current line marker being shown using 'Run as Scratchpad' with 'runonstart' option.
+  - Fixed looping in auto-complete (fixes #151).
+  - Fixed incorrect localization that led to an error in 'Save' from tab menu.
 
 ## v0.37 (May 09 2013)
 

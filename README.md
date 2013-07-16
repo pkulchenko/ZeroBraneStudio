@@ -18,7 +18,7 @@ For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith
   - tools (tools/): additional tools (e.g. DirectX/Cg shader compiler...).
 
 ## Installation
-
+=======
 * Get Torch with luarocks (You can automate this with this [script](https://github.com/clementfarabet/torchinstall/blob/master/install) thanks to Clement)
 * Install mobdebug with luarocks with
 

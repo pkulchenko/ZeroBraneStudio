@@ -109,11 +109,12 @@ local function isFileAlteredOnDisk(editor)
           GetIDEString("editormessage"),
           wx.wxOK + wx.wxCENTRE, ide.frame)
       elseif not editor:GetReadOnly() and modTime:IsValid() and oldModTime:IsEarlierThan(modTime) then
-        local ret = wx.wxMessageBox(
-          TR("File '%s' has been modified on disk."):format(fileName)
-          .."\n"..TR("Do you want to reload it?"),
-          GetIDEString("editormessage"),
-          wx.wxYES_NO + wx.wxCENTRE, ide.frame)
+        local ret = (edcfg.autoreload and (not EditorIsModified(editor)) and wx.wxYES)
+          or wx.wxMessageBox(
+            TR("File '%s' has been modified on disk."):format(fileName)
+            .."\n"..TR("Do you want to reload it?"),
+            GetIDEString("editormessage"),
+            wx.wxYES_NO + wx.wxCENTRE, ide.frame)
 
         if ret ~= wx.wxYES or LoadFile(filePath, editor, true) then
           openDocuments[id].modTime = GetFileModTime(filePath)
@@ -150,8 +151,6 @@ function SetEditorSelection(selection)
 
     editor:SetFocus()
     editor:SetSTCFocus(true)
-
-    PackageEventHandle("onEditorActivated", editor)
 
     local id = editor:GetId()
     FileTreeMarkSelected(openDocuments[id] and openDocuments[id].filePath or '')
@@ -471,6 +470,12 @@ function IndicateAll(editor, lines, linee)
       -- trim the list as it will be re-generated
       table.remove(tokens, n)
     end
+
+    -- Clear masked indicators from the current position to the end as these
+    -- will be re-calculated and re-applied based on masking variables.
+    -- This step is needed as some positions could have shifted after updates.
+    editor:IndicatorClearRange(pos-1, editor:GetLength()-pos+1)
+
     editor:SetIndicatorCurrent(curindic)
 
     -- need to cleanup vars as they may include variables from later
@@ -609,10 +614,12 @@ function CreateEditor()
   editor:MarkerDefine(StylesGetMarker("currentline"))
   editor:MarkerDefine(StylesGetMarker("breakpoint"))
 
-  editor:SetMarginWidth(2, 16) -- fold margin
-  editor:SetMarginType(2, wxstc.wxSTC_MARGIN_SYMBOL)
-  editor:SetMarginMask(2, wxstc.wxSTC_MASK_FOLDERS)
-  editor:SetMarginSensitive(2, true)
+  if ide.config.editor.fold then
+    editor:SetMarginWidth(2, 16) -- fold margin
+    editor:SetMarginType(2, wxstc.wxSTC_MARGIN_SYMBOL)
+    editor:SetMarginMask(2, wxstc.wxSTC_MASK_FOLDERS)
+    editor:SetMarginSensitive(2, true)
+  end
 
   editor:SetFoldFlags(wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED +
     wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
@@ -734,7 +741,9 @@ function CreateEditor()
       local localpos = pos-linestart
       local linetxtopos = linetx:sub(1,localpos)
 
-      if (ch == char_LF) then
+      if PackageEventHandle("onEditorCharAdded", editor, event) == false then
+        -- this event has already been handled
+      elseif (ch == char_LF) then
         if (line > 0) then
           local indent = editor:GetLineIndentation(line - 1)
           local linedone = editor:GetLine(line - 1)
@@ -822,9 +831,16 @@ function CreateEditor()
       event:Skip()
     end)
 
+  editor:Connect(wx.wxEVT_SET_FOCUS,
+    function (event)
+      PackageEventHandle("onEditorFocusSet", editor)
+      event:Skip()
+    end)
+
   editor:Connect(wx.wxEVT_KILL_FOCUS,
     function (event)
       if editor:AutoCompActive() then editor:AutoCompCancel() end
+      PackageEventHandle("onEditorFocusLost", editor)
       event:Skip()
     end)
 
@@ -870,10 +886,12 @@ function CreateEditor()
         local ok, res = pcall(IndicateAll, editor,line,line+iv[2])
         if not ok then DisplayOutputLn("Internal error: ",res,line,line+iv[2]) end
       end
+      local firstvisible = editor:DocLineFromVisible(editor:GetFirstVisibleLine())
       local lastline = math.min(editor:GetLineCount(),
-        editor:DocLineFromVisible(editor:GetFirstVisibleLine()) + editor:LinesOnScreen())
-      local firstline = math.min(lastline - editor:LinesOnScreen(),
-        editor:DocLineFromVisible(editor:GetFirstVisibleLine()))
+        firstvisible + editor:LinesOnScreen())
+      -- lastline - editor:LinesOnScreen() can get negative; fix it
+      local firstline = math.min(math.max(0, lastline - editor:LinesOnScreen()),
+        firstvisible)
       MarkupStyle(editor,minupdated or firstline,lastline)
       editor.ev = {}
     end)
@@ -914,7 +932,9 @@ function CreateEditor()
       local keycode = event:GetKeyCode()
       local mod = event:GetModifiers()
       local first, last = 0, notebook:GetPageCount()-1
-      if keycode == wx.WXK_ESCAPE and ide.frame:IsFullScreen() then
+      if PackageEventHandle("onEditorKeyDown", editor, event) == false then
+        -- this event has already been handled
+      elseif keycode == wx.WXK_ESCAPE and ide.frame:IsFullScreen() then
         ShowFullScreen(false)
       -- Ctrl-Home and Ctrl-End don't work on OSX with 2.9.5+; fix it
       elseif ide.osname == 'Macintosh' and ide.wxver >= "2.9.5"
@@ -1175,9 +1195,11 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
 
   -- need to set folding property after lexer is set, otherwise
   -- the folds are not shown (wxwidgets 2.9.5)
-  editor:SetProperty("fold", "1")
-  editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
-  editor:SetProperty("fold.comment", "1")
+  if ide.config.editor.fold then
+    editor:SetProperty("fold", "1")
+    editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
+    editor:SetProperty("fold.comment", "1")
+  end
   
   -- quickfix to prevent weird looks, otherwise need to update styling mechanism for cpp
   -- cpp "greyed out" styles are  styleid + 64
