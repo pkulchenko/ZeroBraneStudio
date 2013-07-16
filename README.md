@@ -20,10 +20,12 @@ For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith
 ## Installation
 =======
 * Get Torch with the torch ezinstall script
+
 ```bash
 curl -s https://raw.github.com/torch/ezinstall/master/install-all | bash
 ```
 * Install mobdebug with torch-rocks with
+
 ```bash
 $ torch-rocks install mobdebug
 ```
