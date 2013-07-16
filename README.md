@@ -19,11 +19,13 @@ For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith
 
 ## Installation
 =======
-* Get Torch with luarocks (You can automate this with this [script](https://github.com/clementfarabet/torchinstall/blob/master/install) thanks to Clement)
-* Install mobdebug with luarocks with
-
+* Get Torch with the torch ezinstall script
 ```bash
-$ luarocks install mobdebug
+curl -s https://raw.github.com/torch/ezinstall/master/install-all | bash
+```
+* Install mobdebug with torch-rocks with
+```bash
+$ torch-rocks install mobdebug
 ```
 
 ```bash
