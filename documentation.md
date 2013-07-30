@@ -28,6 +28,7 @@ title: Documentation
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
 - [Marmalade Quick debugging](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio)
 - [Corona debugging](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
+- [Cocos2d-x debugging](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio)
 - [Wireshark debugging](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio)
 - [GSL-shell debugging](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio)
 
