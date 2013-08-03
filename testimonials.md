@@ -3,20 +3,29 @@ layout: default
 title: Testimonials
 ---
 
+**Love the debugger**, saving my life.
+(Troy Sandal)
+
 Löve + ZeroBraneStudio == **Awesome Live Coding**!
 ([Nikita Dudnik](http://nikdudnik.com/post/30067678839/ive-spent-last-day-looking-for-a-suitable))
-
-It's a joy to use; compared to the debugger in Scite, ZBS is **totally rock solid**.
-(Jeff Smith)
-
-Superb! ZeroBrane just became my **lua/moai IDE of choice**. Thanks for integrating MOAI debugging!
-([Stu](http://www.tabletop-terrain.com/))
 
 I like your Lua IDE. It is **simple to use and has very good debugging features**.
 ([pwegscheider](https://github.com/pwegscheider))
 
+It's a joy to use; compared to the debugger in Scite, ZBS is **totally rock solid**.
+(Jeff Smith)
+
 ZBS is beautiful experience. I am using it usually **10 hrs every day w/o problems**.
 ([Srdjan Markovic](https://github.com/srdjan-m))
+
+Superb! ZeroBrane just became my **lua/moai IDE of choice**. Thanks for integrating MOAI debugging!
+([Stu](http://www.tabletop-terrain.com/))
+
+I'd like to thank you for the Zerobrane IDE. **It is the best** (I've tested almost all of the competitors).
+(Sandro Moreira)
+
+What a **breath of fresh air**. After using for a couple of hours I went back and paid $24 and felt even better :-).
+([doctorbling](http://notebook.kulchenko.com/zerobrane/zerobrane-studio-is-one-year-old#comment-186))
 
 Thank you for contributing such an excellent project. This is the **first truly useful Lua IDE for Mac** that I've found.
 (Steve Weiss) 
