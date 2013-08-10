@@ -16,7 +16,8 @@ The values shown are the default values.
 - `editor.caretline = true`: show caret line.
 - `editor.checkeol = false`: turn off checking for mixed end-of-line encodings in loaded files.
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
-- `editor.foldcompact = false`: set compact fold that doesn't include empty lines after a block.
+- `editor.fold = true`: enable folding.
+- `editor.foldcompact = true`: set compact fold that includes empty lines after a block.
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 10`: set font size.
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
