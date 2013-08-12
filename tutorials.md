@@ -41,7 +41,7 @@ breakpoints, and stepping through the code_.
 **Tutorial 6: Gideros debugging**
 <a href="http://youtu.be/GIipyzSpSr0?hd=1">
 <img src="images/tut-gideros-debugging.png" /></a>
-[Gideros debugging](http://notebook.kulchenko.com/zerobrane/Gideros-debugging-with-zerobrane-studio-ide) tutorial
+[Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide) tutorial
 demonstrates how to configure and use debugging with [Gideros SDK](http://giderosmobile.com/)
 by showing _Watch view, remote console, updating variables,
 breakpoints, and stepping through the code_.
