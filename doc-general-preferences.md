@@ -26,6 +26,7 @@ The values shown are the default values.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname.
 - `debugger.runonstart = true`: execute immediately after starting debugging.
 - `debugger.verbose = false`: enable verbose output.
+- `debugger.allowediting = false`: enable editing of files while debugging.
 
 ## Auto-complete
 
