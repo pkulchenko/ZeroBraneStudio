@@ -43,6 +43,7 @@ title: Documentation
 ## Toolkit-specific
 
 - [Corona](doc-corona-preferences.html)
+- [Moai](doc-moai-preferences.html)
 
 ## Extension and Customization
 
