@@ -40,6 +40,10 @@ title: Documentation
 - [Gideros live coding](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)
 - [Corona live coding](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)
 
+## Toolkit-specific
+
+- [Corona](doc-corona-preferences.html)
+
 ## Extension and Customization
 
 - Adding a translation
