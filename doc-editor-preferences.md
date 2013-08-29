@@ -14,7 +14,7 @@ The values shown are the default values.
 - `editor.autotabs = false`: use tabs if detected.
 - `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
 - `editor.caretline = true`: show caret line.
-- `editor.checkeol = false`: turn off checking for mixed end-of-line encodings in loaded files.
+- `editor.checkeol = true`: check for mixed end-of-line encodings in loaded files (assign `nil` or `false` to disable).
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
 - `editor.fold = true`: enable folding (0.39+).
 - `editor.foldcompact = true`: set compact fold that includes empty lines after a block.
