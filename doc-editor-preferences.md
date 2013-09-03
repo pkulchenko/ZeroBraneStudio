@@ -21,6 +21,7 @@ The values shown are the default values.
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 10`: set font size.
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
+- `editor.saveallonrun = nil`: save modified files before executing Run/Debug commands (0.39+).
 - `editor.smartindent = true`: use smart indentation.
 - `editor.showfncall = true`: mark function calls.
 - `editor.tabwidth = 2`: set tab width.
