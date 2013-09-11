@@ -5,9 +5,9 @@ title: Frequently Asked Questions
 
 <ul id='toc'>&nbsp;</ul>
 
-## What does the bluish line underlying some names mean?
+## What does the bluish line under or around some names mean?
 
-It identifies function calls.
+It identifies **function calls**.
 Depending on your current style it may also be shown as a solid line or a rounded box around a function name.
 You can [disable it](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L98),
 [change its type](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L104),
@@ -18,14 +18,33 @@ or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/
 
 You can set the [project directory](doc-getting-started.html#project_directory), which will be used to set the current directory when your application is run or debugged.
 
-## How to change background color in the editor?
-
-You can put `styles.text.bg = {240,240,240}` in `cfg/user.lua`. See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
-
 ## Why stepping into function calls doesn't work in some cases?
 
 You need to have a file opened in the IDE before you can step into functions defined in that file.
 You can also configure the IDE to [auto-open files](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) for you.
+
+## Why do I get a warning about attempt to connect to port 8172 when I start debugging?
+
+The IDE is using port 8172 to communicate with the application being debugged.
+If you get a firewall warning, you need to **allow the connection** for the debugging to work properly.
+
+## Why am I getting "could not connect to ...:8172" message?
+
+This may happen for three reasons:
+
+- You start your application that uses `require('mobdebug').start()` call to connect to the IDE, but the **debugger server is not started** in the IDE.
+You can fix this by selecting `Project | Start Debugger Server`; if it is disabled, the server is already started.
+- Your **firewall is configured to block connection** to port 8172, which is used by the IDE to communicate with the application you are debugging.
+You need to allow this connection for the debugging to work.
+- In rare cases the IDE may **incorrectly detect the hostname** of the computer it runs on, which may prevent the debugging from working.
+The **hostname is shown** in the Output window when the debugging is started: `Debugger server started at <hostname>:<port>`.
+You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences.html#debugger).
+
+## How to change background color in the editor?
+
+You can put `styles.text.bg = {240,240,240}` in `cfg/user.lua`.
+See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
+To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
@@ -44,7 +63,7 @@ See [LuaJIT debugging](doc-luajit-debugging.html) section for details.
 
 ## How to accept keyboard input for applications started from the IDE?
 
-Simply make sure that you "print" something using `print` or `io.write` before reading the input.
+"print" something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
 ## Where is the configuration file stored?
