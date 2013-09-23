@@ -40,6 +40,11 @@ You need to allow this connection for the debugging to work.
 The **hostname is shown** in the Output window when the debugging is started: `Debugger server started at <hostname>:<port>`.
 You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences.html#debugger).
 
+## Why is the text blurry when running on Windows 8?
+
+Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
+See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
+
 ## How to change background color in the editor?
 
 You can put `styles.text.bg = {240,240,240}` in `cfg/user.lua`.
