@@ -24,7 +24,7 @@ The following configuration will set text background to be light red: `styles.te
 
 ## Style elements
 
-See [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua#L185-L225) for the complete list.
+See [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua#L213-L253) for the complete list.
 
 ## Indicators
 
