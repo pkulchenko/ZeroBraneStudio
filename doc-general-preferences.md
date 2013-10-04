@@ -25,7 +25,7 @@ The values shown are the default values.
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname to use for debugging.
-- `debugger.redirect = nil`: specify how `print` results should be redirected in the application being debugger (0.39+).
+- `debugger.redirect = nil`: specify how `print` results should be redirected in the application being debugged (0.39+).
 Use `c` for 'copying' (appears in the application output and the Output panel), `r` for 'redirecting' (only appears in the Output panel), or `d` for 'default' (only appears in the application output).
 This is mostly useful for remote debugging to specify how the output should be redirected.
 - `debugger.runonstart = false`: execute script immediately after starting debugging.
