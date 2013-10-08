@@ -75,7 +75,7 @@ You will see a prompt in the Output window where you can enter your input.
 
 This is covered in the description of system [configuration](doc-configuration.html).
 
-## How to modify a key mapping?
+## How can I modify a key mapping?
 
 To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration.html):
 `local G = ...; keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"`.
@@ -84,6 +84,14 @@ This will modify the default shortcut for `Program | Start Debugging` command.
 See an [example in user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L18),
 the description for possible [accelerator values](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua#L4),
 and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua).
+
+## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
+
+You can start one instance as you normally do and then start the second instance using the following command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173`.
+This command disables a singleinstance check for the second instance and configures it to use port 8173 for debugging.
+You can then use `require('mobdebug').start("domain-name", 8173)` in your application to connect to the second instance for debugging.
+
+If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173`.
 
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
