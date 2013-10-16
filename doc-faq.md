@@ -39,6 +39,7 @@ You need to allow this connection for the debugging to work.
 - In rare cases the IDE may **incorrectly detect the hostname** of the computer it runs on, which may prevent the debugging from working.
 The **hostname is shown** in the Output window when the debugging is started: `Debugger server started at <hostname>:<port>`.
 You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences.html#debugger).
+For example, if the default hostname is incorrect, **try setting it to `localhost`** by using `debugger.hostname = "localhost"`.
 
 ## Why is the text blurry when running on Windows 8?
 
