@@ -36,57 +36,69 @@ local apis = {
   lua = newAPI(),
 }
 
-function GetApi(apitype)
-  return apis[apitype] or apis["none"]
-end
+function GetApi(apitype) return apis[apitype] or apis.none end
 
 ----------
 -- API loading
 
-local function addAPI(apifile,only,subapis,known) -- relative to API directory
-  local ftype,fname = apifile:match("api[/\\]([^/\\]+)[/\\](.*)%.")
-  if not ftype then
-    DisplayOutputLn(TR("The API file must be located in a subdirectory of the API directory."))
-    return
-  end
-  if ((only and ftype ~= only) or (known and not known[ftype])) then 
-    return 
-  end
-  if (subapis and not subapis[fname]) then return end
-
-  local fn,err = loadfile(apifile)
-  if err then
-    DisplayOutputLn(TR("Error while loading API file: %s"):format(err))
-    return
-  end
-  local env = apis[ftype] or newAPI()
-  apis[ftype] = env
-  env = env.ac.childs
-  local suc,res = pcall(function()return fn(env) end)
-  if (not suc) then
-    DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
-  elseif (res) then
-    local function gennames(tab,prefix)
-      for i,v in pairs(tab) do
-        v.classname = (prefix and (prefix..".") or "")..i
-        if(v.childs) then
-          gennames(v.childs,v.classname)
-        end
-      end
-    end
-    gennames(res)
-    for i,v in pairs(res) do
-      env[i] = v
+local function gennames(tab, prefix)
+  for i,v in pairs(tab) do
+    v.classname = (prefix and (prefix..".") or "")..i
+    if (v.childs) then
+      gennames(v.childs,v.classname)
     end
   end
 end
 
-local function loadallAPIs (only,subapis,known)
-  for _, dir in ipairs(FileSysGet("api/*", wx.wxDIR)) do
-    for _, file in ipairs(FileSysGet(dir.."/*.*", wx.wxFILE)) do
-      if file:match "%.lua$" then
-        addAPI(file,only,subapis,known)
+local function addAPI(ftype, fname) -- relative to API directory
+  local env = apis[ftype] or newAPI()
+
+  local res
+  local api = ide.apis[ftype][fname]
+
+  if type(api) == 'table' then
+    res = api
+  else
+    local fn, err = loadfile(api)
+    if err then
+      DisplayOutputLn(TR("Error while loading API file: %s"):format(err))
+      return
+    end
+    local suc
+    suc, res = pcall(function() return fn(env.ac.childs) end)
+    if (not suc) then
+      DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
+      return
+    end
+    -- cache the result
+    ide.apis[ftype][fname] = res
+  end
+  apis[ftype] = env
+
+  gennames(res)
+  for i,v in pairs(res) do env.ac.childs[i] = v end
+end
+
+local function loadallAPIs(only, subapis, known)
+  for ftype, v in pairs(only and {[only] = ide.apis[only]} or ide.apis) do
+    if (not known or known[ftype]) then
+      for fname in pairs(v) do
+        if (not subapis or subapis[fname]) then addAPI(ftype, fname) end
       end
+    end
+  end
+end
+
+local function scanAPIs()
+  for _, file in ipairs(FileSysGetRecursive("api", true, "*.lua")) do
+    if not IsDirectory(file) then
+      local ftype, fname = file:match("api[/\\]([^/\\]+)[/\\](.*)%.")
+      if not ftype or not fname then
+        DisplayOutputLn(TR("The API file must be located in a subdirectory of the API directory."))
+        return
+      end
+      ide.apis[ftype] = ide.apis[ftype] or {}
+      ide.apis[ftype][fname] = file
     end
   end
 end
@@ -119,7 +131,7 @@ local function fillTips(api,apibasename,apiname)
     if not tab.childs then return end
     for key,info in pairs(tab.childs) do
       traverse(info,key)
-      if info.type == "function" or info.type == "method" then
+      if info.type == "function" or info.type == "method" or info.type == "value" then
         local libstr = libname ~= "" and libname.."." or ""
 
         -- fix description
@@ -129,15 +141,17 @@ local function fillTips(api,apibasename,apiname)
           :gsub("\t","")
           :gsub("("..widthmask..")[ \t]([^%)])","%1\n %2")
 
-        info.description = info.description
+        info.description = (info.description or "")
           :gsub("\n\n","<br>"):gsub("\n"," "):gsub("<br>","\n")
           :gsub("[ \t]+"," ")
           :gsub("("..widthmask..") ","%1\n")
 
         -- build info
-        local inf = frontname.."\n"..info.description
+        local inf = (info.type == "value" and "" or frontname.."\n")
+          ..info.description
         local sentence = info.description:match("^(.-)%. ?\n")
-        local infshort = frontname.."\n"..(sentence and sentence.."..." or info.description)
+        local infshort = (info.type == "value" and "" or frontname.."\n")
+          ..(sentence and sentence.."..." or info.description)
         local infshortbatch = (info.returns and info.args) and frontname or infshort
 
         -- add to infoclass
@@ -197,6 +211,7 @@ local function resolveAssign(editor,tx)
   local assigns = editor.assignscache and editor.assignscache.assigns
   local function getclass(tab,a)
     local key,rest = a:match("([%w_]+)[%.:](.*)")
+    key = tonumber(key) or key -- make this work for childs[0]
     if (key and rest and tab.childs and tab.childs[key]) then
       return getclass(tab.childs[key],rest)
     end
@@ -214,16 +229,24 @@ local function resolveAssign(editor,tx)
       local classname = nil
       c = ""
       change = false
-      for w,s in tx:gmatch("([%w_]*)([%.:]?)") do
+      for w,s in tx:gmatch("([%w_]+)([%.:]?)") do
         local old = classname
-        classname = classname or (assigns[c..w])
+        -- check if what we have so far can be matched with a class name
+        -- this can happen if it's a reference to a value with a known type
+        classname = classname or assigns[c..w]
         if (s ~= "" and old ~= classname) then
+          -- continue checking unless this can lead to recursive substitution
+          change = not classname:find("^"..w) and not classname:find("^"..c..w)
           c = classname..s
-          change = true
         else
           c = c..w..s
         end
       end
+      -- abort if the same or recursive value is returned; no need to continue.
+      -- this can happen after typing "smth = smth:new(); smth:" or
+      -- "line = line:gsub(...); line:" as the current algorithm attempts to
+      -- replace "line" with the value that also includes "line"
+      if change and c:find("^"..(tx:gsub("[.:]","[.:]"))) then break end
       tx = c
     end
   else
@@ -234,22 +257,33 @@ local function resolveAssign(editor,tx)
   return getclass(ac,c)
 end
 
-function GetTipInfo(editor, content, short)
-  local caller = content:match("([%w_]+)%(%s*$")
-  local class = caller and content:match("([%w_]+)[%.:]"..caller.."%(%s*$") or ""
+function GetTipInfo(editor, content, short, fullmatch)
+  if not content then return end
+
+  UpdateAssignCache(editor)
+
+  -- try to resolve the class
+  content = content:gsub("%b[]",".0")
+  local tab, rest = resolveAssign(editor, content)
+
+  local caller = content:match("([%w_]+)%(?%s*$")
+  local class = (tab and tab.classname
+    or caller and content:match("([%w_]+)[%.:]"..caller.."%(?%s*$") or "")
   local tip = editor.api.tip
 
   local classtab = short and tip.shortfinfoclass or tip.finfoclass
   local funcstab = short and tip.shortfinfo or tip.finfo
-
-  UpdateAssignCache(editor)
 
   if (editor.assignscache and not (class and classtab[class])) then
     local assigns = editor.assignscache.assigns
     class = assigns and assigns[class] or class
   end
 
-  return caller and (class and classtab[class]) and classtab[class][caller] or funcstab[caller]
+  local res = (caller and (class and classtab[class]) and classtab[class][caller]
+    or (not fullmatch and funcstab[caller] or nil))
+  -- some values may not have descriptions (for example, true/false);
+  -- don't return empty strings as they are displayed as empty tooltips.
+  return res and #res > 0 and res or nil
 end
 
 local function reloadAPI(only,subapis)
@@ -281,6 +315,7 @@ do
   -- by defaul load every known api except lua
   known.lua = false
 
+  scanAPIs()
   loadallAPIs(nil,nil,known)
   generateAPIInfo()
 end
@@ -341,11 +376,8 @@ function DynamicWordsReset ()
 end
 
 local function getEditorLines(editor,line,numlines)
-  local tx = ""
-  for i=0,numlines do
-    tx = tx..editor:GetLine(line + i)
-  end
-  return tx
+  return editor:GetTextRange(
+    editor:PositionFromLine(line),editor:PositionFromLine(line+numlines+1))
 end
 
 function DynamicWordsAdd(ev,editor,content,line,numlines)
@@ -394,9 +426,12 @@ local function getAutoCompApiList(childs,fragment,method)
     if not wlist then
       wlist = " "
       for i,v in pairs(childs) do
+        -- in some cases (tip.finfo), v may be a string; check for that first.
         -- if a:b typed, then value (type == "value") not allowed
         -- if a.b typed, then method (type == "method") not allowed
-        if (method and v.type ~= "value") or (not method and v.type ~= "method") then
+        if type(v) ~= 'table' or (v.type and
+           ((method and v.type ~= "value")
+         or (not method and v.type ~= "method"))) then
           wlist = wlist..i.." "
         end
       end
@@ -426,9 +461,12 @@ local function getAutoCompApiList(childs,fragment,method)
 
   local sub = strategy == 1
   for key,v in pairs(childs) do
+    -- in some cases (tip.finfo), v may be a string; check for that first.
     -- if a:b typed, then value (type == "value") not allowed
     -- if a.b typed, then method (type == "method") not allowed
-    if (method and v.type ~= "value") or (not method and v.type ~= "method") then
+    if type(v) ~= 'table' or (v.type and
+       ((method and v.type ~= "value")
+     or (not method and v.type ~= "method"))) then
       local used = {}
       --
       local kl = key:lower()
@@ -469,8 +507,9 @@ function CreateAutoCompList(editor,key)
   local api = editor.api
   local tip = api.tip
   local ac = api.ac
+  local sep = editor.spec.sep
 
-  local method = key:match(":[^:%.]*$") ~= nil
+  local method = key:match(":[^"..sep.."]*$") ~= nil
 
   -- ignore keywords
   if tip.keys[key] then return end
@@ -483,10 +522,9 @@ function CreateAutoCompList(editor,key)
   if not (progress) then return end
 
   if (tab == ac) then
-    local _, krest = rest:match("([%w_]+)[:%.]([%w_]+)%s*$")
+    local _, krest = rest:match("([%w_]+)["..sep.."]([%w_]*)%s*$")
     if (krest) then
-      if (#krest < 3) then return end
-      tab = tip.finfo
+      tab = #krest >= (ide.config.acandtip.startat or 2) and tip.finfo or {}
       rest = krest:gsub("[^%w_]","")
     else
       rest = rest:gsub("[^%w_]","")
@@ -501,7 +539,7 @@ function CreateAutoCompList(editor,key)
   -- only if api search couldnt descend
   -- ie we couldnt find matching sub items
   local dw = ""
-  if (tab == ac and last and #last >= (ide.config.acandtip.startat or 2)) then
+  if (last and #last >= (ide.config.acandtip.startat or 2)) then
     last = last:lower()
     if dynamicwords[last] then
       local list = dynamicwords[last]
@@ -525,6 +563,27 @@ function CreateAutoCompList(editor,key)
 
   -- list from api
   local apilist = getAutoCompApiList(tab.childs or tab,rest,method)
+
+  local function addInheritance(tab, apilist, seen)
+    if not tab.inherits then return end
+    for base in tab.inherits:gmatch("[%w_"..sep.."]+") do
+      local tab = ac
+      -- map "a.b.c" to class hierarchy (a.b.c)
+      for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
+
+      if tab and not seen[tab] then
+        seen[tab] = true
+        for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
+          table.insert(apilist, v)
+        end
+        addInheritance(tab, apilist, seen)
+      end
+    end
+  end
+
+  -- handle (multiple) inheritance; add matches from the parent class/lib
+  addInheritance(tab, apilist, {[tab] = true})
+
   local compstr = ""
   if apilist then
     if (#rest > 0) then
@@ -565,11 +624,19 @@ function CreateAutoCompList(editor,key)
     else
       table.sort(apilist)
     end
+
+    local prev = apilist[#apilist]
+    for i = #apilist-1,1,-1 do
+      if prev == apilist[i] then
+        table.remove(apilist, i+1)
+      else prev = apilist[i] end
+    end
+
     compstr = table.concat(apilist," ")
   end
 
   -- concat final, list complete first
   local li = (compstr .. dw)
   
-  return li ~= "" and (#li > 1024 and li:sub(1,1024).."..." or li)
+  return li ~= "" and (#li > 1024 and li:sub(1,1024).."..." or li) or nil
 end

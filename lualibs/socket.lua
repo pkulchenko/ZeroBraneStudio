@@ -1,7 +1,6 @@
 -----------------------------------------------------------------------------
 -- LuaSocket helper module
 -- Author: Diego Nehab
--- RCS ID: $Id: socket.lua 1418 2006-04-25 09:38:15Z 3rdparty $
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -11,12 +10,13 @@ local base = _G
 local string = require("string")
 local math = require("math")
 local socket = require("socket.core")
-module("socket")
 
------------------------------------------------------------------------------
--- Exported auxiliar functions
------------------------------------------------------------------------------
-function connect(address, port, laddress, lport)
+local _M = socket
+
+-- this is needed in case this library is used when "socket.core" is loaded,
+-- but has an older version of luasocket that does not include `connect`.
+if not socket.connect then
+  socket.connect = function (address, port, laddress, lport)
     local sock, err = socket.tcp()
     if not sock then return nil, err end
     if laddress then
@@ -26,22 +26,52 @@ function connect(address, port, laddress, lport)
     local res, err = sock:connect(address, port)
     if not res then return nil, err end
     return sock
+  end
 end
 
-function bind(host, port, backlog)
-    local sock, err = socket.tcp()
-    if not sock then return nil, err end
-    sock:setoption("reuseaddr", true)
-    local res, err = sock:bind(host, port)
-    if not res then return nil, err end
-    res, err = sock:listen(backlog)
-    if not res then return nil, err end
-    return sock
+-----------------------------------------------------------------------------
+-- Exported auxiliar functions
+-----------------------------------------------------------------------------
+function _M.connect4(address, port, laddress, lport)
+    return socket.connect(address, port, laddress, lport, "inet")
 end
 
-try = newtry()
+function _M.connect6(address, port, laddress, lport)
+    return socket.connect(address, port, laddress, lport, "inet6")
+end
 
-function choose(table)
+function _M.bind(host, port, backlog)
+    if host == "*" then host = "0.0.0.0" end
+    local addrinfo, err = socket.dns.getaddrinfo(host);
+    if not addrinfo then return nil, err end
+    local sock, res
+    err = "no info on address"
+    for i, alt in base.ipairs(addrinfo) do
+        if alt.family == "inet" then
+            sock, err = socket.tcp()
+        else
+            sock, err = socket.tcp6()
+        end
+        if not sock then return nil, err end
+        sock:setoption("reuseaddr", true)
+        res, err = sock:bind(alt.addr, port)
+        if not res then 
+            sock:close()
+        else 
+            res, err = sock:listen(backlog)
+            if not res then 
+                sock:close()
+            else
+                return sock
+            end
+        end 
+    end
+    return nil, err
+end
+
+_M.try = _M.newtry()
+
+function _M.choose(table)
     return function(name, opt1, opt2)
         if base.type(name) ~= "string" then
             name, opt1, opt2 = "default", name, opt1
@@ -56,10 +86,11 @@ end
 -- Socket sources and sinks, conforming to LTN12
 -----------------------------------------------------------------------------
 -- create namespaces inside LuaSocket namespace
-sourcet = {}
-sinkt = {}
+local sourcet, sinkt = {}, {}
+_M.sourcet = sourcet
+_M.sinkt = sinkt
 
-BLOCKSIZE = 2048
+_M.BLOCKSIZE = 2048
 
 sinkt["close-when-done"] = function(sock)
     return base.setmetatable({
@@ -89,7 +120,7 @@ end
 
 sinkt["default"] = sinkt["keep-open"]
 
-sink = choose(sinkt)
+_M.sink = _M.choose(sinkt)
 
 sourcet["by-length"] = function(sock, length)
     return base.setmetatable({
@@ -129,5 +160,6 @@ end
 
 sourcet["default"] = sourcet["until-closed"]
 
-source = choose(sourcet)
+_M.source = _M.choose(sourcet)
 
+return _M

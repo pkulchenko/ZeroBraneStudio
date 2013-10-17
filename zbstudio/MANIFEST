@@ -11,6 +11,8 @@ cfg/i18n/*.lua
 interpreters/*.lua
 lualibs/copas/copas.lua
 lualibs/coxpcall/coxpcall.lua
+lualibs/lua_lexer_loose.lua
+lualibs/lua_parser_loose.lua
 lualibs/luainspect/ast.lua
 lualibs/luainspect/compat_env.lua
 lualibs/luainspect/dump.lua
@@ -43,16 +45,19 @@ lualibs/mime.lua
 lualibs/socket.lua
 lualibs/socket/ftp.lua
 lualibs/socket/http.lua
+lualibs/socket/headers.lua
 lualibs/socket/smtp.lua
 lualibs/socket/tp.lua
 lualibs/socket/url.lua
 lualibs/ssl.lua
 lualibs/ssl/https.lua
 lualibs/testwell.lua
+packages/*.lua
 spec/*.lua
 src/defs.lua
 src/editor/autocomplete.lua
 src/editor/commands.lua
+src/editor/proto.lua
 src/editor/debugger.lua
 src/editor/editor.lua
 src/editor/filetree.lua
@@ -71,6 +76,7 @@ src/editor/menu_search.lua
 src/editor/menu_tools.lua
 src/editor/menu_view.lua
 src/editor/output.lua
+src/editor/package.lua
 src/editor/settings.lua
 src/editor/shellbox.lua
 src/editor/singleinstance.lua

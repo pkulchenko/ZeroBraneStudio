@@ -1,12 +1,12 @@
 --
--- MobDebug 0.525
+-- MobDebug 0.543
 -- Copyright 2011-13 Paul Kulchenko
 -- Based on RemDebug 1.0 Copyright Kepler Project 2005
 --
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = 0.525,
+  _VERSION = 0.543,
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and os.getenv("MOBDEBUG_PORT") or 8172,
@@ -26,6 +26,8 @@ local require = require
 local setmetatable = setmetatable
 local string = string
 local tonumber = tonumber
+local unpack = table.unpack or unpack
+local rawget = rawget
 
 -- if strict.lua is used, then need to avoid referencing some global
 -- variables, as they can be undefined;
@@ -103,7 +105,7 @@ end
 local function q(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
 
 local serpent = (function() ---- include Serpent module for serialization
-local n, v = "serpent", 0.23 -- (C) 2012-13 Paul Kulchenko; MIT License
+local n, v = "serpent", 0.25 -- (C) 2012-13 Paul Kulchenko; MIT License
 local c, d = "Paul Kulchenko", "Lua serializer and pretty printer"
 local snum = {[tostring(1/0)]='1/0 --[[math.huge]]',[tostring(-1/0)]='-1/0 --[[-math.huge]]',[tostring(0/0)]='0/0'}
 local badtype = {thread = true, userdata = true, cdata = true}
@@ -116,7 +118,7 @@ for _,g in ipairs({'coroutine', 'debug', 'io', 'math', 'string', 'table', 'os'})
   for k,v in pairs(G[g]) do globals[v] = g..'.'..k end end
 
 local function s(t, opts)
-  local name, indent, fatal = opts.name, opts.indent, opts.fatal
+  local name, indent, fatal, maxnum = opts.name, opts.indent, opts.fatal, opts.maxnum
   local sparse, custom, huge = opts.sparse, opts.custom, not opts.nohuge
   local space, maxl = (opts.compact and '' or ' '), (opts.maxlevel or math.huge)
   local iname, comm = '_'..(name or ''), opts.comment and (tonumber(opts.comment) or math.huge)
@@ -149,9 +151,9 @@ local function s(t, opts)
       ((type(name) == "number") and '' or name..space..'='..space) or
       (name ~= nil and sname..space..'='..space or '')
     if seen[t] then -- already seen this element
-      table.insert(sref, spath..space..'='..space..seen[t])
+      sref[#sref+1] = spath..space..'='..space..seen[t]
       return tag..'nil'..comment('ref', level) end
-    if mt and (mt.__serialize or mt.__tostring) then -- knows how to serialize itself
+    if type(mt) == 'table' and (mt.__serialize or mt.__tostring) then -- knows how to serialize itself
       seen[t] = insref or spath
       if mt.__serialize then t = mt.__serialize(t) else t = tostring(t) end
       ttype = type(t) end -- new value falls through to be serialized
@@ -159,10 +161,14 @@ local function s(t, opts)
       if level >= maxl then return tag..'{}'..comment('max', level) end
       seen[t] = insref or spath
       if next(t) == nil then return tag..'{}'..comment(t, level) end -- table empty
-      local maxn, o, out = #t, {}, {}
-      for key = 1, maxn do table.insert(o, key) end
-      for key in pairs(t) do if not o[key] then table.insert(o, key) end end
-      if opts.sortkeys then alphanumsort(o, t, opts.sortkeys) end
+      local maxn, o, out = math.min(#t, maxnum or #t), {}, {}
+      for key = 1, maxn do o[key] = key end
+      if not maxnum or #o < maxnum then
+        local n = #o -- n = n + 1; o[n] is much faster than o[#o+1] on large tables
+        for key in pairs(t) do if o[key] ~= key then n = n + 1; o[n] = key end end end
+      if maxnum and #o > maxnum then o[maxnum+1] = nil end
+      if opts.sortkeys and #o > maxn then alphanumsort(o, t, opts.sortkeys) end
+      local sparse = sparse and #o > maxn -- disable sparsness if only numeric keys (shorter output)
       for n, key in ipairs(o) do
         local value, ktype, plainindex = t[key], type(key), n <= maxn and not sparse
         if opts.valignore and opts.valignore[value] -- skip ignored values; do nothing
@@ -171,14 +177,14 @@ local function s(t, opts)
         or sparse and value == nil then -- skipping nils; do nothing
         elseif ktype == 'table' or ktype == 'function' or badtype[ktype] then
           if not seen[key] and not globals[key] then
-            table.insert(sref, 'placeholder')
+            sref[#sref+1] = 'placeholder'
             local sname = safename(iname, gensym(key)) -- iname is table for local variables
             sref[#sref] = val2str(key,sname,indent,sname,iname,true) end
-          table.insert(sref, 'placeholder')
+          sref[#sref+1] = 'placeholder'
           local path = seen[t]..'['..(seen[key] or globals[key] or gensym(key))..']'
           sref[#sref] = path..space..'='..space..(seen[value] or val2str(value,nil,indent,path))
         else
-          table.insert(out,val2str(value,key,indent,insref,seen[t],plainindex,level+1))
+          out[#out+1] = val2str(value,key,indent,insref,seen[t],plainindex,level+1)
         end
       end
       local prefix = string.rep(indent or '', level)
@@ -277,9 +283,9 @@ local function remove_breakpoint(file, line)
   if breakpoints[line] then breakpoints[line][file] = nil end
 end
 
--- this file name is already converted to lower case on windows.
 local function has_breakpoint(file, line)
-  return breakpoints[line] and breakpoints[line][file]
+  return breakpoints[line]
+     and breakpoints[line][iscasepreserving and string.lower(file) or file]
 end
 
 local function restore_vars(vars)
@@ -302,7 +308,9 @@ local function restore_vars(vars)
   while i > 0 do
     local name = debug.getlocal(3, i)
     if not written_vars[name] then
-      if string.sub(name, 1, 1) ~= '(' then debug.setlocal(3, i, vars[name]) end
+      if string.sub(name, 1, 1) ~= '(' then
+        debug.setlocal(3, i, rawget(vars, name))
+      end
       written_vars[name] = true
     end
     i = i - 1
@@ -314,7 +322,9 @@ local function restore_vars(vars)
     local name = debug.getupvalue(func, i)
     if not name then break end
     if not written_vars[name] then
-      if string.sub(name, 1, 1) ~= '(' then debug.setupvalue(func, i, vars[name]) end
+      if string.sub(name, 1, 1) ~= '(' then
+        debug.setupvalue(func, i, rawget(vars, name))
+      end
       written_vars[name] = true
     end
     i = i + 1
@@ -338,6 +348,13 @@ local function capture_vars(level)
     if string.sub(name, 1, 1) ~= '(' then vars[name] = value end
     i = i + 1
   end
+  -- returned 'vars' table plays a dual role: (1) it captures local values
+  -- and upvalues to be restored later (in case they are modified in "eval"),
+  -- and (2) it provides an environment for evaluated chunks.
+  -- getfenv(func) is needed to provide proper environment for functions,
+  -- including access to globals, but this causes vars[name] to fail in
+  -- restore_vars on local variables or upvalues with `nil` values when
+  -- 'strict' is in effect. To avoid this `rawget` is used in restore_vars.
   setmetatable(vars, { __index = getfenv(func), __newindex = getfenv(func) })
   return vars
 end
@@ -395,9 +412,13 @@ local function debug_hook(event, line)
   -- the next line checks if the debugger is run under LuaJIT and if
   -- one of debugger methods is present in the stack, it simply returns.
   if jit then
-    local coro = coroutine.running()
-    if coro_debugee and coro ~= coro_debugee and not coroutines[coro]
-      or not coro_debugee and (in_debugger() or coro and not coroutines[coro])
+    -- when luajit is compiled with LUAJIT_ENABLE_LUA52COMPAT,
+    -- coroutine.running() returns non-nil for the main thread.
+    local coro, main = coroutine.running()
+    if not coro or main then coro = 'main' end
+    local disabled = coroutines[coro] == false
+      or coroutines[coro] == nil and coro ~= (coro_debugee or 'main')
+    if coro_debugee and disabled or not coro_debugee and (disabled or in_debugger())
     then return end
   end
 
@@ -425,6 +446,8 @@ local function debug_hook(event, line)
       or is_pending(server)
     ) then checkcount = checkcount + 1; return end
 
+    checkcount = mobdebug.checkcount -- force check on the next command
+
     -- this is needed to check if the stack got shorter or longer.
     -- unfortunately counting call/return calls is not reliable.
     -- the discrepancy may happen when "pcall(load, '')" call is made
@@ -444,23 +467,27 @@ local function debug_hook(event, line)
     local file = lastfile
     if (lastsource ~= caller.source) then
       file, lastsource = caller.source, caller.source
-      -- the easiest/fastest way would be to check for file names starting
-      -- with '@', but users can supply names that may not use '@',
+      -- technically, users can supply names that may not use '@',
       -- for example when they call loadstring('...', 'filename.lua').
-      -- so we handle all sources as filenames
-      file = file:gsub("^@", ""):gsub("\\", "/")
-      -- need this conversion to be applied to relative and absolute
-      -- file names as you may write "require 'Foo'" to
-      -- load "foo.lua" (on a case insensitive file system) and breakpoints
-      -- set on foo.lua will not work if not converted to the same case.
-      if iscasepreserving then file = string.lower(file) end
-      if file:find("%./") == 1 then file = file:sub(3)
-      else file = file:gsub('^'..q(basedir), '') end
-
-      -- fix filenames for loaded strings that may contain scripts with newlines;
-      -- some filesystems may allow "\n" in filenames, which is not supported here.
-      if file:find("\n") then
-        file = file:gsub("\n", ' '):sub(1, 32) -- limit to 32 chars
+      -- Unfortunately, there is no reliable/quick way to figure out
+      -- what is the filename and what is the source code.
+      -- The following will work if the supplied filename uses Unix path.
+      if file:find("^@") then
+        file = file:gsub("^@", ""):gsub("\\", "/")
+        -- need this conversion to be applied to relative and absolute
+        -- file names as you may write "require 'Foo'" to
+        -- load "foo.lua" (on a case insensitive file system) and breakpoints
+        -- set on foo.lua will not work if not converted to the same case.
+        if iscasepreserving then file = string.lower(file) end
+        if file:find("%./") == 1 then file = file:sub(3)
+        else file = file:gsub('^'..q(basedir), '') end
+        -- some file systems allow newlines in file names; remove these.
+        file = file:gsub("\n", ' ')
+      else
+        -- this is either a file name coming from loadstring("chunk", "file"),
+        -- or the actual source code that needs to be serialized (as it may
+        -- include newlines); assume it's a file name if it's all on one line.
+        file = file:find("[\r\n]") and serpent.line(file) or file
       end
 
       -- set to true if we got here; this only needs to be done once per
@@ -486,7 +513,9 @@ local function debug_hook(event, line)
     -- no watch that was fired. If there was a watch, handle its result.
     local getin = (status == nil) and
       (step_into
-      or (step_over and stack_level <= step_level)
+      -- when coroutine.running() return `nil` (main thread in Lua 5.1),
+      -- step_over will equal 'main', so need to check for that explicitly.
+      or (step_over and step_over == (coroutine.running() or 'main') and stack_level <= step_level)
       or has_breakpoint(file, line)
       or is_pending(server))
 
@@ -511,7 +540,7 @@ local function debug_hook(event, line)
     -- need to recheck once more as resume after 'stack' command may
     -- return something else (for example, 'exit'), which needs to be handled
     if status and res and res ~= 'stack' then
-      if abort == nil and res == "exit" then os.exit(1) end
+      if abort == nil and res == "exit" then os.exit(1); return end
       abort = res
       -- only abort if safe; if not, there is another (earlier) check inside
       -- debug_hook, which will abort execution at the first safe opportunity
@@ -521,6 +550,9 @@ local function debug_hook(event, line)
     end
 
     if vars then restore_vars(vars) end
+
+    -- last command requested Step Over/Out; store the current thread
+    if step_over == true then step_over = coroutine.running() or 'main' end
   end
 end
 
@@ -641,7 +673,8 @@ local function debugger_loop(sev, svars, sfile, sline)
           server:send("200 OK 0\n")
           coroutine.yield("load")
         else
-          local chunk = server:receive(size)
+          -- receiving 0 bytes blocks (at least in luasocket 2.0.2), so skip reading
+          local chunk = size == 0 and "" or server:receive(size)
           if chunk then -- LOAD a new script for debugging
             local func, res = loadstring(chunk, "@"..name)
             if func then
@@ -806,15 +839,21 @@ local function isrunning()
   return coro_debugger and coroutine.status(coro_debugger) == 'suspended'
 end
 
+local lasthost, lastport
+
 -- Starts a debug session by connecting to a controller
 local function start(controller_host, controller_port)
   -- only one debugging session can be run (as there is only one debug hook)
   if isrunning() then return end
 
-  controller_host = controller_host or "localhost"
-  controller_port = controller_port or mobdebug.port
+  lasthost = controller_host or lasthost
+  lastport = controller_port or lastport
 
-  server = (socket.connect4 or socket.connect)(controller_host, controller_port)
+  controller_host = lasthost or "localhost"
+  controller_port = lastport or mobdebug.port
+
+  local err
+  server, err = (socket.connect4 or socket.connect)(controller_host, controller_port)
   if server then
     -- correct stack depth which already has some calls on it
     -- so it doesn't go into negative when those calls return
@@ -847,10 +886,12 @@ local function start(controller_host, controller_port)
     end
     coro_debugger = coroutine.create(debugger_loop)
     debug.sethook(debug_hook, "lcr")
+    seen_hook = nil -- reset in case the last start() call was refused
     step_into = true -- start with step command
     return true
   else
-    print("Could not connect to " .. controller_host .. ":" .. controller_port)
+    print(("Could not connect to %s:%s: %s")
+      :format(controller_host, controller_port, err or "unknown error"))
   end
 end
 
@@ -858,11 +899,15 @@ local function controller(controller_host, controller_port, scratchpad)
   -- only one debugging session can be run (as there is only one debug hook)
   if isrunning() then return end
 
-  controller_host = controller_host or "localhost"
-  controller_port = controller_port or mobdebug.port
+  lasthost = controller_host or lasthost
+  lastport = controller_port or lastport
+
+  controller_host = lasthost or "localhost"
+  controller_port = lastport or mobdebug.port
 
   local exitonerror = not scratchpad
-  server = (socket.connect4 or socket.connect)(controller_host, controller_port)
+  local err
+  server, err = (socket.connect4 or socket.connect)(controller_host, controller_port)
   if server then
     local function report(trace, err)
       local msg = err .. "\n" .. trace
@@ -909,7 +954,8 @@ local function controller(controller_host, controller_port, scratchpad)
       end
     end
   else
-    print("Could not connect to " .. controller_host .. ":" .. controller_port)
+    print(("Could not connect to %s:%s: %s")
+      :format(controller_host, controller_port, err or "unknown error"))
     return false
   end
   return true
@@ -926,13 +972,15 @@ end
 local function on()
   if not (isrunning() and server) then return end
 
-  local co = coroutine.running()
+  -- main is set to true under Lua5.2 for the "main" chunk.
+  -- Lua5.1 returns co as `nil` in that case.
+  local co, main = coroutine.running()
+  if main then co = nil end
   if co then
-    if not coroutines[co] then
-      coroutines[co] = true
-      debug.sethook(co, debug_hook, "lcr")
-    end
+    coroutines[co] = true
+    debug.sethook(co, debug_hook, "lcr")
   else
+    if jit then coroutines.main = true end
     debug.sethook(debug_hook, "lcr")
   end
 end
@@ -940,13 +988,28 @@ end
 local function off()
   if not (isrunning() and server) then return end
 
-  local co = coroutine.running()
+  -- main is set to true under Lua5.2 for the "main" chunk.
+  -- Lua5.1 returns co as `nil` in that case.
+  local co, main = coroutine.running()
+  if main then co = nil end
+
+  -- don't remove coroutine hook under LuaJIT as there is only one (global) hook
   if co then
-    if coroutines[co] then coroutines[co] = false end
-    -- don't remove coroutine hook under LuaJIT as there is only one (global) hook
+    coroutines[co] = false
     if not jit then debug.sethook(co) end
   else
-    debug.sethook()
+    if jit then coroutines.main = false end
+    if not jit then debug.sethook() end
+  end
+
+  -- check if there is any thread that is still being debugged under LuaJIT;
+  -- if not, turn the debugging off
+  if jit then
+    local remove = true
+    for co, debugged in pairs(coroutines) do
+      if debugged then remove = false; break end
+    end
+    if remove then debug.sethook() end
   end
 end
 
@@ -1007,8 +1070,11 @@ local function handle(params, client, options)
   elseif command == "setb" then
     _, _, _, file, line = string.find(params, "^([a-z]+)%s+(.-)%s+(%d+)%s*$")
     if file and line then
-      file = string.gsub(file, "\\", "/") -- convert slash
-      file = removebasedir(file, basedir)
+      -- if this is a file name, and not a file source
+      if not file:find('^".*"$') then
+        file = string.gsub(file, "\\", "/") -- convert slash
+        file = removebasedir(file, basedir)
+      end
       client:send("SETB " .. file .. " " .. line .. "\n")
       if client:receive() == "200 OK" then
         set_breakpoint(file, line)
@@ -1042,8 +1108,11 @@ local function handle(params, client, options)
   elseif command == "delb" then
     _, _, _, file, line = string.find(params, "^([a-z]+)%s+(.-)%s+(%d+)%s*$")
     if file and line then
-      file = string.gsub(file, "\\", "/") -- convert slash
-      file = removebasedir(file, basedir)
+      -- if this is a file name, and not a file source
+      if not file:find('^".*"$') then
+        file = string.gsub(file, "\\", "/") -- convert slash
+        file = removebasedir(file, basedir)
+      end
       client:send("DELB " .. file .. " " .. line .. "\n")
       if client:receive() == "200 OK" then 
         remove_breakpoint(file, line)
@@ -1121,7 +1190,7 @@ local function handle(params, client, options)
         local file = string.gsub(exp, "\\", "/") -- convert slash
         file = removebasedir(file, basedir)
         client:send("LOAD " .. #lines .. " " .. file .. "\n")
-        client:send(lines)
+        if #lines > 0 then client:send(lines) end
       end
       while true do
         local params, err = client:receive()
@@ -1148,7 +1217,7 @@ local function handle(params, client, options)
               print("Error in processing results: " .. err)
               return nil, nil, "Error in processing results: " .. err
             end
-            print((table.unpack or unpack)(res))
+            print(unpack(res))
             return res[1], res
           end
         elseif status == "201" then
@@ -1344,7 +1413,9 @@ local function moai()
   if not moconew then return end
   MOAICoroutine.new = function(...)
     local thread = moconew(...)
-    local mt = getmetatable(thread)
+    -- need to support both thread.run and getmetatable(thread).run, which
+    -- was used in earlier MOAI versions
+    local mt = thread.run and thread or getmetatable(thread)
     local patched = mt.run
     mt.run = function(self, f, ...)
       return patched(self,  function(...)
@@ -1370,6 +1441,10 @@ local function done()
 
   debug.sethook()
   server:close()
+
+  coro_debugger = nil -- to make sure isrunning() returns `false`
+  seen_hook = nil -- to make sure that the next start() call works
+  abort = nil -- to make sure that callback calls use proper "abort" value
 end
 
 -- make public functions available

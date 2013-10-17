@@ -1,5 +1,5 @@
 -- Integration with MobDebug
--- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 -- Original authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 
@@ -17,11 +17,8 @@ debugger.watchCtrl = nil -- the watch ctrl that shows watch information
 debugger.stackCtrl = nil -- the stack ctrl that shows stack information
 debugger.toggleview = { stackpanel = false, watchpanel = false }
 debugger.hostname = ide.config.debugger.hostname or (function()
-  local addr = wx.wxIPV4address() -- check what address is resolvable
-  for _, host in ipairs({wx.wxGetHostName(), wx.wxGetFullHostName()}) do
-    if host and #host > 0 and addr:Hostname(host) then return host end
-  end
-  return "localhost" -- last resort; no known good hostname
+  local hostname = socket.dns.gethostname()
+  return hostname and socket.dns.toip(hostname) and hostname or "localhost"
 end)()
 
 local notebook = ide.frame.notebook
@@ -31,13 +28,37 @@ local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
 local BREAKPOINT_MARKER = StylesGetMarker("breakpoint")
 local BREAKPOINT_MARKER_VALUE = 2^BREAKPOINT_MARKER
 
-local function q(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+local activate = {CHECKONLY = 1, NOREPORT = 2}
+
+local function serialize(value, options) return mobdebug.line(value, options) end
+
+local stackmaxlength = ide.config.debugger.stackmaxlength or 400
+local stackmaxnum = ide.config.debugger.stackmaxnum or 400
+local stackmaxlevel = ide.config.debugger.stackmaxlevel or 3
+local params = {comment = false, nocode = true, maxlevel = stackmaxlevel, maxnum = stackmaxnum}
+
+function fixUTF8(...)
+  local t = {...}
+  -- convert to escaped decimal code as these can only appear in strings
+  local function fix(s) return '\\'..string.byte(s) end
+  for i = 1, #t do
+    local text = t[i]:sub(1, stackmaxlength)..(#t[i] > stackmaxlength and '...' or '')
+    t[i] = FixUTF8(text, fix)
+  end
+  return (table.unpack or unpack)(t)
+end
+
+local q = EscapeMagic
 
 local function updateWatchesSync(num)
   local watchCtrl = debugger.watchCtrl
-  if watchCtrl and debugger.server and not debugger.running
-  and ide.frame.uimgr:GetPane("watchpanel"):IsShown()
+  local pane = ide.frame.uimgr:GetPane("watchpanel")
+  local shown = watchCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and watchCtrl:IsShown())
+  if shown and debugger.server and not debugger.running
   and not debugger.scratchpad and not (debugger.options or {}).noeval then
+    local bgcl = watchCtrl:GetBackgroundColour()
+    local hicl = wx.wxColour(math.floor(bgcl:Red()*.9),
+      math.floor(bgcl:Green()*.9), math.floor(bgcl:Blue()*.9))
     for idx = 0, watchCtrl:GetItemCount() - 1 do
       if not num or idx == num then
         local expression = watchCtrl:GetItemText(idx)
@@ -54,9 +75,7 @@ local function updateWatchesSync(num)
           watchCtrl:GetItem(litem)
           watchCtrl:SetItemBackgroundColour(idx,
             watchCtrl:GetItem(litem) and newval ~= litem:GetText()
-            and ide.config.styles.caretlinebg
-            and wx.wxColour(unpack(ide.config.styles.caretlinebg.bg))
-            or watchCtrl:GetBackgroundColour())
+            and hicl or bgcl)
         end
 
         watchCtrl:SetItem(idx, 1, newval)
@@ -67,6 +86,7 @@ end
 
 local simpleType = {['nil'] = true, ['string'] = true, ['number'] = true, ['boolean'] = true}
 local stackItemValue = {}
+local callData = {}
 local function checkIfExpandable(value, item)
   local expandable = type(value) == 'table' and next(value) ~= nil
     and not stackItemValue[value] -- only expand first time
@@ -79,8 +99,9 @@ end
 
 local function updateStackSync()
   local stackCtrl = debugger.stackCtrl
-  if stackCtrl and debugger.server and not debugger.running
-  and ide.frame.uimgr:GetPane("stackpanel"):IsShown()
+  local pane = ide.frame.uimgr:GetPane("stackpanel")
+  local shown = stackCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and stackCtrl:IsShown())
+  if shown and debugger.server and not debugger.running
   and not debugger.scratchpad then
     local stack, _, err = debugger.stack()
     if not stack or #stack == 0 then
@@ -92,47 +113,65 @@ local function updateStackSync()
     end
     stackCtrl:Freeze()
     stackCtrl:DeleteAllItems()
-    local params = {comment = false, nocode = true}
+
     local root = stackCtrl:AddRoot("Stack")
     stackItemValue = {} -- reset cache of items in the stack
+    callData = {} -- reset call cache
     for _,frame in ipairs(stack) do
       -- "main chunk at line 24"
       -- "foo() at line 13 (defined at foobar.lua:11)"
       -- call = { source.name, source.source, source.linedefined,
       --   source.currentline, source.what, source.namewhat, source.short_src }
       local call = frame[1]
+
+      -- format the function name to a readable user string
       local func = call[5] == "main" and "main chunk"
         or call[5] == "C" and (call[1] or "C function")
         or call[5] == "tail" and "tail call"
         or (call[1] or "anonymous function")
+
+      -- format the function treeitem text string, including the function name
       local text = func ..
         (call[4] == -1 and '' or " at line "..call[4]) ..
         (call[5] ~= "main" and call[5] ~= "Lua" and ''
-         or (call[3] > 0 and " (defined at "..call[2]..":"..call[3]..")"
-                          or " (defined in "..call[2]..")"))
+         or (call[3] > 0 and " (defined at "..call[7]..":"..call[3]..")"
+                          or " (defined in "..call[7]..")"))
+
+      -- create the new tree item for this level of the call stack
       local callitem = stackCtrl:AppendItem(root, text, 0)
+
+      -- register call data to provide stack navigation
+      callData[callitem:GetValue()] = { call[2], call[4] }
+
+      -- add the local variables to the call stack item
       for name,val in pairs(frame[2]) do
+        -- format the variable name, value as a single line and,
+        -- if not a simple type, the string value.
+
         -- comment can be not necessarily a string for tables with metatables
         -- that provide its own __tostring method
-        local value, comment = val[1], tostring(val[2])
+        local value, comment = val[1], fixUTF8(tostring(val[2]))
         local text = ("%s = %s%s"):
-          format(name, mobdebug.line(value, params),
+          format(name, fixUTF8(serialize(value, params)),
                  simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, 1)
         if checkIfExpandable(value, item) then
           stackCtrl:SetItemHasChildren(item, true)
         end
       end
+
+      -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(frame[3]) do
-        local value, comment = val[1], tostring(val[2])
+        local value, comment = val[1], fixUTF8(tostring(val[2]))
         local text = ("%s = %s%s"):
-          format(name, mobdebug.line(value, params),
+          format(name, fixUTF8(serialize(value, params)),
                  simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, 2)
         if checkIfExpandable(value, item) then
           stackCtrl:SetItemHasChildren(item, true)
         end
       end
+
       stackCtrl:SortChildren(callitem)
       stackCtrl:Expand(callitem)
     end
@@ -198,24 +237,40 @@ local function killClient()
   end
 end
 
-local function activateDocument(file, line, skipauto)
+local function activateDocument(file, line, activatehow)
   if not file then return end
 
-  if not wx.wxIsAbsolutePath(file) and debugger.basedir then
+  -- file can be a filename or serialized file content; deserialize first.
+  -- check if the filename starts with '"' and is deserializable
+  -- to avoid showing filenames that may look like valid lua code
+  -- (for example: 'mobdebug.lua').
+  local content
+  if not wx.wxFileName(file):FileExists() and file:find('^"') then
+    local ok, res = LoadSafe("return "..file)
+    if ok then content = res end
+  end
+
+  -- in some cases filename can be returned quoted if the chunk is loaded with
+  -- loadstring(chunk, "filename") instead of loadstring(chunk, "@filename")
+  if content then
+    -- if the returned content can be matched with a file, it's a file name
+    local fname = GetFullPathIfExists(debugger.basedir, content) or content
+    if wx.wxFileName(fname):FileExists() then file, content = fname, nil end
+  elseif not wx.wxIsAbsolutePath(file) and debugger.basedir then
     file = debugger.basedir .. file
   end
 
   local activated
   local indebugger = file:find('mobdebug%.lua$')
   local fileName = wx.wxFileName(file)
+
   for _, document in pairs(ide.openDocuments) do
-    -- skip those tabs that may have file without names (untitled.lua)
-    if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath)) then
-      local editor = document.editor
-      local selection = document.index
-      RequestAttention()
-      notebook:SetSelection(selection)
-      SetEditorSelection(selection)
+    local editor = document.editor
+    -- either the file name matches, or the content;
+    -- when checking for the content remove all newlines as they may be
+    -- reported differently from the original by the Lua engine.
+    if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath))
+    or content and content:gsub("[\n\r]","") == editor:GetText():gsub("[\n\r]","") then
       ClearAllCurrentLineMarkers()
       if line then
         if line == 0 then -- special case; find the first executable line
@@ -230,6 +285,11 @@ local function activateDocument(file, line, skipauto)
         end
         local line = line - 1 -- editor line operations are zero-based
         editor:MarkerAdd(line, CURRENT_LINE_MARKER)
+
+        -- found and marked what we are looking for;
+        -- don't need to activate with CHECKONLY (this assumes line is given)
+        if activatehow == activate.CHECKONLY then return editor end
+
         local firstline = editor:DocLineFromVisible(editor:GetFirstVisibleLine())
         local lastline = math.min(editor:GetLineCount(),
           editor:DocLineFromVisible(editor:GetFirstVisibleLine() + editor:LinesOnScreen()))
@@ -238,21 +298,49 @@ local function activateDocument(file, line, skipauto)
           editor:EnsureVisibleEnforcePolicy(line)
         end
       end
+
+      local selection = document.index
+      RequestAttention()
+      notebook:SetSelection(selection)
+      SetEditorSelection(selection)
+
+      if content then
+        -- it's possible that the current editor tab already has
+        -- breakpoints that have been set based on its filepath;
+        -- if the content has been matched, then existing breakpoints
+        -- need to be removed and new ones set, based on the content.
+        if not debugger.editormap[editor] and document.filePath then
+          local filePath = document.filePath
+          local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
+          while filePath and line ~= -1 do
+            debugger.handle("delb " .. filePath .. " " .. (line+1))
+            debugger.handle("setb " .. file .. " " .. (line+1))
+            line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
+          end
+        end
+
+        -- keep track of those editors that have been activated based on
+        -- content rather than file names as their breakpoints have to be
+        -- specified in a different way
+        debugger.editormap[editor] = file
+      end
+
       activated = editor
       break
     end
   end
 
-  if not (activated or indebugger or debugger.loop or skipauto)
-  and ide.config.editor.autoactivate then
+  if not (activated or indebugger or debugger.loop or activatehow == activate.CHECKONLY)
+  and (ide.config.editor.autoactivate or content and activatehow == activate.NOREPORT) then
     -- found file, but can't activate yet (because this part may be executed
-    -- in a different co-routine), so schedule pending activation.
-    if wx.wxFileName(file):FileExists() then
-      debugger.activate = {file, line}
+    -- in a different coroutine), so schedule pending activation.
+    if content or wx.wxFileName(file):FileExists() then
+      debugger.activate = {file, line, content}
       return true -- report successful activation, even though it's pending
     end
 
-    if not debugger.missing[file] then -- only report files once per session
+    -- only report files once per session and if not asked to skip
+    if not debugger.missing[file] and activatehow ~= activate.NOREPORT then
       debugger.missing[file] = true
       DisplayOutputLn(TR("Couldn't activate file '%s' for debugging; continuing without it.")
         :format(file))
@@ -274,7 +362,7 @@ local function reSetBreakpoints()
       local editor = document.editor
       local filePath = document.filePath
       local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
-      while line ~= -1 do
+      while filePath and line ~= -1 do
         debugger.handle("setb " .. filePath .. " " .. (line+1))
         line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
       end
@@ -317,7 +405,7 @@ debugger.shell = function(expression, isstatement)
               local func = loadstring('return '..v) -- deserialize the value first
               if func then -- if it's deserialized correctly
                 values[i] = (forceexpression and i > 1 and '\n' or '') ..
-                  mobdebug.line(func(), {nocode = true, comment = 0,
+                  serialize(func(), {nocode = true, comment = 0,
                     -- if '=' is used, then use multi-line serialized output
                     indent = forceexpression and '  ' or nil})
               end
@@ -328,7 +416,7 @@ debugger.shell = function(expression, isstatement)
           if #values == 0 and (forceexpression or not isstatement) then
             values = {'nil'}
           end
-          DisplayShell((table.unpack or unpack)(values))
+          DisplayShell(fixUTF8((table.unpack or unpack)(values)))
         end
 
         -- refresh Stack and Watch windows if executed a statement (and no err)
@@ -336,6 +424,16 @@ debugger.shell = function(expression, isstatement)
           updateStackSync() updateWatchesSync() end
       end)
   end
+end
+
+local function stoppedAtBreakpoint(file, line)
+  -- if this document can be activated and the current line has a breakpoint
+  local editor = activateDocument(file, line, activate.CHECKONLY)
+  if not editor then return false end
+
+  local current = editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE)
+  local breakpoint = editor:MarkerNext(current, BREAKPOINT_MARKER_VALUE)
+  return breakpoint > -1 and breakpoint == current
 end
 
 debugger.listen = function()
@@ -350,12 +448,24 @@ debugger.listen = function()
       end
 
       copas.setErrorHandler(function(error)
-        DisplayOutputLn(TR("Can't start debugging session due to internal error '%s'."):format(error))
+        -- ignore errors that happen because debugging session is
+        -- terminated during handshake (server == nil in this case).
+        if debugger.server then
+          DisplayOutputLn(TR("Can't start debugging session due to internal error '%s'."):format(error))
+        end
         debugger.terminate()
       end)
 
       local options = debugger.options or {}
-      if not debugger.scratchpad then SetAllEditorsReadOnly(true) end
+      -- this may be a remote call without using an interpreter and as such
+      -- debugger.options may not be set, but runonstart is still configured.
+      if not options.runstart then options.runstart = ide.config.debugger.runonstart end
+
+      -- support allowediting as set in the interpreter or config
+      if not options.allowediting then options.allowediting = ide.config.debugger.allowediting end
+
+      if not debugger.scratchpad and not options.allowediting then
+        SetAllEditorsReadOnly(true) end
 
       debugger.server = copas.wrap(skt)
       debugger.socket = skt
@@ -363,6 +473,7 @@ debugger.listen = function()
       debugger.scratchable = false
       debugger.stats = {line = 0}
       debugger.missing = {}
+      debugger.editormap = {}
 
       local wxfilepath = GetEditorFileAndCurInfo()
       local startfile = options.startfile or options.startwith
@@ -385,11 +496,10 @@ debugger.listen = function()
 
       reSetBreakpoints()
 
-      if options.redirect then
-        debugger.handle("output stdout " .. options.redirect, nil,
+      local redirect = ide.config.debugger.redirect or options.redirect
+      if redirect then
+        debugger.handle("output stdout " .. redirect, nil,
           { handler = function(m)
-              if not debugger.server then return end
-
               -- if it's an error returned, then handle the error
               if m and m:find("stack traceback:", 1, true) then
                 -- this is an error message sent remotely
@@ -402,7 +512,13 @@ debugger.listen = function()
               end
 
               if ide.config.debugger.outputfilter then
-                m = ide.config.debugger.outputfilter(m)
+                local ok, res = pcall(ide.config.debugger.outputfilter, m)
+                if ok then
+                  m = res
+                else
+                  DisplayOutputLn("Output filter failed: "..res)
+                  return
+                end
               elseif m then
                 local max = 240
                 m = #m < max+4 and m or m:sub(1,max) .. "...\n"
@@ -419,6 +535,10 @@ debugger.listen = function()
             .." "..TR("Compilation error")
             ..":\n"..err)
           return debugger.terminate()
+        elseif options.runstart and not debugger.scratchpad
+        and stoppedAtBreakpoint(file, line) then
+          activateDocument(file, line)
+          options.runstart = false
         end
       elseif not (options.run or debugger.scratchpad) then
         local file, line, err = debugger.loadfile(startfile)
@@ -432,20 +552,16 @@ debugger.listen = function()
             ..":\n"..err)
           return debugger.terminate()
         elseif options.runstart then
-          -- check if this document can be activated and if the first line
-          -- has a breakpoint, then don't run immediately
-          if activateDocument(file or startfile, line or 0, true) then
-            local editor = GetEditor()
-            local current = editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE)
-            local breakpoint = editor:MarkerNext(current, BREAKPOINT_MARKER_VALUE)
-            if current > -1 and current == breakpoint then options.runstart = false end
+          if stoppedAtBreakpoint(file or startfile, line or 0) then
+            activateDocument(file or startfile, line or 0)
+            options.runstart = false
           end
         elseif file and line then
-          local activated = activateDocument(file, line, true)
+          local activated = activateDocument(file, line, activate.NOREPORT)
 
           -- if not found, check using full file path and reset basedir
           if not activated and not wx.wxIsAbsolutePath(file) then
-            activated = activateDocument(startpath..file, line, true)
+            activated = activateDocument(startpath..file, line, activate.NOREPORT)
             if activated then
               debugger.basedir = startpath
               debugger.handle("basedir " .. debugger.basedir)
@@ -455,8 +571,11 @@ debugger.listen = function()
           end
 
           -- if not found and the files doesn't exist, it may be
-          -- a remote call; try to map it to the project folder
-          if not activated and not wx.wxFileName(file):FileExists() then
+          -- a remote call; try to map it to the project folder.
+          -- also check for absolute path as it may need to be remapped
+          -- when autoactivation is disabled.
+          if not activated and (not wx.wxFileName(file):FileExists()
+                                or wx.wxIsAbsolutePath(file)) then
             -- file is /foo/bar/my.lua; basedir is d:\local\path\
             -- check for d:\local\path\my.lua, d:\local\path\bar\my.lua, ...
             -- wxwidgets on Windows handles \\ and / as separators, but on OSX
@@ -479,7 +598,7 @@ debugger.listen = function()
             end
 
             -- if found a local mapping under basedir
-            activated = longestpath and activateDocument(longestpath, line, true)
+            activated = longestpath and activateDocument(longestpath, line, activate.NOREPORT)
             if activated then
               -- find remote basedir by removing the tail from remote file
               debugger.handle("basedir " .. debugger.basedir .. "\t" .. remotedir)
@@ -624,15 +743,35 @@ end
 debugger.loadstring = function(file, string)
   return debugger.handle("loadstring '" .. file .. "' " .. string)
 end
-debugger.update = function()
-  copas.step(0)
-  -- if there are any pending activations
-  if debugger.activate then
-    local file, line = (table.unpack or unpack)(debugger.activate)
-    if LoadFile(file) then activateDocument(file, line) end
-    debugger.activate = nil
+
+do
+  local nextupdatedelta = 0.250
+  local nextupdate = TimeGet() + nextupdatedelta
+  debugger.update = function()
+    if debugger.server or debugger.listening and TimeGet() > nextupdate then
+      copas.step(0)
+      nextupdate = TimeGet() + nextupdatedelta
+    end
+
+    -- if there are any pending activations
+    if debugger.activate then
+      local file, line, content = (table.unpack or unpack)(debugger.activate)
+      if content then
+        local editor = NewFile()
+        editor:SetText(content)
+        if not ide.config.debugger.allowediting
+        and not (debugger.options or {}).allowediting then
+          editor:SetReadOnly(true)
+        end
+        activateDocument(file, line)
+      elseif LoadFile(file) then
+        activateDocument(file, line)
+      end
+      debugger.activate = nil
+    end
   end
 end
+
 debugger.terminate = function()
   if debugger.server then
     if debugger.pid then -- if there is PID, try local kill
@@ -707,6 +846,33 @@ do
 end
 
 local width, height = 360, 200
+
+function debuggerAddWindow(ctrl, panel, name)
+  local notebook = wxaui.wxAuiNotebook(ide.frame, wx.wxID_ANY,
+    wx.wxDefaultPosition, wx.wxDefaultSize,
+    wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
+    - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
+  notebook:AddPage(ctrl, TR(name), true)
+
+  local mgr = ide.frame.uimgr
+  mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
+              Name(panel):Float():
+              MinSize(width/2,height/2):
+              BestSize(width,height):FloatingSize(width,height):
+              PinButton(true):Hide())
+  mgr.defaultPerspective = mgr:SavePerspective() -- resave default perspective
+
+  return notebook
+end
+
+function DebuggerAddStackWindow()
+  return debuggerAddWindow(debugger.stackCtrl, "stackpanel", "Stack")
+end
+
+function DebuggerAddWatchWindow()
+  return debuggerAddWindow(debugger.watchCtrl, "watchpanel", "Watch")
+end
+
 function debuggerCreateStackWindow()
   local stackCtrl = wx.wxTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height),
@@ -716,7 +882,7 @@ function debuggerCreateStackWindow()
 
   stackCtrl:SetImageList(imglist)
 
-  stackCtrl:Connect( wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
+  stackCtrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
     function (event)
       local item_id = event:GetItem()
       local count = stackCtrl:GetChildrenCount(item_id, false)
@@ -725,7 +891,7 @@ function debuggerCreateStackWindow()
       local image = stackCtrl:GetItemImage(item_id)
       local num = 1
       for name,value in pairs(stackItemValue[item_id:GetValue()]) do
-        local strval = mobdebug.line(value, {comment = false, nocode = true})
+        local strval = fixUTF8(serialize(value, params))
         local text = type(name) == "number"
           and (num == name and strval or ("[%s] = %s"):format(name, strval))
           or ("%s = %s"):format(tostring(name), strval)
@@ -734,30 +900,39 @@ function debuggerCreateStackWindow()
           stackCtrl:SetItemHasChildren(item, true)
         end
         num = num + 1
+        if num > stackmaxnum then break end
       end
-
-      stackCtrl:SortChildren(item_id)
       return true
     end)
-  stackCtrl:Connect( wx.wxEVT_COMMAND_TREE_ITEM_COLLAPSED,
-    function() return true end)
 
-  local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxDefaultSize,
-    wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
-    - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:AddPage(stackCtrl, TR("Stack"), true)
+  -- register navigation callback
+  stackCtrl:Connect(wx.wxEVT_LEFT_DCLICK, function (event)
+    local item_id = stackCtrl:HitTest(event:GetPosition())
+    if not item_id or not item_id:IsOk() then event:Skip() return end
 
-  local mgr = ide.frame.uimgr
-  mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
-              Name("stackpanel"):Float():
-              MinSize(height,height):FloatingSize(width,height):
-              PinButton(true):Hide())
-  mgr.defaultPerspective = mgr:SavePerspective() -- resave default perspective
+    local coords = callData[item_id:GetValue()]
+    if not coords then event:Skip() return end
+
+    local file, line = coords[1], coords[2]
+    if file:match("@") then file = string.sub(file, 2) end
+    file = GetFullPathIfExists(debugger.basedir, file)
+    if file then
+      local editor = LoadFile(file,nil,true)
+      editor:SetFocus()
+      if line then editor:GotoPos(editor:PositionFromLine(line-1)) end
+    end
+  end)
+
+  local layout = ide:GetSetting("/view", "uimgrlayout")
+  if layout and not layout:find("stackpanel") then
+    ide.frame.bottomnotebook:AddPage(stackCtrl, TR("Stack"), true)
+    return
+  end
+  DebuggerAddStackWindow()
 end
 
 local function debuggerCreateWatchWindow()
-  local watchCtrl = wx.wxListCtrl(frame, wx.wxID_ANY,
+  local watchCtrl = wx.wxListCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wx.wxLC_REPORT + wx.wxLC_EDIT_LABELS)
 
@@ -809,9 +984,7 @@ local function debuggerCreateWatchWindow()
   end
 
   watchCtrl:Connect(wx.wxEVT_CONTEXT_MENU,
-    function (event)
-      watchCtrl:PopupMenu(watchMenu)
-    end)
+    function (event) watchCtrl:PopupMenu(watchMenu) end)
 
   watchCtrl:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
@@ -833,6 +1006,9 @@ local function debuggerCreateWatchWindow()
   watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_UPDATE_UI,
     function (event) event:Enable(watchCtrl:GetSelectedItemCount() > 0) end)
 
+  watchCtrl:Connect(wx.wxEVT_COMMAND_LIST_ITEM_ACTIVATED,
+    function (event) watchCtrl:EditLabel(event:GetIndex()) end)
+
   watchCtrl:Connect(wx.wxEVT_COMMAND_LIST_END_LABEL_EDIT,
     function (event)
       local row = event:GetIndex()
@@ -847,18 +1023,12 @@ local function debuggerCreateWatchWindow()
       event:Skip()
     end)
 
-  local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxDefaultSize,
-    wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
-    - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:AddPage(watchCtrl, TR("Watch"), true)
-
-  local mgr = ide.frame.uimgr
-  mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
-              Name("watchpanel"):Float():
-              MinSize(height,height):FloatingSize(width,height):
-              PinButton(true):Hide())
-  mgr.defaultPerspective = mgr:SavePerspective() -- resave default perspective
+  local layout = ide:GetSetting("/view", "uimgrlayout")
+  if layout and not layout:find("watchpanel") then
+    ide.frame.bottomnotebook:AddPage(watchCtrl, TR("Watch"), true)
+    return
+  end
+  DebuggerAddWatchWindow()
 end
 
 debuggerCreateStackWindow()
@@ -872,7 +1042,7 @@ DebuggerRefreshPanels = updateStackAndWatches
 function DebuggerAddWatch(watch)
   local mgr = ide.frame.uimgr
   local pane = mgr:GetPane("watchpanel")
-  if (not pane:IsShown()) then
+  if (pane:IsOk() and not pane:IsShown()) then
     pane:Show()
     mgr:Update()
   end
@@ -928,21 +1098,15 @@ function DebuggerToggleBreakpoint(editor, line)
   -- ignore requests to toggle when the debugger is running
   if debugger.server and debugger.running then return end
   local markers = editor:MarkerGet(line)
-  if markers >= CURRENT_LINE_MARKER_VALUE then
-    markers = markers - CURRENT_LINE_MARKER_VALUE
-  end
   local id = editor:GetId()
-  local filePath = DebuggerMakeFileName(editor, ide.openDocuments[id].filePath)
-  if markers >= BREAKPOINT_MARKER_VALUE then
+  local filePath = debugger.editormap and debugger.editormap[editor]
+    or DebuggerMakeFileName(editor, ide.openDocuments[id].filePath)
+  if bit.band(markers, BREAKPOINT_MARKER_VALUE) > 0 then
     editor:MarkerDelete(line, BREAKPOINT_MARKER)
-    if debugger.server then
-      debugger.breakpoint(filePath, line+1, false)
-    end
+    if debugger.server then debugger.breakpoint(filePath, line+1, false) end
   else
     editor:MarkerAdd(line, BREAKPOINT_MARKER)
-    if debugger.server then
-      debugger.breakpoint(filePath, line+1, true)
-    end
+    if debugger.server then debugger.breakpoint(filePath, line+1, true) end
   end
 end
 

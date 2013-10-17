@@ -4,6 +4,7 @@
 -- Tomorrow colors from https://github.com/chriskempson/tomorrow-theme
 -- Zenburn colors from https://github.com/jnurmine/Zenburn/blob/master/colors/zenburn.vim (contributed by Srdjan Marković)
 -- Monokai colors from http://www.monokai.nl/blog/2006/07/15/textmate-color-theme/
+-- Molokay colors based on https://github.com/tomasr/molokai/blob/master/colors/molokai.vim
 -- Solarized colors from https://github.com/altercation/vim-colors-solarized
 
 local theme = ...
@@ -36,6 +37,20 @@ local colors = {
     Aqua        = H'3e999f',
     Blue        = H'4271ae',
     Purple      = H'8959a8',
+  },
+  TomorrowContrast = { -- contributed by Sergey Lerg
+    Background  = H'f7f7f7',
+    CurrentLine = H'efefef',
+    Selection   = H'd6d6d6',
+    Foreground  = H'202020',
+    Comment     = H'8e908c',
+    Red         = H'4669ff', --numbers
+    Orange      = H'f5871f',
+    Yellow      = H'eab700',
+    Green       = H'108010', --strings
+    Aqua        = H'4060b0', --built in functions
+    Blue        = H'101080', --keywords
+    Purple      = H'a01090',
   },
   TomorrowNight = {
     Background  = H'1d1f21',
@@ -121,6 +136,20 @@ local colors = {
     Blue        = H'F92672',
     Purple      = H'A6E22E',
   },
+  Molokai = {
+    Background  = H'1B1D1E',
+    CurrentLine = H'293739',
+    Selection   = H'49483E',
+    Foreground  = H'F8F8F2',
+    Comment     = H'7E8E91',
+    Red         = H'AE81FF',
+    Orange      = H'AE81FF',
+    Yellow      = H'F8F8F2',
+    Green       = H'E6DB74',
+    Aqua        = H'66D9EF',
+    Blue        = H'F92672',
+    Purple      = H'A6E22E',
+  },
   SolarizedDark = {
     Background  = H'042029',
     CurrentLine = H'0A2933',
@@ -148,6 +177,34 @@ local colors = {
     Aqua        = H'586E75',
     Blue        = H'859900',
     Purple      = H'268BD2',
+  },
+  NotepadPlusPlus = { -- contributed by Florian (https://github.com/SiENcE)
+    Background  = H'FFFFFF',
+    CurrentLine = H'E9E2FF',
+    Selection   = H'ADADA1',
+    Foreground  = H'000000',
+    Comment     = H'008000',
+    Red         = H'FF6900',
+    Orange      = H'00FF00',
+    Yellow      = H'FF4E00',
+    Green       = H'808080',
+    Aqua        = H'260099',
+    Blue        = H'2123FF',
+    Purple      = H'FFFFFF',
+  },
+  SciTeLuaIDE = { -- contributed by Jayanth Acharya
+    Background  = H'1B1D1E',
+    CurrentLine = H'293739',
+    Selection   = H'49483E',
+    Foreground  = H'F8F8F2',    -- super-light-gray (everything else)
+    Comment     = H'00FF00',    -- bright green (comments)
+    Red         = H'F92672',    -- purple (numbers)
+    Orange      = H'AE81FF',    -- lavendar?? (numbers)
+    Yellow      = H'F8F8F2',    -- light-gray
+    Green       = H'FF8000',    -- amber (string literal)
+    Aqua        = H'808080',    -- gray (operators, separators etc.)
+    Blue        = H'0066FF',    -- semi-blue (keywords)
+    Purple      = H'A6E22E',    -- light-grass-green
   },
 }
 
@@ -182,15 +239,15 @@ return {
   -- wxstc.wxSTC_LUA_NUMBER
   number = {fg = C.Red},
 
-  -- wxstc.wxSTC_LUA_WORD, wxstc.wxSTC_LUA_WORD#
+  -- wxstc.wxSTC_LUA_WORD, wxstc.wxSTC_LUA_WORD2-8
   keywords0 = {fg = C.Blue, b = true},
   keywords1 = {fg = C.Aqua, b = false},
   keywords2 = {fg = C.Aqua, b = true},
-  keywords3 = {fg = C.Purple, b = true},
-  keywords4 = {fg = C.Purple, b = true},
-  keywords5 = {fg = C.Purple, b = true},
-  keywords6 = {fg = C.Purple, b = true},
-  keywords7 = {fg = C.Purple, b = true},
+  keywords3 = {fg = C.Purple, b = false},
+  keywords4 = {fg = C.Purple, b = false},
+  keywords5 = {fg = C.Purple, b = false},
+  keywords6 = {fg = C.Purple, b = false},
+  keywords7 = {fg = C.Purple, b = false},
 
   -- common (inherit fg/bg from text)
   -- wxstc.wxSTC_LUA_IDENTIFIER
@@ -207,19 +264,26 @@ return {
   sel = {bg = C.Selection},
   caret = {fg = C.Foreground},
   caretlinebg = {bg = C.CurrentLine},
-  fold = {fg = C.Comment, bg = C.Background},
+  fold = {fg = C.Comment, bg = C.Background, sel = mixer(C.Comment, 1, 96)},
   whitespace = {fg = C.Comment, bg = C.Background},
 
-  fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_PLAIN},
-  --[[ other possible values are:
-    wxSTC_INDIC_PLAIN	 Single-line underline
-    wxSTC_INDIC_SQUIGGLE Squiggly underline
-    wxSTC_INDIC_TT	 Line of small T-shapes
-    wxSTC_INDIC_DIAGONAL Diagonal hatching
-    wxSTC_INDIC_STRIKE	 Strike-out
-    wxSTC_INDIC_BOX      Box
-    wxSTC_INDIC_ROUNDBOX Rounded Box
-  --]]
+  indicator = {
+    fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_ROUNDBOX},
+    --[[ other possible values are:
+      wxSTC_INDIC_PLAIN	 Single-line underline
+      wxSTC_INDIC_SQUIGGLE Squiggly underline
+      wxSTC_INDIC_TT	 Line of small T-shapes
+      wxSTC_INDIC_DIAGONAL Diagonal hatching
+      wxSTC_INDIC_STRIKE	 Strike-out
+      wxSTC_INDIC_BOX      Box
+      wxSTC_INDIC_ROUNDBOX Rounded Box
+    --]]
+    -- these indicators have all different default styles
+    varlocal = {fg = C.Foreground},
+    varglobal = {fg = C.Foreground},
+    varmasked = {fg = C.Foreground},
+    varmasking = {fg = C.Foreground},
+  },
 
   -- markup
   ['['] = {hs = mixer(C.Comment, 3, 64)},

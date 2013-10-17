@@ -24,20 +24,20 @@ BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib $FPIC"
 WXWIDGETS_BASENAME="wxWidgets"
 WXWIDGETS_URL="http://svn.wxwidgets.org/svn/wx/wxWidgets/trunk"
 
-LIBPNG_BASENAME="libpng-1.6.0"
+LIBPNG_BASENAME="libpng-1.6.2"
 LIBPNG_FILENAME="$LIBPNG_BASENAME.tar.gz"
-LIBPNG_URL="http://sourceforge.net/projects/libpng/files/libpng16/1.6.0/libpng-1.6.0.tar.gz/download"
+LIBPNG_URL="http://sourceforge.net/projects/libpng/files/libpng16/1.6.2/libpng-1.6.2.tar.gz/download"
 
-LUA_BASENAME="lua-5.1.5"
-LUA_FILENAME="$LUA_BASENAME.tar.gz"
-LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
+ZLIB_BASENAME="zlib-1.2.8"
+ZLIB_FILENAME="$ZLIB_BASENAME.tar.gz"
+ZLIB_URL="https://github.com/madler/zlib/archive/v1.2.8.tar.gz"
 
 WXLUA_BASENAME="wxlua"
-WXLUA_URL="https://wxlua.svn.sourceforge.net/svnroot/wxlua/trunk"
+WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
 
-LUASOCKET_BASENAME="luasocket-2.0.2"
-LUASOCKET_FILENAME="$LUASOCKET_BASENAME.tar.gz"
-LUASOCKET_URL="http://files.luaforge.net/releases/luasocket/luasocket/luasocket-2.0.2/$LUASOCKET_FILENAME"
+LUASOCKET_BASENAME="luasocket-3.0-rc1"
+LUASOCKET_FILENAME="v3.0-rc1.zip"
+LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
 # exit if the command line is empty
 if [ $# -eq 0 ]; then
@@ -48,6 +48,12 @@ fi
 # iterate through the command line arguments
 for ARG in "$@"; do
   case $ARG in
+  5.2)
+    BUILD_52=true
+    ;;
+  jit)
+    BUILD_JIT=true
+    ;;
   wxwidgets)
     BUILD_WXWIDGETS=true
     ;;
@@ -100,23 +106,52 @@ fi
 # create the installation directory
 mkdir -p "$INSTALL_DIR" || { echo "Error: cannot create directory $INSTALL_DIR"; exit 1; }
 
+LUAV="51"
+LUAS=""
+LUA_BASENAME="lua-5.1.5"
+
+if [ $BUILD_52 ]; then
+  LUAV="52"
+  LUAS=$LUAV
+  LUA_BASENAME="lua-5.2.2"
+fi
+
+LUA_FILENAME="$LUA_BASENAME.tar.gz"
+LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
+
+if [ $BUILD_JIT ]; then
+  LUA_BASENAME="LuaJIT-2.0.2"
+  LUA_FILENAME="$LUA_BASENAME.tar.gz"
+  LUA_URL="http://luajit.org/download/$LUA_FILENAME"
+fi
+
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
   # first build get/configure libpng as v1.6 is needed
-  wget -c "$LIBPNG_URL" -O "$LIBPNG_FILENAME" || { echo "Error: failed to download lbpng"; exit 1; }
+  wget -c "$LIBPNG_URL" -O "$LIBPNG_FILENAME" || { echo "Error: failed to download libpng"; exit 1; }
   tar -xzf "$LIBPNG_FILENAME"
   (cd "$LIBPNG_BASENAME"; ./configure --with-libpng-prefix=wxpng_; make $MAKEFLAGS)
+
+  wget -c "$ZLIB_URL" -O "$ZLIB_FILENAME" || { echo "Error: failed to download zlib"; exit 1; }
+  tar -xzf "$ZLIB_FILENAME"
+  (cd "$ZLIB_BASENAME"; ./configure; make $MAKEFLAGS)
 
   svn co "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to checkout wxWidgets"; exit 1; }
   # replace src/png with the libpng folder
   rm -rf "$WXWIDGETS_BASENAME/src/png"
   mv "$LIBPNG_BASENAME" "$WXWIDGETS_BASENAME/src/png"
 
+  # replace src/zlib with the zlib folder
+  rm -rf "$WXWIDGETS_BASENAME/src/zlib"
+  mv "$ZLIB_BASENAME" "$WXWIDGETS_BASENAME/src/zlib"
+
   cd "$WXWIDGETS_BASENAME"
   ./configure --prefix="$INSTALL_DIR" --disable-debug --disable-shared --enable-unicode \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
     --with-zlib=builtin --disable-richtext --with-gtk=2 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
+  # update gzio to gzlib as this has changed between zlib 1.2.3 to 1.2.8
+  sed -i 's/gzio.c/gzlib.c/' Makefile
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
   cd ..
@@ -128,10 +163,21 @@ if [ $BUILD_LUA ]; then
   wget -c "$LUA_URL" -O "$LUA_FILENAME" || { echo "Error: failed to download Lua"; exit 1; }
   tar -xzf "$LUA_FILENAME"
   cd "$LUA_BASENAME"
-  # use POSIX as it has minimum dependencies (no readline and no ncurses required)
-  # LUA_USE_DLOPEN is required for loading libraries
-  (cd src; make all MYCFLAGS="$FPIC -DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-Wl,-E -ldl") || { echo "Error: failed to build Lua"; exit 1; }
-  make install INSTALL_TOP="$INSTALL_DIR"
+
+  if [ $BUILD_JIT ]; then
+    make CCOPT="-DLUAJIT_ENABLE_LUA52COMPAT" || { echo "Error: failed to build Lua"; exit 1; }
+    make install PREFIX="$INSTALL_DIR"
+    cp "$INSTALL_DIR/bin/luajit" "$INSTALL_DIR/bin/lua"
+    # move luajit to lua as it's expected by luasocket and other components
+    cp "$INSTALL_DIR"/include/luajit*/* "$INSTALL_DIR/include/"
+  else
+    # use POSIX as it has minimum dependencies (no readline and no ncurses required)
+    # LUA_USE_DLOPEN is required for loading libraries
+    (cd src; make all MYCFLAGS="$FPIC -DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-Wl,-E -ldl") || { echo "Error: failed to build Lua"; exit 1; }
+    make install INSTALL_TOP="$INSTALL_DIR"
+  fi
+  cp "$INSTALL_DIR/bin/lua" "$INSTALL_DIR/bin/lua$LUAV"
+
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
 fi
@@ -143,7 +189,7 @@ if [ $BUILD_WXLUA ]; then
   # the following patches wxlua source to fix live coding support in wxlua apps
   # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
   sed -i 's/\(m_wxlState = wxLuaState(wxlState.GetLuaState(), wxLUASTATE_GETSTATE|wxLUASTATE_ROOTSTATE);\)/\/\/ removed by ZBS build process \/\/ \1/' modules/wxlua/wxlcallb.cpp
-  cmake -G "Unix Makefiles" -DBUILD_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_SHARED_LIBS=FALSE \
+  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_SHARED_LIBS=FALSE \
     -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
     -DwxWidgets_COMPONENTS="stc;html;aui;adv;core;net;base" \
     -DwxLuaBind_COMPONENTS="stc;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
@@ -157,34 +203,33 @@ fi
 
 # build LuaSocket
 if [ $BUILD_LUASOCKET ]; then
-  wget -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
-  tar -xzf "$LUASOCKET_FILENAME"
+  wget --no-check-certificate -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
+  unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
-  mkdir -p "$INSTALL_DIR/lib/lua/5.1/"{mime,socket}
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/5.1/mime/core.so" src/mime.c -llua \
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" src/mime.c -llua \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/5.1/socket/core.so" \
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" \
     src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} -llua \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  mkdir -p "$INSTALL_DIR/share/lua/5.1/socket"
-  cp src/{ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/5.1/socket"
-  cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/5.1"
-  [ -f "$INSTALL_DIR/lib/lua/5.1/mime/core.so" ] || { echo "Error: mime/core.so isn't found"; exit 1; }
-  [ -f "$INSTALL_DIR/lib/lua/5.1/socket/core.so" ] || { echo "Error: socket/core.so isn't found"; exit 1; }
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
+  cp src/{ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAV/socket"
+  cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" ] || { echo "Error: mime/core.so isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" ] || { echo "Error: socket/core.so isn't found"; exit 1; }
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
 
 # now copy the compiled dependencies to ZBS binary directory
 mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1; }
-[ $BUILD_LUA ] && cp "$INSTALL_DIR/bin/lua" "$BIN_DIR"
+[ $BUILD_LUA ] && cp "$INSTALL_DIR/bin/lua$LUAS" "$BIN_DIR"
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.so" "$BIN_DIR"
 if [ $BUILD_LUASOCKET ]; then
-  mkdir -p "$BIN_DIR/clibs/"{mime,socket}
-  cp "$INSTALL_DIR/lib/lua/5.1/mime/core.so" "$BIN_DIR/clibs/mime"
-  cp "$INSTALL_DIR/lib/lua/5.1/socket/core.so" "$BIN_DIR/clibs/socket"
+  mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
+  cp "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" "$BIN_DIR/clibs$LUAS/mime"
+  cp "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" "$BIN_DIR/clibs$LUAS/socket"
 fi
 
-# show a message about successful completion
 echo "*** Build has been successfully completed ***"
 exit 0

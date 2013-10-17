@@ -27,7 +27,7 @@ local function isfndef(str)
 end
 
 return {
-  exts = {"lua", "rockspec"},
+  exts = {"lua", "rockspec", "wlua"},
   lexer = wxstc.wxSTC_LEX_LUA,
   apitype = "lua",
   linecomment = "--",
@@ -49,20 +49,48 @@ return {
     return match and 1 or 0, match and term and 1 or 0
   end,
   isincindent = function(str)
-    local term = str:match("^%s*(%w+)[^%w]*")
+    local term = str:match("^%s*(%w+)%W*")
     term = term and incindent[term] and 1 or 0
+    str = str:gsub("'.-'",""):gsub('".-"','')
     local _, opened = str:gsub("([%{%(])", "%1")
     local _, closed = str:gsub("([%}%)])", "%1")
-    local func = (isfndef(str) or str:match("[^%w]+function%s*%(")) and 1 or 0
+    local func = (isfndef(str) or str:match("%W+function%s*%(")) and 1 or 0
     -- ended should only be used to negate term and func effects
-    local ended = (term + func > 0) and str:match("[^%w]+end%s*$") and 1 or 0
+    local anon = str:match("%W+function%s*%(.+%Wend%W")
+    local ended = (term + func > 0) and (str:match("%W+end%s*$") or anon) and 1 or 0
 
     return opened - closed + func + term - ended
   end,
+  markvars = function(code, pos, vars)
+    local PARSE = require 'lua_parser_loose'
+    local LEX = require 'lua_lexer_loose'
+    local lx = LEX.lexc(code, nil, pos)
+    return coroutine.wrap(function()
+      local varnext = {}
+      PARSE.parse_scope_resolve(lx, function(op, name, lineinfo, vars)
+        if not(op == 'Id' or op == 'Statement' or op == 'Var'
+            or op == 'VarNext' or op == 'VarInside' or op == 'VarSelf'
+            or op == 'FunctionCall' or op == 'Scope' or op == 'EndScope') then
+          return end -- "normal" return; not interested in other events
+
+        -- level needs to be adjusted for VarInside as it comes into scope
+        -- only after next block statement
+        local at = vars[0] and (vars[0] + (op == 'VarInside' and 1 or 0))
+        if op == 'Statement' then
+          for _, token in pairs(varnext) do coroutine.yield(unpack(token)) end
+          varnext = {}
+        elseif op == 'VarNext' or op == 'VarInside' then
+          table.insert(varnext, {'Var', name, lineinfo, vars, at})
+        end
+
+        coroutine.yield(op, name, lineinfo, vars, at)
+      end, vars)
+    end)
+  end,
 
   typeassigns = function(editor)
-    local line = editor:GetCurrentLine()
-    line = line-1
+    local line = editor:GetCurrentLine()-1
+    local maxlines = 48 -- scan up to this many lines back
 
     local scopestart = {"if","do","while","function", "local%s+function", "for", "else", "elseif"}
     local scopeend = {"end"}
@@ -73,7 +101,7 @@ return {
     -- iterate up until a line starts with scopestart
     -- always ignore lines whose first symbol is styled as comment
     local endline = line
-    while (line >= 0) do
+    while (line > math.max(endline-maxlines, 0)) do
       local ls = editor:PositionFromLine(line)
       local s = bit.band(editor:GetStyleAt(ls),31)
 
@@ -82,7 +110,7 @@ return {
         local leftscope
 
         for i,v in ipairs(scopestart) do
-          if (tx:match("^"..v)) then
+          if (tx:match("^%s*"..v)) then
             leftscope = true
           end
         end
@@ -115,13 +143,32 @@ return {
 
           var = var and var:gsub("local","")
           var = var and var:gsub("%s","")
-          typ = typ and typ:gsub("%b[]","")
-          typ = typ and typ:gsub("%b()","")
-          typ = typ and typ:gsub("%b{}","")
+          typ = typ and typ
+            :gsub("%b()","")
+            :gsub("%b{}","")
+            :gsub("%b[]",".0")
+            -- remove comments; they may be in strings, but that's okay here
+            :gsub("%-%-.*","")
           if (typ and (typ:match(",") or typ:match("%sor%s") or typ:match("%sand%s"))) then
             typ = nil
           end
           typ = typ and typ:gsub("%s","")
+          typ = typ and typ:gsub(".+", function(s)
+            return (s:find("^'[^']*'$")
+                 or s:find('^"[^"]*"$')
+                 or s:find('^%[=*%[.*%]=*%]$')) and 'string' or s
+          end)
+
+          -- filter out everything that is not needed
+          if typ
+          and (not typ:match('^'..identifier..'$') -- not an identifier
+               or typ:match('^%d') -- not an identifier
+               or editor.api.tip.keys[typ] -- or a keyword
+               or editor.api.tip.staticnames[typ] -- or a static name
+              ) then
+            typ = nil
+          end
+
           if (var and typ) then
             class,func = typ:match(varname.."[%.:]"..varname)
             if (assigns[typ]) then

@@ -1,4 +1,4 @@
--- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 
 local corona
 local win = ide.osname == "Windows"
@@ -45,20 +45,42 @@ return {
       DebuggerAttachDefault({startwith = file, redirect = mac and "r" or "c",
         runstart = ide.config.debugger.runonstart ~= false})
 
+      local function needRefresh(mdbl, mdbc)
+        return not wx.wxFileExists(mdbc)
+        or GetFileModTime(mdbc):GetTicks() < GetFileModTime(mdbl):GetTicks()
+      end
+
       -- copy mobdebug.lua to Resources/ folder on Win and to the project folder on OSX
       -- as copying it to Resources/ folder seems to break the signature of the app.
       local mdbc = mac and MergeFullPath(self:fworkdir(wfilename), "mobdebug.lua")
         or MergeFullPath(GetPathWithSep(corona), "Resources/mobdebug.lua")
       local mdbl = MergeFullPath(GetPathWithSep(ide.editorFilename), "lualibs/mobdebug/mobdebug.lua")
-      if not wx.wxFileExists(mdbc)
-      or GetFileModTime(mdbc):GetTicks() < GetFileModTime(mdbl):GetTicks() then
-        FileCopy(mdbl, mdbc)
-        DisplayOutput(("Copied ZeroBrane Studio debugger ('mobdebug.lua') to '%s' folder.\n"):format(mdbc))
+      local needed = needRefresh(mdbl, mdbc)
+      if needed then
+        local copied = FileCopy(mdbl, mdbc)
+        -- couldn't copy to the Resources/ folder; not have permissions?
+        if not copied and win then
+          mdbc = MergeFullPath(wx.wxStandardPaths.Get():GetUserLocalDataDir(),
+            "../../Roaming/Corona Labs/Corona Simulator/Plugins/mobdebug.lua")
+          needed = needRefresh(mdbl, mdbc)
+          copied = needed and FileCopy(mdbl, mdbc)
+        end
+        if needed then
+          local message = copied
+            and ("Copied debugger ('mobdebug.lua') to '%s'."):format(mdbc)
+            or ("Failed to copy debugger ('mobdebug.lua') to '%s': %s")
+              :format(mdbc, wx.wxSysErrorMsg())
+          DisplayOutputLn(message)
+          if not copied then return end
+        end
       end
     end
 
     local debugopt = mac and "-debug 1 -project " or "-debug "
-    local cmd = ('"%s" %s"%s"'):format(corona, rundebug and debugopt or "", file)
+    local skin = ide.config.corona and ide.config.corona.skin
+      and (" -skin "..ide.config.corona.skin) or ""
+    local cmd = ('"%s" %s"%s"%s')
+      :format(corona, rundebug and debugopt or "", file, skin)
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() ide.debugger.pid = nil end)

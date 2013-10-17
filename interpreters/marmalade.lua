@@ -1,4 +1,4 @@
--- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 
 local quick
 local win = ide.osname == "Windows"
@@ -9,7 +9,7 @@ local s3e = os.getenv("S3E_DIR")
 return {
   name = "Marmalade Quick",
   description = "Marmalade Quick mobile framework",
-  api = {"baselib"},
+  api = {"baselib", "marmalade"},
   frun = function(self,wfilename,rundebug)
     quick = quick or ide.config.path.quick or (s3e and GetFullPathIfExists(s3e, exe))
     if not quick then
@@ -25,7 +25,7 @@ return {
       local candidates, paths = {}, {}
       for p in path:gmatch("[^"..sep.."]+") do
         table.insert(paths, p)
-        for _, candidate in ipairs(FileSysGet(p.."/*.*", wx.wxDIR)) do
+        for _, candidate in ipairs(FileSysGetRecursive(p, false, "*")) do
           if GetFullPathIfExists(candidate, exe) then table.insert(candidates, candidate) end
           if GetFullPathIfExists(candidate.."/s3e", exe) then table.insert(candidates, candidate.."/s3e") end
         end
@@ -52,10 +52,10 @@ return {
 
     -- check for *.mkb file; it can be in the same or in the parent folder
     local mproj, mfile = MergeFullPath(projdir, "./")
-    for _, file in ipairs(FileSysGet(mproj.."*.mkb", wx.wxFILE)) do mfile = file end
+    for _, file in ipairs(FileSysGetRecursive(mproj, false, "*.mkb")) do mfile = file end
     if not mfile then
       mproj, mfile = MergeFullPath(projdir, "../")
-      for _, file in ipairs(FileSysGet(mproj.."*.mkb", wx.wxFILE)) do mfile = file end
+      for _, file in ipairs(FileSysGetRecursive(mproj, false, "*.mkb")) do mfile = file end
     end
     if not mfile then
       DisplayOutputLn(("Can't find '%s' project file."):format(mproj))
@@ -85,12 +85,18 @@ return {
       local mdbl = MergeFullPath(GetPathWithSep(ide.editorFilename), "lualibs/mobdebug/mobdebug.lua")
       if not wx.wxFileExists(mdbc)
       or GetFileModTime(mdbc):GetTicks() < GetFileModTime(mdbl):GetTicks() then
-        FileCopy(mdbl, mdbc)
-        DisplayOutputLn("Copied ZeroBrane Studio debugger ('mobdebug.lua') to the project folder.")
+        local copied = FileCopy(mdbl, mdbc)
+        local message = copied
+          and ("Copied debugger ('mobdebug.lua') to '%s'."):format(mdbc)
+          or ("Failed to copy debugger ('mobdebug.lua') to '%s': %s")
+            :format(mdbc, wx.wxSysErrorMsg())
+        DisplayOutputLn(message)
+        if not copied then return end
       end
     end
 
-    local dll = MergeFullPath(s3e, "../quick/target/quick_prebuilt_d.s86")
+    local dll = GetFullPathIfExists(s3e, "../quick/target/quick_prebuilt_d.s86")
+      or MergeFullPath(s3e, ("../quick/target/%s/quick_prebuilt_d.s86"):format(mac and 'osx' or 'win'))
     local options = table.concat({
       ([[--dll="%s"]]):format(dll),
       (datadir and ([[--data="%s"]]):format(datadir) or ''),

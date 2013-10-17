@@ -1,6 +1,6 @@
---[[-- Copy required content from this file to `user.lua`
+--[[-- This file shows examples of settings you can adjust.
 
-Configuration files are loaded in the following order:
+Configuration files with preferences are loaded in the following order:
 1. cfg/user.lua (system-wide configuration)
 2. HOME/.zbstudio/user.lua (per-user configuration)
 3. -cfg <lua code fragment|filename> (command line configuration)
@@ -47,7 +47,7 @@ path.lua = 'd:/lua/lua'
 path.gslshell = [[D:\Lua\gsl-shell\gsl-shell.exe]]
 
 -- to provide output filter for those engines that support redirecting
--- of "print" output to the IDE (like Corona SDK and Gideros)
+-- of "print" output to the IDE (like Corona SDK or Gideros)
 debugger.outputfilter = function(m) return #m < 124 and m or m:sub(1,120).."...\n" end
 
 -- to fix an issue with 0d0d0a line endings in MOAI examples,
@@ -89,19 +89,19 @@ stylesoutshell = styles
 
 -- to change markers used in console and output windows
 styles.marker = styles.marker or {}
-styles.marker.message = {ch = wxstc.wxSTC_MARK_ARROWS, {0, 0, 0}, {240, 240, 240}}
-styles.marker.output = {ch = wxstc.wxSTC_MARK_BACKGROUND, {0, 0, 0}, {240, 240, 240}}
-styles.marker.prompt = {ch = wxstc.wxSTC_MARK_CHARACTER+('>'):byte(), {0, 0, 0}, {240, 240, 240}}
+styles.marker.message = {ch = wxstc.wxSTC_MARK_ARROWS, fg = {0, 0, 0}, bg = {240, 240, 240}}
+styles.marker.output = {ch = wxstc.wxSTC_MARK_BACKGROUND, fg = {0, 0, 0}, bg = {240, 240, 240}}
+styles.marker.prompt = {ch = wxstc.wxSTC_MARK_CHARACTER+('>'):byte(), fg = {0, 0, 0}, bg = {240, 240, 240}}
 stylesoutshell = styles
 
 -- to disable indicators (underlining) on function calls
-editor.showfncall = false
+styles.indicator.fncall = nil
 
 -- to change the color of the indicator used for function calls
-styles.fncall.fg = {240,0,0}
+styles.indicator.fncall.fg = {240,0,0}
 
 -- to change the type of the indicator used for function calls
-styles.fncall.st = wxstc.wxSTC_INDIC_PLAIN
+styles.indicator.fncall.st = wxstc.wxSTC_INDIC_PLAIN
   --[[ other possible values are:
     wxSTC_INDIC_PLAIN	 Single-line underline
     wxSTC_INDIC_SQUIGGLE Squiggly underline
@@ -117,8 +117,8 @@ load.specs(function(file) return file:find('spec[/\\]cpp%.lua$') end)
 
 -- to specify a default EOL encoding to be used for new files:
 -- `wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`;
--- `nil` means OS default: CRLF on Windows and OSX and LF on Linux/Unix.
--- CRLF as a default on OSX is a bug and is likely to change in future versions.
+-- `nil` means OS default: CRLF on Windows and LF on Linux/Unix and OSX.
+-- (OSX had CRLF as a default until v0.36, which fixed it).
 editor.defaulteol = wxstc.wxSTC_EOL_LF
 
 -- to turn off checking for mixed end-of-line encodings in loaded files
@@ -132,3 +132,11 @@ debugger.runonstart = true
 
 -- to set compact fold that doesn't include empty lines after a block
 editor.foldcompact = true
+
+-- to disable zoom with mouse wheel as it may be too sensitive on OSX
+editor.nomousezoom = true
+
+-- to specify a skin for Corona simulator (OSX only);
+-- you can also change it between runs from Local Console by executing
+-- `ide.config.corona = {skin = 'iPad'}`
+corona = { skin = "iPad" }

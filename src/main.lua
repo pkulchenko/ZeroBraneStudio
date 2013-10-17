@@ -45,13 +45,17 @@ ide = {
       verbose = false,
       hostname = nil,
       port = nil,
+      runonstart = nil,
+      redirect = nil,
     },
     default = {
       name = 'untitled',
       fullname = 'untitled.lua',
+      interpreter = 'luadeb',
     },
     outputshell = {},
     filetree = {},
+    funclist = {},
 
     keymap = {},
     messages = {},
@@ -59,9 +63,9 @@ ide = {
 
     styles = nil,
     stylesoutshell = nil,
-    interpreter = "_undefined_",
 
     autocomplete = true,
+    autoanalizer = true,
     acandtip = {
       shorttip = false,
       ignorecase = false,
@@ -77,19 +81,22 @@ ide = {
     savebak = false,
     singleinstance = false,
     singleinstanceport = 0xe493,
+    -- HiDPI/Retina display support;
+    -- `false` by default because of issues with indicators with alpha setting
+    hidpi = false,
   },
   specs = {
     none = {
-      linecomment = ">",
       sep = "\1",
     }
   },
-  tools = {
-  },
-  iofilters = {
-  },
-  interpreters = {
-  },
+  tools = {},
+  iofilters = {},
+  interpreters = {},
+  packages = {},
+  apis = {},
+
+  proto = {}, -- prototypes for various classes
 
   app = nil, -- application engine
   interpreter = nil, -- current Lua interpreter
@@ -122,21 +129,49 @@ ide = {
     oNormal = nil,
     oItalic = nil,
     fNormal = nil,
+    dNormal = nil,
   },
 
   osname = wx.wxPlatformInfo.Get():GetOperatingSystemFamilyName(),
   osarch = arch,
+  oshome = os.getenv("HOME") or (iswindows and os.getenv('HOMEDRIVE') and os.getenv('HOMEPATH')
+    and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH'))),
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
 }
 
--- add wx.wxMOD_RAW_CONTROL as it's missing in wxlua 2.8.12.3
+-- add wx.wxMOD_RAW_CONTROL as it's missing in wxlua 2.8.12.3;
+-- provide default for wx.wxMOD_CONTROL as it's missing in wxlua 2.8 that
+-- is available through Linux package managers
+if not wx.wxMOD_CONTROL then wx.wxMOD_CONTROL = 0x02 end
 if not wx.wxMOD_RAW_CONTROL then
   wx.wxMOD_RAW_CONTROL = ide.osname == 'Macintosh' and 0x10 or wx.wxMOD_CONTROL
 end
+-- ArchLinux running 2.8.12.2 doesn't have wx.wxMOD_SHIFT defined
+if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
+-- wxDIR_NO_FOLLOW is missing in wxlua 2.8.12 as well
+if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
 
-dofile "src/editor/ids.lua"
-dofile "src/editor/style.lua"
-dofile "src/editor/keymap.lua"
+if not setfenv then -- Lua 5.2
+  -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
+  -- this assumes f is a function
+  local function findenv(f)
+    local level = 1
+    repeat
+      local name, value = debug.getupvalue(f, level)
+      if name == '_ENV' then return level, value end
+      level = level + 1
+    until name == nil
+    return nil end
+  getfenv = function (f) return(select(2, findenv(f)) or _G) end
+  setfenv = function (f, t)
+    local level = findenv(f)
+    if level then debug.setupvalue(f, level, t) end
+    return f end
+end
+
+for _, file in ipairs({"ids", "style", "keymap", "proto"}) do
+  dofile("src/editor/"..file..".lua")
+end
 
 ide.config.styles = StylesGetDefault()
 ide.config.stylesoutshell = StylesGetDefault()
@@ -144,12 +179,12 @@ ide.config.stylesoutshell = StylesGetDefault()
 local function setLuaPaths(mainpath, osname)
   -- use LUA_DEV to setup paths for Lua for Windows modules if installed
   local luadev = osname == "Windows" and os.getenv('LUA_DEV')
-  local luadev_path = (luadev
+  local luadev_path = (luadev and wx.wxDirExists(luadev)
     and ('LUA_DEV/?.lua;LUA_DEV/?/init.lua;LUA_DEV/lua/?.lua;LUA_DEV/lua/?/init.lua')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
-  local luadev_cpath = (luadev
-    and ('LUA_DEV/?.dll;LUA_DEV/clibs/?.dll')
+  local luadev_cpath = (luadev and wx.wxDirExists(luadev)
+    and ('LUA_DEV/?.dll;LUA_DEV/?51.dll;LUA_DEV/clibs/?.dll;LUA_DEV/clibs/?51.dll')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
 
@@ -216,45 +251,37 @@ end
 ide.app = dofile(ide.config.path.app.."/app.lua")
 local app = assert(ide.app)
 
-local function addToTab(tab,file)
-  local cfgfn,err = loadfile(file)
-  if not cfgfn then
-    print(("Error while loading configuration file: '%s'."):format(err))
-  else
-    local name = file:match("([a-zA-Z_0-9]+)%.lua$")
-    local success, result = pcall(function()return cfgfn(assert(_G or _ENV))end)
-    if not success then
-      print(("Error while processing configuration file: '%s'."):format(result))
-    elseif name then
-      if (tab[name]) then
-        local out = tab[name]
-        for i,v in pairs(result) do
-          out[i] = v
-        end
-      else
-        tab[name] = result
-      end
+local function loadToTab(filter, folder, tab, recursive, proto)
+  filter = filter and type(filter) ~= 'function' and app.loadfilters[filter] or nil
+  for _, file in ipairs(FileSysGetRecursive(folder, recursive, "*.lua")) do
+    if not filter or filter(file) then
+      LoadLuaFileExt(tab, file, proto)
     end
   end
 end
 
--- load interpreters
 local function loadInterpreters(filter)
-  for _, file in ipairs(FileSysGet("interpreters/*.*", wx.wxFILE)) do
-    if file:match "%.lua$" and (filter or app.loadfilters.interpreters)(file) then
-      addToTab(ide.interpreters,file)
-    end
-  end
+  loadToTab(filter or "interpreters", "interpreters", ide.interpreters, false,
+    ide.proto.Interpreter)
 end
 
--- load specs
-local function loadSpecs(filter)
-  for _, file in ipairs(FileSysGet("spec/*.*", wx.wxFILE)) do
-    if file:match("%.lua$") and (filter or app.loadfilters.specs)(file) then
-      addToTab(ide.specs,file)
-    end
-  end
+-- load tools
+local function loadTools(filter)
+  loadToTab(filter or "tools", "tools", ide.tools, false)
+end
 
+-- load packages
+local function loadPackages(filter)
+  loadToTab(filter, "packages", ide.packages, false, ide.proto.Plugin)
+  if ide.oshome then
+    local userpackages = MergeFullPath(ide.oshome, ".zbstudio/packages")
+    loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
+  end
+  -- assign file names to each package
+  for fname, package in pairs(ide.packages) do package.fname = fname end
+end
+
+function UpdateSpecs()
   for _, spec in pairs(ide.specs) do
     spec.sep = spec.sep or "\1" -- default separator doesn't match anything
     spec.iscomment = {}
@@ -280,13 +307,10 @@ local function loadSpecs(filter)
   end
 end
 
--- load tools
-local function loadTools(filter)
-  for _, file in ipairs(FileSysGet("tools/*.*", wx.wxFILE)) do
-    if file:match "%.lua$" and (filter or app.loadfilters.tools)(file) then
-      addToTab(ide.tools,file)
-    end
-  end
+-- load specs
+local function loadSpecs(filter)
+  loadToTab(filter or "specs", "spec", ide.specs, true)
+  UpdateSpecs()
 end
 
 -- temporarily replace print() to capture reported error messages to show
@@ -304,6 +328,7 @@ end
 -----------------------
 -- load config
 local function addConfig(filename,isstring)
+  if not filename then return end
   -- skip those files that don't exist
   if not isstring and not wx.wxFileName(filename):FileExists() then return end
   -- if it's marked as command, but exists as a file, load it as a file
@@ -364,33 +389,33 @@ loadSpecs()
 loadTools()
 
 do
-  -- process user config
-  for _, file in ipairs(FileSysGet("cfg/user.lua", wx.wxFILE)) do
-    addConfig(file)
-  end
-  local home = os.getenv("HOME")
-  if home then
-    for _, file in ipairs(FileSysGet(home .. "/.zbstudio/user.lua", wx.wxFILE)) do
-      addConfig(file)
-    end
-  end
+  ide.configs = {
+    system = MergeFullPath("cfg", "user.lua"),
+    user = ide.oshome and MergeFullPath(ide.oshome, ".zbstudio/user.lua"),
+  }
+
+  -- process configs
+  addConfig(ide.configs.system)
+  addConfig(ide.configs.user)
+
   -- process all other configs (if any)
-  for _, v in ipairs(configs) do
-    addConfig(v, true)
-  end
+  for _, v in ipairs(configs) do addConfig(v, true) end
+
   configs = nil
-  local sep = string_Pathsep
+  local sep = GetPathSeparator()
   if ide.config.language then
-    addToTab(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
+    LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
   end
 end
+
+loadPackages()
 
 ---------------
 -- Load App
 
 for _, file in ipairs({
     "markup", "settings", "singleinstance", "iofilters",
-    "gui", "filetree", "output", "debugger",
+    "package", "gui", "filetree", "output", "debugger",
     "editor", "findreplace", "commands", "autocomplete", "shellbox",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",
@@ -400,15 +425,18 @@ end
 
 dofile "src/version.lua"
 
+-- register all the plugins
+PackageEventHandle("onRegister")
+
 -- load rest of settings
 SettingsRestoreEditorSettings()
 SettingsRestoreFramePosition(ide.frame, "MainFrame")
+SettingsRestoreFileHistory(SetFileHistory)
 SettingsRestoreFileSession(function(tabs, params)
   if params and params.recovery
   then return SetOpenTabs(params)
   else return SetOpenFiles(tabs, params) end
 end)
-SettingsRestoreFileHistory(UpdateFileHistoryUI)
 SettingsRestoreProjectSession(FileTreeSetProjects)
 SettingsRestoreView()
 
@@ -418,7 +446,13 @@ SettingsRestoreView()
 do
   for _, fileName in ipairs(filenames) do
     if fileName ~= "--" then
-      LoadFile(fileName, nil, true)
+      if wx.wxDirExists(fileName) then
+        local dir = wx.wxFileName.DirName(fileName)
+        dir:Normalize() -- turn into absolute path if needed
+        ProjectUpdateProjectDir(dir:GetFullPath())
+      else
+        LoadFile(fileName, nil, true)
+      end
     end
   end
 
@@ -437,6 +471,8 @@ if ide.wxver < "2.9.5" and ide.osname == 'Macintosh' then -- force refresh to fi
 end
 
 resumePrint()
+
+PackageEventHandle("onAppLoad")
 
 ide.frame:Show(true)
 wx.wxGetApp():MainLoop()

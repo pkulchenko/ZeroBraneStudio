@@ -20,6 +20,12 @@ MobileLua, GSL-shell, and others). It originated from the [Estrela Editor](http:
   - config (cfg/): contains style and basic editor settings;
   - tools (tools/): additional tools (e.g. DirectX/Cg shader compiler...).
 
+## Documentation
+
+* A [short and simple overview](http://studio.zerobrane.com/doc-getting-started.html) for those who are new to this development environment.
+* A list of [frequently asked questions](http://studio.zerobrane.com/doc-faq.html) about the IDE.
+* [Tutorials and demos](http://studio.zerobrane.com/tutorials.html) that cover debugging and live coding for different environments.
+
 ## Screenshot
 
 ![ZeroBrane Studio debugger screenshot](http://studio.zerobrane.com/images/debugging.png)
@@ -31,12 +37,16 @@ Open file(s):
   zbstudio <filename> [<filename>...]
   any non-option will be treated as filename
 
+Set project directory:
+  zbstudio <project directory> [<filename>...]
+  (0.39+) a directory passed as a parameter will be set as the project directory
+
 Overriding default configuration:
   zbstudio -cfg "<luacode overriding config>" [<filename>]
   e.g.: zbstudio -cfg "editor.fontsize=12" somefile.lua
 
 Loading custom configuration:
-  zbstudio -cfg config/file.lua [<filename>]
+  zbstudio -cfg path/file.lua [<filename>]
   e.g.: zbstudio -cfg cfg/estrela.lua
 ```
 
@@ -52,12 +62,13 @@ Loading custom configuration:
 
 ## Where is Estrela?
 
-The projects have been merged and zbstudio will lead the future.
-Please reassociate files with zbstudio. To keep your history of files and
-projects copy the contents of the `EstrelaEditor.ini` in your HOME directory
-to `ZeroBraneStudio.ini`. If you have used Estrela for graphics shader
-authoring or luxinia, create/modify the `cfg/user.lua` to include the content
-of `cfg/estrela.lua` to load all tools and specifications by default again.
+The projects have been merged and ZeroBrane Studio will lead the future.
+Please reassociate files with ZeroBrane Studio. To keep your history of files
+and projects copy the contents of the `EstrelaEditor.ini` in your HOME
+directory to `ZeroBraneStudio.ini`. If you have used Estrela for graphics
+shader authoring or luxinia, create/modify the `cfg/user.lua` to include the
+content of `cfg/estrela.lua` to load all tools and specifications by default
+again.
   
 ## License
 

@@ -1,6 +1,343 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Apr 12 2013)
+## v0.39 (Oct 06 2013)
+
+### Highlights
+  - Added Lua 5.2 support out of the box.
+  - Added suggesting dynamic words as fields in auto-complete.
+  - Added 'go to definition' (Ctrl/Cmd+Alt+Click) and 'jump to previous location' (Alt+Left).
+  - Added abbreviation of project directories to keep unique parts visible.
+  - Fixed breakpoints with Marmalade Quick.
+  - Switched to using LuaJIT interpreter by default.
+  - Upgraded Luasocket (3.0-rc1), copas, and coxpcall libraries.
+
+### Special thanks
+  - To Chow CheeWen for Chinese translation.
+  - To [Enrique García](https://github.com/kikito) for fixing `fixutf8` function.
+  - To [Riidom](https://github.com/Riidom) for German translation.
+  - To [ardente](https://github.com/ardente) for user home patch for Windows and separating Lua 5.1 and 5.2 paths in user config.
+  - To [Mika Attila](https://github.com/crumblingstatue) for code folding patch.
+  - To [Tim Mensch](https://github.com/TimMensch) for auto-save, auto-reload, and debugger improvements.
+  - To [Florian](https://github.com/SiENcE) for Notepad++ color scheme.
+  - To [Michal Kottman](https://github.com/mkottman) for 'go to definition' and Alt+Left navigation patch.
+  - To [Christoph Kubisch](https://github.com/CrazyButcher) for dx11 and glslc updates.
+  - To [jpoag](https://github.com/jpoag) for improved activation during debugging on Windows.
+
+### Improvements
+  - Added setting project directory when passed as a parameter.
+  - Added activation of windows with SDL_app class name (Moai support).
+  - Added support for joining/splitting Watch/Stack with Output/Console tabs.
+  - Added package GetSetting method (ref #166).
+  - Added selected index to package onMenuEditorTab event (ref #166).
+  - Added activation of windows with FREEGLUT class name (Moai support).
+  - Added hiding console window for Corona (2013.8.28+) applications (Windows).
+  - Added suggesting dynamic words as fields in auto-complete.
+  - Added socket.connect for compatibility with socket.core <3.0 (fixes #208).
+  - Added recalculating line number margin width after zooming (fixes #207).
+  - Added margin constants and removed unused variables.
+  - Added reporting of socket error for initial debugger calls (Mobdebug 0.5403).
+  - Added error handling/reporting for `debugger.outputfilter`.
+  - Added 'debug' option to OSX build script.
+  - Added ability to modify exe path in base interpreter (ref #197).
+  - Added package GetEditorNotebook method (ref #166).
+  - Added 'molokai' color scheme (ref #200).
+  - added hlsl spec and basic api (note: currently autocomplete doesn't work on object functions, need fix). also fixed cg syntax lexer settings
+  - Added file activation for abbreviated file names in error messages.
+  - Added abbreviation of project directories to keep unique parts visible.
+  - Added `debugger.redirect` configuration option.
+  - Added `editor.saveallonrun` configuration option.
+  - Added package GetOutput method (ref #166).
+  - Added package onAppLoad/onAppClose events (ref #166).
+  - Added package onIdleOnce event (ref #166).
+  - Added manifest to the Windows executable and re-signed.
+  - Added Notepad++ color scheme (thanks to Florian/SiENcE; closes #193).
+  - Added clearing document styles after saving file with a different extension.
+  - Added workaround to avoid crash on OSX after `Close All Pages` (closes #190).
+  - Added return type for string.* functions to assist in auto-complete (ref #189).
+  - Added handling of string literals in type assignments (closes #189).
+  - Added support for captures in regexp replacement (\1-\9).
+  - Added ability to cancel FindInFiles search by closing search dialog (ref #162).
+  - Added activating Output window before showing search results (ref #162).
+  - Added support for packages from different platforms to co-exist (ref #166).
+  - Added ability to save complex data in package settings (ref #166).
+  - Added support for multiple inheritance in auto-complete (ref #101).
+  - Added ability to add/remove API descriptions from plugins (ref #166).
+  - Added package GetSettings/SetSettings methods (ref #166).
+  - Added methods to save/restore package settings (ref #166).
+  - Added ability to add/remove specs from plugins (ref #166).
+  - Added ability to add/remove interpreters from plugins (ref #166).
+  - Added wxlua patch for twoface compatibility.
+  - Added `setfenv` for Lua 5.2 compatibility.
+  - Added links to project page and documentation (closes #180).
+  - Added German translation (thanks to Riidom; ref #70).
+  - Added default value to package config (ref #176).
+  - Added handling of ?51.dll and required DLLs for LuaForWindows interpreter.
+  - Added plugin::GetConfig method (ref #166).
+  - Added erasing current line in Console (ref #173).
+  - Added search/completion in the local and remote console (closes #173).
+  - Added package onAppFocus* events (ref #166; ref #172).
+  - Added Chinese translation (thanks to Chow CheeWen; ref #70).
+  - Added `editor.autoreload` to enable reload of updated files (ref #172).
+  - Added creating (missing) folders when saving a file (fixes #171).
+  - Added an example of styling individual keywords.
+  - Added fold indication of a current block (ref #168).
+  - Added reporting of process id for a conflicting process.
+  - allow to define separate lua 5.1 and 5.2 paths in user config
+  - Changed 'go to definition' to Ctrl/Cmd+Alt+Click (ref #203).
+  - Changed `un/comment` to act from the beginning of the line for multi-line selection.
+  - Disabled refreshing Watch/Stack windows when they get focus.
+  - Disabled markup styling for specs without comment styles.
+  - Disabled showing tooltip when auto-complete suggestions are shown.
+  - Disabled error reporting after debugging has been terminated.
+  - Disabled 'Fold' menu instead of removing when no folding is allowed (ref #169).
+  - dx11 and glslc updates
+  - Enabled editing watches with doubleclick or Enter.
+  - Enable Ctrl+Click and Alt+Left navigation on local variables
+  - Enabled support for xml/html folding.
+  - Enabled path remapping for local debugging.
+  - Enabled slower and more thorough static analysis (ref #149; ref #168).
+  - Improved file/debugger activation on Windows (ref #199).
+  - Improved IDE activation during debugging on Windows (closes #199); thanks to jpoag.
+  - Improved logic to jump to file/line indicated in error messages.
+  - Limited activation of code fragments to the beginning of debugging session.
+  - Make code folding optional (thanks to [Mika Attila](https://github.com/crumblingstatue))
+  - Moved 'Sort' menu to 'Edit'.
+  - OpenGL 4.4 and ARB extensions added as well as NV_gpu_shader5 functions
+  - Optimized handling of large tables in stack results.
+  - Optimized line count calculation for dynamic words when text is deleted.
+  - Optimized dynamic word processing for large files.
+  - Reduced CPU usage while idle (ref #204, #206).
+  - Renamed package onEditorPostSave event to onEditorSave for consistency (ref #166).
+  - Removed comment from default spec as it forces undesired markup styling.
+  - Removed auto-complete suggestion when it is already typed (ref #101).
+  - Reorganized auto-complete handling; should fix #164.
+  - Reorganized path separator handling to minimize use of global variables.
+  - Reorganized API processing to allow loading API description from a plugin.
+  - Replaced package onEditorActivated event with onEditorFocus* events (ref #166).
+  - Set search in subdirectories as default in Find in Files dialog (ref #162).
+  - Switched to using POSIX compatible regexp with '()' used for captures.
+  - Updated LICENSE information.
+  - Updated Windows build file for wxwidgets 3.0.
+  - Updated support for MOAI coroutine debugging (Mobdebug 0.541).
+  - Updated type assignment logic to remove spurious types.
+  - Updated Windows build script to enable gdb debugging.
+  - Updated OSX build script to not strip debug builds.
+  - Updated Corona interpreter to handle failure to copy debugger to Resources/ folder.
+  - Updated build scripts with proper INSTALL_PREFIX option.
+  - Updated CFBundleIdentifier in plist files to allow references from OSX programs.
+  - Updated un/comment to toggle selection as a group rather than line by line.
+  - Updated `NewFile` to accept a file name.
+  - Updated 'get hostname' logic to avoid using non-resolvable names (mostly on OSX).
+  - Updated tooltip to use the same type inference as auto-complete (ref #101).
+  - Updated Estrela reference in README.
+  - Updated build script on Windows to enable debugging (ref #164).
+  - Updated build script with a (temporary) fix for wxlua issue (mingw32).
+  - updated glewgl api for OpenGL4.4 and removed non-core duplicate functions/enums
+  - Updated static analyzer to report only first instance of 'unknown field'.
+  - Updated filename/source code heuristic in the debugger (Mobdebug 0.5362).
+  - Updated `SaveAll` to allow saving (only) files with filenames (ref #172).
+  - Upgraded copas and coxpcall libraries (closes #144).
+  - windows: adopt native user home (thanks to [ardente](https://github.com/ardente))
+
+### Fixes
+  - Fixed Lua 5.2 crash on OSX (added -O1).
+  - Fixed onInterpreterLoad to only be called when interpreter changes.
+  - fix the fixutf8 function (thanks to Enrique García).
+  - Fixed handling of source code fragments in the Stack view.
+  - Fixed Watch/Stack windows to refresh when shown.
+  - Fixed incorrect editor tab acted upon in split notebook situations.
+  - Fixed auto-complete suggestions for indentifiers matching partial function names.
+  - Fixed hiding launched windows when running/debugging (Windows).
+  - Fixed showing known functions in auto-complete.
+  - Fixed showing output with invalid UTF8 characters in Stack and Console windows.
+  - Fixed debugging on/off handling in 'main' thread for LuaJIT (MobDebug 0.5402).
+  - Fixed having duplicate tabs after SaveAs with existing file name.
+  - Fixed showing redirected 'print' messages after debugging is terminated.
+  - Fixed using default interpreter when no interpreter is selected.
+  - Fixed stepping through blocks with undefined variables when 'strict' is in effect (upgraded Mobdebug to 0.5401).
+  - Fixed loading of files with incorrect UTF-8 encoding and control characters (fixes #198).
+  - Fixed package sample to take into account new documents.
+  - Fixed crash on OSX after opening 'application' in 'Open File' dialog.
+  - Fixed windows resource file to properly reference the manifest.
+  - Fixed missing default api for files with unknown extensions.
+  - Fix spurious replacement after 'search, clear selection, replace' actions.
+  - Fixed using auto-complete with multiple selections (fixes #188).
+  - Fixed looping in auto-complete with array references (ref #143).
+  - Fixed showing auto-complete after comma.
+  - Fixed 'cannot get official hostname' message on low privilege accounts (fixes #183).
+  - Fixed displaying variable instances when code has invalid blocks (fixes #182).
+  - Fixed tooltip to ignore string parameters (ref #101).
+  - Fixed tooltip display between empty brackets (ref #101).
+  - Fixed indentation after lines with brackets in strings.
+  - Fixed indentation after lines with anonymous functions.
+  - Fixed indicator showing at the end of not terminated long comment.
+  - Fixed an issue with LUA_DEV including files instead of directories.
+  - Fixed project switching to close all files when switching to a subdirectory.
+  - Fixed saving projects that do not have any open files.
+  - Fixed debugger to accept filenames without '@'; thanks to Tim Mensch (closes #174).
+  - Fixed sorting when the sorted fragment ends with a newline.
+
+## v0.38 (Jun 21 2013)
+
+### Highlights
+  - Added source code debugging (to support LuaJava and other engines).
+  - Added scope-aware global/local/masked/masking variable highlighting.
+  - Added 'Go To Definition' and 'Rename All Instances'.
+  - Added package/plugin API.
+  - Added Retina display support (can be enabled with `hidpi` option).
+  - Improved auto-complete API with inheritance and table index support.
+
+### Special thanks
+  - To George Pimm for line of code navigation in the Stack Window.
+  - To Fringale for updated French translation.
+  - To Tom Burgel for LuaForWindows interpreter.
+
+### Improvements
+  - Added sorting of file lists on Linux (used in the filetree and file search).
+  - Added LuaForWindows interpreter (thanks to Tom Burgel).
+  - Added package onEditorCharAdded/onEditorKeyDown events (ref #166).
+  - Added support for changing the Corona simulator skin (closes #151).
+  - Added inheritance support for auto-complete API.
+  - Added package onEditor* events (closes #166).
+  - Added package onInterpreterLoad/onInterpreterClose events (ref #166).
+  - Added package onProjectLoad/onProjectClose events (ref #166).
+  - Added package onMenu* events (ref #166).
+  - Added package onRegister/onUnRegister events (ref #166).
+  - Added 'Show Location' to the Project/Filetree menu.
+  - Added `hidpi` option to enable HiDPI/Retina display support (closes #160).
+  - Added breakpoint support for unnamed code fragments.
+  - Added support for debugging (stepping through) unnamed code fragments.
+  - Added LuaSec to win32 build script.
+  - Added package/plugin processing.
+  - Added support for 'silent' execution of shell commands in markup.
+  - Added `Find Next/Previous` over selected variable instances (ref #163).
+  - Added `debugger.allowediting` option to allow editing while debugging.
+  - Added skiping binary files during file search (ref #162).
+  - Added yield to update search results during file search (ref #162).
+  - Added showing default extensions in the file search (ref #162).
+  - Added support for multiple file extensions in the file search (ref #162).
+  - Added saving folder to search files in (ref #162).
+  - Added selecting all instances with a double-click on a variable.
+  - Added `autoanalizer` option for dynamic static analysis.
+  - Added 'Go To Definition' and 'Rename All Instances'.
+  - Added initial support for indicating local/global variables.
+  - Added showing tooltip in any position over a term and showing 'values' (ref #101).
+  - Added disabling tooltip when context menu is shown.
+  - Added 'fixing' path returned by wxDirDialog; may be incorrect in 2.9.x.
+  - Added constant initialization missing on ArchLinux with wxlua 2.8.12.2 (fixes #155; ref #128).
+  - Added support for table valuetypes in auto-complete for `foo[index]:` (ref #101).
+  - Added navigation to the line of code in the Stack Window (thanks to George Pimm; closes #134).
+  - Added `Show Location` to the editor tab menu.
+  - Added support for absolute filenames in Markdown links.
+  - Allowed tab width and indentation to be set independently.
+  - Allowed closing editor tabs while debugger is running.
+  - Disabled following symlinks during directory scanning to avoid infinite loops.
+  - Disabled showing tooltip when the app is in the background (fixes #158).
+  - Disabled 'value' tooltip over variables that match known function names (ref #101).
+  - Improved error reporting in interpreters on failures to copy the debugger.
+  - Improved focus on the debugger when a breakpoint hits on OSX (fixes #141).
+  - Removed sorting in the Stack view to keep the order of table elements.
+  - Set default directory for Find in Files opened from a new file (#ref 162).
+  - Updated configuration example for variable indicators.
+  - Updated Stack view navigation to use clicked on instead of active item.
+  - Updated Gideros API/auto-complete reference.
+  - Updated markup to allow opening files from new buffers ('untitled').
+  - Updated build scripts to use luasocket 2.0.3.
+  - Updated linux build files to use latest zlib/libpng to fix png load on Gentoo.
+  - Updated 'Find in Files' to start in the project folder by default.
+  - Updated French translation with latest string changes (mostly for find/replace dialogs).
+  - Updated Marmalade Quick auto-complete API to use class inheritance.
+  - Updated Gideros auto-complete API to use class inheritance.
+  - Upgraded Mobdebug to 0.534 for debugging of source code fragments.
+
+### Fixes
+  - Fixed looping in auto-complete when indexes are used (fixes #143).
+  - Fixed possible duplicate paths in the filetree.
+  - Fixed missing numerical keys in serialized tables (upgraded Mobdebug to 0.535).
+  - Fixed styling of markup that can be affected by folded lines.
+  - Fixed value selection with multiple active selections.
+  - Fixed style compatibility with wxwidgets 2.8 (ref #128).
+  - Fixed error reporting by (internal) file operations.
+  - Fixed styling comments that start with markup symbols.
+  - Fixed restoring a session with one of the files deleted on disk (fixes #161).
+  - Fixed reporting variable instances for comment/string fragments.
+  - Fixed 'Rename Instances' to always reset previous selection.
+  - Fixed auto-complete error for '%dddd' strings (fixes #156).
+  - Fixed an issue with showing filenames that include '"?*:<>' on OSX/Linux.
+  - Fixed current line marker being shown using 'Run as Scratchpad' with 'runonstart' option.
+  - Fixed looping in auto-complete (fixes #151).
+  - Fixed incorrect localization that led to an error in 'Save' from tab menu.
+
+## v0.37 (May 09 2013)
+
+### Highlights
+  - Added Marmalade Quick auto-complete support and API documentation.
+  - Added full Marmalade Quick debugging support (requires Quick 1.1+).
+  - Improved Find/Replace behavior and functionality.
+  - Added Recent File history navigation.
+  - Added Preferences menu to simplify access to system/user settings.
+
+### Special thanks
+  - To Samuel Dionne-Riel for wxwidgets 2.8 compatibility updates.
+  - To Mat Hopwood for assistance with Marmalade Quick integration.
+
+### Improvements
+  - Added Preferences menu to simplify access to system/user settings.
+  - Added Russian translation for Find/Replace dialog and (ref #70).
+  - Added Russian translation for the Preferences menu (ref #70).
+  - Added 'shaking' Find/Replace window when text is not found (closes #146).
+  - Added 'wlua' to the list of recognized Lua extensions.
+  - Added disabling Recent Files menu if the list is empty.
+  - Added TomorrowContrast color scheme (thanks to Sergey Lerg).
+  - Added detaching a child process to avoid crash when exiting during debugging.
+  - Added Recent File history navigation (closes #66).
+  - Added Marmalade auto-complete support and API documentation.
+  - Added processing of `runonstart` when using remote debugging (closes #138).
+  - Added suggesting proper extension after 'Save/Save As' based on current spec.
+  - Added translation setup for Find/Replace dialog (closes #133).
+  - Added `nomousezoom` option to disable zoom with mouse wheel in the editor.
+  - Added selecting text and Cmd-F shortcut in Find dialog on OSX (ref #127).
+  - Improved file activation when debugging is started (closes #137).
+  - Reduced the minimum size of the Output/Console panel.
+  - Refactored Recent Files history to make it faster and simpler.
+  - Refactored and optimized directory scanning when loading IDE files.
+  - Separated settings for function dropdown and project tree fonts (fixes #148).
+  - Updated documentation about default EOL on OSX (ref #102).
+  - Updated highlighting in Watch windows to not use editor styles.
+  - Updated documentation for user settings (ref #113, #55).
+  - Updated Monokai color scheme to fix current line color.
+
+### Incompatibilities
+  - (dev) `FileSysGet` has been replaced with `FileSysGetRecursive` with a different signature.
+
+### Fixes
+  - Fixed hiding all panels when switching to Full Screen mode.
+  - Fixed loading a non-existing file.
+  - Fixed activation of non-existing files/folders in the Project tree.
+  - Fixed search results for lines without newline.
+  - Fixed Find/Replace in folders with Unicode names (fixes #147); improved performance.
+  - Fixed Un/Comment commands executed for empty lines.
+  - Fixed fold/unfold for files starting with block/comment.
+  - Fixed history after activating non-existing file in Recent Files.
+  - Fixed scrolling to restored cursor position on OSX (when `usewrap` = false).
+  - Fixed Find/Replace dialog to take Enter on OSX (fixes #140).
+  - Fixed 'breaking' after executing OUT command that never reaches the target level.
+  - Fixed stopping at a breakpoint at the initial line when `startwith` option is specified.
+  - Fixed activation of a file loaded into active tab.
+  - Fixed incorrect tab activation on OSX after using 'Open File'.
+  - Fixed editor activation when file is loaded into an existing tab.
+  - Fixed an error after opening non-existing file from 'Recent Files'.
+  - Fixed blocking on reading app output without processing other events.
+  - Fixed an issue with duplicate lines shown in the editor.
+  - Fixed 'Replace All' to take 'Wrap Around' into account (fixes #132).
+  - Fixed off-by-one error in searching consecutive matches.
+  - Fixed 'Quick Find' not working without current selection (fixes #131).
+  - Fixed looping in auto-complete on mistyped class (fixes #130).
+  - Fixed compatibility with wx2.8 (thanks to Samuel Dionne-Riel; closes #128).
+  - Fixed replacement logic in Find/Replace that could replace selected fragment (ref #127).
+  - Fixed an error caused by allowing multiple Search/Replace windows (fixes #127).
+
+## v0.361 (Apr 12 2013)
 
 ### Improvements
   - Added handling of Ctrl-Home and Ctrl-End on OSX (ref #89).
@@ -266,7 +603,7 @@
 ### Special thanks
   - To Andy Bower and Atilim Cetin for their assistance with Gideros integration and live coding.
   - To toiffel for Linux/OSX/Windows CMake-based launcher build.
-  - To Christoph Kubisch for help with Estrela merge.
+  - To [Christoph Kubisch](https://github.com/CrazyButcher) for help with Estrela merge.
 
 ### Improvements
   - Added configuration option to specify hostname when the default one is not reachable (fixes #68).

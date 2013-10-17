@@ -100,29 +100,15 @@ function SettingsRestoreFileHistory(fntab)
   return outtab
 end
 
-function SettingsAppendFileToHistory (filename)
+function SettingsSaveFileHistory (filehistory)
   local listname = "/filehistory"
-  local oldlist = SettingsRestoreFileHistory(nil,listname)
-
-  -- if the file has been in the history before, remove it
-  for i=#oldlist,1,-1 do
-    if oldlist[i] == filename then table.remove(oldlist,i) end
-  end
-
-  table.insert(oldlist,1,{filename=filename})
-
-  -- remove all entries that are no longer needed
-  while #oldlist>ide.config.filehistorylength do table.remove(oldlist) end
-
   local path = settings:GetPath()
   settings:DeleteGroup(listname)
   settings:SetPath(listname)
 
-  for i,doc in ipairs(oldlist) do
+  for i,doc in ipairs(filehistory) do
     settings:Write(tostring(i), doc.filename)
   end
-
-  UpdateFileHistoryUI(oldlist)
 
   settings:SetPath(path)
 end
@@ -226,11 +212,43 @@ function SettingsSaveProjectSession(projdirs)
     settings:Write(tostring(i), dir)
 
     local opendocs, params = ProjectConfig(dir)
-    if opendocs and #opendocs > 0 then
+    if opendocs then
       SettingsSaveFileSession(opendocs, params, listname .. "/" .. tostring(i))
     end
   end
 
+  settings:SetPath(path)
+end
+
+function SettingsRestorePackage(package)
+  local packagename = "/package/"..package
+  local path = settings:GetPath()
+  settings:SetPath(packagename)
+  local outtab = {}
+  local ismore, key, index = settings:GetFirstEntry("", 0)
+  while (ismore) do
+    local couldread, value = settings:Read(key, "")
+    if couldread then
+      local ok, res = LoadSafe("return "..value)
+      if ok then outtab[key] = res
+      else outtab[key] = nil end
+    end
+    ismore, key, index = settings:GetNextEntry(index)
+  end
+  settings:SetPath(path)
+  return outtab
+end
+
+function SettingsSavePackage(package, values)
+  local packagename = "/package/"..package
+  local path = settings:GetPath()
+  local mdb = require('mobdebug')
+
+  settings:DeleteGroup(packagename)
+  settings:SetPath(packagename)
+  for k,v in pairs(values or {}) do
+    settings:Write(k, mdb.line(v, {comment = false, nocode = true}))
+  end
   settings:SetPath(path)
 end
 
@@ -267,8 +285,8 @@ local function saveNotebook(nb)
     return t
   end
   
-  sortedX = sortedPages(pagesX)
-  sortedY = sortedPages(pagesY)
+  local sortedX = sortedPages(pagesX)
+  local sortedY = sortedPages(pagesY)
   
   -- for now only support "1D" splits and prefer
   -- dimension which has more, anything else
@@ -377,7 +395,7 @@ function SettingsRestoreView()
     local panes = frame.uimgr:GetAllPanes()
     for _, name in pairs({"stackpanel", "watchpanel"}) do
       local pane = frame.uimgr:GetPane(name)
-      if not layout:find(name) then pane:Float() end
+      if pane:IsOk() and not layout:find(name) then pane:Float() end
     end
     -- unfortunately need to explicitly (re-)assign the caption,
     -- as it's going to be restored from the config regardless of how
@@ -386,6 +404,20 @@ function SettingsRestoreView()
   end
   uimgr:Update()
   
+  local layoutcur = saveNotebook(frame.bottomnotebook)
+  local layout = settingsReadSafe(settings,"nbbtmlayout",layoutcur)
+  if (layout ~= layoutcur) then
+    loadNotebook(ide.frame.bottomnotebook,layout,
+      -- treat "Output (running)" same as "Output"
+      function(name) return
+        name:match(TR("Output")) or name:match("Output") or name end)
+  end
+
+  -- always select Output tab
+  local bottomnotebook = frame.bottomnotebook
+  local index = bottomnotebook:GetPageIndex(bottomnotebook.errorlog)
+  if index >= 0 then bottomnotebook:SetSelection(index) end
+
   local layoutcur = saveNotebook(frame.notebook)
   local layout = settingsReadSafe(settings,"nblayout",layoutcur)
   if (layout ~= layoutcur) then
@@ -397,15 +429,9 @@ function SettingsRestoreView()
       openDocuments[nb:GetPage(i):GetId()].index = i
     end
   end
-  
-  local layoutcur = saveNotebook(frame.bottomnotebook)
-  local layout = settingsReadSafe(settings,"nbbtmlayout",layoutcur)
-  if (layout ~= layoutcur) then
-    loadNotebook(ide.frame.bottomnotebook,layout,
-      -- treat "Output (running)" same as "Output"
-      function(name) return
-        name:match(TR("Output")) or name:match("Output") or name end)
-  end
+
+  local editor = GetEditor()
+  if editor then editor:SetFocus() end
 
   settings:SetPath(path)
 end
@@ -450,6 +476,7 @@ function SettingsSaveAll()
   SettingsSaveProjectSession(FileTreeGetProjects())
   SettingsSaveFileSession(GetOpenFiles())
   SettingsSaveView()
+  SettingsSaveFileHistory(GetFileHistory())
   SettingsSaveFramePosition(ide.frame, "MainFrame")
   SettingsSaveEditorSettings()
 end

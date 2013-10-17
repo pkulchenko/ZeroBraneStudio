@@ -1,3 +1,4 @@
+-- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 ----------
@@ -7,12 +8,13 @@
 -- ---------------------------
 -- fg foreground - {r,g,b} 0-255
 -- bg background - {r,g,b} 0-255
+-- sel color of the selected block - {r,g,b} 0-255 (only applies to folds)
 -- u underline - boolean
 -- b bold - boolean
 -- i italic - boolean
 -- fill fill to end - boolean
 -- fn font Face Name - string ("Lucida Console")
--- fx font size - number (11)
+-- fs font size - number (11)
 -- hs turn hotspot on - true or {r,g,b} 0-255
 -- v visibility for symbols of the current style - boolean
 
@@ -50,11 +52,12 @@ function StylesGetDefault()
     sel = {bg = {192, 192, 192}},
     caret = {fg = {0, 0, 0}},
     caretlinebg = {bg = {240, 240, 230}},
-    fold = {fg = {90, 90, 80}, bg = {250, 250, 250}},
+    fold = {fg = {90, 90, 80}, bg = {250, 250, 250}, sel = {90+96, 90, 80}},
     whitespace = nil,
 
-    fncall = {fg = {128, 128, 255},
-      st = ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT},
+    -- deprecated; allowed for backward compatibility in case someone does
+    -- fncall.fg = {...}
+    fncall = {},
 
     -- markup
     ['|'] = {fg = {127, 0, 127}},
@@ -69,7 +72,16 @@ function StylesGetDefault()
       output = {},
       prompt = {},
       error = {},
-    }
+    },
+
+    -- indicators
+    indicator = {
+      fncall = {},
+      varlocal = {},
+      varglobal = {},
+      varmasking = {},
+      varmasked = {},
+    },
   }
 end
 
@@ -82,14 +94,23 @@ local markers = {
   error = {6, wxstc.wxSTC_MARK_BACKGROUND, wx.wxBLACK, wx.wxColour(255, 220, 220)},
 }
 function StylesGetMarker(marker) return unpack(markers[marker] or {}) end
+function StylesRemoveMarker(marker) markers[marker] = nil end
+function StylesAddMarker(marker, ch, fg, bg)
+  local num = (markers[marker] or {})[1]
+  if not num then -- new marker; find the smallest available marker number
+    local nums = {}
+    for _, mark in pairs(markers) do nums[mark[1]] = true end
+    num = #nums + 1
+    if num > 24 then return end -- 24 markers with no pre-defined functions
+  end
+  markers[marker] = {num, ch, wx.wxColour(unpack(fg)), wx.wxColour(unpack(bg))}
+  return num
+end
 
-local function applymarker(editor,marker,clrfg,clrbg)
-  if (clrfg) then
-    editor:MarkerSetForeground(marker,clrfg)
-  end
-  if (clrbg) then
-    editor:MarkerSetBackground(marker,clrbg)
-  end
+local function applymarker(editor,marker,clrfg,clrbg,clrsel)
+  if (clrfg) then editor:MarkerSetForeground(marker,clrfg) end
+  if (clrbg) then editor:MarkerSetBackground(marker,clrbg) end
+  if (ide.wxver >= "2.9.5" and clrsel) then editor:MarkerSetBackgroundSelected(marker,clrsel) end
 end
 local specialmapping = {
   sel = function(editor,style)
@@ -103,6 +124,8 @@ local specialmapping = {
     else
       editor:SetSelBackground(0,wx.wxWHITE)
     end
+    -- set alpha for additional selecton: 0 - transparent, 255 - opaque
+    if ide.wxver >= "2.9.5" then editor:SetAdditionalSelAlpha(127) end
   end,
 
   caret = function(editor,style)
@@ -139,21 +162,25 @@ local specialmapping = {
   fold = function(editor,style)
     local clrfg = style.fg and wx.wxColour(unpack(style.fg))
     local clrbg = style.bg and wx.wxColour(unpack(style.bg))
+    local clrsel = style.sel and wx.wxColour(unpack(style.sel))
 
-    if (clrfg or clrbg) then
+    -- if selected background is set then enable support for it
+    if ide.wxver >= "2.9.5" and clrsel then editor:MarkerEnableHighlight(true) end
+
+    if (clrfg or clrbg or clrsel) then
       -- foreground and background are defined as opposite to what I'd expect
       -- for fold markers in Scintilla's terminilogy:
       -- background is the color of fold lines/boxes and foreground is the color
       -- of everything around fold lines or inside fold boxes.
       -- in the following code fg and bg are simply reversed
       local clrfg, clrbg = clrbg, clrfg
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEROPEN, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDER, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERSUB, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERTAIL, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEREND, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEROPENMID, clrfg, clrbg)
-      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERMIDTAIL, clrfg, clrbg)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEROPEN, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDER, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERSUB, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERTAIL, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEREND, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDEROPENMID, clrfg, clrbg, clrsel)
+      applymarker(editor,wxstc.wxSTC_MARKNUM_FOLDERMIDTAIL, clrfg, clrbg, clrsel)
     end
     if clrbg then
       -- the earlier calls only color the actual markers, but not the
@@ -248,8 +275,24 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   end
 
   do
-    editor:IndicatorSetStyle(0,styles.fncall and styles.fncall.st or wxstc.wxSTC_INDIC_BOX)
-    editor:IndicatorSetForeground(0,wx.wxColour(unpack(styles.fncall and styles.fncall.fg or {128,128,128})))
+    local defaultfg = styles.text and styles.text.fg or {127,127,127}
+    local indic = styles.indicator or {}
+
+    -- use styles.fncall if not empty and if indic.fncall is empty
+    -- for backward compatibility
+    if type(styles.fncall) == 'table' and next(styles.fncall)
+    and not (type(indic.fncall) == 'table' and next(indic.fncall)) then indic.fncall = styles.fncall end
+
+    editor:IndicatorSetStyle(0, indic.fncall and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(0, wx.wxColour(unpack(indic.fncall and indic.fncall.fg or {128, 128, 255})))
+    editor:IndicatorSetStyle(1, indic.varlocal and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(1, wx.wxColour(unpack(indic.varlocal and indic.varlocal.fg or defaultfg)))
+    editor:IndicatorSetStyle(2, indic.varglobal and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
+    editor:IndicatorSetForeground(2, wx.wxColour(unpack(indic.varglobal and indic.varglobal.fg or defaultfg)))
+    editor:IndicatorSetStyle(3, indic.varmasking and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)
+    editor:IndicatorSetForeground(3, wx.wxColour(unpack(indic.varmasking and indic.varmasking.fg or defaultfg)))
+    editor:IndicatorSetStyle(4, indic.varmasked and indic.varmasked.st or wxstc.wxSTC_INDIC_STRIKE)
+    editor:IndicatorSetForeground(4, wx.wxColour(unpack(indic.varmasked and indic.varmasked.fg or defaultfg)))
   end
 end
 

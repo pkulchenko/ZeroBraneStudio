@@ -1,14 +1,18 @@
 --[[
-1. Pick a color scheme by clicking on a link:
+1. Pick a color scheme by clicking on its name:
   - [Tomorrow](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','Tomorrow')))
+  - [TomorrowContrast](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','TomorrowContrast')))
   - [TomorrowNight](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','TomorrowNight')))
   - [TomorrowNightBlue](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','TomorrowNightBlue')))
   - [TomorrowNightBright](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','TomorrowNightBright')))
   - [TomorrowNightEighties](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','TomorrowNightEighties')))
   - [Zenburn](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','Zenburn')))
   - [Monokai](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','Monokai')))
+  - [Molokai](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','Molokai')))
   - [SolarizedDark](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','SolarizedDark')))
   - [SolarizedLight](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','SolarizedLight')))
+  - [Notepad++](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','NotepadPlusPlus')))
+  - [SciTeLuaIDE](macro:shell(ApplyStyleConfig('cfg/tomorrow.lua','SciTeLuaIDE')))
 
   - [ZeroBrane Studio](macro:shell(ide.config.styles = StylesGetDefault(); ReApplySpecAndStyles()))
 
