@@ -12,7 +12,9 @@ local notebook = ide.frame.notebook
 local funclist = ide.frame.toolBar.funclist
 local edcfg = ide.config.editor
 local styles = ide.config.styles
-local projcombobox = ide.frame.projpanel.projcombobox
+
+local DEFAULT_STYLE = 32
+local margin = { LINENUMBER = 0, MARKER = 1, FOLD = 2 }
 
 -- ----------------------------------------------------------------------------
 -- Update the statusbar text of the frame using the given editor.
@@ -124,6 +126,20 @@ local function isFileAlteredOnDisk(editor)
   end
 end
 
+local function navigateToPosition(editor, fromPosition, toPosition, length)
+  table.insert(editor.jumpstack, fromPosition)
+  editor:GotoPos(toPosition)
+  if length then
+    editor:SetAnchor(toPosition + length)
+  end
+end
+
+local function navigateBack(editor)
+  if #editor.jumpstack == 0 then return end
+  local pos = table.remove(editor.jumpstack)
+  editor:GotoPos(pos)
+end
+
 -- ----------------------------------------------------------------------------
 -- Get/Set notebook editor page, use nil for current page, returns nil if none
 function GetEditor(selection)
@@ -186,16 +202,14 @@ function GetEditorFileAndCurInfo(nochecksave)
 end
 
 -- Set if the document is modified and update the notebook page text
-function SetDocumentModified(id, modified)
-  if not openDocuments[id] then return end
-  local pageText = openDocuments[id].fileName or ide.config.default.fullname
+function SetDocumentModified(id, modified, text)
+  local modpref, doc = '* ', openDocuments[id]
+  if not doc then return end
+  local pageText = text or notebook:GetPageText(doc.index):gsub("^"..EscapeMagic(modpref), "")
 
-  if modified then
-    pageText = "* "..pageText
-  end
-
+  if modified then pageText = modpref..pageText end
   openDocuments[id].isModified = modified
-  notebook:SetPageText(openDocuments[id].index, pageText)
+  notebook:SetPageText(doc.index, pageText)
 end
 
 function EditorAutoComplete(editor)
@@ -221,12 +235,12 @@ function EditorAutoComplete(editor)
   lt = lt:gsub("%b{}","")
   lt = lt:gsub("%b[]",".0")
   -- match from starting brace
-  lt = lt:match("[^%[%(%{%s]*$")
+  lt = lt:match("[^%[%(%{%s,]*$")
 
   -- know now which string is to be completed
   local userList = CreateAutoCompList(editor,lt)
-  -- don't show the list if the only option is what's already typed
-  if userList and #userList > 0 and userList ~= lt then
+  -- don't show the list if it only suggests what's already typed
+  if userList and #userList > 0 and not lt:find(userList.."$") then
     editor:UserListShow(1, userList)
   elseif editor:AutoCompActive() then
     editor:AutoCompCancel()
@@ -238,12 +252,12 @@ local function getValAtPosition(editor, pos)
   local line = editor:LineFromPosition(pos)
   local linetx = editor:GetLine(line)
   local linestart = editor:PositionFromLine(line)
-  local localpos = pos-linestart+1
+  local localpos = pos-linestart
 
   local selected = editor:GetSelectionStart() ~= editor:GetSelectionEnd()
     and pos >= editor:GetSelectionStart() and pos <= editor:GetSelectionEnd()
 
-  -- check if we have a selected text or an identifier
+  -- check if we have a selected text or an identifier.
   -- for an identifier, check fragments on the left and on the right.
   -- this is to match 'io' in 'i^o.print' and 'io.print' in 'io.pr^int'.
   -- remove square brackets to make tbl[index].x show proper values.
@@ -264,16 +278,9 @@ local function getValAtPosition(editor, pos)
   -- 2. foo.bar(..^. -- the cursor (pos) is on the parameter list
   -- "var" has value for #1 and the following fragment checks for #2
 
-  local linetxtopos = linetx:sub(1,localpos)
-  funccall = (#funccall > 0) and var
-    or (linetxtopos..")"):match(ident .. "%s*%b()$")
-    or (linetxtopos.."}"):match(ident .. "%s*%b{}$")
-    or (linetxtopos.."'"):match(ident .. "%s*'[^']*'$")
-    or (linetxtopos..'"'):match(ident .. '%s*"[^"]*"$')
-    or nil
-
   -- check if the style is the right one; this is to ignore
   -- comments, strings, numbers (to avoid '1 = 1'), keywords, and such
+  local goodpos = true
   if start and not selected then
     local style = bit.band(editor:GetStyleAt(linestart+start),31)
     if editor.spec.iscomment[style]
@@ -281,18 +288,29 @@ local function getValAtPosition(editor, pos)
     or editor.spec.isstring[style]
     or style == wxstc.wxSTC_LUA_NUMBER
     or style == wxstc.wxSTC_LUA_WORD then
-      -- don't do anything for strings or comments or numbers
-      return nil, funccall
+      goodpos = false
     end
   end
+
+  local linetxtopos = linetx:sub(1,localpos)
+  funccall = (#funccall > 0) and goodpos and var
+    or (linetxtopos..")"):match(ident .. "%s*%b()$")
+    or (linetxtopos.."}"):match(ident .. "%s*%b{}$")
+    or (linetxtopos.."'"):match(ident .. "%s*'[^']*'$")
+    or (linetxtopos..'"'):match(ident .. '%s*"[^"]*"$')
+    or nil
+
+  -- don't do anything for strings or comments or numbers
+  if not goodpos then return nil, funccall end
 
   return var, funccall
 end
 
 function EditorCallTip(editor, pos, x, y)
-  -- don't show anything if the calltip is active; this may happen after
-  -- typing function name, while the mouse is over a different function.
-  if editor:CallTipActive() then return end
+  -- don't show anything if the calltip/auto-complete is active;
+  -- this may happen after typing function name, while the mouse is over
+  -- a different function or when auto-complete is on for a parameter.
+  if editor:CallTipActive() or editor:AutoCompActive() then return end
 
   -- don't activate if the window itself is not active (in the background)
   if not ide.frame:IsActive() then return end
@@ -576,6 +594,8 @@ function CreateEditor()
 
   editor.matchon = false
   editor.assignscache = false
+  editor.autocomplete = false
+  editor.jumpstack = {}
 
   editor:SetBufferedDraw(not ide.config.hidpi and true or false)
   editor:StyleClearAll()
@@ -605,20 +625,20 @@ function CreateEditor()
 
   editor:SetVisiblePolicy(wxstc.wxSTC_VISIBLE_STRICT, 3)
 
-  editor:SetMarginWidth(0, editor:TextWidth(32, "99999_")) -- line # margin
+  editor:SetMarginWidth(margin.LINENUMBER, editor:TextWidth(DEFAULT_STYLE, "99999_"))
 
-  editor:SetMarginWidth(1, 16) -- marker margin
-  editor:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)
-  editor:SetMarginSensitive(1, true)
+  editor:SetMarginWidth(margin.MARKER, 16)
+  editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
+  editor:SetMarginSensitive(margin.MARKER, true)
 
   editor:MarkerDefine(StylesGetMarker("currentline"))
   editor:MarkerDefine(StylesGetMarker("breakpoint"))
 
   if ide.config.editor.fold then
-    editor:SetMarginWidth(2, 16) -- fold margin
-    editor:SetMarginType(2, wxstc.wxSTC_MARGIN_SYMBOL)
-    editor:SetMarginMask(2, wxstc.wxSTC_MASK_FOLDERS)
-    editor:SetMarginSensitive(2, true)
+    editor:SetMarginWidth(margin.FOLD, 16)
+    editor:SetMarginType(margin.FOLD, wxstc.wxSTC_MARGIN_SYMBOL)
+    editor:SetMarginMask(margin.FOLD, wxstc.wxSTC_MASK_FOLDERS)
+    editor:SetMarginSensitive(margin.FOLD, true)
   end
 
   editor:SetFoldFlags(wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED +
@@ -720,8 +740,7 @@ function CreateEditor()
       if ide.config.acandtip.nodynwords then return end
       -- only required to track changes
       if (bit.band(evtype,wxstc.wxSTC_MOD_BEFOREDELETE) ~= 0) then
-        local numlines = 0
-        event:GetText():gsub("(\r?\n)",function() numlines = numlines + 1 end)
+        local _, numlines = event:GetText():gsub("\r?\n","%1")
         DynamicWordsRem("pre",editor,nil,editor:LineFromPosition(event:GetPosition()), numlines)
       end
       if (bit.band(evtype,wxstc.wxSTC_MOD_BEFOREINSERT) ~= 0) then
@@ -732,8 +751,8 @@ function CreateEditor()
   editor:Connect(wxstc.wxEVT_STC_CHARADDED,
     function (event)
       -- auto-indent
+      local LF = string.byte("\n")
       local ch = event:GetKey()
-      local eol = editor:GetEOLMode()
       local pos = editor:GetCurrentPos()
       local line = editor:GetCurrentLine()
       local linetx = editor:GetLine(line)
@@ -743,7 +762,7 @@ function CreateEditor()
 
       if PackageEventHandle("onEditorCharAdded", editor, event) == false then
         -- this event has already been handled
-      elseif (ch == char_LF) then
+      elseif (ch == LF) then
         if (line > 0) then
           local indent = editor:GetLineIndentation(line - 1)
           local linedone = editor:GetLine(line - 1)
@@ -791,8 +810,7 @@ function CreateEditor()
       elseif ide.config.autocomplete then -- code completion prompt
         local trigger = linetxtopos:match("["..editor.spec.sep.."%w_]+$")
         if (trigger and (#trigger > 1 or trigger:match("["..editor.spec.sep.."]"))) then
-          ide.frame:AddPendingEvent(wx.wxCommandEvent(
-            wx.wxEVT_COMMAND_MENU_SELECTED, ID_AUTOCOMPLETE))
+          editor.autocomplete = true
         end
       end
     end)
@@ -831,12 +849,6 @@ function CreateEditor()
       event:Skip()
     end)
 
-  editor:Connect(wx.wxEVT_SET_FOCUS,
-    function (event)
-      PackageEventHandle("onEditorFocusSet", editor)
-      event:Skip()
-    end)
-
   editor:Connect(wx.wxEVT_KILL_FOCUS,
     function (event)
       if editor:AutoCompActive() then editor:AutoCompCancel() end
@@ -846,10 +858,39 @@ function CreateEditor()
 
   editor:Connect(wxstc.wxEVT_STC_USERLISTSELECTION,
     function (event)
-      local pos = editor:GetCurrentPos()
-      local start_pos = editor:WordStartPosition(pos, true)
-      editor:SetSelection(start_pos, pos)
-      editor:ReplaceSelection(event:GetText())
+      if ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
+        local text = event:GetText()
+        -- capture all positions as the selection may change
+        local positions = {}
+        for s = 0, editor:GetSelections()-1 do
+          table.insert(positions, editor:GetSelectionNCaret(s))
+        end
+        -- process all selections from last to first
+        table.sort(positions)
+        local mainpos = editor:GetSelectionNCaret(editor:GetMainSelection())
+
+        editor:BeginUndoAction()
+        for s = #positions, 1, -1 do
+          local pos = positions[s]
+          local start_pos = editor:WordStartPosition(pos, true)
+          editor:SetSelection(start_pos, pos)
+          editor:ReplaceSelection(text)
+          -- if this is the main position, save new cursor position to restore
+          if pos == mainpos then mainpos = editor:GetCurrentPos()
+          elseif pos < mainpos then
+            -- adjust main position as earlier changes may affect it
+            mainpos = mainpos + #text - (pos - start_pos)
+          end
+        end
+        editor:EndUndoAction()
+
+        editor:GotoPos(mainpos)
+      else
+        local pos = editor:GetCurrentPos()
+        local start_pos = editor:WordStartPosition(pos, true)
+        editor:SetSelection(start_pos, pos)
+        editor:ReplaceSelection(event:GetText())
+      end
     end)
 
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED,
@@ -894,6 +935,12 @@ function CreateEditor()
         firstvisible)
       MarkupStyle(editor,minupdated or firstline,lastline)
       editor.ev = {}
+
+      -- show auto-complete if needed
+      if editor.autocomplete then
+        EditorAutoComplete(editor)
+        editor.autocomplete = false
+      end
     end)
 
   editor:Connect(wx.wxEVT_LEFT_DOWN,
@@ -902,6 +949,19 @@ function CreateEditor()
         local position = editor:PositionFromPointClose(event:GetX(),event:GetY())
         if position ~= wxstc.wxSTC_INVALID_POSITION then
           if MarkupHotspotClick(position, editor) then return end
+        end
+      end
+
+      if event:ControlDown() and event:AltDown()
+      -- ide.wxver >= "2.9.5"; fix after GetModifiers is added to wxMouseEvent in wxlua
+      and not event:ShiftDown() and not event:MetaDown() then
+        local point = event:GetPosition()
+        local pos = editor:PositionFromPointClose(point.x, point.y)
+        local value = pos ~= wxstc.wxSTC_INVALID_POSITION and getValAtPosition(editor, pos) or nil
+        local instances = value and indicateFindInstances(editor, value, pos+1)
+        if instances and instances[0] then
+          navigateToPosition(editor, pos, instances[0]-1, #value)
+          return
         end
       end
       event:Skip()
@@ -923,6 +983,7 @@ function CreateEditor()
       event:Skip()
       if inhandler or ide.exitingProgram then return end
       inhandler = true
+      PackageEventHandle("onEditorFocusSet", editor)
       isFileAlteredOnDisk(editor)
       inhandler = false
     end)
@@ -985,6 +1046,8 @@ function CreateEditor()
       and keycode == ('T'):byte() and mod == wx.wxMOD_CONTROL then
         ide.frame:AddPendingEvent(wx.wxCommandEvent(
           wx.wxEVT_COMMAND_MENU_SELECTED, ID_SHOWTOOLTIP))
+      elseif mod == wx.wxMOD_ALT and keycode == wx.WXK_LEFT then
+        navigateBack(editor)
       else
         if ide.osname == 'Macintosh' and mod == wx.wxMOD_META then
           return -- ignore a key press if Command key is also pressed
@@ -1027,6 +1090,12 @@ function CreateEditor()
         end
       end
 
+      event:Skip()
+    end)
+
+  editor:Connect(wxstc.wxEVT_STC_ZOOM,
+    function(event)
+      editor:SetMarginWidth(margin.LINENUMBER, editor:TextWidth(DEFAULT_STYLE, "99999_"))
       event:Skip()
     end)
 
@@ -1084,8 +1153,7 @@ function CreateEditor()
   editor:Connect(ID_GOTODEFINITION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event)
       if value and instances[0] then
-        editor:GotoPos(instances[0]-1)
-        editor:SetAnchor(instances[0]-1+#value)
+        navigateToPosition(editor, editor:GetCurrentPos(), instances[0]-1, #value)
       end
     end)
 
@@ -1116,7 +1184,7 @@ function AddEditor(editor, name)
     local document = setmetatable({}, ide.proto.Document)
     document.editor = editor
     document.index = notebook:GetPageIndex(editor)
-    document.fileName = nil
+    document.fileName = name
     document.filePath = nil
     document.modTime = nil
     document.isModified = false
@@ -1197,6 +1265,7 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   -- the folds are not shown (wxwidgets 2.9.5)
   if ide.config.editor.fold then
     editor:SetProperty("fold", "1")
+    editor:SetProperty("fold.html", "1")
     editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
     editor:SetProperty("fold.comment", "1")
   end

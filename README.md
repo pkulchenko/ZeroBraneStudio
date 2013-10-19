@@ -80,7 +80,6 @@ print('OK Bye')
 ### ZeroBrane Studio and MobDebug
 
   **ZeroBrane LLC:** Paul Kulchenko (paul@kulchenko.com)
-
 ## License
 
 See LICENSE file.

@@ -36,54 +36,70 @@ local apis = {
   lua = newAPI(),
 }
 
-function GetApi(apitype)
-  return apis[apitype] or apis["none"]
-end
+function GetApi(apitype) return apis[apitype] or apis.none end
 
 ----------
 -- API loading
 
-local function addAPI(apifile,only,subapis,known) -- relative to API directory
-  local ftype, fname = apifile:match("api[/\\]([^/\\]+)[/\\](.*)%.")
-  if not ftype or not fname then
-    DisplayOutputLn(TR("The API file must be located in a subdirectory of the API directory."))
-    return
-  end
-  if ((only and ftype ~= only) or (known and not known[ftype])) then 
-    return 
-  end
-  if (subapis and not subapis[fname]) then return end
-
-  local fn,err = loadfile(apifile)
-  if err then
-    DisplayOutputLn(TR("Error while loading API file: %s"):format(err))
-    return
-  end
-  local env = apis[ftype] or newAPI()
-  apis[ftype] = env
-  env = env.ac.childs
-  local suc,res = pcall(function()return fn(env) end)
-  if (not suc) then
-    DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
-  elseif (res) then
-    local function gennames(tab,prefix)
-      for i,v in pairs(tab) do
-        v.classname = (prefix and (prefix..".") or "")..i
-        if(v.childs) then
-          gennames(v.childs,v.classname)
-        end
-      end
-    end
-    gennames(res)
-    for i,v in pairs(res) do
-      env[i] = v
+local function gennames(tab, prefix)
+  for i,v in pairs(tab) do
+    v.classname = (prefix and (prefix..".") or "")..i
+    if (v.childs) then
+      gennames(v.childs,v.classname)
     end
   end
 end
 
-local function loadallAPIs (only,subapis,known)
+local function addAPI(ftype, fname) -- relative to API directory
+  local env = apis[ftype] or newAPI()
+
+  local res
+  local api = ide.apis[ftype][fname]
+
+  if type(api) == 'table' then
+    res = api
+  else
+    local fn, err = loadfile(api)
+    if err then
+      DisplayOutputLn(TR("Error while loading API file: %s"):format(err))
+      return
+    end
+    local suc
+    suc, res = pcall(function() return fn(env.ac.childs) end)
+    if (not suc) then
+      DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
+      return
+    end
+    -- cache the result
+    ide.apis[ftype][fname] = res
+  end
+  apis[ftype] = env
+
+  gennames(res)
+  for i,v in pairs(res) do env.ac.childs[i] = v end
+end
+
+local function loadallAPIs(only, subapis, known)
+  for ftype, v in pairs(only and {[only] = ide.apis[only]} or ide.apis) do
+    if (not known or known[ftype]) then
+      for fname in pairs(v) do
+        if (not subapis or subapis[fname]) then addAPI(ftype, fname) end
+      end
+    end
+  end
+end
+
+local function scanAPIs()
   for _, file in ipairs(FileSysGetRecursive("api", true, "*.lua")) do
-    if not file:match(string_Pathsep.."$") then addAPI(file,only,subapis,known) end
+    if not IsDirectory(file) then
+      local ftype, fname = file:match("api[/\\]([^/\\]+)[/\\](.*)%.")
+      if not ftype or not fname then
+        DisplayOutputLn(TR("The API file must be located in a subdirectory of the API directory."))
+        return
+      end
+      ide.apis[ftype] = ide.apis[ftype] or {}
+      ide.apis[ftype][fname] = file
+    end
   end
 end
 
@@ -219,9 +235,9 @@ local function resolveAssign(editor,tx)
         -- this can happen if it's a reference to a value with a known type
         classname = classname or assigns[c..w]
         if (s ~= "" and old ~= classname) then
-          c = classname..s
           -- continue checking unless this can lead to recursive substitution
-          change = not classname:find("^"..w)
+          change = not classname:find("^"..w) and not classname:find("^"..c..w)
+          c = classname..s
         else
           c = c..w..s
         end
@@ -243,14 +259,20 @@ end
 
 function GetTipInfo(editor, content, short, fullmatch)
   if not content then return end
+
+  UpdateAssignCache(editor)
+
+  -- try to resolve the class
+  content = content:gsub("%b[]",".0")
+  local tab, rest = resolveAssign(editor, content)
+
   local caller = content:match("([%w_]+)%(?%s*$")
-  local class = caller and content:match("([%w_]+)[%.:]"..caller.."%(?%s*$") or ""
+  local class = (tab and tab.classname
+    or caller and content:match("([%w_]+)[%.:]"..caller.."%(?%s*$") or "")
   local tip = editor.api.tip
 
   local classtab = short and tip.shortfinfoclass or tip.finfoclass
   local funcstab = short and tip.shortfinfo or tip.finfo
-
-  UpdateAssignCache(editor)
 
   if (editor.assignscache and not (class and classtab[class])) then
     local assigns = editor.assignscache.assigns
@@ -293,6 +315,7 @@ do
   -- by defaul load every known api except lua
   known.lua = false
 
+  scanAPIs()
   loadallAPIs(nil,nil,known)
   generateAPIInfo()
 end
@@ -353,11 +376,8 @@ function DynamicWordsReset ()
 end
 
 local function getEditorLines(editor,line,numlines)
-  local tx = ""
-  for i=0,numlines do
-    tx = tx..editor:GetLine(line + i)
-  end
-  return tx
+  return editor:GetTextRange(
+    editor:PositionFromLine(line),editor:PositionFromLine(line+numlines+1))
 end
 
 function DynamicWordsAdd(ev,editor,content,line,numlines)
@@ -406,10 +426,12 @@ local function getAutoCompApiList(childs,fragment,method)
     if not wlist then
       wlist = " "
       for i,v in pairs(childs) do
+        -- in some cases (tip.finfo), v may be a string; check for that first.
         -- if a:b typed, then value (type == "value") not allowed
         -- if a.b typed, then method (type == "method") not allowed
-        if ((method and v.type ~= "value") or (not method and v.type ~= "method"))
-        and v.type then
+        if type(v) ~= 'table' or (v.type and
+           ((method and v.type ~= "value")
+         or (not method and v.type ~= "method"))) then
           wlist = wlist..i.." "
         end
       end
@@ -439,10 +461,12 @@ local function getAutoCompApiList(childs,fragment,method)
 
   local sub = strategy == 1
   for key,v in pairs(childs) do
+    -- in some cases (tip.finfo), v may be a string; check for that first.
     -- if a:b typed, then value (type == "value") not allowed
     -- if a.b typed, then method (type == "method") not allowed
-    if ((method and v.type ~= "value") or (not method and v.type ~= "method"))
-    and v.type then
+    if type(v) ~= 'table' or (v.type and
+       ((method and v.type ~= "value")
+     or (not method and v.type ~= "method"))) then
       local used = {}
       --
       local kl = key:lower()
@@ -498,10 +522,9 @@ function CreateAutoCompList(editor,key)
   if not (progress) then return end
 
   if (tab == ac) then
-    local _, krest = rest:match("([%w_]+)["..sep.."]([%w_]+)%s*$")
+    local _, krest = rest:match("([%w_]+)["..sep.."]([%w_]*)%s*$")
     if (krest) then
-      if (#krest < 3) then return end
-      tab = tip.finfo
+      tab = #krest >= (ide.config.acandtip.startat or 2) and tip.finfo or {}
       rest = krest:gsub("[^%w_]","")
     else
       rest = rest:gsub("[^%w_]","")
@@ -516,7 +539,7 @@ function CreateAutoCompList(editor,key)
   -- only if api search couldnt descend
   -- ie we couldnt find matching sub items
   local dw = ""
-  if (tab == ac and last and #last >= (ide.config.acandtip.startat or 2)) then
+  if (last and #last >= (ide.config.acandtip.startat or 2)) then
     last = last:lower()
     if dynamicwords[last] then
       local list = dynamicwords[last]
@@ -541,20 +564,25 @@ function CreateAutoCompList(editor,key)
   -- list from api
   local apilist = getAutoCompApiList(tab.childs or tab,rest,method)
 
-  -- handle inheritance; add matches from the parent class/lib
-  local seen = {tab = true}
-  while tab.inherits do
-    local base = tab.inherits
-    tab = ac
-    -- map "a.b.c" to class hierarchy (a.b.c)
-    for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
-    if not tab or seen[tab] then break end
-    seen[tab] = true
+  local function addInheritance(tab, apilist, seen)
+    if not tab.inherits then return end
+    for base in tab.inherits:gmatch("[%w_"..sep.."]+") do
+      local tab = ac
+      -- map "a.b.c" to class hierarchy (a.b.c)
+      for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
 
-    for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
-      table.insert(apilist, v)
+      if tab and not seen[tab] then
+        seen[tab] = true
+        for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
+          table.insert(apilist, v)
+        end
+        addInheritance(tab, apilist, seen)
+      end
     end
   end
+
+  -- handle (multiple) inheritance; add matches from the parent class/lib
+  addInheritance(tab, apilist, {[tab] = true})
 
   local compstr = ""
   if apilist then
@@ -610,5 +638,5 @@ function CreateAutoCompList(editor,key)
   -- concat final, list complete first
   local li = (compstr .. dw)
   
-  return li ~= "" and (#li > 1024 and li:sub(1,1024).."..." or li)
+  return li ~= "" and (#li > 1024 and li:sub(1,1024).."..." or li) or nil
 end

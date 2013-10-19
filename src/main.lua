@@ -6,6 +6,7 @@
 local iswindows = os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')
 local islinux = not iswindows and not os.getenv('DYLD_LIBRARY_PATH') and io.open("/proc")
 local arch = "x86" -- use 32bit by default
+local unpack = table.unpack or unpack
 
 if islinux then
   local file = io.popen("uname -m")
@@ -45,10 +46,13 @@ ide = {
       verbose = false,
       hostname = nil,
       port = nil,
+      runonstart = nil,
+      redirect = nil,
     },
     default = {
       name = 'untitled',
       fullname = 'untitled.lua',
+      interpreter = 'luadeb',
     },
     outputshell = {},
     filetree = {},
@@ -60,7 +64,6 @@ ide = {
 
     styles = nil,
     stylesoutshell = nil,
-    interpreter = "_undefined_",
 
     autocomplete = true,
     autoanalizer = true,
@@ -85,7 +88,6 @@ ide = {
   },
   specs = {
     none = {
-      linecomment = ">",
       sep = "\1",
     }
   },
@@ -93,6 +95,7 @@ ide = {
   iofilters = {},
   interpreters = {},
   packages = {},
+  apis = {},
 
   proto = {}, -- prototypes for various classes
 
@@ -132,6 +135,8 @@ ide = {
 
   osname = wx.wxPlatformInfo.Get():GetOperatingSystemFamilyName(),
   osarch = arch,
+  oshome = os.getenv("HOME") or (iswindows and os.getenv('HOMEDRIVE') and os.getenv('HOMEPATH')
+    and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH'))),
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
 }
 
@@ -146,6 +151,24 @@ end
 if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
 -- wxDIR_NO_FOLLOW is missing in wxlua 2.8.12 as well
 if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
+
+if not setfenv then -- Lua 5.2
+  -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
+  -- this assumes f is a function
+  local function findenv(f)
+    local level = 1
+    repeat
+      local name, value = debug.getupvalue(f, level)
+      if name == '_ENV' then return level, value end
+      level = level + 1
+    until name == nil
+    return nil end
+  getfenv = function (f) return(select(2, findenv(f)) or _G) end
+  setfenv = function (f, t)
+    local level = findenv(f)
+    if level then debug.setupvalue(f, level, t) end
+    return f end
+end
 
 for _, file in ipairs({"ids", "style", "keymap", "proto"}) do
   dofile("src/editor/"..file..".lua")
@@ -251,14 +274,15 @@ end
 -- load packages
 local function loadPackages(filter)
   loadToTab(filter, "packages", ide.packages, false, ide.proto.Plugin)
+  if ide.oshome then
+    local userpackages = MergeFullPath(ide.oshome, ".zbstudio/packages")
+    loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
+  end
   -- assign file names to each package
   for fname, package in pairs(ide.packages) do package.fname = fname end
 end
 
--- load specs
-local function loadSpecs(filter)
-  loadToTab(filter or "specs", "spec", ide.specs, true)
-
+function UpdateSpecs()
   for _, spec in pairs(ide.specs) do
     spec.sep = spec.sep or "\1" -- default separator doesn't match anything
     spec.iscomment = {}
@@ -282,6 +306,12 @@ local function loadSpecs(filter)
       end
     end
   end
+end
+
+-- load specs
+local function loadSpecs(filter)
+  loadToTab(filter or "specs", "spec", ide.specs, true)
+  UpdateSpecs()
 end
 
 -- temporarily replace print() to capture reported error messages to show
@@ -360,10 +390,9 @@ loadSpecs()
 loadTools()
 
 do
-  local home = os.getenv("HOME") or (iswindows and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH')))
   ide.configs = {
     system = MergeFullPath("cfg", "user.lua"),
-    user = home and MergeFullPath(home, ".zbstudio/user.lua"),
+    user = ide.oshome and MergeFullPath(ide.oshome, ".zbstudio/user.lua"),
   }
 
   -- process configs
@@ -374,7 +403,7 @@ do
   for _, v in ipairs(configs) do addConfig(v, true) end
 
   configs = nil
-  local sep = string_Pathsep
+  local sep = GetPathSeparator()
   if ide.config.language then
     LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
   end
@@ -387,7 +416,7 @@ loadPackages()
 
 for _, file in ipairs({
     "markup", "settings", "singleinstance", "iofilters",
-    "gui", "filetree", "output", "debugger", "package",
+    "package", "gui", "filetree", "output", "debugger",
     "editor", "findreplace", "commands", "autocomplete", "shellbox",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",
@@ -418,7 +447,13 @@ SettingsRestoreView()
 do
   for _, fileName in ipairs(filenames) do
     if fileName ~= "--" then
-      LoadFile(fileName, nil, true)
+      if wx.wxDirExists(fileName) then
+        local dir = wx.wxFileName.DirName(fileName)
+        dir:Normalize() -- turn into absolute path if needed
+        ProjectUpdateProjectDir(dir:GetFullPath())
+      else
+        LoadFile(fileName, nil, true)
+      end
     end
   end
 
@@ -437,6 +472,8 @@ if ide.wxver < "2.9.5" and ide.osname == 'Macintosh' then -- force refresh to fi
 end
 
 resumePrint()
+
+PackageEventHandle("onAppLoad")
 
 ide.frame:Show(true)
 wx.wxGetApp():MainLoop()

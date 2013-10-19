@@ -19,7 +19,7 @@ errorlog:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
 errorlog:SetBufferedDraw(not ide.config.hidpi and true or false)
 errorlog:StyleClearAll()
 errorlog:SetMarginWidth(1, 16) -- marker margin
-errorlog:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL);
+errorlog:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)
 errorlog:MarkerDefine(StylesGetMarker("message"))
 errorlog:MarkerDefine(StylesGetMarker("prompt"))
 errorlog:SetReadOnly(true)
@@ -111,9 +111,8 @@ local function unHideWindow(pidAssign)
       or action == hide and win:is_visible() then
         -- use show_async call (ShowWindowAsync) to avoid blocking the IDE
         -- if the app is busy or is being debugged
-        win:show_async(show and winapi.SW_SHOW or winapi.SW_HIDE)
-        notebook:SetFocus() -- set focus back to the IDE window
-        pid = nil
+        win:show_async(action == show and winapi.SW_SHOW or winapi.SW_HIDE)
+        pid = nil -- indicate that unhiding is done
       end
     end
   end
@@ -305,33 +304,41 @@ local jumptopatterns = {
 }
 
 errorlog:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
-  function()
+  function(event)
     local line = errorlog:GetCurrentLine()
     local linetx = errorlog:GetLine(line)
-    -- try to detect a filename + line
-    -- in linetx
 
-    local fname
-    local jumpline
-    local jumplinepos
-
+    -- try to detect a filename and line in linetx
+    local fname, jumpline, jumplinepos
     for _,pattern in ipairs(jumptopatterns) do
       fname,jumpline,jumplinepos = linetx:match(pattern)
-      if (fname and jumpline) then
-        break
-      end
+      if (fname and jumpline) then break end
     end
 
     if (fname and jumpline) then
-      LoadFile(fname,nil,true)
-      local editor = GetEditor()
+      local name = GetFullPathIfExists(FileTreeGetDir(), fname)
+        or FileTreeFindByPartialName(fname)
+
+      -- fname may include name of executable, as in "path/to/lua: file.lua";
+      -- strip it and try to find match again if needed
+      local fixedname = fname:match(": (.+)")
+      if not name and fixedname then
+        name = GetFullPathIfExists(FileTreeGetDir(), fixedname)
+          or FileTreeFindByPartialName(fixedname)
+      end
+
+      local editor = LoadFile(name or fname,nil,true)
       if (editor) then
         jumpline = tonumber(jumpline)
         jumplinepos = tonumber(jumplinepos)
 
-        --editor:ScrollToLine(jumpline)
-        editor:GotoPos(editor:PositionFromLine(math.max(0,jumpline-1)) + (jumplinepos and (math.max(0,jumplinepos-1)) or 0))
+        editor:GotoPos(editor:PositionFromLine(math.max(0,jumpline-1))
+          + (jumplinepos and (math.max(0,jumplinepos-1)) or 0))
         editor:SetFocus()
+
+        -- doubleclick can set selection, so reset it
+        errorlog:SetSelection(event:GetPosition(), event:GetPosition())
+        event:Skip()
       end
     end
   end)

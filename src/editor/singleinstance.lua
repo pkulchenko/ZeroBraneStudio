@@ -18,7 +18,7 @@ if not ide.config.singleinstance then return end
 require "socket"
 
 local port = ide.config.singleinstanceport
-
+local delay = tonumber(ide.config.singleinstance) or 1000 -- in ms
 local svr = socket.udp()
 
 local success, errmsg = svr:setsockname("127.0.0.1",port) -- bind on local host
@@ -33,7 +33,7 @@ protocol.server.answerok = "Sure. You may now leave."
 if success then -- ok, server was started, we are solo
   --TODO: if multiple files are to be opened, each file is handled one by one - we could create a single string instead...
   ide.idletimer = wx.wxTimer(wx.wxGetApp())
-  ide.idletimer:Start(200,false)
+  ide.idletimer:Start(delay,false)
   svr:settimeout(0) -- don't block
   wx.wxGetApp():Connect(wx.wxEVT_TIMER,function (evt)
       if ide.exitingProgram then -- if exiting, terminate the timer loop
@@ -50,9 +50,10 @@ if success then -- ok, server was started, we are solo
           svr:sendto(protocol.server.answerok,ip,port)
           local filename = msg:match(protocol.client.requestloading:gsub("%%s","(.+)$"))
           if filename then
-            if LoadFile(filename, nil, true)
-            then RequestAttention()
-            else DisplayOutput("Can't open requested file '"..filename.."'.\n") end
+            RequestAttention()
+            if not LoadFile(filename, nil, true) then
+              DisplayOutputLn("Can't open requested file '"..filename.."'.")
+            end
           end
         end
       end

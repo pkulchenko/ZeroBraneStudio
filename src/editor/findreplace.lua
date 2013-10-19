@@ -46,8 +46,8 @@ end
 -------------------- Find replace dialog
 
 local function setSearchFlags(editor)
-  local flags = 0
-  if findReplace.fWholeWord then flags = wxstc.wxSTC_FIND_WHOLEWORD end
+  local flags = wxstc.wxSTC_FIND_POSIX
+  if findReplace.fWholeWord then flags = flags + wxstc.wxSTC_FIND_WHOLEWORD end
   if findReplace.fMatchCase then flags = flags + wxstc.wxSTC_FIND_MATCHCASE end
   if findReplace.fRegularExpr then flags = flags + wxstc.wxSTC_FIND_REGEXP end
   editor:SetSearchFlags(flags)
@@ -185,7 +185,6 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
   local replaced = false
 
   if findReplace:HasText() then
-    local replaceLen = string.len(findReplace.replaceText)
     local editor = findReplace:GetEditor()
     local endTarget = inFileRegister and setTargetAll(editor) or
       setTarget(editor, findReplace.fDown, fReplaceAll, findReplace.fWrap)
@@ -200,8 +199,11 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
           if (inFileRegister) then inFileRegister(posFind) end
 
           local length = editor:GetLength()
-          editor:ReplaceTarget(findReplace.replaceText)
-          editor:SetTargetStart(posFind + replaceLen)
+          local replaced = findReplace.fRegularExpr
+            and editor:ReplaceTargetRE(findReplace.replaceText)
+            or editor:ReplaceTarget(findReplace.replaceText)
+
+          editor:SetTargetStart(posFind + replaced)
           -- adjust the endTarget as the position could have changed;
           -- can't simply subtract findText length as it could be a regexp
           endTarget = endTarget + (editor:GetLength() - length)
@@ -216,10 +218,21 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
       ide.frame:SetStatusText(("%s %s."):format(
         TR("Replaced"), TR("%d instance", occurrences):format(occurrences)))
     else
-      if findReplace.foundString then
+      -- check if there is anything selected as well as the user can
+      -- move the cursor after successful search
+      if findReplace.foundString
+      and editor:GetSelectionStart() ~= editor:GetSelectionEnd() then
         local start = editor:GetSelectionStart()
-        editor:ReplaceSelection(findReplace.replaceText)
-        editor:SetSelection(start, start + replaceLen)
+
+        -- convert selection to target as we need TargetRE support
+        editor:TargetFromSelection()
+
+        local length = editor:GetLength()
+        local replaced = findReplace.fRegularExpr
+          and editor:ReplaceTargetRE(findReplace.replaceText)
+          or editor:ReplaceTarget(findReplace.replaceText)
+
+        editor:SetSelection(start, start + replaced)
         findReplace.foundString = false
 
         replaced = true
@@ -254,7 +267,7 @@ local function ProcInFiles(startdir,mask,subdirs,replace)
     -- ignore .bak files when replacing and asked to store .bak files
     -- and skip folders as these are included in the list as well
     if not (replace and findReplace.fMakeBak and file:find('.bak$'))
-    and not file:match(string_Pathsep.."$") then
+    and not IsDirectory(file) then
       local match = false
       for _, mask in ipairs(masks) do match = match or file:find(mask) end
       if match then
@@ -276,6 +289,10 @@ local function ProcInFiles(startdir,mask,subdirs,replace)
 
           -- give time to the UI to refresh
           if TimeGet() - start > 0.25 then wx.wxYield() end
+          if not findReplace.dialog:IsShown() then
+            DisplayOutputLn(TR("Cancelled by the user."))
+            break
+          end
         end
       end
     end
@@ -288,6 +305,8 @@ function findReplace:RunInFiles(replace)
   findReplace.oveditor = wxstc.wxStyledTextCtrl(findReplace.dialog, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(1,1), wx.wxBORDER_STATIC)
   findReplace.occurrences = 0
+
+  ActivateOutput()
 
   local startdir = findReplace.filedirText
   DisplayOutputLn(("%s '%s'."):format(
@@ -343,7 +362,7 @@ function findReplace:createDialog(replace,infiles)
   local replaceButton = wx.wxButton(findDialog, ID_REPLACE, infiles and replace and TR("&Replace All") or TR("&Replace"))
   local replaceAllButton = nil
   if (replace and not infiles) then
-    replaceAllButton = wx.wxButton(findDialog, ID_REPLACE_ALL, TR("Replace &All"))
+    replaceAllButton = wx.wxButton(findDialog, ID_REPLACE_ALL, TR("Replace A&ll"))
   end
   local cancelButton = wx.wxButton(findDialog, wx.wxID_CANCEL, TR("Cancel"))
 

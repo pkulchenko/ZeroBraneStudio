@@ -38,7 +38,7 @@ function MarkupAddStyles(styles)
   end
 end
 
-local function q(s) return s:gsub('(.)','%%%1') end
+local q = EscapeMagic
 
 local MD_MARK_PTRN = ''  -- combination of all markup marks that can start styling
 for key in pairs(markup) do
@@ -132,6 +132,9 @@ end
 function MarkupStyle(editor, lines, linee)
   local lines = lines or 0
   if (lines < 0) then return end
+
+  -- if the current spec doesn't have any comments, nothing to style
+  if not next(editor.spec.iscomment) then return end
 
   -- always style to the end as there may be comments that need re-styling
   -- technically, this should be GetLineCount()-1, but we want to style

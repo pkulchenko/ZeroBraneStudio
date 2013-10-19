@@ -11,36 +11,12 @@ local uimgr = frame.uimgr
 
 ------------------------
 -- Interpreters and Menu
-local targetMenu
-local interpreters = {}
-local lastinterpreter
-do
-  local interpreternames = {}
-  local lkinterpreters = {}
-  for i,v in pairs(ide.interpreters) do
-    interpreters[ID ("debug.interpreter."..i)] = v
-    v.fname = i
-    lastinterpreter = i
-    table.insert(interpreternames,v.name)
-    lkinterpreters[v.name] = i
-  end
-  assert(lastinterpreter,"no interpreters defined")
-  table.sort(interpreternames)
-
-  local targetargs = {}
-  for _,v in ipairs(interpreternames) do
-    local id = ID("debug.interpreter."..lkinterpreters[v])
-    local inter = interpreters[id]
-    table.insert(targetargs,{id,inter.name,inter.description,wx.wxITEM_CHECK})
-  end
-  targetMenu = wx.wxMenu(targetargs)
-end
 
 local debugTab = {
   { ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file") },
   { ID_RUNNOW, TR("Run as Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
   { ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file") },
-  { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start debugging") },
+  { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
   { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging") },
   { },
   { ID_STOPDEBUG, TR("S&top Debugging")..KSC(ID_STOPDEBUG), TR("Stop the currently running process") },
@@ -59,6 +35,7 @@ local targetDirMenu = wx.wxMenu{
   {ID_PROJECTDIRCHOOSE, TR("Choose ...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
   {ID_PROJECTDIRFROMFILE, TR("Set From Current File")..KSC(ID_PROJECTDIRFROMFILE), TR("Set project directory from current file")},
 }
+local targetMenu = wx.wxMenu({})
 local debugMenu = wx.wxMenu(debugTab)
 local debugMenuRun = {
   start=TR("Start &Debugging")..KSC(ID_STARTDEBUG), continue=TR("Co&ntinue")..KSC(ID_STARTDEBUG)}
@@ -67,6 +44,75 @@ local debugMenuStop = {
 debugMenu:Append(ID_PROJECTDIR, TR("Project Directory"), targetDirMenu, TR("Set the project directory to be used"))
 debugMenu:Append(ID_INTERPRETER, TR("Lua &Interpreter"), targetMenu, TR("Set the interpreter to be used"))
 menuBar:Append(debugMenu, TR("&Project"))
+
+local interpreters
+local function selectInterpreter(id)
+  for id in pairs(interpreters) do
+    menuBar:Check(id, false)
+    menuBar:Enable(id, true)
+  end
+  menuBar:Check(id, true)
+  menuBar:Enable(id, false)
+
+  if ide.interpreter and ide.interpreter ~= interpreters[id] then
+    PackageEventHandle("onInterpreterClose", ide.interpreter) end
+  if interpreters[id] and ide.interpreter ~= interpreters[id] then
+    PackageEventHandle("onInterpreterLoad", interpreters[id]) end
+
+  ide.interpreter = interpreters[id]
+
+  DebuggerShutdown()
+
+  ide.frame.statusBar:SetStatusText(ide.interpreter.name or "", 5)
+  ReloadLuaAPI()
+end
+
+function ProjectSetInterpreter(name)
+  local id = IDget("debug.interpreter."..name)
+  if (not interpreters[id]) then return end
+  selectInterpreter(id)
+end
+
+local function evSelectInterpreter(event)
+  selectInterpreter(event:GetId())
+end
+
+function UpdateInterpreters()
+  assert(ide.interpreters, "no interpreters defined")
+
+  -- delete all existing items (if any)
+  local items = targetMenu:GetMenuItemCount()
+  for i = items, 1, -1 do
+    targetMenu:Delete(targetMenu:FindItemByPosition(i-1))
+  end
+
+  local names = {}
+  for file in pairs(ide.interpreters) do table.insert(names, file) end
+  table.sort(names)
+
+  interpreters = {}
+  for i, file in ipairs(names) do
+    local inter = ide.interpreters[file]
+    local id = ID("debug.interpreter."..file)
+    inter.fname = file
+    interpreters[id] = inter
+    targetMenu:Append(
+      wx.wxMenuItem(targetMenu, id, inter.name, inter.description, wx.wxITEM_CHECK))
+    frame:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, evSelectInterpreter)
+  end
+
+  local id = (
+    -- interpreter is set and is (still) on the list of known interpreters
+    IDget("debug.interpreter."
+      ..(ide.interpreter and ide.interpreters[ide.interpreter.fname]
+         and ide.interpreter.fname or ide.config.interpreter)) or
+    -- otherwise use default interpreter
+    ID("debug.interpreter."..ide.config.default.interpreter)
+  )
+  selectInterpreter(id)
+end
+
+UpdateInterpreters()
 
 -----------------------------
 -- Project directory handling
@@ -118,52 +164,8 @@ local function projFromFile(event)
 end
 frame:Connect(ID_PROJECTDIRFROMFILE, wx.wxEVT_COMMAND_MENU_SELECTED, projFromFile)
 
-------------------------------------
--- Interpreter Selection and Running
-
-local function selectInterpreter(id)
-  for id in pairs(interpreters) do
-    menuBar:Check(id, false)
-    menuBar:Enable(id, true)
-  end
-  menuBar:Check(id, true)
-  menuBar:Enable(id, false)
-
-  if ide.interpreter and ide.interpreter ~= interpreters[id] then
-    PackageEventHandle("onInterpreterClose", ide.interpreter) end
-
-  ide.interpreter = interpreters[id]
-
-  PackageEventHandle("onInterpreterLoad", ide.interpreter)
-
-  DebuggerShutdown()
-
-  ide.frame.statusBar:SetStatusText(ide.interpreter.name or "", 5)
-  ReloadLuaAPI()
-end
-
-function ProjectSetInterpreter(name)
-  local id = IDget("debug.interpreter."..name)
-  if (not interpreters[id]) then return end
-  selectInterpreter(id)
-end
-
-local function evSelectInterpreter(event)
-  selectInterpreter(event:GetId())
-end
-
-for id in pairs(interpreters) do
-  frame:Connect(id,wx.wxEVT_COMMAND_MENU_SELECTED,evSelectInterpreter)
-end
-
-do
-  local defaultid = (
-    IDget("debug.interpreter."..ide.config.interpreter) or
-    ID("debug.interpreter."..lastinterpreter)
-  )
-  ide.interpreter = interpreters[defaultid]
-  menuBar:Check(defaultid, true)
-end
+----------------------
+-- Interpreter Running
 
 local function getNameToRun(skipcheck)
   local editor = GetEditor()
@@ -181,6 +183,7 @@ local function getNameToRun(skipcheck)
   local id = editor:GetId()
   if not openDocuments[id].filePath then SetDocumentModified(id, true) end
   if not SaveIfModified(editor) then return end
+  if ide.config.editor.saveallonrun then SaveAll(true) end
 
   return wx.wxFileName(openDocuments[id].filePath)
 end
@@ -398,5 +401,6 @@ frame:Connect(wx.wxEVT_IDLE,
     if (debugger.update) then debugger.update() end
     if (debugger.scratchpad) then DebuggerRefreshScratchpad() end
     if IndicateIfNeeded() then event:RequestMore(true) end
+    PackageEventHandleOnce("onIdleOnce", event)
     event:Skip() -- let other EVT_IDLE handlers to work on the event
   end)

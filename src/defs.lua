@@ -108,11 +108,13 @@ config = {
                       -- wxstc.wxSTC_EOL_CRLF, wxstc.wxSTC_EOL_LF and nil (OS default)
     nomousezoom = nil, -- disable zooming using mouse wheel
     autoreload = nil, -- trigger auto-reload when file is updated
+    saveallonrun = nil, -- save all modified files before Run/Debug
   },
 
   default = {
     name = 'untitled',
     fullname = 'untitled.lua',
+    interpreter = 'luadeb',
   },
 
   debugger = {
@@ -121,6 +123,7 @@ config = {
     port = nil, -- port number to use
     runonstart = nil, -- if debugger should run immediately after starting
     -- default values are different for different interpreters
+    redirect = nil, -- "d", "c", or "r" values for default, copy, or redirect
   }
 
   outputshell = { -- output and shell settings

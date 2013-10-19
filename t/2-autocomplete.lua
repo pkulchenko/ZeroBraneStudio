@@ -2,6 +2,7 @@ local editor = NewFile()
 ok(editor, "Open New file.")
 ok(editor.assignscache ~= nil, "Auto-complete cache is assigned.")
 
+editor:SetText('') -- use Set/Add to position cursor after added text
 editor:AddText([[
   local line = '123'
   line = line:gsub('1','4')
@@ -24,14 +25,23 @@ ok(limit(10000, function() CreateAutoCompList(editor, "smth:") end),
 ok(pcall(CreateAutoCompList, editor, "%1000"),
   "Auto-complete doesn't trigger 'invalid capture index' on '%...'.")
 
-editor:SetText('') -- use Set/Add to position cursor after added text
+editor:SetText('')
 editor:AddText([[
   result = result.list[1]  --> "does the test" test
   result.1
 ]])
 
 ok(limit(10000, function() CreateAutoCompList(editor, "result.1") end),
-  "Auto-complete doesn't loop for table index reference.")
+  "Auto-complete doesn't loop for table index reference 1/2.")
+
+editor:SetText('')
+editor:AddText([[
+  self.popUpObjs = self.undoBuffer[0].sub
+  self.undoBuffer = self.undoBuffer[0]
+  self.popUpObjs[popUpNo].]])
+
+ok(limit(10000, function() EditorAutoComplete(editor) end),
+  "Auto-complete doesn't loop for table index reference 2/2.")
 
 local interpreter = ide:GetInterpreter():GetFileName()
 ProjectSetInterpreter("gideros")
@@ -43,6 +53,20 @@ ok(c == 1,
     :format(ac))
 
 ProjectSetInterpreter(interpreter)
+
+editor:SetText('')
+editor:AddText('print(1,io.')
+
+local value
+local ULS = editor.UserListShow
+editor.UserListShow = function(editor, pos, list) value = list end
+EditorAutoComplete(editor)
+editor.UserListShow = ULS
+
+ok(value and value:find("close"), "Auto-complete is shown after comma.")
+
+ok(not (CreateAutoCompList(editor, "pri.") or ""):match('print'),
+  "Auto-complete doesn't offer 'print' after 'pri.'.")
 
 -- cleanup
 ide:GetDocument(editor).isModified = false

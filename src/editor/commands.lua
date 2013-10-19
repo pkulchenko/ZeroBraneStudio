@@ -6,17 +6,21 @@ local frame = ide.frame
 local notebook = frame.notebook
 local openDocuments = ide.openDocuments
 local uimgr = frame.uimgr
+local unpack = table.unpack or unpack
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
 local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
 local BREAKPOINT_MARKER = StylesGetMarker("breakpoint")
 
-function NewFile(event)
+function NewFile(filename)
+  filename = filename or ide.config.default.fullname
   local editor = CreateEditor()
-  SetupKeywords(editor, "lua")
-  local doc = AddEditor(editor, ide.config.default.fullname)
-  if doc then PackageEventHandle("onEditorNew", editor) end
-  if doc then SetEditorSelection(doc.index) end
+  SetupKeywords(editor, GetFileExt(filename))
+  local doc = AddEditor(editor, filename)
+  if doc then
+    PackageEventHandle("onEditorNew", editor)
+    SetEditorSelection(doc.index)
+  end
   return editor
 end
 
@@ -71,11 +75,12 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   editor:SetText(file_text or "")
 
   -- check the editor as it can be empty if the file has malformed UTF8;
-  -- skip binary files as they may have any sequences; can't show them anyway.
+  -- skip binary files with unknown extensions as they may have any sequences;
+  -- can't show them anyway.
   if file_text and #file_text > 0 and #(editor:GetText()) == 0
-  and not isBinary(file_text) then
+  and (editor.spec ~= ide.specs.none or not isBinary(file_text)) then
     local replacement, invalid = "\022"
-    file_text, invalid = fixUTF8(file_text, replacement)
+    file_text, invalid = FixUTF8(file_text, replacement)
     if #invalid > 0 then
       editor:AppendText(file_text)
       local lastline = nil
@@ -129,13 +134,13 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   openDocuments[id].fileName = wx.wxFileName(filePath):GetFullName()
   openDocuments[id].modTime = GetFileModTime(filePath)
 
-  PackageEventHandle("onEditorLoad", editor)
-
-  SetDocumentModified(id, false)
+  SetDocumentModified(id, false, openDocuments[id].fileName)
 
   -- activate the editor; this is needed for those cases when the editor is
   -- created from some other element, for example, from a project tree.
   if not skipselection then SetEditorSelection() end
+
+  PackageEventHandle("onEditorLoad", editor)
 
   return editor
 end
@@ -201,10 +206,10 @@ function SaveFile(editor, filePath)
       openDocuments[id].filePath = filePath
       openDocuments[id].fileName = wx.wxFileName(filePath):GetFullName()
       openDocuments[id].modTime = GetFileModTime(filePath)
-      SetDocumentModified(id, false)
+      SetDocumentModified(id, false, openDocuments[id].fileName)
       SetAutoRecoveryMark()
 
-      PackageEventHandle("onEditorPostSave", editor)
+      PackageEventHandle("onEditorSave", editor)
 
       return true
     else
@@ -220,11 +225,9 @@ end
 function SaveFileAs(editor)
   local id = editor:GetId()
   local saved = false
-  local filePath = openDocuments[id].filePath
-  if (not filePath) then
-    filePath = FileTreeGetDir()
-    filePath = (filePath or "")..ide.config.default.name
-  end
+  local filePath = (openDocuments[id].filePath
+    or ((FileTreeGetDir() or "")
+        ..(openDocuments[id].fileName or ide.config.default.name)))
 
   local fn = wx.wxFileName(filePath)
   fn:Normalize() -- want absolute path for dialog
@@ -246,16 +249,37 @@ function SaveFileAs(editor)
   if fileDialog:ShowModal() == wx.wxID_OK then
     local filePath = fileDialog:GetPath()
 
+    -- first check if there is another tab with the same name and close it
+    local existing
+    local fileName = wx.wxFileName(filePath)
+    for _, document in pairs(ide.openDocuments) do
+      if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath)) then
+        existing = document.index
+        break
+      end
+    end
+
     if SaveFile(editor, filePath) then
       SetEditorSelection() -- update title of the editor
       FileTreeMarkSelected(filePath)
       if ext ~= GetFileExt(filePath) then
         -- new extension, so setup new keywords and re-apply indicators
+        editor:ClearDocumentStyle() -- remove styles from the document
         SetupKeywords(editor, GetFileExt(filePath))
         IndicateAll(editor)
         MarkupStyle(editor)
       end
       saved = true
+
+      if existing then
+        -- save the current selection as it may change after closing
+        local current = notebook:GetSelection()
+        ClosePage(existing)
+        -- restore the selection if it changed
+        if current ~= notebook:GetSelection() then
+          notebook:SetSelection(current)
+        end
+      end
     end
   end
 
@@ -417,8 +441,8 @@ function FoldSome()
 
   for ln = 0, editor.LineCount - 1 do
     local foldRaw = editor:GetFoldLevel(ln)
-    local foldLvl = math.mod(foldRaw, 4096)
-    local foldHdr = math.mod(math.floor(foldRaw / 8192), 2) == 1
+    local foldLvl = foldRaw % 4096
+    local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
 
     -- at least one header is expanded
     foldall = foldall or (foldHdr and editor:GetFoldExpanded(ln))
@@ -437,8 +461,8 @@ function FoldSome()
 
   for ln = 0, editor.LineCount-1 do
     local foldRaw = editor:GetFoldLevel(ln)
-    local foldLvl = math.mod(foldRaw, 4096)
-    local foldHdr = math.mod(math.floor(foldRaw / 8192), 2) == 1
+    local foldLvl = foldRaw % 4096
+    local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
 
     if foldall then
       if foldHdr and editor:GetFoldExpanded(ln) then
@@ -772,6 +796,8 @@ local function closeWindow(event)
   end
 
   ShowFullScreen(false)
+
+  PackageEventHandle("onAppClose")
 
   SettingsSaveAll()
   ide.settings:Flush()

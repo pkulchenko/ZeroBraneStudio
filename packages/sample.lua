@@ -21,28 +21,35 @@ local events = {
   onEditorClose =      function(self, editor) end,
   onEditorNew =        function(self, editor) end,
   onEditorPreSave =    function(self, editor, filepath) end, -- return false
-  onEditorPostSave =   function(self, editor) end,
+  onEditorSave =       function(self, editor) end,
   onEditorFocusLost =  function(self, editor) end,
   onEditorFocusSet =   function(self, editor) end,
   onEditorKeyDown =    function(self, editor, event) end, -- return false
   onEditorCharAdded =  function(self, editor, event) end, -- return false
   onMenuEditor =       function(self, menu, editor, event) end,
-  onMenuEditorTab =    function(self, menu, notebook, event) end,
+  onMenuEditorTab =    function(self, menu, notebook, event, index) end,
   onMenuFiletree =     function(self, menu, tree, event) end,
   onProjectLoad =      function(self, project) end,
   onProjectClose =     function(self, project) end,
   onInterpreterLoad =  function(self, interpreter) end,
   onInterpreterClose = function(self, interpreter) end,
+  onIdleOnce =         function(self, event) end,
   onAppFocusLost =     function(self, app) end,
   onAppFocusSet =      function(self, app) end,
+  onAppLoad =          function(self, app) end,
+  onAppClose =         function(self, app) end,
 }
 
 --[[ Uncomment this to see event names printed in the Output window
   for k in pairs(events) do
     if k:find("^on") then
       P[k] = k:find("^onEditor")
-        and function(self, ed) DisplayOutputLn(self:GetFileName(), k, ide:GetDocument(ed):GetFilePath()) end
-        or function(self, ...) DisplayOutputLn(self:GetFileName(), k, ...) end
+        and function(self, ed)
+          -- document can be empty for newly added documents
+          local doc = ide:GetDocument(ed)
+          DisplayOutputLn(self:GetFileName(), k, doc and doc:GetFilePath() or "new document") end
+        or function(self, ...)
+          DisplayOutputLn(self:GetFileName(), k, ...) end
     end
   end
 
@@ -58,8 +65,7 @@ local events = {
     DisplayOutputLn(self:GetFileName(), "onMenuEditor")
   end
 
-  P.onMenuEditorTab = function(self, menu, notebook, event)
-    local index = event:GetSelection()
+  P.onMenuEditorTab = function(self, menu, notebook, event, index)
     menu:Append(id, ">> Sample item; tab "..index)
     menu:Enable(id, true)
 
