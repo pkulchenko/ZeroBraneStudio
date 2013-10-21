@@ -558,3 +558,10 @@ ul#toc {
 h2 {
   clear: right;
 }
+
+/* turn underline on links on for widget headers */
+.widget-header a,
+.widget-header a:link,
+.widget-header a:visited{
+  text-decoration: underline;
+}
