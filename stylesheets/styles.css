@@ -517,6 +517,7 @@ ul.download a { font-size: 120%; line-height: 30px; }
 
 /* position menu at the top of the header */
 div#menu-links {
+  float: right;
   position: relative;
   top: 41px;
   right: 12px;
