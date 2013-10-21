@@ -254,9 +254,6 @@ h2.archive-header {
 #content .archive {
     margin-left: 55px;
 }
-#beta-columns {
-    background: url(sidebar-columns-bg.gif) repeat-y 50% 0;
-}
 #beta-columns-left,
 #beta-columns-right {
     width: 150px;
