@@ -6,8 +6,14 @@ title: Testimonials
 **Love the debugger**, saving my life.
 (Troy Sandal)
 
+ZBS has been a **wonderful experience** so far.
+(Jayanth Acharya)
+
 Löve + ZeroBraneStudio == **Awesome Live Coding**!
 ([Nikita Dudnik](http://nikdudnik.com/post/30067678839/ive-spent-last-day-looking-for-a-suitable))
+
+**I like ZBS for what it is**. I love it for where it is headed.
+([Andrew Starks](https://github.com/andrewstarks))
 
 I like your Lua IDE. It is **simple to use and has very good debugging features**.
 ([pwegscheider](https://github.com/pwegscheider))
@@ -20,6 +26,9 @@ ZBS is beautiful experience. I am using it usually **10 hrs every day w/o proble
 
 Superb! ZeroBrane just became my **lua/moai IDE of choice**. Thanks for integrating MOAI debugging!
 ([Stu](http://www.tabletop-terrain.com/))
+
+Thanks for the best IDE out there! I really love it, **very simple, well organized, very robust**, it is a must.
+(Dimitri Delattre)
 
 I'd like to thank you for the Zerobrane IDE. **It is the best** (I've tested almost all of the competitors).
 (Sandro Moreira)
