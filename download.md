@@ -16,7 +16,8 @@ title: Download
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 
-<div class="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
+<div class="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.<br />
+You may also <a href="https://www.missionmainstreetgrants.com/business/detail/71974"><strong>vote for ZeroBrane</strong></a> to help us get a <a href="http://notebook.kulchenko.com/business/zerobrane-application-for-small-business-grant">small business grant</a>!</div>
 
 <div class="separator">&nbsp;</div>
 
