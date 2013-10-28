@@ -423,20 +423,14 @@ li ol, li ul {
   padding: 7px 0px;
 }
 
-.github-btn {
-  padding-left: 3px;
-}
 .gh-btn {
-  font: bold 11px/14px "Helvetica Neue",Helvetica,Arial,sans-serif;
-
   border-radius: 3px;
   -webkit-border-radius: 3px;
 
-  color: #555555;
+  color: #DB6719;
   cursor: pointer;
   padding: 2px 5px 2px 4px;
   text-decoration: none;
-  text-shadow: 0 1px 0 #FFFFFF;
   white-space: nowrap;
 
   background-color: #E6E6E6;
@@ -448,11 +442,9 @@ li ol, li ul {
   box-shadow: none;
 }
 .gh-btn:hover {
-  background-color: #3072B3;
-  border-color: #518CC6 #518CC6 #2A65A0;
+  background-color: #DB6719;
   color: #FFFFFF;
   text-decoration: none;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* make items a bit more compact in the sidebar */
@@ -562,6 +554,6 @@ h2 {
 /* turn underline on links on for widget headers */
 .widget-header a,
 .widget-header a:link,
-.widget-header a:visited{
+.widget-header a:visited {
   text-decoration: underline;
 }
