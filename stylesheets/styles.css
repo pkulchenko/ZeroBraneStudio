@@ -557,3 +557,7 @@ h2 {
 .widget-header a:visited {
   text-decoration: underline;
 }
+
+.widget-header a.button {
+  text-decoration: none;
+}
