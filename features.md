@@ -3,14 +3,23 @@ layout: default
 title: Features
 ---
 
-**Cross-platform**
-[Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png): your choice.
-
 **Open source**
 Written in Lua. Extensible and open.
 
+**Cross-platform**
+[Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png): your choice.
+
 **Portable**
 Run it from any folder. No installation required.
+
+**Multi-cursor editing**
+Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click`.
+
+**Scope aware selection**
+Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Type a new name.
+
+**Go to definition**
+Go to a local variable/function definition. Navigate back using the history of saved positions.
 
 **Small**
 With the Windows and OSX installation packages being less than 5MB, it is one of the smallest if not _the smallest_ fully featured IDE.
@@ -18,11 +27,11 @@ With the Windows and OSX installation packages being less than 5MB, it is one of
 **Configurable**
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.
 
-**Instantly usable**
-Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides _integrated lessons_ on how to use it and _over 50 demo scripts_ to get you started.
-
 **Debug any Lua application**
 Set breakpoints before or after you start debugging. Step in, over, and out. Break and continue your script. Inspect and modify variables.
+
+**Instantly usable**
+Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides _integrated lessons_ on how to use it and _over 50 demo scripts_ to get you started.
 
 **Custom intepreters**
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
