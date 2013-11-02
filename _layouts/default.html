@@ -52,6 +52,7 @@
       <div id="header-description">Lightweight IDE for your Lua needs</div>
      </div>
      <div id="menu-wrapper">
+      <h1><div>{% if page.title %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
       <div id="menu-links">
         {% if page.url == '/features.html'%}<strong>Features</strong>{% else %}<a href="features.html">Features</a>{% endif %}
         {% if page.url == '/screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="screenshots.html">Screenshots</a>{% endif %}
@@ -62,7 +63,6 @@
         {% if page.url == '/community.html'%}<strong>Community</strong>{% else %}<a href="community.html">Community</a>{% endif %}
         <a href="http://notebook.kulchenko.com">Blog</a>
       </div>
-      {% if page.title %}<h1><span>{{page.title}}</span></h1>{% endif %}
      </div>
     </div>
    </div>

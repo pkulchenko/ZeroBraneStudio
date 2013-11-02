@@ -507,21 +507,19 @@ ul.download a { font-size: 120%; line-height: 30px; }
   margin-bottom: 6px;
 }
 
-/* position menu at the top of the header */
-div#menu-links {
-  float: right;
-  position: relative;
-  top: 41px;
-  right: 12px;
-}
-
 /* position menu links in the header */
+div#menu-links {
+  margin-top: 5px;
+  margin-right: 10px;
+  text-align: right;
+}
 div#menu-links a {
   padding-left: 3px;
   padding-right: 3px;
 }
 #menu-wrapper h1 {
   padding-right: 12px;
+  padding-top: 20px;
   margin-top: 0px;
 }
 
