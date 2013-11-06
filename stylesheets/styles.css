@@ -441,10 +441,9 @@ li ol, li ul {
   border-width: 1px;
   box-shadow: none;
 }
-.gh-btn:hover {
+.gh-btn:hover, .gh-btn:hover a.button {
   background-color: #DB6719;
   color: #FFFFFF;
-  text-decoration: none;
 }
 
 /* make items a bit more compact in the sidebar */
@@ -503,7 +502,6 @@ ul.download a { font-size: 120%; line-height: 30px; }
 
 /* make Download font larger */
 .widget h3 {
-  font-size: 120%;
   margin-bottom: 6px;
 }
 
@@ -558,4 +556,12 @@ h2 {
 
 .widget-header a.button {
   text-decoration: none;
+}
+
+/* payment styles */
+.gh-btn a.button {
+  text-decoration: none;
+  color: #DB6719;
+  font-size: 14px;
+  font-weight:bold
 }
