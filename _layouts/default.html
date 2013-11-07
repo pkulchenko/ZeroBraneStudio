@@ -11,6 +11,12 @@
  <link rel="stylesheet" media="all" href="stylesheets/styles.css" type="text/css" />
  {% capture root %}{% if page.root %}{{ page.root }}{% else %}./{% endif %}{%endcapture%}
  {% capture title %}{% if page.title %}{{ page.title }} - {% elsif post.title %}{{ post.title }} - {% endif %}{% endcapture %}
+
+ {% if page.url == '/support.html' %}
+   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+   <script src="scripts/modal.js"></script>
+ {% endif %}
+
  <title>{{ title }}ZeroBrane Studio - Lua IDE/editor/debugger for Windows, Mac OSX, and Linux</title>
  {% if page.title %}<style>
   #content { border-right: 0px; }
