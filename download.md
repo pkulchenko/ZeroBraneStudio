@@ -16,7 +16,13 @@ title: Download
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 
-<div class="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
+<div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
+
+<script>
+  if (location.search.indexOf('stripe') > -1) {
+    document.getElementById('thank-you').innerHTML = '<strong>Thank you for your contribution!</strong>';
+  }
+</script>
 
 <div class="separator">&nbsp;</div>
 
