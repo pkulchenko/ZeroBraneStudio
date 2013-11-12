@@ -600,3 +600,7 @@ h2 {
   top:-7px;
   right:-7px;
 }
+
+iframe {
+  background: url(../images/spinner.gif) center center no-repeat;
+}
