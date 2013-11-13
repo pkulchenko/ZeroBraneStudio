@@ -320,7 +320,6 @@ li ol, li ul {
   color: #184460;
   font-size: 2em;
   font-weight: normal;
-  font-family: Georgia;
   padding: 0;
   border: none;
 }
@@ -599,6 +598,11 @@ h2 {
   text-indent:-9999px;
   top:-7px;
   right:-7px;
+}
+
+#amountValue {
+  width: 34px;
+  font-family: Georgia,Verdana,Geneva,Chicago,Arial,Sans-serif,"MS Sans Serif";
 }
 
 iframe {

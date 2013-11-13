@@ -7,27 +7,44 @@ title: Support
 
 <img style="float: right; padding: 10px 40px 10px 0px" src="images/lua-ide-benefits-screenshot.png" />
 
-<form action="https://checkout.google.com/api/checkout/v2/checkoutForm/Merchant/266673609981574" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm" target="_top">
+<form action="#" id="PayForm" name="PayForm">
  <table class="payment" id="payment-options">
-  <tr><td class="amount">  $5</td><td class="description"><input name="item_price_1" id="amount5" value="5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
-  <tr><td class="amount"> $10</td><td class="description"><input name="item_price_1" id="amount10" value="10" type="radio" /><label for="amount10">I will pay more when my game sells</label></td></tr>
-  <tr><td class="amount"> $24</td><td class="description"><input name="item_price_1" id="amount24" checked="checked" value="24" type="radio" /><label for="amount24"><strong>Exactly what I was looking for</strong></label></td></tr>
-  <tr><td class="amount"> $50</td><td class="description"><input name="item_price_1" id="amount50" value="50" type="radio" /><label for="amount50">I feel lucky and generous today</label></td></tr>
-  <tr><td class="amount">$100</td><td class="description"><input name="item_price_1" id="amount100" value="100" type="radio" /><label for="amount100">Take my money; just keep working on it</label></td></tr>
+  <tr><td class="amount">  $5</td><td class="description"><input name="payment" id="amount5" value="5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
+  <tr><td class="amount"> $10</td><td class="description"><input name="payment" id="amount10" value="10" type="radio" /><label for="amount10">I will pay more when my game sells</label></td></tr>
+  <tr><td class="amount"> $24</td><td class="description"><input name="payment" id="amount24" checked="checked" value="24" type="radio" /><label for="amount24"><strong>Exactly what I was looking for</strong></label></td></tr>
+  <tr><td class="amount"> $50</td><td class="description"><input name="payment" id="amount50" value="50" type="radio" /><label for="amount50">I feel lucky and generous today</label></td></tr>
+  <tr><td class="amount">$100</td><td class="description"><input name="payment" id="amount100" value="100" type="radio" /><label for="amount100">Take my money; just keep working on it</label></td></tr>
+  <tr><td class="amount">$<input disabled="disabled" type="text" value="other" id="amountValue" /></td><td class="description"><input name="payment" id="amountOther" value="" type="radio" /><label for="amountOther">I have something else on my mind</label></td></tr>
  </table>
 
- <input name="item_name_1" type="hidden" value="ZeroBrane Studio"/>
- <input name="item_description_1" type="hidden" value=""/>
- <input name="item_quantity_1" type="hidden" value="1"/>
- <input name="item_currency_1" type="hidden" value="USD"/>
- <input name="shopping-cart.items.item-1.digital-content.url" type="hidden" value="http://studio.zerobrane.com/download.html?google-wallet"/>
- <input name="_charset_" type="hidden" value="utf-8"/>
-
  <div id="next-step">
-  <input class="payment-button" alt="" src="https://checkout.google.com/buttons/buy.gif?merchant_id=266673609981574&amp;w=117&amp;h=48&amp;style=white&amp;variant=text&amp;loc=en_US" type="image"/>
+  <span class="gh-btn"><a class="button" id="pay-with-card-button" href="#">Pay with Card</a></span>
   <a href="download.html?not-this-time" id="no-payment-text">Take me to the download page this time &#187;</a>
  </div>
 </form>
+
+<script>
+$(document).ready(function(){
+  $("input[name=payment]").click(function() {
+    var amount = $("#amountValue")
+    amount.attr("disabled", true);
+    if ($(this).attr('id') == 'amountOther') {
+      amount.attr("disabled", false);
+      amount.select();
+      amount.focus();
+    }
+  });
+  $('a#pay-with-card-button').click(function(e){
+    var selected = $('input[name=payment]:checked');
+    var amount = selected.attr('id') == 'amountOther' ? $('#amountValue').val() : selected.val();
+    if (!isNaN(parseFloat(amount))) if (amount >= 1) {
+      var url = 'https://zerobrane.com/pay/zbs?amount=' + amount;
+      modal.open({content: "<iframe src='"+url+"' style='width: 430px; height: 350px' frameborder='0' scrolling='no'></iframe>"});
+    }
+    e.preventDefault();
+  });
+});
+</script>
 
 <div class="separator">&nbsp;</div>
 
