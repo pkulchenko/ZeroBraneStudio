@@ -245,7 +245,7 @@ sup {
 .asset .asset-body ol {
   margin-bottom: 1em;
 }
-.asset .asset-body p, .asset .asset-body ul, .asset .asset-body ol {
+.asset .asset-body > p, .asset .asset-body > ul, .asset .asset-body > ol {
   margin-top: 1em;
   font-size: 110%;
 }
