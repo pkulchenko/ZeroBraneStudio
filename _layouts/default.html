@@ -62,9 +62,9 @@
      <div id="menu-wrapper">
       <h1><div>{% if page.title %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
       <div id="menu-links">
+        {% if page.url == '/support.html' or page.url == '/download.html'%}<strong>Download</strong>{% else %}<a href="support.html">Download</a>{% endif %}
         {% if page.url == '/features.html'%}<strong>Features</strong>{% else %}<a href="features.html">Features</a>{% endif %}
         {% if page.url == '/screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="screenshots.html">Screenshots</a>{% endif %}
-        {% if page.url == '/support.html' or page.url == '/download.html'%}<strong>Download</strong>{% else %}<a href="support.html">Download</a>{% endif %}
         {% if page.url == '/tutorials.html'%}<strong>Tutorials</strong>{% else %}<a href="tutorials.html">Tutorials</a>{% endif %}
         {% if page.url == '/documentation.html'%}<strong>Documentation</strong>{% else %}<a href="documentation.html">Documentation</a>{% endif %}
         {% if page.url == '/testimonials.html'%}<strong>Testimonials</strong>{% else %}<a href="testimonials.html">Testimonials</a>{% endif %}
