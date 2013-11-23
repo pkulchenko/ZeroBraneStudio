@@ -476,6 +476,9 @@ table#payment-options {
 #payment-options, #next-step {
   margin: 20px;
 }
+#next-step {
+  margin-left: 0px;
+}
 a#no-payment-text {
   padding-left: 30px;
   font-size: 90%;
@@ -603,6 +606,10 @@ h2 {
 #amountValue {
   width: 34px;
   font-family: Georgia,Verdana,Geneva,Chicago,Arial,Sans-serif,"MS Sans Serif";
+}
+
+.pay-message {
+  padding-left: 12px;
 }
 
 iframe {

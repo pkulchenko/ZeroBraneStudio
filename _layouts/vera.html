@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta charset="utf-8" />
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+ <meta name="generator" content="hands" />
+ <meta name="description" content="ZeroBrane Studio for Vera/MCV devices is a lightweight Lua IDE/editor/debugger for Windows, Mac OSX, and Linux">
+ {% if page.url == '/vera-download.html' %}<meta name="robots" content="noindex">{% endif %}
+ <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+ <link rel="stylesheet" media="all" href="stylesheets/styles.css" type="text/css" />
+ <link rel="stylesheet" media="print" href="stylesheets/print.css" type="text/css" />
+ {% capture root %}./vera.html{%endcapture%}
+ {% capture title %}{% if page.title %}{{ page.title }} - {% elsif post.title %}{{ post.title }} - {% endif %}{% endcapture %}
+
+ {% if page.url == '/vera-buy.html' %}
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+   <script src="scripts/modal.js"></script>
+   <link rel="stylesheet" media="all" href="https://zerobrane.com/stylesheets/pricing.css" type="text/css" />
+   <script src="https://zerobrane.com/scripts/pricing.js"></script>
+ {% endif %}
+
+ {% if page.url == '/vera-download.html' %}
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+ {% endif %}
+
+ <title>{{ title }}ZeroBrane Studio for Vera/MCV devices - Lua IDE/editor/debugger for Windows, Mac OSX, and Linux</title>
+ {% if page.title %}<style>
+  #content { border-right: 0px; }
+  #beta, .layout-wtt #beta, .layout-twt #beta, .layout-wt #beta, .layout-tw #beta, .layout-wm #beta, .layout-mw #beta { display: none; }
+ </style>{% endif %}
+ <style>#header, #footer { background-color: #ddddff }</style>
+ <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-34903159-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+ </script>
+ <script type="text/javascript">//<![CDATA[
+  function generateTOC(toc, tag) {
+    if (!toc) { return; }
+    var tags = document.getElementsByTagName(tag)
+    for (var i = 0; i < tags.length; ++i) {
+      var node = tags[i];
+      var a = document.createElement("a");
+      a.setAttribute("href", "#" + node.id);
+      a.innerHTML = node.innerHTML;
+      toc.appendChild(document.createElement("li")).appendChild(a);
+    }
+  }
+ //]]></script>
+</head>
+<body id="blogbase" class="mt-entry-archive layout-wtt"
+  onload="generateTOC(document.getElementById('toc'), 'h2');">
+ <div id="container">
+  <div id="container-inner">
+   <div id="header">
+    <div id="header-inner">
+     <div id="logo-wrapper"><a href="{{root}}"><img src="images/zerobrane-logo.png" /></a></div>
+     <div id="header-content">
+      <div id="header-name"><a href="{{root}}">ZeroBrane Studio for Vera</a></div>
+      <div id="header-description">Painless Lua debugging for your Vera/MCV device</div>
+     </div>
+     <div id="menu-wrapper">
+      <h1><div>{% if page.title %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
+      <div id="menu-links">
+        {% if page.url == '/vera-buy.html'%}<strong>Buy</strong>{% else %}<a href="vera-buy.html">Buy</a>{% endif %}
+        {% if page.url == '/vera-features.html'%}<strong>Features</strong>{% else %}<a href="vera-features.html">Features</a>{% endif %}
+        {% if page.url == '/vera-screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="vera-screenshots.html">Screenshots</a>{% endif %}
+        {% if page.url == '/vera-tutorials.html'%}<strong>Tutorials</strong>{% else %}<a href="vera-tutorials.html">Tutorials</a>{% endif %}
+        {% if page.url == '/vera-documentation.html'%}<strong>Documentation</strong>{% else %}<a href="vera-documentation.html">Documentation</a>{% endif %}
+        {% if page.url == '/vera-license-agreement.html'%}<strong>License</strong>{% else %}<a href="vera-license-agreement.html">License</a>{% endif %}
+      </div>
+     </div>
+    </div>
+   </div>
+   <div id="content">
+    <div id="content-inner">
+     <div id="alpha">
+      <div id="alpha-inner">
+       <div class="entry-asset asset entry">
+        <div class="asset-content entry-content">
+         <div class="asset-body {{ page.title }}">
+          {{ content }}</div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div id="beta">
+      <div id="beta-inner">
+       <div id="beta-columns">
+        <div id="beta-columns-left">
+         <div class="widget">
+          <h3 class="widget-header">
+            <span class="gh-btn"><a class="button" href="vera-buy.html">Buy and Download v0.39</a></span>
+            <span style="float: right; margin-top: -2px">
+              <img src="./images/win.png" />
+              <img src="./images/mac.png" />
+              <img src="./images/linux.png" />
+            </span>
+          </h3>
+         </div>
+         <div class="widget">
+          <a href="vera-screenshots.html"><img style="background:url(images/vera-debugging.png) -240px -440px" src="images/t.gif" class="inset"/></a>
+         </div>
+         <div class="widget">
+          <div class="widget-content Testimonials">
+           <p><span class="q">“</span>what a <strong>breath of fresh air</strong>.<span class="q">”</span> (<a href="http://notebook.kulchenko.com/zerobrane/zerobrane-studio-is-one-year-old#comment-186">doctorbling</a>)</p>
+           <p><span class="q">“</span><strong>Love the debugger</strong>, saving my life.<span class="q">”</span> (Troy Sandal)</p>
+           <p><span class="q">“</span>ZBS is beautiful experience. I am using it usually <strong>10 hrs every day</strong> w/o problems.<span class="q">”</span> (<a href='https://github.com/srdjan-m'>Srdjan Markovic</a>)</p>
+           <p><span class="q">“</span>I love ZBS. <strong>I use it for all of the work I&#8217;ve started doing in Lua</strong> and even tossed it on my PortableApps installation for work while I&#8217;m in the office! This IDE is fantastic!<span class="q">”</span> (<a href='https://github.com/EddieDover'>Eddie Dover</a>)</p>
+           <p><span class="q">“</span>ZeroBrane Studio has got a <strong>working debugger, full IDE feature set, small footprint, and is completely customizable in lua.</strong> You have no idea how excited I was to find this little gem!<span class="q">”</span> (<a href='https://github.com/Odie'>Jonathan Shieh</a>)</p>
+           <p><span class="q">“</span>It’s a joy to use; compared to the debugger in Scite, ZBS is <strong>totally rock solid</strong>.<span class="q">”</span> (Jeff Smith)</p>
+          </div>
+         </div>
+        </div><!-- end #beta-columns-left -->
+        <div id="beta-columns-right">
+        </div><!-- end #beta-columns-right -->
+       </div><!-- end #beta-columns -->
+      </div><!-- end #beta-inner -->
+     </div><!-- end #beta -->
+    </div><!-- end #content-inner -->
+   </div><!-- end #content -->
+   <div id="footer">
+    <div id="footer-inner">
+     <div id="footer-content">
+      <div class="widget-creative-commons">
+       <div class="widget-content">
+        All rights reserved © 2013 <a href="mailto:paul@kulchenko.com">Paul Kulchenko</a>, ZeroBrane&reg; LLC
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</body>
+</html>
