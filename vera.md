@@ -2,9 +2,9 @@
 layout: vera
 ---
 
-_ZeroBrane Studio for Vera_ is a **lightweight Lua IDE**
+_ZeroBrane Studio for Vera_ is a **lightweight Lua integrated development environment** (IDE)
 with **debugging support for [Vera](http://getvera.com/)**
-home automation devices (also known as MiCasaVerde and MCV).
+home automation devices (also known as MiCasaVerde or MCV).
 
 It is **[simple](vera-getting-started.html) and instantly usable** for beginners,
 yet **[feature-rich](vera-features.html) and extensible** for experienced developers.

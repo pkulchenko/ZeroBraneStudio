@@ -26,9 +26,9 @@ title: Documentation
 
 - [Vera user forums](http://forum.micasaverde.com/)
 - [Check for latest firmware](http://cp.mios.com/firmware)
-- [MiOS Documentation](http://docs5.mios.com/)
-- [MiOS FAQ Categories](http://faq.mios.com/showcat.html)
-- [MiOS Marketplace](http://apps.mios.com/)
+- [Vera Documentation](http://docs5.mios.com/)
+- [Vera FAQ Categories](http://faq.mios.com/showcat.html)
+- [Vera Marketplace](http://apps.mios.com/)
 
 ## Luup (Lua-UPnP) programming resources
 

@@ -7,7 +7,7 @@ title: Getting Started
 
 ## Editor
 
-The editor allows you to open several programs or files and work on them at the same time.
+The editor allows you to open several script files and work on them at the same time.
 Each opened file has its own page with a name and a tab at the top of the page.
 You can **switch** between pages by clicking on those tabs.
 You can also **close** those pages when you don't need them by using the `File | Close Page` menu or its shortcut `Ctrl-W` (`Cmd-W` on OSX).
