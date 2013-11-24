@@ -310,7 +310,7 @@ li ol, li ul {
 }
 #header-description {
   margin-top: 0px;
-  font-size: 1em;
+  font-size: 120%;
   font-weight: normal;
 }
 #header-name {
@@ -512,6 +512,7 @@ div#menu-links {
   margin-top: 5px;
   margin-right: 10px;
   text-align: right;
+  font-size: 120%;
 }
 div#menu-links a {
   padding-left: 3px;
