@@ -24,7 +24,7 @@ $(document).ready(function(){
 });
 </script>
 
-All options provide **immediate access** to the product and include **personal service** from the authors of the product.
+All options provide **immediate access** to the product and include **personal service** from the ZeroBrane team.
 
 <div class="separator">&nbsp;</div>
 
@@ -32,12 +32,17 @@ All options provide **immediate access** to the product and include **personal s
 You get packages for three platforms:
 **Windows** XP or later (zip or self-extracting archive), **Mac OS X** 10.6.8+ (dmg file), or **Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
 
-You also get a product key that allows you to use _ZeroBrane Studio for Vera_ from up to three computers with one Vera device.
+You also get a product key that allows you to use _ZeroBrane Studio for Vera_ from up to three computers.
 
 ## What Vera devices are supported?
 
 It has been tested with Vera 3 devices, but it *may* work with other versions of Vera devices as well.
 You should feel free to buy and try if it works for you; if it doesn't, we can either try to make it work or refund your payment.
+
+## What does non-commercial mean?
+
+**Non-commercial** means the use of _ZeroBrane Studio for Vera_ in the manner that is **not** intended for or directed toward commercial advantage or private monetary compensation,
+and is limited to **individual users who use the product for personal purposes** (for example, hobby, learning, or entertainment).
 
 ## Do you offer refunds?
 
