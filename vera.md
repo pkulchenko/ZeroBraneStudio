@@ -6,11 +6,12 @@ _ZeroBrane Studio for Vera_ is a **lightweight Lua integrated development enviro
 with **debugging support for [Vera](http://getvera.com/)**
 home automation devices (also known as MiCasaVerde or MCV).
 
-It is **[simple](vera-getting-started.html) and instantly usable** for beginners,
+The IDE is **[simple](vera-getting-started.html) and instantly usable** for beginners,
 yet **[feature-rich](vera-features.html) and extensible** for experienced developers.
-The IDE provides a **powerful editor** with code completion and syntax highlighting,
-a **code analyzer** helpful in finding typos and subtle errors,
-and **advanced debugger** that support debugging of Lua **scripts and events** in applications running on Vera devices.
+It provides a **powerful editor** with code completion and syntax highlighting,
+a **code analyzer** helpful in finding errros and typos,
+and **advanced debugger** for debugging Lua **scripts**, **scene events**, and **plugins**
+running on **Vera** and **VeraLite** devices.
 
 Using the debugger, you can **set/remove breakpoints**,
 **step through the code**,

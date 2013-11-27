@@ -36,7 +36,7 @@ You also get a product key that allows you to use _ZeroBrane Studio for Vera_ fr
 
 ## What Vera devices are supported?
 
-It has been tested with Vera 3 devices, but it *may* work with other versions of Vera devices as well.
+It has been tested with **Vera 3** and **VeraLite** devices, but it *may* work with other versions of Vera devices as well.
 You should feel free to buy and try if it works for you; if it doesn't, we can either try to make it work or refund your payment.
 
 ## What does non-commercial mean?
