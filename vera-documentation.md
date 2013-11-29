@@ -40,3 +40,6 @@ title: Documentation
 - [Plugin creation tutorial](http://wiki.micasaverde.com/index.php/Plugin_Creation_Tutorial)
 - [Luup plugins by hand](http://wiki.micasaverde.com/index.php/Luup_Plugins_ByHand)
 - [Luup constants](http://wiki.micasaverde.com/index.php/Luup_UPNP_Files)
+- [Luup UPnP Variables and Actions](http://wiki.micasaverde.com/index.php/Luup_UPnP_Variables_and_Actions)
+- [Luup requests (using HTTP)](http://wiki.micasaverde.com/index.php/Luup_Requests)
+- [Luup debugging](http://wiki.micasaverde.com/index.php/Luup_Debugging)
