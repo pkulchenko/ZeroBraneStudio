@@ -7,6 +7,8 @@ ZeroBrane Studio uses Lua files to allow users to modify its default settings an
 These configuration files can be specified in three ways: **system-wide**, **per user**, and via **command line**.
 The settings set in these files are applied in the same **order**: system, user, command line (thus parameters specified using the command line will overwrite those specified in the system-wide configuration file).
 
+System and user configuration changes **do not take effect** until the configuration file is saved and ZeroBrane Studio is restarted.
+
 ## System-wide configuration
 
 **System-wide** `cfg/user.lua` (which you may need to create) is located under the directory you installed ZeroBrane Studio to.
