@@ -507,6 +507,11 @@ ul.download a { font-size: 120%; line-height: 30px; }
   margin-bottom: 6px;
 }
 
+/* set margin on paragraphs in lists to avoid gaps in nested lists */
+.asset .asset-body li > p {
+  margin-bottom: 0px;
+}
+
 /* position menu links in the header */
 div#menu-links {
   margin-top: 5px;
