@@ -12,7 +12,14 @@ title: Documentation
 ## Development and Debugging
 
 - [Debugging Overview](vera-debugging.html)
-- [Remote (Scene or Plugin) Debugging](vera-remote-debugging.html)
+- [Remote Debugging](vera-remote-debugging.html)
+  * Startup code debugging
+  * Test luup code debugging
+  * [Scene code debugging](vera-scene-debugging.html)
+  * [Plugin code debugging](vera-plugin-debugging.html) (`startup`, `run`, `job`)
+  * Timed (call_delay and call_timer) callback debugging
+  * [Request (`register_handler`) callback debugging](vera-request-debugging.html)
+  * [Watch (`variable_watch`) callback debugging](vera-watch-debugging.html)
 
 ## Customization and Preferences
 
@@ -36,10 +43,10 @@ title: Documentation
 - [Luup Lua extensions](http://wiki.micasaverde.com/index.php/Luup_Lua_extensions)
 - [Luup scene events](http://wiki.micasaverde.com/index.php/Luup_Scenes_Events)
 - [Luup plugins](http://wiki.micasaverde.com/index.php/Luup_Plugins)
-- [Vera User Interface notes](http://wiki.micasaverde.com/index.php/UI_Notes)
 - [Plugin creation tutorial](http://wiki.micasaverde.com/index.php/Plugin_Creation_Tutorial)
-- [Luup plugins by hand](http://wiki.micasaverde.com/index.php/Luup_Plugins_ByHand)
+- [Luup plugins by hand](http://wiki.micasaverde.com/index.php/Luup_Plugins_ByHand) and [plugin walkthrough](http://wiki.micasaverde.com/index.php/Luup_Somfy_Walkthrough)
 - [Luup constants](http://wiki.micasaverde.com/index.php/Luup_UPNP_Files)
 - [Luup UPnP Variables and Actions](http://wiki.micasaverde.com/index.php/Luup_UPnP_Variables_and_Actions)
 - [Luup requests (using HTTP)](http://wiki.micasaverde.com/index.php/Luup_Requests)
 - [Luup debugging](http://wiki.micasaverde.com/index.php/Luup_Debugging)
+- [Luup UI overview](http://wiki.micasaverde.com/index.php/UI_Simple) and [Vera User Interface notes](http://wiki.micasaverde.com/index.php/UI_Notes)
