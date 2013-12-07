@@ -8,6 +8,7 @@ title: Documentation
 - A **[short and simple overview](vera-getting-started.html)** for those who are new to this development environment.
 - **[Tutorials](vera-tutorials.html)** that cover general Vera debugging and related features.
 - A list of **[frequently asked questions](vera-faq.html)**.
+- **[Lua quick start guide](doc-lua-quick-start-guide.html)** that covers basics of Lua.
 
 ## Development and Debugging
 

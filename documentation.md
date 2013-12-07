@@ -8,6 +8,7 @@ title: Documentation
 - A **[short and simple overview](doc-getting-started.html)** for those who are new to this development environment.
 - **[Tutorials and demos](tutorials.html)** that cover debugging and live coding for different environments.
 - A list of **[frequently asked questions](doc-faq.html)** about the IDE.
+- **[Lua quick start guide](doc-lua-quick-start-guide.html)**.
 - **[Tips and tricks](doc-tips-and-tricks.html)**.
 
 ## Preferences

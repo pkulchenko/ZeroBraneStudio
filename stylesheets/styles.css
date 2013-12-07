@@ -621,3 +621,8 @@ h2 {
 iframe {
   background: url(../images/spinner.gif) center center no-repeat;
 }
+
+/* make the font larger in the Guide code samples */
+.Guide pre {
+  font-size: 120%;
+}
