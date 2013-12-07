@@ -27,31 +27,35 @@ the same process as described above.
 
 ## Debugging Lua code in a scene
 
-As you may know, ZeroBrane Studio provides [two methods to debug Lua code](vera-remote-debugging.html)
+ZeroBrane Studio provides [two methods to debug Lua code](vera-remote-debugging.html)
 for events triggered from the Vera device:
 [scenes](vera-scene-debugging.html),
 [plugins](vera-plugin-debugging.html),
 [watch](vera-watch-debugging.html),
-[request](vera-request-debugging.html), and others.
+[request](vera-request-debugging.html),
+and [others](vera-documentation.html#development_and_debugging).
 
-In this example we will be using the simpler method that doesn't require
+In this example we will be using the [simpler method](vera-remote-debugging.html#method_2) that doesn't require
 specifying the IP address of the computer that runs ZeroBrane Studio:
 
-1. Copy the following code into a new Automation scene on the Vera under the Luup tab.
+- Copy the following code into a new Automation scene on the Vera under the Luup tab.
 You can call the scene whatever you want, but we will use `ZBSTest`.
 If you already have created a scene called `ZBSTest`, then replace the Luup code from before with the code here:
 
-        local sunset = luup.sunset()
-        require('mobdebug').start() --<-- no IP address
-        luup.log(luup.version, sunset)
-        print(luup.version, os.clock(), 1)
-        require('mobdebug').done()
+{% highlight lua %}
+local sunset = luup.sunset()
+require('mobdebug').start() --<-- no IP address
+luup.log(luup.version, sunset)
+print(luup.version, os.clock(), 1)
+require('mobdebug').done()
+{% endhighlight %}
 
-2. Start debugging in the IDE by selecting `Project | Start Debugging`.
+- Start debugging in the IDE by selecting `Project | Start Debugging`.
 You can run any simple code as the only reason for the step is to "register"
 the address of the IDE with the Vera device, so the next time the debugging
 is triggered from the device, it is connected to the IDE.
-3. Run the scene. 
+
+- Run the scene.
 
 You should now see the debugging suspended at the `luup.log` line. You can
 then step through the code (and will see the values printed to the
