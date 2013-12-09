@@ -62,4 +62,4 @@ then step through the code (and will see the values printed to the
 output window), inspect variables, and use other debugging functions.
  
 This method only works until the Luup engine is restarted (and in some cases it can be restarted by the Vera device without warning).
-If you can't get the debugging started in the IDE, try running step #2 one more time.
+If you can't get the debugging started in the IDE, try running the second step one more time.

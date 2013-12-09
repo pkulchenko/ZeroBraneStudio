@@ -74,7 +74,7 @@ is triggered from the device, it is connected to the IDE.
 This will start a debugging session like before, the only change is you had to "register" the debugging session in order for the debugger to find the system with the IDE supporting the remote debugging and start it.
 
 This method only works until the Luup engine is restarted (and in some cases it can be restarted by the Vera device without warning).
-If you can't get the debugging started in the IDE, try running step #2 one more time.
+If you can't get the debugging started in the IDE, try running the second step one more time.
 
 You don't need to worry about leaving `start()` calls in your code as if the debugger can't connect to the IDE,
 it will continue execution of the script after a small delay.
