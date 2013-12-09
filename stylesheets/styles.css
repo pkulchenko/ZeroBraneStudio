@@ -418,8 +418,11 @@ li ol, li ul {
 .Tutorials p strong, .Screenshots p strong, .Features p strong {
   display: block;
 }
-.Tutorials p img, .Screenshots p img {
+.Screenshots p img {
   padding: 7px 0px;
+}
+.Tutorials p {
+  width: 512px
 }
 
 .gh-btn {
