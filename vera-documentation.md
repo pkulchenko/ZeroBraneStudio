@@ -22,6 +22,11 @@ title: Documentation
   * [Request (`register_handler`) callback debugging](vera-request-debugging.html)
   * [Watch (`variable_watch`) callback debugging](vera-watch-debugging.html)
 
+## Related plugins
+
+- [Remote file editing](http://notebook.kulchenko.com/zerobrane/remote-file-editing-while-debugging)
+- [Saving debugging output to a file](http://notebook.kulchenko.com/zerobrane/saving-debugging-output-to-file)
+
 ## Customization and Preferences
 
 - [General preferences](doc-general-preferences.html)
