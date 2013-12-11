@@ -30,7 +30,7 @@ If you get a firewall warning, you need to **allow the connection** for the debu
 
 ## Why am I getting "could not connect to ...:8172" message?
 
-This may happen for three reasons:
+This may happen for several reasons:
 
 - You start your application that uses `require('mobdebug').start()` call to connect to the IDE, but the **debugger server is not started** in the IDE.
 You can fix this by selecting `Project | Start Debugger Server`; if it is disabled, the server is already started.
@@ -40,6 +40,8 @@ You need to allow this connection for the debugging to work.
 The **hostname is shown** in the Output window when the debugging is started: `Debugger server started at <hostname>:<port>`.
 You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences.html#debugger).
 For example, if the default hostname is incorrect, **try setting it to `localhost`** by using `debugger.hostname = "localhost"`.
+- You may be **on VPN**, which may **block connections** or cause the IDE to **incorrectly detect the hostname**.
+You may configure `debugger.hostname` as described above to see if this resolves the issue.
 
 ## Why is the text blurry when running on Windows 8?
 
