@@ -1,6 +1,11 @@
 /* from https://github.com/mojombo/tpw/blob/master/css/syntax.css */
 
-.highlight  { background: #ffffff; font-size: 120% }
+.highlight  { font-size: 120%; }
+.highlight pre {
+  border: 1px solid #D4D4D4;
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+}
 .highlight .c { color: #999988; font-style: italic } /* Comment */
 .highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
 .highlight .k { font-weight: bold } /* Keyword */
