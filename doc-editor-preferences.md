@@ -10,7 +10,7 @@ The values shown are the default values.
 
 ## Editor
 
-- `editor.autoactivate = true`: auto-activate files during debugging.
+- `editor.autoactivate = false`: auto-activate files during debugging.
 - `editor.autotabs = false`: use tabs if detected.
 - `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
 - `editor.caretline = true`: show caret line.
