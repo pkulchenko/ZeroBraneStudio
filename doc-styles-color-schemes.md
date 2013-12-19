@@ -42,6 +42,22 @@ You can change the color of an indicator (by setting its `fg` property), its typ
 - `styles.indicator.fncall = {fg = {240,0,0}}`: set color
 - `styles.indicator.fncall = nil`: disable the indicator
 
+Possible **indicator types**:
+
+- `wxstc.wxSTC_INDIC_DOTS`: Dotted underline
+- `wxstc.wxSTC_INDIC_PLAIN`: Single-line underline
+- `wxstc.wxSTC_INDIC_TT`: Line of T-shapes
+- `wxstc.wxSTC_INDIC_SQUIGGLE`: Squiggly underline
+- `wxstc.wxSTC_INDIC_STRIKE`: Strike-out
+- `wxstc.wxSTC_INDIC_SQUIGGLELOW`: Squiggly underline (2 pixels)
+- `wxstc.wxSTC_INDIC_BOX`: Box
+- `wxstc.wxSTC_INDIC_ROUNDBOX`: Rounded Box
+- `wxstc.wxSTC_INDIC_DASH`: Dashed underline
+- `wxstc.wxSTC_INDIC_STRAIGHTBOX`: Box with trasparency
+- `wxstc.wxSTC_INDIC_DOTBOX`: Dotted rectangle
+- `wxstc.wxSTC_INDIC_DIAGONAL`: Diagonal hatching
+- `wxstc.wxSTC_INDIC_HIDDEN`: No visual effect
+
 ## Color schemes
 
 Color schemes allow configuring colors and attributes in coordinated set.
