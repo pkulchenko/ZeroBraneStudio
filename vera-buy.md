@@ -13,17 +13,6 @@ title: Buy
  </div>
 </form>
 
-<script>
-$(document).ready(function(){
-  $('a#pay-with-card-button').click(function(e){
-    var selected = $('input[name=plan]:checked');
-    var url = 'https://zerobrane.com/pay/vera/'+selected.attr('id');
-    modal.open({content: "<iframe src='"+url+"' style='width: 430px; height: 350px' frameborder='0' scrolling='no'></iframe>"});
-    e.preventDefault();
-  });
-});
-</script>
-
 All options provide **immediate access** to the product and include **personal service** from the ZeroBrane team.
 
 <div class="separator">&nbsp;</div>

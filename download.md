@@ -15,15 +15,7 @@ title: Download
   <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.40-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.40-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
-
 <div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
-
-<script>
-  if (location.search.indexOf('stripe') > -1) {
-    document.getElementById('thank-you').innerHTML = '<strong>Thank you for your contribution!</strong>';
-  }
-</script>
-
 <div class="separator">&nbsp;</div>
 
 ## What are the most significant changes in this version?

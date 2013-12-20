@@ -15,29 +15,12 @@ title: Download
   <li><a class="download linux" href="https://download.zerobrane.com/vera/ZeroBraneStudioVera-0.39-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-Vera-linux','ZeroBraneStudioVera-0.39-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
-
 <div class="thank-you" id="key-message" style="display: none">This is your product key: <strong><span id="product-key">&nbsp;</span></strong>. You will need to enter it when you first connect to your device from ZeroBrane Studio for Vera.</div>
-
 <div class="thank-you" id="thank-you">
   Thank you for your interest in ZeroBrane Studio for Vera.
   You do not seem to have a valid product key to download ZeroBrane Studio for Vera.
   You can review <a href="vera.html">information about the product</a> and <a href="vera-documentation.html">the documentation</a>, or <a href="vera-buy.html">buy the product</a>.
 </div>
-
-<script>
-  var key = location.href.match(/key=(\w+)/);
-  if (key) {
-    $('#download-options').show();
-    $('#thank-you').hide();
-    $('#key-message').show();
-    $('#product-key').html(key[1]);
-    $('a.download').each(function(){
-      var href = $(this).attr('href');
-      $(this).attr('href', href + (href.match(/\?/) ? String.fromCharCode(38) : '?') + 'key=' + key[1]);
-    });
-  }
-</script>
-
 <div class="separator">&nbsp;</div>
 
 If you are new to the product, you can start by checking

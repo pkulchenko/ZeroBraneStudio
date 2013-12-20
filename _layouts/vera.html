@@ -20,10 +20,35 @@
    <script src="scripts/modal.js"></script>
    <link rel="stylesheet" media="all" href="https://zerobrane.com/stylesheets/pricing.css" type="text/css" />
    <script src="https://zerobrane.com/scripts/pricing.js"></script>
+   <script type="text/javascript">
+$(document).ready(function(){
+  $('a#pay-with-card-button').click(function(e){
+    var selected = $('input[name=plan]:checked');
+    var url = 'https://zerobrane.com/pay/vera/'+selected.attr('id');
+    modal.open({content: "<iframe src='"+url+"' style='width: 430px; height: 350px' frameborder='0' scrolling='no'></iframe>"});
+    e.preventDefault();
+  });
+});
+   </script>
  {% endif %}
 
  {% if page.url == '/vera-download.html' %}
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+   <script type="text/javascript">
+$(document).ready(function(){
+  var key = location.href.match(/key=(\w+)/);
+  if (key) {
+    $('#download-options').show();
+    $('#thank-you').hide();
+    $('#key-message').show();
+    $('#product-key').html(key[1]);
+    $('a.download').each(function(){
+      var href = $(this).attr('href');
+      $(this).attr('href', href + (href.match(/\?/) ? String.fromCharCode(38) : '?') + 'key=' + key[1]);
+    });
+  }
+});
+   </script>
  {% endif %}
 
  <title>{{ title }}ZeroBrane Studio for Vera/MCV devices - Lua IDE/editor/debugger for Windows, Mac OSX, and Linux</title>

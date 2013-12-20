@@ -18,6 +18,39 @@
  {% if page.url == '/support.html' %}
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
    <script src="scripts/modal.js"></script>
+   <script type="text/javascript">
+$(document).ready(function(){
+  $("input[name=payment]").click(function() {
+    var amount = $("#amountValue")
+    amount.attr("disabled", true);
+    if ($(this).attr('id') == 'amountOther') {
+      amount.attr("disabled", false);
+      amount.select();
+      amount.focus();
+    }
+  });
+  $('a#pay-with-card-button').click(function(e){
+    var selected = $('input[name=payment]:checked');
+    var amount = selected.attr('id') == 'amountOther' ? $('#amountValue').val() : selected.val();
+    if (!isNaN(parseFloat(amount))) if (amount >= 1) {
+      var url = 'https://zerobrane.com/pay/zbs?amount=' + amount;
+      modal.open({content: "<iframe src='"+url+"' style='width: 430px; height: 350px' frameborder='0' scrolling='no'></iframe>"});
+    }
+    e.preventDefault();
+  });
+});
+   </script>
+ {% endif %}
+
+ {% if page.url == '/download.html' %}
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+   <script type="text/javascript">
+$(document).ready(function(){
+  if (location.search.indexOf('stripe') > -1) {
+    document.getElementById('thank-you').innerHTML = '<strong>Thank you for your contribution!</strong>';
+  }
+});
+   </script>
  {% endif %}
 
  <title>{{ title }}ZeroBrane Studio - Lua IDE/editor/debugger for Windows, Mac OSX, and Linux</title>
