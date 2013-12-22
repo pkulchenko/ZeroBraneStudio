@@ -104,3 +104,7 @@ it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `C:
 `$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
+
+## How do I show Corona SDK Console window on Windows?
+
+You may add the following line to [system or user configuration](doc-configuration.html): `unhidewindow.ConsoleWindowClass = 0`.
