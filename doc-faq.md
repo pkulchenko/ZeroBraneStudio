@@ -43,6 +43,19 @@ For example, if the default hostname is incorrect, **try setting it to `localhos
 - You may be **on VPN**, which may **block connections** or cause the IDE to **incorrectly detect the hostname**.
 You may configure `debugger.hostname` as described above to see if this resolves the issue.
 
+## Why my breakpoints are not triggered?
+
+Breakpoints set in source files may not work for several reasons:
+
+- A breakpoint may be **inside a coroutine**; by default breakpoints inside coroutines are not triggered.
+To enable debugging in coroutines, including triggering of breakpoints, you may either
+(1) add `require('mobdebug').on()` call to that coroutine, which will enable debugging for that particular coroutine, or
+(2) add `require('mobdebug').coro()` call to your script, which will enable debugging for all coroutines created using `coroutine.create` later in the script.
+- If you enable coroutine debugging using `require('mobdebug').coro()`, this will **not affect coroutines created using C API** or Lua code wrapped into `coroutine.wrap`.
+You can still debug those fragments after adding `require('mobdebug').on()` to the coroutine code. 
+- The path of the file known to the IDE may not be the same as the path known to the Lua engine.
+For example, if you use an embedded engine, you may want to check if the path reported by the engine is normalized (doesn't include `../` references) by checking the result of `debug.getinfo(1,"S").source`.
+
 ## Why is the text blurry when running on Windows 8?
 
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
