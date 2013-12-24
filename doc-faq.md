@@ -56,6 +56,30 @@ You can still debug those fragments after adding `require('mobdebug').on()` to t
 - The path of the file known to the IDE may not be the same as the path known to the Lua engine.
 For example, if you use an embedded engine, you may want to check if the path reported by the engine is normalized (doesn't include `../` references) by checking the result of `debug.getinfo(1,"S").source`.
 
+## Is it possible to debug dynamic fragments loaded with `loadstring()`?
+
+Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window with the code you can then step through.
+If you use an older version, you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
+You can then open that file in the IDE or configure it to [auto-open](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) it for you.
+
+## Is debugging of Lua 5.2 applications supported?
+
+Yes; see [Lua 5.2 debugging](doc-lua52-debugging.html) section for details.
+
+## Is debugging of LuaJIT applications supported?
+
+Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
+See [LuaJIT debugging](doc-luajit-debugging.html) section for details.
+
+## Why am I getting compilation errors in the IDE when my code runs fine outside of it?
+
+Starting from v0.39, ZeroBrane Studio is using LuaJIT as its internal Lua engine.
+LuaJIT is a bit more strict than Lua 5.1 in some checks and may return errors even when your application runs fine by Lua 5.1.
+One typical example is string escape sequences. Lua 5.1 lists [escape sequences it recognizes](http://www.lua.org/pil/2.4.html), but it will accept other sequences as well, for example, `\/`.
+Running a script with this escape sequence under LuaJIT will trigger an error: `invalid escape sequence near ...`.
+
+The solution in this case is to **"fix" the escape sequence** and replace `\/` with `/`, which will have the same effect in Lua 5.1, LuaJIT, and Lua 5.2.
+
 ## Why is the text blurry when running on Windows 8?
 
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
@@ -66,21 +90,6 @@ See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issu
 You can put `styles.text.bg = {240,240,240}` in `cfg/user.lua`.
 See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
-
-## Is it possible to debug dynamic fragments loaded with `loadstring()`?
-
-Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window with the code you can then step through.
-If you use an older version, you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
-You can then open that file in the IDE or configure it to auto-open it for you.
-
-## Is debugging of Lua 5.2 applications supported?
-
-Yes; see [Lua 5.2 debugging](doc-lua52-debugging.html) section for details.
-
-## Is debugging of LuaJIT applications supported?
-
-Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
-See [LuaJIT debugging](doc-luajit-debugging.html) section for details.
 
 ## How to accept keyboard input for applications started from the IDE?
 
