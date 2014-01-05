@@ -39,7 +39,21 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
 - `autocomplete = true`: enable auto-complete.
 
-## Interpreter Path
+## Command line parameters
+
+(0.41+) Command line parameters can be specified in two ways (for those interpreters that support them):
+(1) by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
+(2) by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
+
+The parameters set using the first option will only be active until you exit the IDE. If you want to remove parameters, set the value to the empty string.
+
+Some interpreters also allow interpreter specific arguments:
+
+- `arg.lua`: sets arguments for Lua interpreters,
+- `arg.love2d`: sets arguments for Love2d interpreter, and
+- `arg.gslshell`: sets arguments for GSL-shell interpreter.
+
+## Interpreter path
 
 These settings can be used to change the location of the executable file for different interpreters.
 In most cases you don't need to specify this as ZeroBrane Studio will check default locations for the executable, but in those cases when auto-detection fails, you can specify the path yourself.
