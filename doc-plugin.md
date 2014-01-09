@@ -163,6 +163,32 @@ return {
 }
 {% endhighlight %}
 
+## Plugin configuration
+
+Plugins may have its own configuration in the same way as the IDE does.
+The configuration can be retrieved using `GetConfig` method, which returns a table with all configuration values.
+For example, if one of the IDE [configuration files](doc-configuration.html) includes this assignment `pluginname = {value = 1, anothervalue = 2}`, then the assigned table will be returned as the result of the `self:GetConfig()` call.
+
+## Plugin data
+
+Plugins may also have its own data, which provides a way to store information between IDE restarts.
+This may be useful when a plugin stores some information entered by the user (like a registration key) or collects statistics about user actions.
+
+The plugin API provides `GetSettings` and `SetSettings` methods that retrieve and save a table with all plugin data elements.
+For example, the following fragment will increment and save `loaded` value to keep track of how many times the plugin has been loaded:
+
+{% highlight lua %}
+return {
+  ...
+
+  onRegister = function(self)
+    local settings = self:GetSettings()
+    settings.loaded = (settings.loaded or 0) + 1
+    self:SetSettings(settings)
+  end,
+}
+{% endhighlight %}
+
 ## Editor API
 
 The editor object available through the plugin API is a wrapper around [wxStyledTextCtrl](http://docs.wxwidgets.org/trunk/classwx_styled_text_ctrl.html) object and supports all its methods.
