@@ -163,6 +163,21 @@ return {
 }
 {% endhighlight %}
 
+## Editor API
+
+The editor object available through the plugin API is a wrapper around [wxStyledTextCtrl](http://docs.wxwidgets.org/trunk/classwx_styled_text_ctrl.html) object and supports all its methods.
+For example, `editor:GetLineCount()` will return the number of lines in the document.
+Note that all the numbers accepted by wxStyledTextCtrl API are zero-based, so to get the content of the first line in the documents, you should use `editor:GetLine(0)` instead of `editor:GetLine(1)`.
+
+[Scintilla documentation](http://scintilla.org/ScintillaDoc.html) may provide additional details where wxStyledTextCtrl documentation fails short.
+The names referenced by the Scintilla documentation are slightly different, but they should be easily guessable;
+for example, `SCI_GETTEXT` maps to `editor:GetText()`); although there are few exceptions: `SCI_ASSIGNCMDKEY` is mapped to `CmdKeyAssign`.
+
+## Menu API
+
+The menu object is a wrapper around [wxMenu](http://docs.wxwidgets.org/trunk/classwx_menu.html) object and supports all its methods.
+For example, `menu:AppendSeparator()` will add a separator at the end of the current menu and `menu:Append(id, "Popup Menu Item")` will append a new item with id `id` to the menu.
+
 ## Example: 
 
 {% highlight lua %}
