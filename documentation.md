@@ -49,7 +49,8 @@ title: Documentation
 
 ## Extension and Customization
 
+- [Adding a plugin](doc-plugin.html)
+- [Adding an API/auto-complete description](doc-api-auto-complete.html)
 - Adding a translation
 - Adding an interpreter
-- [Adding an API/auto-complete description](doc-api-auto-complete.html)
  
