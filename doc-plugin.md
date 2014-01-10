@@ -3,6 +3,8 @@ layout: default
 title: Plugins
 ---
 
+<ul id='toc'>&nbsp;</ul>
+
 ZeroBrane Studio supports several ways to customize its functionality:
 specification files (`spec/`) to describe syntax and keywords,
 apis (`api/`) to provide code completion and tooltips, and
@@ -37,10 +39,35 @@ A plugin can be placed in `packages/` or `HOME/.zbstudio/packages` folder.
 The first location allows you to have per-instance plugins, while the second allows to have per-user plugins.
 The second option may also be preferrable for Mac OS X users as the `packages/` folder may be overwritten during an application upgrade.
 
-## Event handler
+## Plugin configuration
+
+Plugins may have its own configuration in the same way as the IDE does.
+The configuration can be retrieved using `GetConfig` method, which returns a table with all configuration values.
+For example, if one of the IDE [configuration files](doc-configuration.html) includes this assignment `pluginname = {value = 1, anothervalue = 2}`, then the assigned table will be returned as the result of the `GetConfig` method.
+
+## Plugin data
+
+Plugins may also have its own data, which provides a way to store information between IDE restarts.
+This may be useful when a plugin stores some information entered by the user (like a registration key) or collects statistics about user actions.
+
+The plugin API provides `GetSettings` and `SetSettings` methods that retrieve and save a table with all plugin data elements.
+For example, the following fragment will increment and save `loaded` value to keep track of how many times the plugin has been loaded:
+
+{% highlight lua %}
+return {
+  ...
+
+  onRegister = function(self)
+    local settings = self:GetSettings()
+    settings.loaded = (settings.loaded or 0) + 1
+    self:SetSettings(settings)
+  end,
+}
+{% endhighlight %}
+
+## Event handlers
 
 A plugin can register various [event handlers](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/packages/sample.lua).
-
 Each handler receives the plugin object as the first parameter and some other parameters depending on the type of the event:
 `onEditor*` events get `editor` object as the second parameter, `onMenu*` events get `menu` as the second parameter, `onApp*` events get `application` as the second parameter, `onProject*` get `project`, and `onInterpreter*` get `interpreter`.
 Events may also get other parameters as documented in the file referenced above.
@@ -48,6 +75,7 @@ Events may also get other parameters as documented in the file referenced above.
 ## Registering a specification
 
 Registering a specification as part of a plugin allows you to provide custom syntax highlighting for files with a particular extension.
+This is done using `AddSpec(name, specification)` and `RemoveSpec(name)` methods.
 For example, the following code will register a specification that is linked to `.xml` extension:
 
 {% highlight lua %}
@@ -163,31 +191,37 @@ return {
 }
 {% endhighlight %}
 
-## Plugin configuration
+## Registering a console alias
 
-Plugins may have its own configuration in the same way as the IDE does.
-The configuration can be retrieved using `GetConfig` method, which returns a table with all configuration values.
-For example, if one of the IDE [configuration files](doc-configuration.html) includes this assignment `pluginname = {value = 1, anothervalue = 2}`, then the assigned table will be returned as the result of the `self:GetConfig()` call.
-
-## Plugin data
-
-Plugins may also have its own data, which provides a way to store information between IDE restarts.
-This may be useful when a plugin stores some information entered by the user (like a registration key) or collects statistics about user actions.
-
-The plugin API provides `GetSettings` and `SetSettings` methods that retrieve and save a table with all plugin data elements.
-For example, the following fragment will increment and save `loaded` value to keep track of how many times the plugin has been loaded:
+A console alias allows adding commands to the local console in the IDE.
+This is done using `AddConsoleAlias(name, commands)` and `RemoveConsoleAlias(name)` methods.
+For example, to add `install` and `uninstall` commands to the console, you may to the following:
 
 {% highlight lua %}
+local commands = {
+  install = function(m) DisplayOutputLn("Installed "..m) end,
+  uninstall = function(m) DisplayOutputLn("Uninstalled "..m) end,
+}
+
 return {
-  ...
+  name = "...",
+  description = "...",
+  author = "...",
+  version = 0.1,
 
   onRegister = function(self)
-    local settings = self:GetSettings()
-    settings.loaded = (settings.loaded or 0) + 1
-    self:SetSettings(settings)
+    -- add console alias with name "sample"
+    ide:AddConsoleAlias("sample", commands)
+  end,
+
+  onUnRegister = function(self)
+    -- remove console alias with name "sample"
+    ide:RemoveConsoleAlias("sample")
   end,
 }
 {% endhighlight %}
+
+When this plugin is activated, the user can then run `sample.install()` and `sample.uninstall()` commands in the local console.
 
 ## Editor API
 
@@ -204,7 +238,14 @@ for example, `SCI_GETTEXT` maps to `editor:GetText()`); although there are few e
 The menu object is a wrapper around [wxMenu](http://docs.wxwidgets.org/trunk/classwx_menu.html) object and supports all its methods.
 For example, `menu:AppendSeparator()` will add a separator at the end of the current menu and `menu:Append(id, "Popup Menu Item")` will append a new item with id `id` to the menu.
 
-## Example: 
+## Example: Basic plugin with all event handlers
+
+[A sample plugin](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/packages/sample.lua)
+is included with your IDE installation.
+It lists all existing event handlers and shows how to register various menu handlers.
+If you uncomment its code, it will show a message in the Output window for every event.
+
+## Example: Adding an event handler for typed characters
 
 {% highlight lua %}
 local pairs = {
@@ -233,7 +274,7 @@ return {
 }
 {% endhighlight %}
 
-## Example:
+## Example: Modifying main and popup menus
 
 {% highlight lua %}
 local G = ...
