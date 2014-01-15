@@ -14,6 +14,10 @@ You can [disable it](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/c
 or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L101).
 (Note that before v0.38 you'd need to set/modify `styles.fncall` instead of `styles.indicator.fncall`.)
 
+## What are the dotted and dashed lines under variable names?
+
+These are **scope indicators**; you can [change their types, colors, or disable them](doc-styles-color-schemes.html#indicators).
+
 ## How to specify a directory my script should be executed in for `require` commands to work?
 
 You can set the [project directory](doc-getting-started.html#project_directory), which will be used to set the current directory when your application is run or debugged.

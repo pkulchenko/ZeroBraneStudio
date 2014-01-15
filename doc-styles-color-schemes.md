@@ -33,8 +33,8 @@ See [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg
 - `styles.indicator.fncall`: function call
 - `styles.indicator.varlocal`: local variable
 - `styles.indicator.varglobal`: global variable
-- `styles.indicator.varmasking`: masking variable
-- `styles.indicator.varmasked`: masked variable
+- `styles.indicator.varmasking`: masking variable -- a local variable masking another variable in the same block
+- `styles.indicator.varmasked`: masked variable -- a local variable being masked by another variable in the same block
 
 You can change the color of an indicator (by setting its `fg` property), its type (by setting its `st` property) or disable it by setting its value to `nil`:
 
@@ -42,7 +42,9 @@ You can change the color of an indicator (by setting its `fg` property), its typ
 - `styles.indicator.fncall = {fg = {240,0,0}}`: set color
 - `styles.indicator.fncall = nil`: disable the indicator
 
-Possible **indicator types**:
+If you want to **disable all indicators**, use `styles.indicator = {}`.
+
+The following list shows possible **indicator types**:
 
 - `wxstc.wxSTC_INDIC_DOTS`: Dotted underline
 - `wxstc.wxSTC_INDIC_PLAIN`: Single-line underline
