@@ -106,13 +106,8 @@ This is covered in the description of system [configuration](doc-configuration.h
 
 ## How can I modify a key mapping?
 
-To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration.html):
-`local G = ...; keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"`.
-This will modify the default shortcut for `Program | Start Debugging` command.
-
-See an [example in user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L18),
-the description for possible [accelerator values](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua#L4),
-and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua).
+To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences.html#key_mapping) section.
+You may also review [xcode-keys](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/xcode-keys.lua) configuration file that can be used to modify keyboard shortcuts to match those in XCode.
 
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 

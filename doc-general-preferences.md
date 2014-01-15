@@ -39,6 +39,16 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
 - `autocomplete = true`: enable auto-complete.
 
+## Key mapping
+
+To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration.html):
+`local G = ...; keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"`.
+This will modify the default shortcut for `Program | Start Debugging` command.
+
+See an [example in user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L18),
+the description for possible [accelerator values](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua#L4),
+and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/keymap.lua).
+
 ## Command line parameters
 
 (0.41+) Command line parameters can be specified in two ways (for those interpreters that support them):
