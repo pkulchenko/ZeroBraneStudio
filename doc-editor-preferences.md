@@ -32,6 +32,7 @@ The values shown are the default values.
 
 - `outputshell.fontname = "Courier New"`: set font name.
 - `outputshell.fontsize = 10`: set font size.
+- `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
 
 ## Project/Filetree
 
