@@ -60,6 +60,10 @@ For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherV
 All results shown in the Console are pretty printed as one line, with all complex results shown with all their elements.
 To print complex elements on multiple lines, you can prepend the expression with `=`, as in `={1,2,3,'a','b','c'}`.
 
+## Limit results showed while pretty printing in the Console.
+
+To limit the number of levels shown during pretty printing, instead of `val`, use `return require('mobdebug').line(val, {maxlevel = 1})`, and instead of `=val`, use `return require('mobdebug').line(a, {indent = ' ', maxlevel = 1})`.
+
 ## Quick jump to the source of the error.
 
 To **jump to the position referred to in the error message** shown in the Output window, you can double click on the line showing the error message.
@@ -72,8 +76,17 @@ If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "si
 
 ## Run multiple instances of the IDE to debug two applications at the same time.
 
-To run **multiple instances of the IDE to debug two applications**, you can start one instance as you normally do, and then start the second instance using this command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`
+To run **multiple instances of the IDE to debug two applications**, you can start one instance as you normally do, and then start the second instance using this command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`.
 If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
+
+## Move windows without docking them
+
+`Ctrl-Drag` will move the window without trying to dock it.
+
+## Zooming all editor tabs
+
+(0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
+Using `Ctrl+Scroll` still zooms only the current editor tab.
 
 ## Clone view (plugin).
 
