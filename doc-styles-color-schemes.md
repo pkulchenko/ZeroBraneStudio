@@ -15,6 +15,8 @@ The following configuration will set text background to be light red: `styles.te
 
 - `fg`: foreground; a table with three color components `{red,green,blue}` (0-255)
 - `bg`: background; a table with three color components `{red,green,blue}` (0-255)
+- `alpha`: translucency; 0-255 (0 - transparent, 255 - opaque, 256 - opaque/faster)
+- `sel`: color of the selected block (only applies to folds); `{red,green,blue}` (0-255)
 - `u`: underline; boolean value
 - `b`: bold; boolean value
 - `i`: italic; boolean value
@@ -24,7 +26,10 @@ The following configuration will set text background to be light red: `styles.te
 
 ## Style elements
 
-See [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua#L213-L253) for the complete list.
+See [style.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/style.lua#L26-L88) for the complete list of elements
+and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua) for an example of how these elements can be used.
+
+(0.41+) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
 
 ## Indicators
 
@@ -59,6 +64,8 @@ The following list shows possible **indicator types**:
 - `wxstc.wxSTC_INDIC_DOTBOX`: Dotted rectangle
 - `wxstc.wxSTC_INDIC_DIAGONAL`: Diagonal hatching
 - `wxstc.wxSTC_INDIC_HIDDEN`: No visual effect
+
+See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETSTYLE) for indicator style examples.
 
 ## Color schemes
 
