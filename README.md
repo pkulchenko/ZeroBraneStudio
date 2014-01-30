@@ -29,17 +29,10 @@ and Corona SDK ([demo](http://notebook.kulchenko.com/zerobrane/debugging-and-liv
 =======
 * Get Torch with the torch ezinstall script
 
-<<<<<<< HEAD
 ```bash
 curl -s https://raw.github.com/torch/ezinstall/master/install-all | bash
 ```
 * Install mobdebug with torch-rocks with
-=======
-* A [short and simple overview](http://studio.zerobrane.com/doc-getting-started.html) for those who are new to this development environment.
-* A list of [frequently asked questions](http://studio.zerobrane.com/doc-faq.html) about the IDE.
-* [Tutorials and demos](http://studio.zerobrane.com/tutorials.html) that cover debugging and live coding for different environments.
-* [Tips and tricks](http://studio.zerobrane.com/doc-tips-and-tricks.html).
->>>>>>> bf1d5c617e3a3e890dfb86f5b496c9872f4bad99
 
 ```bash
 $ torch-rocks install mobdebug
