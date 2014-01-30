@@ -8,6 +8,7 @@
 -- ---------------------------
 -- fg foreground - {r,g,b} 0-255
 -- bg background - {r,g,b} 0-255
+-- alpha translucency - 0-255 (0 - transparent, 255 - opaque, 256 - opaque/faster)
 -- sel color of the selected block - {r,g,b} 0-255 (only applies to folds)
 -- u underline - boolean
 -- b bold - boolean
@@ -56,6 +57,7 @@ function StylesGetDefault()
     caretlinebg = {bg = {240, 240, 230}},
     fold = {fg = {90, 90, 80}, bg = {250, 250, 250}, sel = {90+96, 90, 80}},
     whitespace = nil,
+    edge = {},
 
     -- deprecated; allowed for backward compatibility in case someone does
     -- fncall.fg = {...}
@@ -126,8 +128,26 @@ local specialmapping = {
     else
       editor:SetSelBackground(0,wx.wxWHITE)
     end
+    if (style.alpha and ide.wxver >= "2.9.5") then
+      editor:SetSelAlpha(style.alpha)
+    end
+
     -- set alpha for additional selecton: 0 - transparent, 255 - opaque
     if ide.wxver >= "2.9.5" then editor:SetAdditionalSelAlpha(127) end
+  end,
+
+  seladd = function(editor,style)
+    if ide.wxver >= "2.9.5" then
+      if (style.fg) then
+        editor:SetAdditionalSelForeground(wx.wxColour(unpack(style.fg)))
+      end
+      if (style.bg) then
+        editor:SetAdditionalSelBackground(wx.wxColour(unpack(style.bg)))
+      end
+      if (style.alpha) then
+        editor:SetAdditionalSelAlpha(style.alpha)
+      end
+    end
   end,
 
   caret = function(editor,style)
@@ -139,6 +159,9 @@ local specialmapping = {
   caretlinebg = function(editor,style)
     if (style.bg) then
       editor:SetCaretLineBackground(wx.wxColour(unpack(style.bg)))
+    end
+    if (style.alpha and ide.wxver >= "2.9.5") then
+      editor:SetCaretLineBackAlpha(style.alpha)
     end
   end,
 
@@ -164,6 +187,7 @@ local specialmapping = {
   fold = function(editor,style)
     local clrfg = style.fg and wx.wxColour(unpack(style.fg))
     local clrbg = style.bg and wx.wxColour(unpack(style.bg))
+    local clrhi = style.hi and wx.wxColour(unpack(style.hi))
     local clrsel = style.sel and wx.wxColour(unpack(style.sel))
 
     -- if selected background is set then enable support for it
@@ -191,6 +215,17 @@ local specialmapping = {
       -- http://www.scintilla.org/ScintillaDoc.html#SCI_SETFOLDMARGINCOLOUR
       editor:SetFoldMarginColour(true, clrbg)
       editor:SetFoldMarginHiColour(true, clrbg)
+    end
+    if clrhi then
+      editor:SetFoldMarginHiColour(true, clrhi)
+    end
+  end,
+
+  edge = function(editor,style)
+    if style.fg or style.col or style.mode then
+      editor:SetEdgeColour(wx.wxColour(unpack(style.fg or {220, 220, 220})))
+      editor:SetEdgeMode(style.mode or wxstc.wxSTC_EDGE_LINE)
+      editor:SetEdgeColumn(style.col or 80)
     end
   end,
 
@@ -275,6 +310,10 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
       applystyle(style,style.st)
     end
   end
+
+  -- additional selection (seladd) attributes can only be set after
+  -- normal selection (sel) attributes are set, so handle them again
+  if styles.seladd then specialmapping.seladd(editor, styles.seladd) end
 
   do
     local defaultfg = styles.text and styles.text.fg or {127,127,127}

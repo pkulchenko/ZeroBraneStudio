@@ -38,13 +38,18 @@ local stackmaxnum = ide.config.debugger.stackmaxnum or 400
 local stackmaxlevel = ide.config.debugger.stackmaxlevel or 3
 local params = {comment = false, nocode = true, maxlevel = stackmaxlevel, maxnum = stackmaxnum}
 
-function fixUTF8(...)
+local function fixUTF8(...)
   local t = {...}
   -- convert to escaped decimal code as these can only appear in strings
   local function fix(s) return '\\'..string.byte(s) end
+  for i = 1, #t do t[i] = FixUTF8(t[i], fix) end
+  return unpack(t)
+end
+
+local function trimToMaxLength(...)
+  local t = {...}
   for i = 1, #t do
-    local text = t[i]:sub(1, stackmaxlength)..(#t[i] > stackmaxlength and '...' or '')
-    t[i] = FixUTF8(text, fix)
+    t[i] = t[i]:sub(1, stackmaxlength)..(#t[i] > stackmaxlength and '...' or '')
   end
   return unpack(t)
 end
@@ -151,9 +156,9 @@ local function updateStackSync()
 
         -- comment can be not necessarily a string for tables with metatables
         -- that provide its own __tostring method
-        local value, comment = val[1], fixUTF8(tostring(val[2]))
+        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
         local text = ("%s = %s%s"):
-          format(name, fixUTF8(serialize(value, params)),
+          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
                  simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, 1)
         if checkIfExpandable(value, item) then
@@ -163,9 +168,9 @@ local function updateStackSync()
 
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(frame[3]) do
-        local value, comment = val[1], fixUTF8(tostring(val[2]))
+        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
         local text = ("%s = %s%s"):
-          format(name, fixUTF8(serialize(value, params)),
+          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
                  simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, 2)
         if checkIfExpandable(value, item) then
@@ -438,7 +443,12 @@ local function stoppedAtBreakpoint(file, line)
 end
 
 debugger.listen = function()
-  local server = socket.bind("*", debugger.portnumber)
+  local server, err = socket.bind("*", debugger.portnumber)
+  if not server then
+    DisplayOutputLn(TR("Can't start debugger server at %s:%d: %s.")
+      :format(debugger.hostname, debugger.portnumber, err or TR("unknown error")))
+    return
+  end
   DisplayOutputLn(TR("Debugger server started at %s:%d.")
     :format(debugger.hostname, debugger.portnumber))
   copas.autoclose = false
@@ -892,7 +902,7 @@ function debuggerCreateStackWindow()
       local image = stackCtrl:GetItemImage(item_id)
       local num = 1
       for name,value in pairs(stackItemValue[item_id:GetValue()]) do
-        local strval = fixUTF8(serialize(value, params))
+        local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
         local text = type(name) == "number"
           and (num == name and strval or ("[%s] = %s"):format(name, strval))
           or ("%s = %s"):format(tostring(name), strval)
@@ -949,10 +959,11 @@ local function debuggerCreateWatchWindow()
   info:SetWidth(width * 0.56)
   watchCtrl:InsertColumn(1, info)
 
-  local watchMenu = wx.wxMenu{
+  local watchMenu = wx.wxMenu {
     { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
     { ID_EDITWATCH, TR("&Edit Watch")..KSC(ID_EDITWATCH) },
-    { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) }}
+    { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) },
+  }
 
   local function findSelectedWatchItem()
     local count = watchCtrl:GetSelectedItemCount()
@@ -1117,9 +1128,13 @@ function DebuggerRefreshScratchpad()
   if debugger.scratchpad and debugger.scratchpad.updated and not debugger.scratchpad.paused then
 
     local scratchpadEditor = debugger.scratchpad.editor
-    local compiled, code = CompileProgram(scratchpadEditor, true)
-    if not compiled then return end
+    if scratchpadEditor.spec.apitype
+    and scratchpadEditor.spec.apitype == "lua"
+    and not ide.interpreter.skipcompile
+    and not CompileProgram(scratchpadEditor, { jumponerror = false, reportstats = false })
+    then return end
 
+    local code = StripShebang(scratchpadEditor:GetText())
     if debugger.scratchpad.running then
       -- break the current execution first
       -- don't try too frequently to avoid overwhelming the debugger

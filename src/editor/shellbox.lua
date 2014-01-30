@@ -149,7 +149,7 @@ local function shellPrint(marker, ...)
   local promptLine = isPrompt and getPromptLine() or nil
   local insertLineAt = isPrompt and getPromptLine() or out:GetLineCount()-1
   local insertAt = isPrompt and out:PositionFromLine(getPromptLine()) or out:GetLength()
-  out:InsertText(insertAt, text)
+  out:InsertText(insertAt, FixUTF8(text, function (s) return '\\'..string.byte(s) end))
   local linesAdded = out:GetLineCount() - lines
 
   if marker then
@@ -269,6 +269,12 @@ local function createenv ()
 end
 
 local env = createenv()
+
+function ShellSetAlias(alias, table)
+  local value = env[alias]
+  env[alias] = table
+  return value
+end
 
 local function packResults(status, ...) return status, {...} end
 
@@ -517,5 +523,15 @@ out:Connect(wxstc.wxEVT_STC_DO_DROP,
       event:SetDragResult(wx.wxDragNone)
     end
   end)
+
+if ide.config.outputshell.nomousezoom then
+  -- disable zoom using mouse wheel as it triggers zooming when scrolling
+  -- on OSX with kinetic scroll and then pressing CMD.
+  out:Connect(wx.wxEVT_MOUSEWHEEL,
+    function (event)
+      if wx.wxGetKeyState(wx.WXK_CONTROL) then return end
+      event:Skip()
+    end)
+end
 
 displayShellIntro()

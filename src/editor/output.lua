@@ -41,7 +41,7 @@ function DisplayOutputNoMarker(...)
 
   local current = errorlog:GetReadOnly()
   errorlog:SetReadOnly(false)
-  errorlog:AppendText(message)
+  errorlog:AppendText(FixUTF8(message, "\022"))
   errorlog:EmptyUndoBuffer()
   errorlog:SetReadOnly(current)
   errorlog:GotoPos(errorlog:GetLength())
@@ -63,7 +63,10 @@ local textout = '' -- this is a buffer for any text sent to external scripts
 
 function DetachChildProcess()
   for _, custom in pairs(customprocs) do
-    if (custom and custom.proc) then custom.proc:Detach() end
+    -- since processes are detached, their END_PROCESS event is not going
+    -- to be called; call endcallback() manually if registered.
+    if custom.endcallback then custom.endcallback() end
+    if custom.proc then custom.proc:Detach() end
   end
 end
 
@@ -228,11 +231,11 @@ local function getStreams()
           DisplayShell(str)
         else
           DisplayOutputNoMarker(str)
-        end
-        if str and ide.config.allowinteractivescript and
-          (getInputLine() > -1 or errorlog:GetReadOnly()) then
-          ActivateOutput()
-          updateInputMarker()
+          if str and ide.config.allowinteractivescript and
+            (getInputLine() > -1 or errorlog:GetReadOnly()) then
+            ActivateOutput()
+            updateInputMarker()
+          end
         end
         pfn = pfn and pfn()
       end
@@ -430,3 +433,13 @@ errorlog:Connect(wxstc.wxEVT_STC_DO_DROP,
       event:SetDragResult(wx.wxDragNone)
     end
   end)
+
+if ide.config.outputshell.nomousezoom then
+  -- disable zoom using mouse wheel as it triggers zooming when scrolling
+  -- on OSX with kinetic scroll and then pressing CMD.
+  errorlog:Connect(wx.wxEVT_MOUSEWHEEL,
+    function (event)
+      if wx.wxGetKeyState(wx.WXK_CONTROL) then return end
+      event:Skip()
+    end)
+end

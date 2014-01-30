@@ -1,15 +1,19 @@
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
-local cgbinpath = os.getenv("CG_BIN_PATH")
+local binpath = ide.config.path.cgbin or os.getenv("CG_BIN_PATH")
 local cgprofile 
 local cgglsles 
 
-return cgbinpath and {
+return binpath and {
   fninit = function(frame,menuBar)
     cgprofile = ide.config.cgprofile or "gp5"
     cgglsles = ide.config.cgglsles
-    cgbinpath = ide.config.path.cgbin or os.getenv("CG_BIN_PATH")
+    
+    if (wx.wxFileName(binpath):IsRelative()) then
+      local editorDir = string.gsub(ide.editorFilename:gsub("[^/\\]+$",""),"\\","/")
+      binpath = editorDir..binpath
+    end
 
     local myMenu = wx.wxMenu{
       { ID "cg.profile.arb", "&ARB VP/FP", "ARB program profile", wx.wxITEM_CHECK },
@@ -22,15 +26,15 @@ return cgbinpath and {
       { ID "cg.profile.dx_4", "DX SM&4_0", "DirectX sm4_0 profile", wx.wxITEM_CHECK },
       { ID "cg.profile.dx_5", "DX SM&5_0", "DirectX sm5_0 profile", wx.wxITEM_CHECK },
       { },
-      { ID "cg.compile.input", "&Custom Args\tCtrl-L", "when set a popup for custom compiler args will be envoked", wx.wxITEM_CHECK },
+      { ID "cg.compile.input", "&Custom Args", "when set a popup for custom compiler args will be envoked", wx.wxITEM_CHECK },
       { ID "cg.compile.gles", "GLSL-ES", "When GLSL file is source use GLSL-ES path", wx.wxITEM_CHECK },
       { },
-      { ID "cg.compile.vertex", "Compile &Vertex\tCtrl-1", "Compile Vertex program (select entry word)" },
-      { ID "cg.compile.fragment", "Compile &Fragment\tCtrl-2", "Compile Fragment program (select entry word)" },
-      { ID "cg.compile.geometry", "Compile &Geometry\tCtrl-3", "Compile Geometry program (select entry word)" },
-      { ID "cg.compile.tessctrl", "Compile T.Ctrl\tCtrl-4", "Compile T.Ctrl program (select entry word)" },
-      { ID "cg.compile.tesseval", "Compile T.Eval\tCtrl-5", "Compile T.Eval program (select entry word)" },
-      { ID "cg.compile.compute", "Compile Compute\tCtrl-6", "Compile Compute program (select entry word)" },
+      { ID "cg.compile.vertex", "Compile &Vertex", "Compile Vertex program (select entry word)" },
+      { ID "cg.compile.fragment", "Compile &Fragment", "Compile Fragment program (select entry word)" },
+      { ID "cg.compile.geometry", "Compile &Geometry", "Compile Geometry program (select entry word)" },
+      { ID "cg.compile.tessctrl", "Compile T.Ctrl", "Compile T.Ctrl program (select entry word)" },
+      { ID "cg.compile.tesseval", "Compile T.Eval", "Compile T.Eval program (select entry word)" },
+      { ID "cg.compile.compute", "Compile Compute", "Compile Compute program (select entry word)" },
       { },
       { ID "cg.format.asm", "Annotate ASM", "indent and add comments to Cg ASM output" },
       { ID "cg.format.master", "Build from master", "Creates a new cg file from a master containing special include instrctions." },
@@ -93,7 +97,7 @@ return cgbinpath and {
 
     -- check for NvPerf
     local perfexe = "/NVShaderPerf.exe"
-    local fn = wx.wxFileName(cgbinpath..perfexe)
+    local fn = wx.wxFileName(binpath..perfexe)
     local hasperf = fn:FileExists()
 
     -- master file generator
@@ -409,7 +413,7 @@ return cgbinpath and {
       local glsl = editor and editor.spec and editor.spec.apitype and editor.spec.apitype == "glsl"
       local entryname = (glsl and "main" or info.selword)
 
-      if (not (filename and entryname and cgbinpath)) then
+      if (not (filename and entryname and binpath)) then
         DisplayOutput("Error: Cg Compile: Insufficient parameters (nofile / not selected entry function!\n")
         return
       end
@@ -438,7 +442,7 @@ return cgbinpath and {
       cmdline = cmdline.."-o "..outname.." "
       cmdline = cmdline.."-entry "..entryname
 
-      cmdline = cgbinpath.."/cgc.exe"..cmdline
+      cmdline = binpath.."/cgc.exe"..cmdline
 
       local function nvperfcallback(str)
         local pixels = string.match(str,"([,%d]+) pixels/s")
@@ -493,7 +497,7 @@ return cgbinpath and {
               cmdline = cmdline..(profiletypes[cgperfgpu][profile[domain]] or "")
               cmdline = cmdline..' "'..fullname..'"'
 
-              cmdline = cgbinpath..perfexe..cmdline
+              cmdline = binpath..perfexe..cmdline
               CommandLineRun(cmdline,nil,true,nil,nvperfcallback)
             end
           end

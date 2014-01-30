@@ -73,6 +73,7 @@ ide = {
       strategy = 2,
       width = 60,
     },
+    arg = {}, -- command line arguments
 
     activateoutput = false, -- activate output/console on Run/Debug/Compile
     unhidewindow = false, -- to unhide a gui window
@@ -180,14 +181,20 @@ ide.config.stylesoutshell = StylesGetDefault()
 local function setLuaPaths(mainpath, osname)
   -- use LUA_DEV to setup paths for Lua for Windows modules if installed
   local luadev = osname == "Windows" and os.getenv('LUA_DEV')
-  local luadev_path = (luadev and wx.wxDirExists(luadev)
+  if luadev and not wx.wxDirExists(luadev) then luadev = nil end
+  local luadev_path = (luadev
     and ('LUA_DEV/?.lua;LUA_DEV/?/init.lua;LUA_DEV/lua/?.lua;LUA_DEV/lua/?/init.lua')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
-  local luadev_cpath = (luadev and wx.wxDirExists(luadev)
+  local luadev_cpath = (luadev
     and ('LUA_DEV/?.dll;LUA_DEV/?51.dll;LUA_DEV/clibs/?.dll;LUA_DEV/clibs/?51.dll')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
     or "")
+
+  if luadev then
+    local path, clibs = os.getenv('PATH'), luadev:gsub('[\\/]$','')..'\\clibs'
+    if not path:find(clibs, 1, true) then wx.wxSetEnv('PATH', path..';'..clibs) end
+  end
 
   -- (luaconf.h) in Windows, any exclamation mark ('!') in the path is replaced
   -- by the path of the directory of the executable file of the current process.
@@ -208,6 +215,7 @@ local function setLuaPaths(mainpath, osname)
     nil
   if clibs then wx.wxSetEnv("LUA_CPATH",
     package.cpath .. ';' .. clibs .. ';' .. luadev_cpath) end
+  ide.osclibs = clibs -- keep the list to use for other Lua versions
 end
 
 ---------------
@@ -326,35 +334,6 @@ local resumePrint do
   end
 end
 
------------------------
--- load config
-local function addConfig(filename,isstring)
-  if not filename then return end
-  -- skip those files that don't exist
-  if not isstring and not wx.wxFileName(filename):FileExists() then return end
-  -- if it's marked as command, but exists as a file, load it as a file
-  if isstring and wx.wxFileName(filename):FileExists() then isstring = false end
-
-  local cfgfn, err, msg
-  if isstring
-  then msg, cfgfn, err = "string", loadstring(filename)
-  else msg, cfgfn, err = "file", loadfile(filename) end
-
-  if not cfgfn then
-    print(("Error while loading configuration %s: '%s'."):format(msg, err))
-  else
-    ide.config.os = os
-    ide.config.wxstc = wxstc
-    ide.config.load = { interpreters = loadInterpreters,
-      specs = loadSpecs, tools = loadTools }
-    setfenv(cfgfn,ide.config)
-    local _, err = pcall(function()cfgfn(assert(_G or _ENV))end)
-    if err then
-      print(("Error while processing configuration %s: '%s'."):format(msg, err))
-    end
-  end
-end
-
 function GetIDEString(keyword, default)
   return app.stringtable[keyword] or default or keyword
 end
@@ -362,7 +341,13 @@ end
 ----------------------
 -- process config
 
-addConfig(ide.config.path.app.."/config.lua")
+-- set ide.config environment
+ide.config.os = os
+ide.config.wxstc = wxstc
+ide.config.load = { interpreters = loadInterpreters, specs = loadSpecs,
+  tools = loadTools }
+
+LoadLuaConfig(ide.config.path.app.."/config.lua")
 
 ide.editorApp:SetAppName(GetIDEString("settingsapp"))
 
@@ -396,11 +381,11 @@ do
   }
 
   -- process configs
-  addConfig(ide.configs.system)
-  addConfig(ide.configs.user)
+  LoadLuaConfig(ide.configs.system)
+  LoadLuaConfig(ide.configs.user)
 
   -- process all other configs (if any)
-  for _, v in ipairs(configs) do addConfig(v, true) end
+  for _, v in ipairs(configs) do LoadLuaConfig(v, true) end
 
   configs = nil
   local sep = GetPathSeparator()
@@ -433,12 +418,12 @@ PackageEventHandle("onRegister")
 SettingsRestoreEditorSettings()
 SettingsRestoreFramePosition(ide.frame, "MainFrame")
 SettingsRestoreFileHistory(SetFileHistory)
+SettingsRestoreProjectSession(FileTreeSetProjects)
 SettingsRestoreFileSession(function(tabs, params)
   if params and params.recovery
   then return SetOpenTabs(params)
   else return SetOpenFiles(tabs, params) end
 end)
-SettingsRestoreProjectSession(FileTreeSetProjects)
 SettingsRestoreView()
 
 -- ---------------------------------------------------------------------------
@@ -463,6 +448,11 @@ end
 
 if app.postinit then app.postinit() end
 
+if ide.osname == 'Macintosh' then
+  ide.frame:SetAcceleratorTable(wx.wxAcceleratorTable({
+     wx.wxAcceleratorEntry(wx.wxACCEL_CTRL, ('M'):byte(), ID_VIEWMINIMIZE)
+  }))
+end
 -- only set menu bar *after* postinit handler as it may include adding
 -- app-specific menus (Help/About), which are not recognized by MacOS
 -- as special items unless SetMenuBar is done after menus are populated.

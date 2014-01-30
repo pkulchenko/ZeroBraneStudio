@@ -160,6 +160,8 @@ config = {
     width = 60, -- width of the tooltip text (in characters)
   }
 
+  arg = {}, -- command line arguments
+
   savebak = false, -- if bak files are created on save
 
   filehistorylength = 20, -- historylength for files
@@ -202,16 +204,16 @@ api = {
   -- global space words, e.g "table"
   ["blah"] = {
     -- "function", "class", "keyword", "value", "lib", "method"
-	-- method is for class:func functions
+    -- method is for class:func functions
     type = "function",
     description = "this does something",
 
     -- value/function/method:
-	-- for autocomplete type guessing, insert the string
-	-- that the variable name is replace with
-	-- e.g. "test = somefunc()"  somefunc has valuetype of "math"
-	-- then typing "test." will be treated as "math." in
-	-- autcomplete logic
+    -- for autocomplete type guessing, insert the string
+    -- that the variable name is replace with
+    -- e.g. "test = somefunc()"  somefunc has valuetype of "math"
+    -- then typing "test." will be treated as "math." in
+    -- autcomplete logic
     valuetype = "api.ClassName",
 
     -- function:

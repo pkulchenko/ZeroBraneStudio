@@ -12,6 +12,7 @@ local notebook = ide.frame.notebook
 local funclist = ide.frame.toolBar.funclist
 local edcfg = ide.config.editor
 local styles = ide.config.styles
+local unpack = table.unpack or unpack
 
 local DEFAULT_STYLE = 32
 local margin = { LINENUMBER = 0, MARKER = 1, FOLD = 2 }
@@ -138,6 +139,7 @@ local function navigateBack(editor)
   if #editor.jumpstack == 0 then return end
   local pos = table.remove(editor.jumpstack)
   editor:GotoPos(pos)
+  return true
 end
 
 -- ----------------------------------------------------------------------------
@@ -356,7 +358,7 @@ function EditorIsModified(editor)
 end
 
 -- Indicator handling for functions and local/global variables
-local function indicateFunctions28(editor, lines, linee)
+local function indicateFunctionsOnly(editor, lines, linee)
   if not (edcfg.showfncall and editor.spec and editor.spec.isfncall)
   or not (styles.indicator and styles.indicator.fncall) then return end
 
@@ -458,7 +460,10 @@ function IndicateAll(editor, lines, linee)
   -- when there are still some pending events for it, so handle it.
   if not pcall(function() return editor:GetId() end) then return end
 
-  if not (editor.spec and editor.spec.markvars) then return end
+  -- if markvars is not set in the spec, check for functions-only indicators
+  if not (editor.spec and editor.spec.markvars) then
+    return indicateFunctionsOnly(editor, lines, linee)
+  end
   local indic = styles.indicator or {}
 
   local pos, vars = d and d[1] or 1, d and d[2] or nil
@@ -581,7 +586,7 @@ function IndicateAll(editor, lines, linee)
 end
 
 if ide.wxver < "2.9.5" or not ide.config.autoanalizer then
-  IndicateAll = indicateFunctions28 end
+  IndicateAll = indicateFunctionsOnly end
 
 -- ----------------------------------------------------------------------------
 -- Create an editor
@@ -595,7 +600,27 @@ function CreateEditor()
   editor.matchon = false
   editor.assignscache = false
   editor.autocomplete = false
+  editor.bom = false
   editor.jumpstack = {}
+  editor.ctrlcache = {}
+  -- populate cache with Ctrl-<letter> combinations for workaround on Linux
+  -- http://wxwidgets.10942.n7.nabble.com/Menu-shortcuts-inconsistentcy-issue-td85065.html
+  for id, shortcut in pairs(ide.config.keymap) do
+    local key = shortcut:match('^Ctrl[-+](%w)$')
+    if key then editor.ctrlcache[key:byte()] = id end
+  end
+
+  -- populate editor keymap with configured combinations
+  for _, map in ipairs(ide.config.editor.keymap) do
+    local key, mod, cmd, os = unpack(map)
+    if not os or os == ide.osname then
+      if cmd then
+        editor:CmdKeyAssign(key, mod, cmd)
+      else
+        editor:CmdKeyClear(key, mod)
+      end
+    end
+  end
 
   editor:SetBufferedDraw(not ide.config.hidpi and true or false)
   editor:StyleClearAll()
@@ -911,7 +936,17 @@ function CreateEditor()
 
   editor:Connect(wxstc.wxEVT_STC_PAINTED,
     function ()
-      if ide.osname == 'Windows' then updateStatusText(editor) end
+      if ide.osname == 'Windows' then
+        updateStatusText(editor)
+
+        if ide.config.editor.usewrap ~= true and editor:AutoCompActive() then
+          -- showing auto-complete list leaves artifacts on the screen,
+          -- which can only be fixed by a forced refresh.
+          -- shows with wxSTC 3.21 and both wxwidgets 2.9.5 and 3.1
+          editor:Update()
+          editor:Refresh()
+        end
+      end
     end)
 
   editor:Connect(wxstc.wxEVT_STC_UPDATEUI,
@@ -1042,12 +1077,14 @@ function CreateEditor()
           editor:SetTargetEnd(pos+1)
         end
         editor:ReplaceTarget("")
-      elseif ide.osname == "Unix" and ide.wxver >= "2.9.5"
-      and keycode == ('T'):byte() and mod == wx.wxMOD_CONTROL then
-        ide.frame:AddPendingEvent(wx.wxCommandEvent(
-          wx.wxEVT_COMMAND_MENU_SELECTED, ID_SHOWTOOLTIP))
       elseif mod == wx.wxMOD_ALT and keycode == wx.WXK_LEFT then
-        navigateBack(editor)
+        -- if no "jump back" is needed, then do normal processing as this
+        -- combination can be mapped to some action
+        if not navigateBack(editor) then event:Skip() end
+      elseif ide.osname == "Unix" and ide.wxver >= "2.9.5"
+      and mod == wx.wxMOD_CONTROL and editor.ctrlcache[keycode] then
+        ide.frame:AddPendingEvent(wx.wxCommandEvent(
+          wx.wxEVT_COMMAND_MENU_SELECTED, editor.ctrlcache[keycode]))
       else
         if ide.osname == 'Macintosh' and mod == wx.wxMOD_META then
           return -- ignore a key press if Command key is also pressed
@@ -1096,6 +1133,14 @@ function CreateEditor()
   editor:Connect(wxstc.wxEVT_STC_ZOOM,
     function(event)
       editor:SetMarginWidth(margin.LINENUMBER, editor:TextWidth(DEFAULT_STYLE, "99999_"))
+      -- if Shift+Zoom is used, then zoom all editors, not just the current one
+      if wx.wxGetKeyState(wx.WXK_SHIFT) then
+        local zoom = editor:GetZoom()
+        for id, doc in pairs(openDocuments) do
+          -- check the editor zoom level to avoid recursion
+          if doc.editor:GetZoom() ~= zoom then doc.editor:SetZoom(zoom) end
+        end
+      end
       event:Skip()
     end)
 
@@ -1112,21 +1157,22 @@ function CreateEditor()
       local line = instances and instances[0] and editor:LineFromPosition(instances[0]-1)+1
       local def =  line and " ("..TR("on line %d"):format(line)..")" or ""
 
-      local menu = wx.wxMenu()
-      menu:Append(ID_UNDO, TR("&Undo"))
-      menu:Append(ID_REDO, TR("&Redo"))
-      menu:AppendSeparator()
-      menu:Append(ID_CUT, TR("Cu&t"))
-      menu:Append(ID_COPY, TR("&Copy"))
-      menu:Append(ID_PASTE, TR("&Paste"))
-      menu:Append(ID_SELECTALL, TR("Select &All"))
-      menu:AppendSeparator()
-      menu:Append(ID_GOTODEFINITION, TR("Go To Definition")..def)
-      menu:Append(ID_RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences)
-      menu:AppendSeparator()
-      menu:Append(ID_QUICKADDWATCH, TR("Add Watch Expression"))
-      menu:Append(ID_QUICKEVAL, TR("Evaluate In Console"))
-      menu:Append(ID_ADDTOSCRATCHPAD, TR("Add To Scratchpad"))
+      local menu = wx.wxMenu {
+        { ID_UNDO, TR("&Undo") },
+        { ID_REDO, TR("&Redo") },
+        { },
+        { ID_CUT, TR("Cu&t") },
+        { ID_COPY, TR("&Copy") },
+        { ID_PASTE, TR("&Paste") },
+        { ID_SELECTALL, TR("Select &All") },
+        { },
+        { ID_GOTODEFINITION, TR("Go To Definition")..def },
+        { ID_RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences },
+        { },
+        { ID_QUICKADDWATCH, TR("Add Watch Expression") },
+        { ID_QUICKEVAL, TR("Evaluate In Console") },
+        { ID_ADDTOSCRATCHPAD, TR("Add To Scratchpad") },
+      }
 
       menu:Enable(ID_GOTODEFINITION, instances and instances[0])
       menu:Enable(ID_RENAMEALLINSTANCES, instances and (instances[0] or #instances > 0))

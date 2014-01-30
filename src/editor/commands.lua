@@ -41,20 +41,19 @@ end
 function LoadFile(filePath, editor, file_must_exist, skipselection)
   local filePath = wx.wxFileName(filePath)
   filePath:Normalize() -- make it absolute and remove all .. and . if possible
+  filePath = filePath:GetFullPath()
 
   -- prevent files from being reopened again
   if (not editor) then
-    for id, doc in pairs(openDocuments) do
-      if doc.filePath and filePath:SameAs(wx.wxFileName(doc.filePath)) then
-        if not skipselection and doc.index ~= notebook:GetSelection() then
-          -- selecting the same tab doesn't trigger PAGE_CHANGE event,
-          -- but moves the focus to the tab bar, which needs to be avoided.
-          notebook:SetSelection(doc.index) end
-        return doc.editor
-      end
+    local doc = ide:FindDocument(filePath)
+    if doc then
+      if not skipselection and doc.index ~= notebook:GetSelection() then
+        -- selecting the same tab doesn't trigger PAGE_CHANGE event,
+        -- but moves the focus to the tab bar, which needs to be avoided.
+        notebook:SetSelection(doc.index) end
+      return doc.editor
     end
   end
-  filePath = filePath:GetFullPath()
 
   -- if not opened yet, try open now
   local file_text = FileRead(filePath)
@@ -72,6 +71,16 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   editor:Freeze()
   SetupKeywords(editor, GetFileExt(filePath))
   editor:MarkerDeleteAll(-1)
+
+  -- remove BOM from UTF-8 encoded files; store BOM to add back when saving
+  editor.bom = string.char(0xEF,0xBB,0xBF)
+  if file_text and editor:GetCodePage() == wxstc.wxSTC_CP_UTF8
+  and file_text:find("^"..editor.bom) then
+    file_text = file_text:gsub("^"..editor.bom, "")
+  else
+    -- set to 'false' as checks for nil on wxlua objects may fail at run-time
+    editor.bom = false
+  end
   editor:SetText(file_text or "")
 
   -- check the editor as it can be empty if the file has malformed UTF8;
@@ -160,6 +169,10 @@ local function getExtsString()
   return exts..TR("All files").." (*)|*"
 end
 
+function ReportError(msg)
+  return wx.wxMessageBox(msg, TR("Error"), wx.wxICON_ERROR + wx.wxOK + wx.wxCENTRE, ide.frame)
+end
+
 function OpenFile(event)
   local exts = getExtsString()
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Open file"),
@@ -169,9 +182,7 @@ function OpenFile(event)
     wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST)
   if fileDialog:ShowModal() == wx.wxID_OK then
     if not LoadFile(fileDialog:GetPath(), nil, true) then
-      wx.wxMessageBox(TR("Unable to load file '%s'."):format(fileDialog:GetPath()),
-        TR("Error"),
-        wx.wxOK + wx.wxCENTRE, ide.frame)
+      ReportError(TR("Unable to load file '%s'."):format(fileDialog:GetPath()))
     end
   end
   fileDialog:Destroy()
@@ -179,24 +190,29 @@ end
 
 -- save the file to filePath or if filePath is nil then call SaveFileAs
 function SaveFile(editor, filePath)
+  -- this event can be aborted
+  -- as SaveFileAs calls SaveFile, this event may be called two times:
+  -- first without filePath and then with filePath
+  if PackageEventHandle("onEditorPreSave", editor, filePath) == false then
+    return false
+  end
+
   if not filePath then
     return SaveFileAs(editor)
   else
-    -- this event can be aborted
-    if PackageEventHandle("onEditorPreSave", editor, filePath) == false then
-      return false
+    if ide.config.savebak then
+      local ok, err = FileRename(filePath, filePath..".bak")
+      if not ok then
+        ReportError(TR("Unable to save file '%s'."):format(filePath..".bak")
+        .."\nError: "..err)
+        return
+      end
     end
 
-    if (ide.config.savebak) then FileRename(filePath, filePath..".bak") end
-
-    local st = editor:GetText()
+    local st = (editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and editor.bom or "")
+      .. editor:GetText()
     if GetConfigIOFilter("output") then
       st = GetConfigIOFilter("output")(filePath,st)
-    end
-
-    local file = wx.wxFileName(filePath)
-    if not file:FileExists() then
-      file:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL)
     end
 
     local ok, err = FileWrite(filePath, st)
@@ -213,13 +229,18 @@ function SaveFile(editor, filePath)
 
       return true
     else
-      wx.wxMessageBox(TR("Unable to save file '%s': %s"):format(filePath, err),
-        TR("Error"),
-        wx.wxICON_ERROR + wx.wxOK + wx.wxCENTRE, ide.frame)
+      ReportError(TR("Unable to save file '%s': %s"):format(filePath, err))
     end
   end
 
   return false
+end
+
+function ApproveFileOverwrite()
+  return wx.wxMessageBox(
+    TR("File already exists.").."\n"..TR("Do you want to overwrite it?"),
+    GetIDEString("editormessage"),
+    wx.wxYES_NO + wx.wxCENTRE, ide.frame) == wx.wxYES
 end
 
 function SaveFileAs(editor)
@@ -249,17 +270,13 @@ function SaveFileAs(editor)
   if fileDialog:ShowModal() == wx.wxID_OK then
     local filePath = fileDialog:GetPath()
 
-    -- first check if there is another tab with the same name and close it
-    local existing
-    local fileName = wx.wxFileName(filePath)
-    for _, document in pairs(ide.openDocuments) do
-      if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath)) then
-        existing = document.index
-        break
-      end
-    end
+    -- check if there is another tab with the same name and prepare to close it
+    local existing = (ide:FindDocument(filePath) or {}).index
+    local cansave = fn:GetFullName() == filePath -- saving into the same file
+       or not wx.wxFileName(filePath):FileExists() -- or a new file
+       or ApproveFileOverwrite()
 
-    if SaveFile(editor, filePath) then
+    if cansave and SaveFile(editor, filePath) then
       SetEditorSelection() -- update title of the editor
       FileTreeMarkSelected(filePath)
       if ext ~= GetFileExt(filePath) then
@@ -508,36 +525,51 @@ function ClearAllCurrentLineMarkers()
   end
 end
 
+-- remove shebang line (#!) as it throws a compilation error as
+-- loadstring() doesn't allow it even though lua/loadfile accepts it.
+-- replace with a new line to keep the number of lines the same.
+function StripShebang(code) return (code:gsub("^#!.-\n", "\n")) end
+
 local compileOk, compileTotal = 0, 0
-function CompileProgram(editor, quiet)
-  -- remove shebang line (#!) as it throws a compilation error as
-  -- loadstring() doesn't allow it even though lua/loadfile accepts it.
-  -- replace with a new line to keep the number of lines the same.
-  local editorText = editor:GetText():gsub("^#!.-\n", "\n")
+function CompileProgram(editor, params)
+  local params = { jumponerror = (params or {}).jumponerror ~= false,
+    reportstats = (params or {}).reportstats ~= false }
   local id = editor:GetId()
   local filePath = DebuggerMakeFileName(editor, openDocuments[id].filePath)
-  local func, line_num, errMsg, _ = loadstring(editorText, filePath), -1
-  if not func then
-    _, errMsg, line_num = wxlua.CompileLuaScript(editorText, filePath)
-  end
+  local func, err = loadstring(StripShebang(editor:GetText()), '@'..filePath)
+  local line = not func and tonumber(err:match(":(%d+)%s*:")) or nil
 
   if ide.frame.menuBar:IsChecked(ID_CLEAROUTPUT) then ClearOutput() end
 
   compileTotal = compileTotal + 1
-  if line_num > -1 then
-    DisplayOutput(TR("Compilation error")
-      .." "..TR("on line %d"):format(line_num)
-      ..":\n"..errMsg:gsub("Lua:.-\n", ""))
-    if not quiet then editor:GotoLine(line_num-1) end
-  else
+  if func then
     compileOk = compileOk + 1
-    if not quiet then
+    if params.reportstats then
       DisplayOutputLn(TR("Compilation successful; %.0f%% success rate (%d/%d).")
         :format(compileOk/compileTotal*100, compileOk, compileTotal))
     end
+  else
+    DisplayOutputLn(TR("Compilation error").." "..TR("on line %d"):format(line)..":")
+    DisplayOutputLn((err:gsub("\n$", "")))
+    -- check for escapes invalid in LuaJIT/Lua 5.2 that are allowed in Lua 5.1
+    if err:find('invalid escape sequence') then
+      local s = editor:GetLine(line-1)
+      local cleaned = s
+        :gsub('\\[abfnrtv\\"\']', '  ')
+        :gsub('(\\x[0-9a-fA-F][0-9a-fA-F])', function(s) return string.rep(' ', #s) end)
+        :gsub('(\\%d%d?%d?)', function(s) return string.rep(' ', #s) end)
+        :gsub('(\\z%s*)', function(s) return string.rep(' ', #s) end)
+      local invalid = cleaned:find("\\")
+      if invalid then
+        DisplayOutputLn(TR("Consider removing backslash from escape sequence '%s'.")
+          :format(s:sub(invalid,invalid+1)))
+      end
+    end
+    if line and params.jumponerror and line-1 ~= editor:GetCurrentLine() then
+      editor:GotoLine(line-1) end
   end
 
-  return line_num == -1, editorText -- return true if it compiled ok
+  return func ~= nil -- return true if it compiled ok
 end
 
 ------------------

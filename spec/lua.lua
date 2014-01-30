@@ -129,8 +129,8 @@ return {
         local tx = editor:GetLine(line) --= string
 
         -- check for assignments
-        local varname = "([%w_%.]+)"
-        local identifier = "([%w_%.:%s]+)"
+        local varname = "([%w_][%w_%.]*)"
+        local identifier = "([%w_][%w_%.:%s]*)"
 
         -- special hint
         local typ,var = tx:match("%s*%-%-=%s*"..varname.."%s+"..identifier)
@@ -160,11 +160,10 @@ return {
           end)
 
           -- filter out everything that is not needed
-          if typ
+          if typ and typ ~= 'string' -- special value for all strings
           and (not typ:match('^'..identifier..'$') -- not an identifier
-               or typ:match('^%d') -- not an identifier
+               or typ:match('^%d') -- or a number
                or editor.api.tip.keys[typ] -- or a keyword
-               or editor.api.tip.staticnames[typ] -- or a static name
               ) then
             typ = nil
           end

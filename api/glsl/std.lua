@@ -165,6 +165,7 @@ imageAtomicExchange = fn "performs atomic operation on individual texels returns
 imageAtomicCompSwap = fn "performs atomic operation on individual texels returns new value. - (uint)(imageN, intN coord, [int sample], uint data)",
 imageStore = fn "stores the texel at the coordinate. - ()(imageN, intN coord, [int sample], vecN data)",
 imageLoad = fn "loads the texel at the coordinate. - (vecN)(imageN, intN coord, [int sample])",
+imageSize = fn "returns the size of the image. - (ivecN)(imageN)",
 
 textureSize = fn "returns the size of the texture (no lod required: Rect, MS and Buffer). - (intN)(samplerN, [int lod])",
 textureQueryLod = fn "returns the lod values for a given coordinate. - (vec2)(samplerN, vecN coord)",
@@ -234,6 +235,7 @@ local keyw =
     gl_NumWorkGroups gl_WorkGroupSize gl_WorkGroupID gl_LocalInvocationID gl_GlobalInvocationID gl_LocalInvocationIndex
     local_size_x local_size_y local_size_z
     gl_BaseVertexARB gl_BaseInstanceARB gl_DrawIDARB
+    bindless_sampler bound_sampler bindless_image bound_image
 
     coherent volatile restrict readonly writeonly
     image1D image2D image3D image2DRect imageCube imageBuffer image1DArray image2DArray imageCubeArray image2DMS image2DMSArray
