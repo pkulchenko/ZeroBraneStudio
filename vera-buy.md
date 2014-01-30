@@ -5,13 +5,11 @@ title: Buy
 
 # Buy ZeroBrane Studio for Vera. Download and run in 60 seconds.
 
-<form action="#" id="PayForm" name="PayForm">
- <div id="pricing-table">&nbsp;</div>
- <div id="next-step">
-  <span class="gh-btn"><a class="button" id="pay-with-card-button" href="#">Pay with Card</a></span>
-  <span class="pay-message">By buying <em>ZeroBrane Studio for Vera</em> you are agreeing to this <a href="vera-license-agreement.html">License Agreement</a>.</span>
- </div>
-</form>
+<div><form action="#" id="PayForm" name="PayForm">
+<div id="pricing-table">&nbsp;</div><div id="next-step">
+<span class="gh-btn"><a class="button" id="pay-with-card-button" href="#">Pay with Card</a></span>
+<span class="pay-message">By buying <em>ZeroBrane Studio for Vera</em> you are agreeing to this <a href="vera-license-agreement.html">License Agreement</a>.</span>
+</div></form></div>
 
 All options provide **immediate access** to the product and include **personal service** from the ZeroBrane team.
 
