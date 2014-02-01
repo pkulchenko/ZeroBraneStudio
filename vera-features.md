@@ -6,9 +6,6 @@ title: Features
 **Cross-platform**
 Windows, Mac OSX, and Linux: your choice.
 
-**Multi-cursor editing**
-Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click`.
-
 **Auto-complete**
 With auto-complete for Lua and Luup functions, spend less time typing and more time thinking.
 
@@ -17,6 +14,9 @@ Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Ty
 
 **Multi-file editing**
 Keep as many files open as you need and navigate them using the file browser or the editor tabs.
+
+**Multi-cursor editing**
+Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
 **Instantly usable**
 Ever opened a new tool and didn't know where to start? ZeroBrane Studio for Vera includes scripts and instructions to get you started.
