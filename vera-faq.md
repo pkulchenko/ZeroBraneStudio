@@ -15,3 +15,13 @@ See [this post](http://forum.micasaverde.com/index.php/topic,3132.msg13469.html#
 ## Where is the configuration file stored?
 
 This is covered in the description of system [configuration](doc-configuration.html).
+
+## How can I check what version of the `vera` plugin I have?
+
+You can run `ide.packages.vera.version` in the Local console.
+
+## I had to reset the device and the debugging stopped working. What should I do?
+
+If you reset all the files on the device, you probably removed one of the components that is needed for the debugging to work.
+To reset the current configuration, which will restore the removed component, you can run the following command in the Local console:
+`ide.packages.vera:SetSettings({regkey = ide.packages.vera:GetSettings().regkey})`.
