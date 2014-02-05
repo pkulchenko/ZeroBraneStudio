@@ -89,9 +89,14 @@ The solution in this case is to **"fix" the escape sequence** and replace `\/` w
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
 See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
 
+## Why is the text blurry in the editor when running on retina display (OSX)?
+
+You can set `hidpi = true` in [configuration settings](doc-configuration.html).
+Using this setting negatively affects [indicators](doc-styles-color-schemes.html#indicators) that have alpha property, so it is not enabled by default.
+
 ## How to change background color in the editor?
 
-You can put `styles.text.bg = {240,240,240}` in `cfg/user.lua`.
+You can specify `styles.text.bg = {240,240,240}` in [configuration settings](doc-configuration.html).
 See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
 
