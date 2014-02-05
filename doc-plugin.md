@@ -119,6 +119,10 @@ This registering of the specification will have the same effect as putting this 
 
 ## Registering an API
 
+[Custom API definitions](doc-api-auto-complete.html) that are used to provide function tooltips and auto-complete functionality can be added by registering an API definition.
+This is done using `AddAPI(group, name, api)` and `RemoveAPI(group, name)` methods.
+For example, to add `sample.val1` and `sample.val2` methods, you may use the following:
+
 {% highlight lua %}
 local api = {
  sample = {
@@ -152,6 +156,8 @@ return {
   end,
 }
 {% endhighlight %}
+
+See the [custom API definitions](doc-api-auto-complete.html) section for details and examples on how to describe complex definitions.
 
 ## Registering an interpreter
 
@@ -195,7 +201,7 @@ return {
 
 A console alias allows adding commands to the local console in the IDE.
 This is done using `AddConsoleAlias(name, commands)` and `RemoveConsoleAlias(name)` methods.
-For example, to add `install` and `uninstall` commands to the console, you may to the following:
+For example, to add `install` and `uninstall` commands to the console, you may do the following:
 
 {% highlight lua %}
 local commands = {
