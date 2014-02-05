@@ -406,7 +406,6 @@ h2.archive-header {
     font-size: 30px;
     line-height: 40px;
     font-weight: normal;
-    font-family: Georgia;
     margin: 0 0 0 55px;
     padding: 0;
     border: none;
@@ -432,7 +431,6 @@ h2.archive-header {
 .page-asset .asset-body {
     margin-left: 55px;
     padding-top: 5px;
-    font-family: Georgia;
     font-size: 13px;
     margin-bottom: 10px;
 }
@@ -465,7 +463,6 @@ h2.archive-header {
 .asset .asset-more-link {
     margin-left: 55px;
     margin-bottom: 15px;
-    font-family: Georgia;
     text-align: center;
     font-size: 13px;
     font-weight: bold;
