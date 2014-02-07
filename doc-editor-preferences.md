@@ -26,7 +26,8 @@ The values shown are the default values.
 - `editor.showfncall = true`: mark function calls.
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
-- `editor.usewrap = true`: wrap long lines in the editor.
+- `editor.usewrap = true`: wrap long lines.
+- `editor.whitespace = false`: display whitespaces.
 
 ## Output and Console
 
