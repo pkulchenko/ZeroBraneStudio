@@ -323,6 +323,13 @@ return {
 
 ## Example: Adding a menu item and a toolbar button that run `make`
 
+This plugin demonstrates how to **add a menu item**, **add a toolbar button**
+linked to that menu item, **register an icon** (in xpm format) for that
+toolbar button, and **run an external command**.
+
+The plugin **requires ZeroBrane Studio v0.41+** as it uses an API call
+not available in earlier versions.
+
 {% highlight lua %}
 local G = ...
 local id = G.ID("maketoolbar.makemenu")
