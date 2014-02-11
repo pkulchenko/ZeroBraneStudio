@@ -65,6 +65,9 @@ return {
   ...
 {% endhighlight %}
 
+Make sure to use exactly the same name when you reference files with API definitions even on case-insensitive systems.
+If you name the file `api/lua/BaseLib.lua`, but reference it as `'baselib'`, the link won't work.
+
 ## Example
 
 {% highlight lua %}
