@@ -114,6 +114,15 @@ This is covered in the description of system [configuration](doc-configuration.h
 To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences.html#key_mapping) section.
 You may also review [xcode-keys](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/xcode-keys.lua) configuration file that can be used to modify keyboard shortcuts to match those in XCode.
 
+## Why am I getting a warning about "invalid UTF8 character" in the files I open in the editor?
+
+You probably have files created using one of Microsoft [Windows code pages](http://en.wikipedia.org/wiki/Windows_code_page#List); most likely 1252, 936, or 950.
+ZeroBrane Studio is using [UTF-8 encoding](http://en.wikipedia.org/wiki/UTF-8), which allows users to use any supported language, but the files need to use Unicode encodings.
+If you want to continue editing this file in the IDE, you have two choices:
+
+1. Ignore the warning and **change `[SYN]` characters** to whatever text you need *inside ZeroBrane Studio*.
+2. **Convert your files** from the encoding you are using to UTF-8 (65001) and then load them into the IDE.
+
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 
 You can start one instance as you normally do and then start the second instance using the following command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173`.
