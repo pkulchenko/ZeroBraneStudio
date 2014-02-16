@@ -55,18 +55,18 @@ These regular expressions do not accept Lua character classes that start with `%
 (0.39+) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
 For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherVariable\1`, `MyVariable1` will be replaced with `MyOtherVariable1`, `MyVariable2` with `MyOtherVariable2`, and so on.
 
-## Pretty printing in the Console.
+## Pretty printing in the Console window.
 
-All results shown in the Console are pretty printed as one line, with all complex results shown with all their elements.
+All results shown in the `Console` window are pretty printed as one line, with all complex results shown with all their elements.
 To print complex elements on multiple lines, you can prepend the expression with `=`, as in `={1,2,3,'a','b','c'}`.
 
-## Limit results showed while pretty printing in the Console.
+## Limit results showed while pretty printing in the Console window.
 
 To limit the number of levels shown during pretty printing, instead of `val`, use `return require('mobdebug').line(val, {maxlevel = 1})`, and instead of `=val`, use `return require('mobdebug').line(a, {indent = ' ', maxlevel = 1})`.
 
 ## Quick jump to the source of the error.
 
-To **jump to the position referred to in the error message** shown in the Output window, you can double click on the line showing the error message.
+To **jump to the position referred to in the error message** shown in the `Output` window, you can double click on the line showing the error message.
 This also works for messages in the stack trace as long as they include the file name.
 
 ## Run multiple instances of the IDE.
@@ -79,11 +79,23 @@ If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "si
 To run **multiple instances of the IDE to debug two applications**, you can start one instance as you normally do, and then start the second instance using this command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`.
 If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
 
-## Move windows without docking them
+## Merge and split windows and tabs.
+
+You can **resize** windows by dragging the splitters between them.
+You can also **dock**, **undock**, and **move** the windows by clicking and holding the mouse on the window caption area and dragging the window to a new location.
+To **dock** the window, release the mouse when one side of the main window changes its color to light blue.
+The new configuration will then be used until you reset or change it.
+
+## Move windows without docking them.
 
 `Ctrl-Drag` will move the window without trying to dock it.
 
-## Zooming all editor tabs
+## Show Output and Console windows side by side.
+
+The default configuration shows `Output` and `Console` windows as tabs in the same window.
+If you want to see them side by side, you can **drag one of the tabs to a different location** inside the same window and dock it there.
+
+## Zooming all editor tabs.
 
 (0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
 Using `Ctrl+Scroll` still zooms only the current editor tab.
