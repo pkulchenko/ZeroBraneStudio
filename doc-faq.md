@@ -57,8 +57,10 @@ To enable debugging in coroutines, including triggering of breakpoints, you may 
 (2) add `require('mobdebug').coro()` call to your script, which will enable debugging for all coroutines created using `coroutine.create` later in the script.
 - If you enable coroutine debugging using `require('mobdebug').coro()`, this will **not affect coroutines created using C API** or Lua code wrapped into `coroutine.wrap`.
 You can still debug those fragments after adding `require('mobdebug').on()` to the coroutine code. 
-- The path of the file known to the IDE may not be the same as the path known to the Lua engine.
+- The path of the file known to the IDE **may not be the same** as the path known to the Lua engine.
 For example, if you use an embedded engine, you may want to check if the path reported by the engine is normalized (doesn't include `../` references) by checking the result of `debug.getinfo(1,"S").source`.
+- The script you are debugging may **change the current folder** (for example, using `lfs` module) and load the script (using `dofile`) from the changed folder.
+To make breakpoints work in this case you may want to **use absolute path** with `dofile`.
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
