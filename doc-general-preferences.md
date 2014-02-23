@@ -31,12 +31,13 @@ This is mostly useful for remote debugging to specify how the output should be r
 - `debugger.runonstart = false`: execute script immediately after starting debugging.
 - `debugger.verbose = false`: enable verbose output.
 
-## Auto-complete
+## Auto-complete and tooltip
 
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
 when set to `false` will collect all words from all open editor tabs and offer them as part of the auto-complete list.
 - `acandtip.shorttip = true`: show short calltip when typing; shows long calltip when set to `false`.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
+- `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
 ## Key mapping
