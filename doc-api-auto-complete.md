@@ -75,14 +75,25 @@ return {
   -- I/O library
   io = {
     type = "lib",
-    description = "The I/O library provides two different styles for file manipulation. The first one uses implicit file descriptors; that is, there are operations to set a default input file and a default output file, and all input/output operations are over these default files. The second style uses explicit file descriptors.\n\nWhen using implicit file descriptors, all operations are supplied by table io. When using explicit file descriptors, the operation io.open returns a file descriptor and then all operations are supplied as methods of the file descriptor.\n\nThe table io also provides three predefined file descriptors with their usual meanings from C: io.stdin, io.stdout, and io.stderr. The I/O library never closes these files.\n\nUnless otherwise stated, all I/O functions return nil on failure (plus an error message as a second result and a system-dependent error code as a third result) and some value different from nil on success.",
+    description = "The I/O library provides two different styles for file manipulation.",
     childs = {
       stdin = { type = "value" },
       stdout = { type = "value" },
       stderr = { type = "value" },
       open = {
         type = "function",
-        description = "This function opens a file, in the mode specified in the string mode.\n\nIt returns a new file handle, or, in case of errors, nil plus an error message.\n\nThe mode string can be any of the following:\n\n* \"r\": read mode (the default);\n\n* \"w\": write mode;\n\n* \"a\": append mode;\n\n* \"r+\": update mode, all previous data is preserved;\n\n* \"w+\": update mode, all previous data is erased;\n\n* \"a+\": append update mode, previous data is preserved, writing is only allowed at the end of file.\n\nThe mode string can also have a 'b' at the end, which is needed in some systems to open the file in binary mode.",
+        description = [[This function opens a file, in the mode specified in the string mode.
+It returns a new file handle, or, in case of errors, nil plus an error message.
+The mode string can be any of the following:
+
+* "r": read mode (the default);
+* "w": write mode;
+* "a": append mode;
+* "r+": update mode, all previous data is preserved;
+* "w+": update mode, all previous data is erased;
+* "a+": append update mode, previous data is preserved, writing is only allowed at the end of file.
+
+The mode string can also have a 'b' at the end, which is needed in some systems to open the file in binary mode.]],
         args = "(filename: string [, mode: string])",
         returns = "(file|nil [, string])",
         valuetype = "f", -- indicates that io.open returns value of type `f`
@@ -96,7 +107,7 @@ return {
     childs = {
       close = {
         type = "method",
-        description = "Closes file.\n\nNote that files are automatically closed when their handles are garbage collected, but that takes an unpredictable amount of time to happen.\n\nWhen closing a file handle created with io.popen, file:close returns the same values returned by os.execute. RETURN SPECIAL CASE ADDED IN Lua 5.2.",
+        description = "Closes file.",
         args = "(file: file)",
         returns = "(boolean|nil [, string, number])",
       },
