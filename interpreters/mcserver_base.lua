@@ -44,8 +44,23 @@ function MakeMCServerInterpreter(a_InterpreterPostfix, a_ExePostfix)
 			-- Add a "nooutbuf" cmdline param to the server, causing it to call setvbuf to disable output buffering:
 			local Cmd = ExeName:GetFullPath() .. " nooutbuf"
 			
+			-- Force ZBS not to hide MCS window, save and restore previous state:
+			local SavedUnhideConsoleWindow = ide.config.unhidewindow.ConsoleWindowClass
+			ide.config.unhidewindow.ConsoleWindowClass = 1  -- show if hidden
+			local RestoreUnhide = function()
+				ide.config.unhidewindow.ConsoleWindowClass = SavedUnhideConsoleWindow
+			end
+			
 			-- Run the server:
-			local pid = CommandLineRun(Cmd, ExePath:GetFullPath(), true, true)
+			local pid = CommandLineRun(
+				Cmd,                    -- Command to run
+				ExePath:GetFullPath(),  -- Working directory for the debuggee
+				false,                  -- Redirect debuggee output to Output pane? (NOTE: This force-hides the MCS window, not desirable!)
+				true,                   -- Add a no-hide flag to WX
+				nil,                    -- StringCallback, whatever that is
+				nil,                    -- UID to identify this running program; nil to auto-assign
+				RestoreUnhide           -- Callback to call once the debuggee terminates
+			)
 		end,
 		
 		hasdebugger = true,
