@@ -41,6 +41,11 @@ When you select all instance of a variable, you can **navigate them forward and 
 (0.39+) To **search commands in the console history**, you can start typing the command and then use `TAB`, which will auto-complete the last matching command.
 You can see other matches if you continue pressing `TAB`.
 
+## Auto-reload externally modified files.
+
+(0.41+) To **auto-reload externally modified files** set `editor.autoreload` configuration setting to true.
+If no conflict detected, the file content is going to be reloaded and its current markers (breakpoints and others) are going to be restored if possible.
+
 ## Quick jump to the function call from the Stack view.
 
 To **jump to the position in the source code referred to in the Stack window**, double click on a function name in the stack frame.
