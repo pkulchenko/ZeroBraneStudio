@@ -107,6 +107,8 @@ To modify colors and appearance of IDE elements, check [documentation on styles 
 "print" something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
+If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
+
 ## Where is the configuration file stored?
 
 This is covered in the description of system [configuration](doc-configuration.html).
