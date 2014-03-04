@@ -1,3 +1,7 @@
+-- Implements the integration with MCServer
+-- MCServer is a custom C++ minecraft server which has plugins written in Lua
+-- The MCServer executable can have a postfix depending on the compilation mode (debug / release), so there are actually two interpreters implemented in this package
+
 local function MakeMCServerInterpreter(a_InterpreterPostfix, a_ExePostfix)
     assert(type(a_InterpreterPostfix) == "string")
     assert(type(a_ExePostfix) == "string")
