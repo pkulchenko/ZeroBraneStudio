@@ -36,6 +36,14 @@ function M.warnings_from_string(src, file)
   return M.show_warnings(ast)
 end
 
+function AnalyzeFile(file)
+  local warn, err, line, pos = M.warnings_from_string(FileRead(file), file)
+  if err then
+    err = err:gsub("line %d+, char %d+", "syntax error")
+  end
+  return warn, err, line, pos
+end
+
 function M.show_warnings(top_ast)
   local warnings = {}
   local function warn(msg, linenum, path)
@@ -155,11 +163,9 @@ local frame = ide.frame
 local menu = frame.menuBar:GetMenu(frame.menuBar:FindMenu(TR("&Project")))
 
 -- insert after "Compile" item
-for item = 0, menu:GetMenuItemCount()-1 do
-   if menu:FindItemByPosition(item):GetId() == ID_COMPILE then
-     menu:Insert(item+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
-     break
-   end
+local _, compilepos = ide:FindMenuItem(menu, ID_COMPILE)
+if compilepos then
+  menu:Insert(compilepos+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
 end
 
 local debugger = ide.debugger
