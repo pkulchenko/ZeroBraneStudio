@@ -327,7 +327,7 @@ This plugin demonstrates how to **add a menu item**, **add a toolbar button**
 linked to that menu item, **register an icon** (in xpm format) for that
 toolbar button, and **run an external command**.
 
-The plugin **requires ZeroBrane Studio v0.41+** as it uses an API call
+The plugin **requires ZeroBrane Studio v0.50+** as it uses an API call
 not available in earlier versions.
 
 {% highlight lua %}

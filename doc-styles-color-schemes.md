@@ -29,7 +29,7 @@ The following configuration will set text background to be light red: `styles.te
 See [style.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/style.lua#L26-L88) for the complete list of elements
 and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua) for an example of how these elements can be used.
 
-(0.41+) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
+(0.50+) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
 
 ## Indicators
 

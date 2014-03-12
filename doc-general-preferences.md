@@ -54,7 +54,7 @@ and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenk
 
 ## Command line parameters
 
-(0.41+) Command line parameters can be specified in two ways (for those interpreters that support them):
+(0.50+) Command line parameters can be specified in two ways (for those interpreters that support them):
 (1) by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
 (2) by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
 
