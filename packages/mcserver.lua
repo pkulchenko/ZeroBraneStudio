@@ -40,8 +40,24 @@ local function MakeMCServerInterpreter(a_InterpreterPostfix, a_ExePostfix)
             -- Force ZBS not to hide MCS window, save and restore previous state:
             local SavedUnhideConsoleWindow = ide.config.unhidewindow.ConsoleWindowClass
             ide.config.unhidewindow.ConsoleWindowClass = 1  -- show if hidden
-            local RestoreUnhide = function()
+                        
+            -- Create the @EnableMobDebug.lua file so that the MCS plugin starts the debugging session:
+            local EnablerPath = wx.wxFileName(wfilename)
+            EnablerPath:SetName("@EnableMobDebug")
+            EnablerPath:SetExt("lua")
+            local f = io.open(EnablerPath:GetFullPath(), "w")
+            if (f ~= nil) then
+                f:write([[require("mobdebug").start()]])
+                f:close()
+            end
+            
+            -- Create the closure to call upon debugging finish:
+            local OnFinished = function()
+                -- Restore the Unhide status:
                 ide.config.unhidewindow.ConsoleWindowClass = SavedUnhideConsoleWindow
+              
+                -- Remove the @EnableMobDebug.lua file:
+                os.remove(EnablerPath:GetFullPath())
             end
 
             -- Run the server:
@@ -52,7 +68,7 @@ local function MakeMCServerInterpreter(a_InterpreterPostfix, a_ExePostfix)
                 true,                   -- Add a no-hide flag to WX
                 nil,                    -- StringCallback, whatever that is
                 nil,                    -- UID to identify this running program; nil to auto-assign
-                RestoreUnhide           -- Callback to call once the debuggee terminates
+                OnFinished              -- Callback to call once the debuggee terminates
             )
         end,
 
