@@ -8,7 +8,7 @@ The editor used in ZeroBrane Studio is based on the [Scintilla editing component
 **Text editing** commands with no menu equivalents:
 
 - `Tab`: Indent line or current selection
-- `Shift-Tab`: Deindent line of current selection
+- `Shift-Tab`: Unindent line or current selection
 - `Ctrl-L/Ctrl-Y`: Cut current line
 - `Ctrl-D`: Duplicate selection or current line
 - `Ctrl-Shift-T`: Copy current line
