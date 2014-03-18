@@ -14,6 +14,10 @@ local viewMenu = wx.wxMenu {
   { },
   { ID_VIEWDEFAULTLAYOUT, TR("&Default Layout")..KSC(ID_VIEWDEFAULTLAYOUT), TR("Reset to default layout") },
   { ID_VIEWFULLSCREEN, TR("Full &Screen")..KSC(ID_VIEWFULLSCREEN), TR("Switch to or from full screen mode") },
+  {},
+  { ID_VIEWZOOMIN, TR("Zoom In")..KSC(ID_VIEWZOOMIN), TR("Zoom In")},
+  { ID_VIEWZOOMOUT, TR("Zoom Out")..KSC(ID_VIEWZOOMOUT), TR("Zoom Out")},
+  { ID_VIEWNORMALSIZE, TR("Normal Size")..KSC(ID_VIEWNORMALSIZE), TR("Restore the default zoom level") },
 }
 menuBar:Append(viewMenu, TR("&View"))
 
@@ -44,6 +48,23 @@ end
 frame:Connect(ID_VIEWDEFAULTLAYOUT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     uimgr:LoadPerspective(uimgr.defaultPerspective, true)
+  end)
+
+frame:Connect(ID_VIEWZOOMIN, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    local editor = GetEditor()
+    editor:SetZoom(editor:GetZoom() + 1)
+  end)
+
+frame:Connect(ID_VIEWZOOMOUT, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    local editor = GetEditor()
+    editor:SetZoom(editor:GetZoom() - 1)
+  end)
+
+frame:Connect(ID_VIEWNORMALSIZE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    GetEditor():SetZoom(0)
   end)
   
 frame:Connect(ID_VIEWMINIMIZE, wx.wxEVT_COMMAND_MENU_SELECTED,
