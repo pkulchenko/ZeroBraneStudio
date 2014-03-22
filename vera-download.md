@@ -37,6 +37,11 @@ with links to debugging overview and other useful resources.
 - Added xml tags for `D_*.xml` and `S_*.xml` files.
 - Added documentation links to the `Help` menu.
 
+## Upgrade warning for Mac OSX users.
+
+If you are using Mac OSX version, please make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
+As an alternative, you can **move those system settings to user settings** (`Edit | Preferences | Settings: User`) as those are not affected by the upgrade process.
+
 ## What do I do if I have questions or want to receive product updates?
 
 Several ways to stay in touch are listed [here](community.html). If you have any problems, please [contact us](email:support@zerobrane.com) and we will get it sorted out.

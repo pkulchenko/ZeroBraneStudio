@@ -19,6 +19,7 @@ title: Download
 <div class="separator">&nbsp;</div>
 
 ## What are the most significant changes in this version?
+
 - Fixed opening files and launching on OSX 10.6.x and 10.9.1+.
 - **Improved CPU utilization** when idle on OSX.
 - Added **handling of command-line parameters**.
@@ -29,6 +30,11 @@ title: Download
 - Updated French, German, Italian, and Russian translations.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
+
+## Upgrade warning for Mac OSX users.
+
+If you are using Mac OSX version, please make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
+As an alternative, you can **move those system settings to user settings** (`Edit | Preferences | Settings: User`) as those are not affected by the upgrade process.
 
 ## What do I do if I have questions or want to receive product updates?
 
