@@ -31,7 +31,7 @@ with links to debugging overview and other useful resources.
 
 ## What are the most significant changes in this version?
 
-- Added handling of secured devices.
+- Added handling of Vera units protected by HTTP basic authentication.
 - Added handling of unit reset that may remove the debugger.
 - Added check for detected local address and ability to set it manually if mis-detected.
 - Added xml tags for `D_*.xml` and `S_*.xml` files.
