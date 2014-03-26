@@ -12,7 +12,7 @@ The values shown are the default values.
 
 - `activateoutput = true`: activate Output or Console window on new content added.
 - `allowinteractivescript = true`: allow interaction in the output window.
-- `autoanalizer = true`: enable autoanalizer that adds scope aware indicators to variables.
+- `autoanalyzer = true`: enable autoanalyzer that adds scope aware indicators to variables (up to v0.50 it was spelled as `autoanalizer`).
 - `autorecoverinactivity = 10`: trigger saving auto-recovery after N seconds of inactivity.
 - `filehistorylength = 20`: set history length for files.
 - `language = "en"`: set the language to use in the IDE; this requires a language file in cfg/i18n directory.
