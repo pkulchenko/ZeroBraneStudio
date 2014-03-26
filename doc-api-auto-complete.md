@@ -46,11 +46,16 @@ Possible type values are:
 - `class` and `lib`: to describe groups of functions, methods, values, and other classes and libraries.
 - `keyword`: to describe language keywords, like `do` and `end`.
 - `value`: to describe specific values;
+- `inherits`: to specify inheritance chain for the current class;
 - `method`: to describe method calls; methods are described similar to functions and also accept arguments and return values and value types. The only difference is that methods are only suggested after `:` in auto-complete, while functions are suggested after `.` and `:`.
 
-When `valuetype` is specified for a `method` or a `function`, it is used for autocomplete type guessing.
+When `valuetype` is specified for a `method` or a `function`, it is used for auto-complete type guessing.
 If the value is used in an expression, then the variable this value is assigned to is treated as having the value type;
-e.g. if `somefunc` has `valuetype` of `math`, then after `test = somefunc()`, typing `test.` will be treated as `math.` in autcomplete logic.
+e.g. if `somefunc` has `valuetype` of `math`, then after `test = somefunc()`, typing `test.` will be treated as `math.` in auto-complete logic.
+
+When `inherits` is specified for a class, it is used by auto-complete logic to suggest values, functions, and methods from the base class(es) in addition to the methods from the current class.
+You may specify several classes (`inherits = 'a b'`) and complex class names (`inherits = 'b2.Shape'`).
+The entire inheritance chain will be looked at during the analysis.
 
 ## How to reference API definitions
 
