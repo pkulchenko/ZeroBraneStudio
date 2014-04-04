@@ -109,6 +109,10 @@ You will see a prompt in the Output window where you can enter your input.
 
 If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
 
+## How to pass command line arguments?
+
+This is described in the [command line parameters](doc-general-preferences.html#command_line_parameters) section.
+
 ## Where is the configuration file stored?
 
 This is covered in the description of system [configuration](doc-configuration.html).
