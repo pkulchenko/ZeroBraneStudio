@@ -5,7 +5,7 @@ title: Support
 
 # Support ZeroBrane Studio. Pay what you want. Download and run in 30 seconds.
 
-<img style="float: right; padding: 10px 40px 10px 0px" src="images/lua-ide-benefits-screenshot.png" />
+<div><img style="float: right; padding: 10px 40px 10px 0px" src="images/lua-ide-benefits-screenshot.png" /></div>
 <form action="#" id="PayForm" name="PayForm">
  <table class="payment" id="payment-options">
   <tr><td class="amount">  $5</td><td class="description"><input name="payment" id="amount5" value="5" type="radio" /><label for="amount5">This is better than chocolate Mocha</label></td></tr>
