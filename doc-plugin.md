@@ -35,7 +35,8 @@ This is useful when some environmental conditions are not satisfied (for example
 
 ## Plugin installation
 
-A plugin can be placed in `packages/` or `HOME/.zbstudio/packages` folder.
+A plugin can be placed in `ZBS/packages/` or `HOME/.zbstudio/packages` folder
+(where `ZBS` is the path to ZeroBrane Studio location and `HOME` is the path specified by the `HOME` environment variable).
 The first location allows you to have per-instance plugins, while the second allows to have per-user plugins.
 The second option may also be preferrable for Mac OS X users as the `packages/` folder may be overwritten during an application upgrade.
 
