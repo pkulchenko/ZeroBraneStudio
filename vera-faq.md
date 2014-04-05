@@ -16,12 +16,9 @@ See [this post](http://forum.micasaverde.com/index.php/topic,3132.msg13469.html#
 
 You can run `ide.packages.vera.version` in the Local console.
 
-## Debugging is not working because of an incorrect IP address. How do I fix that?
+## Debugging doesn't start because of an incorrect IP address. How do I fix that?
 
-When you start debugging, the IDE may display the message with the server address: `Using 'x.x.x.x' as the debugger server address.` (You'll see the message if you are using `vera` plugin v0.12+).
-
-If the address shown is not correct, or can't be reached from the Vera device, the debugging is not going to work.
-To **set the correct address**, you can specify `debugger.hostname = 'correct.IPaddress.or.hostname'` in the [configuration](doc-configuration.html) file and restart the IDE.
+Please check the [debugging troubleshooting section](vera-debugging.html#troubleshooting) for a possible solution.
 
 ## I had to reset the device and the debugging stopped working. What should I do?
 

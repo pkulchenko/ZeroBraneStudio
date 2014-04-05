@@ -70,6 +70,19 @@ instead of `table: address`.
 
 ## Troubleshooting
 
+* **Debugging doesn't start becase the IDE address is detected incorrectly.**
+When you start debugging, the IDE may display the message with the server address: `Using 'x.x.x.x' as the debugger server address.` (You'll see the message if you are using `vera` plugin v0.12+).
+If the address shown is not correct, or can't be reached from the Vera device, the debugging is not going to work.
+To **set the correct address**, you can specify `debugger.hostname = 'correct.IPaddress.or.hostname'` in the [configuration](doc-configuration.html) file and restart the IDE.
+
+* **Debugging doesn't start because of a conflict with existing Lua installation (OSX).**
+In some rare cases the debugging doesn't start as the system fails to load a dynamic library that has incorrect architecture.
+You may see a message `dyld: Library not loaded: liblua.dylib`
+or `Reason: no suitable image found. Did find: /usr/local/lib/liblua.dylib: mach-o, but wrong architecture`
+in the Output window.
+You may want to **remove the Lua installation** to resolve the conflict.
+
+* **Debugging aborted prematurely.**
 It has been reported that in some rare cases a debugging session may be
 aborted prematurely. If this happens, try to reduce the amount of logging
 you do (using `luup.log` command).
