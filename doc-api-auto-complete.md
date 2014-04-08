@@ -40,14 +40,20 @@ API definitions are stored in the form of Lua files that return a table of the f
 
 This structure defines a value `baz`, a library `foo`, and a function in that library `foo.bar()` that returns a value with type `mytype`.
 
-Possible type values are:
+Recognized **element values** are:
 
-- `function`: to describe a function that accepts parameters (`args`) and returns values (`returns`), possibly of a specific type (`valuetype`).
-- `class` and `lib`: to describe groups of functions, methods, values, and other classes and libraries.
-- `keyword`: to describe language keywords, like `do` and `end`.
-- `value`: to describe specific values;
-- `inherits`: to specify inheritance chain for the current class;
-- `method`: to describe method calls; methods are described similar to functions and also accept arguments and return values and value types. The only difference is that methods are only suggested after `:` in auto-complete, while functions are suggested after `.` and `:`.
+- `type`: one of the following values:
+    * `keyword`: to describe language keywords, like `do` and `end`;
+    * `class` and `lib`: to describe groups of functions, methods, values, and other classes and libraries;
+    * `value`: to describe specific values (for example, constants);
+    * `function`: to describe a function that accepts parameters (`args`) and returns values (`returns`), possibly of a specific type (`valuetype`);
+    * `method`: to describe method calls; methods are described similar to functions and also accept arguments and return values and value types. The only difference is that methods are only suggested after `:` in auto-complete, while functions are suggested after `.` and `:`.
+- `description`: a text that describes the item of the specified type. The description may include new lines that are included in the displayed text. Long descriptions will be abbreviated to make sure they fit on the screen.
+- `args`: an (optional) string with arguments; for example, `"(file: file)"`.
+- `returns`: an (optional) string with return values; for example, `"(boolean|nil [, string, number])"`.
+- `childs`: an (optional) table with sub-elements of the current element; for example, methods in a class or functions/values in a library.
+- `valuetype`: an (optional) string with a type value that acts as a hint for type processing in auto-complete. For example, using `valuetype = "f"` indicates that the current element returns value of type `f`. The value may be a complex name; for example, `foo.bar`.
+- `inherits`: an (optional) string to specify inheritance chain for the current class. May include multiple classes separated by spaces.
 
 When `valuetype` is specified for a `method` or a `function`, it is used for auto-complete type guessing.
 If the value is used in an expression, then the variable this value is assigned to is treated as having the value type;
