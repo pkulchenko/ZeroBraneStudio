@@ -21,7 +21,7 @@ The values shown are the default values.
 - `editor.fold = true`: enable folding (0.39+).
 - `editor.foldcompact = true`: set compact fold that includes empty lines after a block.
 - `editor.fontname = "Courier New"`: set font name.
-- `editor.fontsize = 10`: set font size.
+- `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = nil`: save modified files before executing Run/Debug commands (0.39+).
 - `editor.smartindent = true`: use smart indentation.
@@ -34,10 +34,10 @@ The values shown are the default values.
 ## Output and Console
 
 - `outputshell.fontname = "Courier New"`: set font name.
-- `outputshell.fontsize = 10`: set font size.
+- `outputshell.fontsize = 10`: set font size (the default value is `11` on OSX).
 - `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
 
 ## Project/Filetree
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
-- `filetree.fontsize = 10`: set font size.
+- `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
