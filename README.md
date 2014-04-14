@@ -12,17 +12,20 @@ For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging.html),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging.html),
 and [other Lua engines](http://studio.zerobrane.com/documentation.html#debugging).
-* Live coding with Lua ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)),
-Löve 2D ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)),
-Gideros ([demo](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)),
-Moai ([demo](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio)),
-and Corona SDK ([demo](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)).
-* Support for plugin-like components:
-  - specs (`spec/`): file syntax, lexer, and keywords;
-  - apis (`api/`): for code completion and tooltips;
+* [Live coding](http://studio.zerobrane.com/documentation.html#live_coding)
+with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
+[Löve 2D](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
+[Gideros](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide),
+[Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
+[Corona SDK](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
+GSL-shell, and other engines.
+* Several ways to extend the current functionality:
+  - specs (`spec/`): specifications for file syntax, lexer, and keywords;
+  - apis (`api/`): descriptions for [code completion and tooltips](http://studio.zerobrane.com/doc-api-auto-complete.html);
   - interpreters (`interpreters/`): components for setting debugging and run-time project environment;
-  - config (`cfg/`): contains style, color themes, and other settings;
-  - packages (`packages/`): plugins that provide additional functionality;
+  - packages (`packages/`): [plugins](http://studio.zerobrane.com/doc-plugin.html) that provide additional functionality;
+  - config (`cfg/`): settings for styles, color themes, and other preferences;
+  - translations (`cfg/i18n/`): [translations](http://studio.zerobrane.com/doc-translation.html) of the menus and messages to other languages;
   - tools (`tools/`): additional tools.
 
 ## Installation

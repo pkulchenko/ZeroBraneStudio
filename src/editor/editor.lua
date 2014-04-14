@@ -2,8 +2,6 @@
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
-local wxkeywords = nil -- a string of the keywords for scintilla of wxLua's wx.XXX items
-
 local editorID = 100 -- window id to create editor pages with, incremented for new editors
 
 local openDocuments = ide.openDocuments
@@ -14,8 +12,24 @@ local edcfg = ide.config.editor
 local styles = ide.config.styles
 local unpack = table.unpack or unpack
 
-local DEFAULT_STYLE = 32
 local margin = { LINENUMBER = 0, MARKER = 1, FOLD = 2 }
+local linenummask = "99999"
+local foldtypes = {
+  [0] = { wxstc.wxSTC_MARKNUM_FOLDEROPEN, wxstc.wxSTC_MARKNUM_FOLDER,
+    wxstc.wxSTC_MARKNUM_FOLDERSUB, wxstc.wxSTC_MARKNUM_FOLDERTAIL, wxstc.wxSTC_MARKNUM_FOLDEREND,
+    wxstc.wxSTC_MARKNUM_FOLDEROPENMID, wxstc.wxSTC_MARKNUM_FOLDERMIDTAIL,
+  },
+  box = { wxstc.wxSTC_MARK_BOXMINUS, wxstc.wxSTC_MARK_BOXPLUS,
+    wxstc.wxSTC_MARK_VLINE, wxstc.wxSTC_MARK_LCORNER, wxstc.wxSTC_MARK_BOXPLUSCONNECTED,
+    wxstc.wxSTC_MARK_BOXMINUSCONNECTED, wxstc.wxSTC_MARK_TCORNER,
+  },
+  circle = { wxstc.wxSTC_MARK_CIRCLEMINUS, wxstc.wxSTC_MARK_CIRCLEPLUS,
+    wxstc.wxSTC_MARK_VLINE, wxstc.wxSTC_MARK_LCORNERCURVE, wxstc.wxSTC_MARK_CIRCLEPLUSCONNECTED,
+    wxstc.wxSTC_MARK_CIRCLEMINUSCONNECTED, wxstc.wxSTC_MARK_TCORNERCURVE,
+  },
+  plus = { wxstc.wxSTC_MARK_MINUS, wxstc.wxSTC_MARK_PLUS },
+  arrow = { wxstc.wxSTC_MARK_ARROWDOWN, wxstc.wxSTC_MARK_ARROW },
+}
 
 -- ----------------------------------------------------------------------------
 -- Update the statusbar text of the frame using the given editor.
@@ -30,15 +44,21 @@ local function updateStatusText(editor)
     local pos = editor:GetCurrentPos()
     local line = editor:LineFromPosition(pos)
     local col = 1 + pos - editor:PositionFromLine(line)
+    local selected = #editor:GetSelectedText()
+    local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
 
     texts = {
       iff(editor:GetOvertype(), TR("OVR"), TR("INS")),
       iff(editor:GetReadOnly(), TR("R/O"), TR("R/W")),
-      TR("Ln: %d"):format(line + 1).." "..TR("Col: %d"):format(col) }
+      table.concat({
+        TR("Ln: %d"):format(line + 1),
+        TR("Col: %d"):format(col),
+        selected > 0 and TR("Sel: %d/%d"):format(selected, selections) or "",
+      }, ' ')}
   end
 
   if ide.frame then
-    for n = 1, 3 do
+    for n in ipairs(texts) do
       if (texts[n] ~= statusTextTable[n]) then
         statusBar:SetStatusText(texts[n], n+1)
         statusTextTable[n] = texts[n]
@@ -119,7 +139,7 @@ local function isFileAlteredOnDisk(editor)
             GetIDEString("editormessage"),
             wx.wxYES_NO + wx.wxCENTRE, ide.frame)
 
-        if ret ~= wx.wxYES or LoadFile(filePath, editor, true) then
+        if ret ~= wx.wxYES or ReLoadFile(filePath, editor, true) then
           openDocuments[id].modTime = GetFileModTime(filePath)
         end
       end
@@ -308,6 +328,38 @@ local function getValAtPosition(editor, pos)
   return var, funccall
 end
 
+local function callTipFitAndShow(editor, pos, tip)
+  local point = editor:PointFromPosition(pos)
+  local height = editor:TextHeight(pos)
+  local maxlines = math.max(1, math.floor(
+    math.max(editor:GetSize():GetHeight()-point:GetY()-height, point:GetY())/height-1
+  ))
+  -- cut the tip to not exceed the number of maxlines.
+  -- move the position to the left if needed to fit.
+  -- find the longest line in terms of width in pixels.
+  local maxwidth = 0
+  local lines = {}
+  for line in tip:gmatch("[^\n]*\n?") do
+    local width = editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, line)
+    if width > maxwidth then maxwidth = width end
+    table.insert(lines, line)
+    if #lines >= maxlines then
+      lines[#lines] = lines[#lines]:gsub("%s*\n$","")..'...'
+      break
+    end
+  end
+  tip = table.concat(lines, '')
+
+  local startpos = editor:PositionFromLine(editor:LineFromPosition(pos))
+  local afterwidth = editor:GetSize():GetWidth()-point:GetX()
+  if maxwidth > afterwidth then
+    local charwidth = editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, 'A')
+    pos = math.max(startpos, pos - math.floor((maxwidth - afterwidth) / charwidth))
+  end
+
+  editor:CallTipShow(pos, tip)
+end
+
 function EditorCallTip(editor, pos, x, y)
   -- don't show anything if the calltip/auto-complete is active;
   -- this may happen after typing function name, while the mouse is over
@@ -332,7 +384,8 @@ function EditorCallTip(editor, pos, x, y)
           local mpos = wx.wxGetMousePosition()
           if mpos.x ~= x or mpos.y ~= y then return end
         end
-        editor:CallTipShow(pos, val) end)
+        callTipFitAndShow(editor, pos, val)
+      end)
     end
   elseif tip then
     -- only shorten if shown on mouse-over. Use shortcut to get full info.
@@ -343,7 +396,7 @@ function EditorCallTip(editor, pos, x, y)
     if x and y and #tip > shortento then
       tip = tip:sub(1, shortento-#suffix):gsub("%W*%w*$","")..suffix
     end
-    editor:CallTipShow(pos, tip)
+    callTipFitAndShow(editor, pos, tip)
   end
 end
 
@@ -414,7 +467,7 @@ function IndicateIfNeeded()
   local editor = GetEditor()
   -- do the current one first
   if delayed[editor] then return IndicateAll(editor) end
-  for editor in pairs(delayed) do return IndicateAll(editor) end
+  for ed in pairs(delayed) do return IndicateAll(ed) end
 end
 
 -- find all instances of a symbol at pos
@@ -458,7 +511,7 @@ function IndicateAll(editor, lines, linee)
 
   -- this function can be called for an editor tab that is already closed
   -- when there are still some pending events for it, so handle it.
-  if not pcall(function() return editor:GetId() end) then return end
+  if not pcall(function() editor:GetId() end) then return end
 
   -- if markvars is not set in the spec, check for functions-only indicators
   if not (editor.spec and editor.spec.markvars) then
@@ -508,9 +561,12 @@ function IndicateAll(editor, lines, linee)
     while vars do
       for name, var in pairs(vars) do
         -- remove all variables that are created later than the current pos
-        while type(var) == 'table' and var.fpos and (var.fpos > pos) do
-          var = var.masked -- restored a masked var
-          vars[name] = var
+        -- skip all non-variable elements from the vars table
+        if type(name) == 'string' then
+          while type(var) == 'table' and var.fpos and (var.fpos > pos) do
+            var = var.masked -- restored a masked var
+            vars[name] = var
+          end
         end
       end
       vars = getmetatable(vars) and getmetatable(vars).__index
@@ -575,7 +631,7 @@ function IndicateAll(editor, lines, linee)
   end
 
   -- clear indicators till the end of processed fragment
-  local pos = delayed[editor] and delayed[editor][1] or editor:GetLength()+1
+  pos = delayed[editor] and delayed[editor][1] or editor:GetLength()+1
 
   -- don't clear "masked" indicators as those can be set out of order (so
   -- last updated fragment is not always the last in terms of its position);
@@ -585,7 +641,7 @@ function IndicateAll(editor, lines, linee)
   return delayed[editor] ~= nil -- request more events if still need to work
 end
 
-if ide.wxver < "2.9.5" or not ide.config.autoanalizer then
+if ide.wxver < "2.9.5" or not ide.config.autoanalyzer then
   IndicateAll = indicateFunctionsOnly end
 
 -- ----------------------------------------------------------------------------
@@ -593,7 +649,7 @@ if ide.wxver < "2.9.5" or not ide.config.autoanalizer then
 function CreateEditor()
   local editor = wxstc.wxStyledTextCtrl(notebook, editorID,
     wx.wxDefaultPosition, wx.wxSize(0, 0),
-    wx.wxBORDER_STATIC)
+    wx.wxBORDER_NONE)
 
   editorID = editorID + 1 -- increment so they're always unique
 
@@ -611,7 +667,7 @@ function CreateEditor()
   end
 
   -- populate editor keymap with configured combinations
-  for _, map in ipairs(ide.config.editor.keymap) do
+  for _, map in ipairs(edcfg.keymap) do
     local key, mod, cmd, os = unpack(map)
     if not os or os == ide.osname then
       if cmd then
@@ -628,46 +684,53 @@ function CreateEditor()
   editor:SetFont(ide.font.eNormal)
   editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.eNormal)
 
-  editor:SetTabWidth(ide.config.editor.tabwidth or 2)
-  editor:SetIndent(ide.config.editor.tabwidth or 2)
-  editor:SetUseTabs(ide.config.editor.usetabs and true or false)
+  editor:SetTabWidth(tonumber(edcfg.tabwidth) or 2)
+  editor:SetIndent(tonumber(edcfg.tabwidth) or 2)
+  editor:SetUseTabs(edcfg.usetabs and true or false)
   editor:SetIndentationGuides(true)
-  editor:SetViewWhiteSpace(ide.config.editor.whitespace and true or false)
+  editor:SetViewWhiteSpace(edcfg.whitespace and true or false)
 
-  if (ide.config.editor.usewrap) then
+  if (edcfg.usewrap) then
     editor:SetWrapMode(wxstc.wxSTC_WRAP_WORD)
     editor:SetWrapStartIndent(0)
-    editor:SetWrapVisualFlagsLocation(wxstc.wxSTC_WRAPVISUALFLAGLOC_END_BY_TEXT)
+    if ide.wxver >= "2.9.5" then
+      editor:SetWrapVisualFlags(wxstc.wxSTC_WRAPVISUALFLAG_MARGIN)
+    end
   end
 
-  if (ide.config.editor.defaulteol == wxstc.wxSTC_EOL_CRLF
-     or ide.config.editor.defaulteol == wxstc.wxSTC_EOL_LF) then
-    editor:SetEOLMode(ide.config.editor.defaulteol)
+  if edcfg.defaulteol == wxstc.wxSTC_EOL_CRLF
+  or edcfg.defaulteol == wxstc.wxSTC_EOL_LF then
+    editor:SetEOLMode(edcfg.defaulteol)
   -- else: keep wxStyledTextCtrl default behavior (CRLF on Windows, LF on Unix)
   end
 
-  editor:SetCaretLineVisible(ide.config.editor.caretline and 1 or 0)
+  editor:SetCaretLineVisible(edcfg.caretline and true or false)
 
   editor:SetVisiblePolicy(wxstc.wxSTC_VISIBLE_STRICT, 3)
 
-  editor:SetMarginWidth(margin.LINENUMBER, editor:TextWidth(DEFAULT_STYLE, "99999_"))
+  editor:SetMarginWidth(margin.LINENUMBER,
+    editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, linenummask))
 
-  editor:SetMarginWidth(margin.MARKER, 16)
+  editor:SetMarginWidth(margin.MARKER, 18)
   editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
+  editor:SetMarginMask(margin.MARKER, bit.bnot(wxstc.wxSTC_MASK_FOLDERS))
   editor:SetMarginSensitive(margin.MARKER, true)
 
   editor:MarkerDefine(StylesGetMarker("currentline"))
   editor:MarkerDefine(StylesGetMarker("breakpoint"))
 
-  if ide.config.editor.fold then
-    editor:SetMarginWidth(margin.FOLD, 16)
+  if edcfg.fold then
+    editor:SetMarginWidth(margin.FOLD, 18)
     editor:SetMarginType(margin.FOLD, wxstc.wxSTC_MARGIN_SYMBOL)
     editor:SetMarginMask(margin.FOLD, wxstc.wxSTC_MASK_FOLDERS)
     editor:SetMarginSensitive(margin.FOLD, true)
   end
 
-  editor:SetFoldFlags(wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED +
-    wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
+  editor:SetFoldFlags(tonumber(edcfg.foldflags) or wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
+
+  if ide.wxver >= "2.9.5" then
+    editor:SetExtraAscent(tonumber(edcfg.extraascent) or 0)
+  end
 
   -- allow multiple selection and multi-cursor editing if supported
   if ide.wxver >= "2.9.5" then
@@ -678,18 +741,16 @@ function CreateEditor()
 
   do
     local fg, bg = wx.wxWHITE, wx.wxColour(128, 128, 128)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDEROPEN, wxstc.wxSTC_MARK_BOXMINUS, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDER, wxstc.wxSTC_MARK_BOXPLUS, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDERSUB, wxstc.wxSTC_MARK_VLINE, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDERTAIL, wxstc.wxSTC_MARK_LCORNER, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDEREND, wxstc.wxSTC_MARK_BOXPLUSCONNECTED, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDEROPENMID, wxstc.wxSTC_MARK_BOXMINUSCONNECTED, fg, bg)
-    editor:MarkerDefine(wxstc.wxSTC_MARKNUM_FOLDERMIDTAIL, wxstc.wxSTC_MARK_TCORNER, fg, bg)
+    local foldtype = foldtypes[edcfg.foldtype] or foldtypes.box
+    local foldmarkers = foldtypes[0]
+    for m = 1, #foldmarkers do
+      editor:MarkerDefine(foldmarkers[m], foldtype[m] or wxstc.wxSTC_MARK_EMPTY, fg, bg)
+    end
     bg:delete()
   end
 
-  if ide.config.editor.calltipdelay and ide.config.editor.calltipdelay > 0 then
-    editor:SetMouseDwellTime(ide.config.editor.calltipdelay)
+  if edcfg.calltipdelay and edcfg.calltipdelay > 0 then
+    editor:SetMouseDwellTime(edcfg.calltipdelay)
   end
 
   editor:AutoCompSetIgnoreCase(ide.config.acandtip.ignorecase)
@@ -730,10 +791,10 @@ function CreateEditor()
   editor:Connect(wxstc.wxEVT_STC_MARGINCLICK,
     function (event)
       local line = editor:LineFromPosition(event:GetPosition())
-      local margin = event:GetMargin()
-      if margin == 1 then
+      local marginno = event:GetMargin()
+      if marginno == margin.MARKER then
         DebuggerToggleBreakpoint(editor, line)
-      elseif margin == 2 then
+      elseif marginno == margin.FOLD then
         if wx.wxGetKeyState(wx.WXK_SHIFT) and wx.wxGetKeyState(wx.WXK_CONTROL) then
           FoldSome()
         else
@@ -754,22 +815,22 @@ function CreateEditor()
       if (bit.band(evtype,wxstc.wxSTC_MOD_INSERTTEXT) ~= 0) then
         SetAutoRecoveryMark()
         table.insert(editor.ev,{event:GetPosition(),event:GetLinesAdded()})
-        DynamicWordsAdd("post",editor,nil,editor:LineFromPosition(event:GetPosition()),event:GetLinesAdded())
+        DynamicWordsAdd(editor,nil,editor:LineFromPosition(event:GetPosition()),event:GetLinesAdded())
       end
       if (bit.band(evtype,wxstc.wxSTC_MOD_DELETETEXT) ~= 0) then
         SetAutoRecoveryMark()
         table.insert(editor.ev,{event:GetPosition(),0})
-        DynamicWordsAdd("post",editor,nil,editor:LineFromPosition(event:GetPosition()),0)
+        DynamicWordsAdd(editor,nil,editor:LineFromPosition(event:GetPosition()),0)
       end
       
       if ide.config.acandtip.nodynwords then return end
       -- only required to track changes
       if (bit.band(evtype,wxstc.wxSTC_MOD_BEFOREDELETE) ~= 0) then
         local _, numlines = event:GetText():gsub("\r?\n","%1")
-        DynamicWordsRem("pre",editor,nil,editor:LineFromPosition(event:GetPosition()), numlines)
+        DynamicWordsRem(editor,nil,editor:LineFromPosition(event:GetPosition()), numlines)
       end
       if (bit.band(evtype,wxstc.wxSTC_MOD_BEFOREINSERT) ~= 0) then
-        DynamicWordsRem("pre",editor,nil,editor:LineFromPosition(event:GetPosition()), 0)
+        DynamicWordsRem(editor,nil,editor:LineFromPosition(event:GetPosition()), 0)
       end
     end)
 
@@ -803,7 +864,7 @@ function CreateEditor()
           local ut = editor:GetUseTabs()
           local tw = ut and editor:GetTabWidth() or editor:GetIndent()
 
-          if ide.config.editor.smartindent
+          if edcfg.smartindent
           and editor.spec.isdecindent and editor.spec.isincindent then
             local closed, blockend = editor.spec.isdecindent(linedone)
             local opened = editor.spec.isincindent(linedone)
@@ -829,14 +890,14 @@ function CreateEditor()
         local tip = GetTipInfo(editor,linetxtopos,ide.config.acandtip.shorttip)
         if tip then
           if editor:CallTipActive() then editor:CallTipCancel() end
-          editor:CallTipShow(pos,tip)
+          callTipFitAndShow(editor, pos, tip)
         end
 
       elseif ide.config.autocomplete then -- code completion prompt
         local trigger = linetxtopos:match("["..editor.spec.sep.."%w_]+$")
-        if (trigger and (#trigger > 1 or trigger:match("["..editor.spec.sep.."]"))) then
-          editor.autocomplete = true
-        end
+        -- make sure .autocomplete is never `nil` or editor.autocomplete fails
+        editor.autocomplete = trigger and (#trigger > 1 or trigger:match("["..editor.spec.sep.."]"))
+          and true or false
       end
     end)
 
@@ -939,7 +1000,7 @@ function CreateEditor()
       if ide.osname == 'Windows' then
         updateStatusText(editor)
 
-        if ide.config.editor.usewrap ~= true and editor:AutoCompActive() then
+        if edcfg.usewrap ~= true and editor:AutoCompActive() then
           -- showing auto-complete list leaves artifacts on the screen,
           -- which can only be fixed by a forced refresh.
           -- shows with wxSTC 3.21 and both wxwidgets 2.9.5 and 3.1
@@ -970,7 +1031,10 @@ function CreateEditor()
         firstvisible)
       MarkupStyle(editor,minupdated or firstline,lastline)
       editor.ev = {}
+    end)
 
+  editor:Connect(wx.wxEVT_IDLE,
+    function (event)
       -- show auto-complete if needed
       if editor.autocomplete then
         EditorAutoComplete(editor)
@@ -1002,7 +1066,7 @@ function CreateEditor()
       event:Skip()
     end)
 
-  if ide.config.editor.nomousezoom then
+  if edcfg.nomousezoom then
     -- disable zoom using mouse wheel as it triggers zooming when scrolling
     -- on OSX with kinetic scroll and then pressing CMD.
     editor:Connect(wx.wxEVT_MOUSEWHEEL,
@@ -1054,8 +1118,18 @@ function CreateEditor()
         and (mod == wx.wxMOD_NONE) then
         -- Delete and Backspace behave the same way for selected text
         if #(editor:GetSelectedText()) > 0 then
-          editor:SetTargetStart(editor:GetSelectionStart())
-          editor:SetTargetEnd(editor:GetSelectionEnd())
+          local length = editor:GetLength()
+          local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
+          editor:Clear() -- remove selected fragments
+
+          -- check if the modification has failed, which may happen
+          -- if there is "invisible" text in the selected fragment.
+          -- if there is only one selection, then delete manually.
+          if length == editor:GetLength() and selections == 1 then
+            editor:SetTargetStart(editor:GetSelectionStart())
+            editor:SetTargetEnd(editor:GetSelectionEnd())
+            editor:ReplaceTarget("")
+          end
         else
           local pos = editor:GetCurrentPos()
           if keycode == wx.WXK_BACK then
@@ -1075,8 +1149,8 @@ function CreateEditor()
 
           editor:SetTargetStart(pos)
           editor:SetTargetEnd(pos+1)
+          editor:ReplaceTarget("")
         end
-        editor:ReplaceTarget("")
       elseif mod == wx.wxMOD_ALT and keycode == wx.WXK_LEFT then
         -- if no "jump back" is needed, then do normal processing as this
         -- combination can be mapped to some action
@@ -1096,7 +1170,7 @@ function CreateEditor()
   local function selectAllInstances(instances, name, curpos)
     local this
     local idx = 0
-    for i, pos in pairs(instances) do
+    for _, pos in pairs(instances) do
       pos = pos - 1 -- positions are 0-based in Scintilla
       if idx == 0 then
         -- clear selections first as there seems to be a bug (Scintilla 3.2.3)
@@ -1132,11 +1206,12 @@ function CreateEditor()
 
   editor:Connect(wxstc.wxEVT_STC_ZOOM,
     function(event)
-      editor:SetMarginWidth(margin.LINENUMBER, editor:TextWidth(DEFAULT_STYLE, "99999_"))
+      editor:SetMarginWidth(margin.LINENUMBER,
+        editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, linenummask))
       -- if Shift+Zoom is used, then zoom all editors, not just the current one
       if wx.wxGetKeyState(wx.WXK_SHIFT) then
         local zoom = editor:GetZoom()
-        for id, doc in pairs(openDocuments) do
+        for _, doc in pairs(openDocuments) do
           -- check the editor zoom level to avoid recursion
           if doc.editor:GetZoom() ~= zoom then doc.editor:SetZoom(zoom) end
         end
@@ -1278,25 +1353,6 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
       end
     end
 
-    if (spec.api == "lua") then
-      -- Get the items in the global "wx" table for autocompletion
-      if not wxkeywords then
-        local keyword_table = {}
-        for index in pairs(wx) do
-          table.insert(keyword_table, "wx."..index.." ")
-        end
-
-        for index in pairs(wxstc) do
-          table.insert(keyword_table, "wxstc."..index.." ")
-        end
-
-        table.sort(keyword_table)
-        wxkeywords = table.concat(keyword_table)
-      end
-      local offset = spec.keywords and #spec.keywords or 5
-      editor:SetKeyWords(offset, wxkeywords)
-    end
-
     editor.api = GetApi(spec.apitype or "none")
     editor.spec = spec
   else
@@ -1309,10 +1365,10 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
 
   -- need to set folding property after lexer is set, otherwise
   -- the folds are not shown (wxwidgets 2.9.5)
-  if ide.config.editor.fold then
+  if edcfg.fold then
     editor:SetProperty("fold", "1")
     editor:SetProperty("fold.html", "1")
-    editor:SetProperty("fold.compact", ide.config.editor.foldcompact and "1" or "0")
+    editor:SetProperty("fold.compact", edcfg.foldcompact and "1" or "0")
     editor:SetProperty("fold.comment", "1")
   end
   

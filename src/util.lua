@@ -321,6 +321,7 @@ function RequestAttention()
       local cmd = [[osascript -e 'tell application "%s" to activate']]
       wx.wxExecute(cmd:format(ide.editorApp:GetAppName()), wx.wxEXEC_ASYNC)
     elseif ide.osname == "Windows" then
+      if frame:IsIconized() then frame:Iconize(false) end
       frame:Raise() -- raise the window
 
       local winapi = require 'winapi'
@@ -334,7 +335,9 @@ function RequestAttention()
           -- found the window, now need to activate it:
           -- send some input to the window and then
           -- bring our window to foreground (doesn't work without some input)
-          winapi.send_to_window(0x1B)
+          -- send Attn key twice (down and up)
+          winapi.send_to_window(0xF6, false)
+          winapi.send_to_window(0xF6, true)
           for _, w in ipairs(wins) do w:set_foreground() end
         end
       end
@@ -448,3 +451,16 @@ function LoadSafe(data)
 end
 
 function EscapeMagic(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+
+function GetEditorWithFocus()
+  local editor = GetEditor()
+  local bnb = ide.frame.bottomnotebook
+  for _,e in pairs({bnb.shellbox, bnb.errorlog}) do
+    local ctrl = e:FindFocus()
+    if ctrl and
+      (ctrl:GetId() == e:GetId()
+       or ide.osname == 'Macintosh' and
+         ctrl:GetParent():GetId() == e:GetId()) then editor = e end
+  end
+  return editor or nil
+end

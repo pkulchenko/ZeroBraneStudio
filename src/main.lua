@@ -66,7 +66,7 @@ ide = {
     stylesoutshell = nil,
 
     autocomplete = true,
-    autoanalizer = true,
+    autoanalyzer = true,
     acandtip = {
       shorttip = false,
       ignorecase = false,
@@ -171,6 +171,8 @@ if not setfenv then -- Lua 5.2
     return f end
 end
 
+dofile "src/version.lua"
+
 for _, file in ipairs({"ids", "style", "keymap", "proto"}) do
   dofile("src/editor/"..file..".lua")
 end
@@ -261,7 +263,9 @@ ide.app = dofile(ide.config.path.app.."/app.lua")
 local app = assert(ide.app)
 
 local function loadToTab(filter, folder, tab, recursive, proto)
-  filter = filter and type(filter) ~= 'function' and app.loadfilters[filter] or nil
+  if filter and type(filter) ~= 'function' then
+    filter = app.loadfilters[filter] or nil
+  end
   for _, file in ipairs(FileSysGetRecursive(folder, recursive, "*.lua")) do
     if not filter or filter(file) then
       LoadLuaFileExt(tab, file, proto)
@@ -284,10 +288,30 @@ local function loadPackages(filter)
   loadToTab(filter, "packages", ide.packages, false, ide.proto.Plugin)
   if ide.oshome then
     local userpackages = MergeFullPath(ide.oshome, ".zbstudio/packages")
-    loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
+    if wx.wxDirExists(userpackages) then
+      loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
+    end
   end
-  -- assign file names to each package
-  for fname, package in pairs(ide.packages) do package.fname = fname end
+
+  -- check dependencies and assign file names to each package
+  local unload = {}
+  for fname, package in pairs(ide.packages) do
+    local needsversion = tonumber(package.dependencies)
+      or type(package.dependencies) == 'table' and tonumber(package.dependencies[1])
+      or -1
+    local isversion = tonumber(ide.VERSION)
+    if isversion and needsversion > isversion then
+      (DisplayOutputLn or print)(
+        ("Package '%s' not loaded: requires version %s, but you are running version %s")
+          :format(fname, needsversion, ide.VERSION)
+      )
+      table.insert(unload, fname)
+    end
+    package.fname = fname
+  end
+
+  -- remove packages that need to be unloaded
+  for _, fname in ipairs(unload) do ide.packages[fname] = nil end
 end
 
 function UpdateSpecs()
@@ -408,8 +432,6 @@ for _, file in ipairs({
     "inspect" }) do
   dofile("src/editor/"..file..".lua")
 end
-
-dofile "src/version.lua"
 
 -- register all the plugins
 PackageEventHandle("onRegister")

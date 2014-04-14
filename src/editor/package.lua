@@ -61,13 +61,30 @@ function PackageRegister(file, ...)
   return PackageEventHandleOne(file, "onRegister", ...)
 end
 
+function ide:GetRootPath() return GetPathWithSep(ide.editorFilename) end
+function ide:GetPackagePath(packname)
+  return MergeFullPath(
+    ide.oshome and MergeFullPath(ide.oshome, '.zbstudio/') or ide:GetRootPath(),
+    MergeFullPath('packages', packname or '')
+  )
+end
+function ide:GetApp() return self.editorApp end
 function ide:GetEditor(index) return GetEditor(index) end
 function ide:GetMenuBar() return self.frame.menuBar end
 function ide:GetStatusBar() return self.frame.statusBar end
 function ide:GetToolBar() return self.frame.toolBar end
+function ide:GetDebugger() return self.debugger end
 function ide:GetMainFrame() return self.frame end
 function ide:GetDocument(ed) return self.openDocuments[ed:GetId()] end
 function ide:GetDocuments() return self.openDocuments end
+function ide:FindMenuItem(menu, itemid)
+  for pos = 0, menu:GetMenuItemCount()-1 do
+    if menu:FindItemByPosition(pos):GetId() == itemid then
+      return menu:FindItemByPosition(pos), pos
+    end
+  end
+  return nil
+end
 function ide:FindDocument(path)
   local fileName = wx.wxFileName(path)
   for _, doc in pairs(ide.openDocuments) do
@@ -144,6 +161,7 @@ function ide:AddConfig(name, files)
   if not name or configcache[name] then return end -- don't overwrite existing slots
   configcache[name] = require('mobdebug').dump(ide.config, {nocode = true})
   for _, file in pairs(files) do LoadLuaConfig(MergeFullPath(name, file)) end
+  ReApplySpecAndStyles() -- apply current config to the UI
 end
 function ide:RemoveConfig(name)
   if not name or not configcache[name] then return end
@@ -153,4 +171,5 @@ function ide:RemoveConfig(name)
     DisplayOutputLn(("Error while restoring configuration: '%s'."):format(res))
   end
   configcache[name] = nil -- clear the slot after use
+  ReApplySpecAndStyles() -- apply current config to the UI
 end

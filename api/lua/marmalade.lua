@@ -1,9 +1,15 @@
--- Copyright 2013 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2013-14 Paul Kulchenko, ZeroBrane LLC
 
 return {
   ads = {
     type = "class",
     childs = {
+      init = {
+        type = "method",
+        description = "Initialise the ad system, must be called before the ad system can be used.",
+        args = "()",
+        returns = "()",
+      },
       isAvailable = {
         type = "method",
         description = "Checks availability of ads.",
@@ -27,6 +33,12 @@ return {
   analytics = {
     type = "class",
     childs = {
+      endSession = {
+        type = "method",
+        description = "Ends a Flurry analytics session.",
+        args = "()",
+        returns = "()",
+      },
       isAvailable = {
         type = "method",
         description = "Checks availability of analytics.",
@@ -47,7 +59,7 @@ return {
       },
       startSession = {
         type = "method",
-        description = "Starts a Flurry analytics session.\nyour app",
+        description = "Starts a Flurry analytics session.",
         args = "(apiKey: string)",
         returns = "()",
       },
@@ -263,7 +275,7 @@ return {
       },
       isAvailable = {
         type = "method",
-        description = "Checks available of in-app purchasing.",
+        description = "Checks availability of in-app purchasing.",
         args = "()",
         returns = "(boolean)",
       },
@@ -519,6 +531,10 @@ return {
   director = {
     type = "class",
     childs = {
+      addNodesToScene = {
+        type = "value",
+        description = "Whether or not the Director should automatically add newly-created display objects to the current scene.\nThe default value is true.",
+      },
       addScene = {
         type = "method",
         description = "Add a Scene object to the Director. The added Scene object will become the current scene.\nTypically this function is not called directly: instead, the app calls director:createScene() which both creates the new Scene\nobject and adds it to the Director.",
@@ -536,84 +552,84 @@ return {
         description = "Create an animation, specifying arbitrary input values.\nSee the Objects reference for details of all properties and functions on the Animation object.",
         valuetype = "animation",
         args = "(values: table)",
-        returns = "(object)",
+        returns = "(animation)",
       },
       createAtlas = {
         type = "method",
         description = "Create a texture atlas. Two different input types are permitted:\n| ``director:createAtlas(filename)``\n| ``director:createAtlas(values)``\nSee the Objects reference for details of all properties and functions on the Atlas object.",
         valuetype = "atlas",
         args = "(filename: string, values: table)",
-        returns = "(object)",
+        returns = "(atlas)",
       },
       createBBox = {
         type = "method",
         description = "Create a bounding box object, from x and y bounds. The object simply copies these values into the properties\nxMin, xMax, yMin, yMax respectively.\n----------\n**Scene functions**.",
         valuetype = "box",
         args = "(xMin: number, xMax: number, yMin: number, yMax: number)",
-        returns = "(object)",
+        returns = "(box)",
       },
       createCircle = {
         type = "method",
         description = "Create a Circle node. Two different input types are permitted:\n| ``director:createCircle(x, y, radius)``\n| ``director:createCircle(values)``\nSee the Objects reference for details of all properties and functions on the Circle object.",
         valuetype = "circle",
         args = "(x: number, y: number, radius: number, values: table)",
-        returns = "(object)",
+        returns = "(circle)",
       },
       createFont = {
         type = "method",
         description = "Create a Font object. Two different input types are permitted:\n| ``director:createFont(filename)``\n| ``director:createFont(values)``\nSee the Objects reference for details of all properties and functions on the Font object.",
         valuetype = "font",
         args = "(filename: string, values: table)",
-        returns = "(object)",
+        returns = "(font)",
       },
       createLabel = {
         type = "method",
         description = "Create a Label node. Two different input types are permitted:\n| ``director:createLabel(x, y, text, font)``\n| ``director:createLabel(values)``\nSee the Objects reference for details of all properties and functions on the Label object.",
         valuetype = "label",
         args = "(x: number, y: number, text: string, font: object or string, values: table)",
-        returns = "(object)",
+        returns = "(label)",
       },
       createLines = {
         type = "method",
         description = "Create a Lines node. Two different input types are permitted:\n| ``director:createLines(x, y, coords)``\n| ``director:createLines(values)``\nSee the Objects reference for details of all properties and functions on the Lines object.",
         valuetype = "lines",
         args = "(x: number, y: number, coords: table, values: table)",
-        returns = "(object)",
+        returns = "(lines)",
       },
       createNode = {
         type = "method",
         description = "Create a Node object, specifying a table of arbitrary input values.\nSee the Objects reference for details of all properties and functions on the Node object.",
         valuetype = "node",
         args = "(values: table)",
-        returns = "(object)",
+        returns = "(node)",
       },
       createParticles = {
         type = "method",
         description = "Create a Particles node. Three different input types are permitted:\n| ``director:createParticles(plist)``\n| ``director:createParticles(numParticles)``\n| ``director:createParticles(values)``\nThis file is output from the ParticleDesigner tool, or similar.\nThe app should then set up all other member variables explicitly.\nwritable properties of the Particles object. Additionally, the user \ncan specify the 'source' property, which can be a full pathname to a \ntexture, or an existing Atlas object. For example::\n-- Specify texture from filename\nlocal p1 = director:createParticles( { totalParticles=500, source=\"particles/fire.png\" } )\n-- Specify texture from Atlas object\nlocal atlas = director:createAtlas(\"textures/beachball.png\")\nlocal p2 = director:createParticles( { totalParticles=500, source=atlas } )\nSee the Objects reference for details of all properties and functions on the Particles object.",
         valuetype = "particles",
         args = "(plist: string, numParticles: number, values: table)",
-        returns = "(object)",
+        returns = "(particles)",
       },
       createRectangle = {
         type = "method",
         description = "Create a Rectangle node. Two different input types are permitted:\n| ``director:createRectangle(x, y, w, h)``\n| ``director:createRectangle(values)``\nSee the Objects reference for details of all properties and functions on the Rectangle object.",
         valuetype = "rectangle",
         args = "(x: number, y: number, w: number, h: number, values: table)",
-        returns = "(object)",
+        returns = "(rectangle)",
       },
       createScene = {
         type = "method",
         description = "Create a scene node, and set it to be the director's current scene.\nNote that no transition occurs from any previous scene, and no scene events are thrown.",
         valuetype = "scene",
         args = "()",
-        returns = "(object)",
+        returns = "(scene)",
       },
       createSprite = {
         type = "method",
         description = "Create a Sprite node. Two different input types are permitted:\n| ``director:createSprite(x, y, source)``\n| ``director:createSprite(values)``\nSee the Objects reference for details of all properties and functions on the Sprite object.",
         valuetype = "sprite",
         args = "(x: number, y: number, source: number or object, values: table)",
-        returns = "(object)",
+        returns = "(sprite)",
       },
       displayCenterX = {
         type = "value",
@@ -636,6 +652,10 @@ return {
         description = "Get the current Scene object, which may be the Director's global scene.",
         args = "()",
         returns = "(object)",
+      },
+      isAlphaInherited = {
+        type = "value",
+        description = "Whether or not node alpha (and strokeAlpha) should be inherited (propogated) through the scene graph.\nThe default value is true.",
       },
       moveToScene = {
         type = "method",
@@ -666,6 +686,12 @@ return {
   facebook = {
     type = "class",
     childs = {
+      isAvailable = {
+        type = "method",
+        description = "Checks availability of the Facebook API.",
+        args = "()",
+        returns = "(boolean)",
+      },
       login = {
         type = "method",
         description = "Log in to Facebook.\nDisplays the Facebook login dialog.  If the user has already put in\ntheir Facebook details then this dialog may not be displayed.",
@@ -743,7 +769,7 @@ return {
         description = "The null function allows one to specify a null value in an associative array (which is otherwise\ndiscarded if you set the value with 'nil' in Lua).",
         valuetype = "null",
         args = "()",
-        returns = "(object)",
+        returns = "(null)",
       },
     },
   },
@@ -856,7 +882,7 @@ return {
         description = "Add a timed event to this node.",
         valuetype = "timer",
         args = "(funcortable: function or table, period: number, iterations: number, delay: number)",
-        returns = "(object)",
+        returns = "(timer)",
       },
       alpha = {
         type = "value",
@@ -905,6 +931,18 @@ return {
         description = "Get this node's parent.",
         args = "()",
         returns = "(object)",
+      },
+      getPointInLocalSpace = {
+        type = "method",
+        description = "Given a point in the world (scene) space, return a point in the node's local space.\nNote that for this function to behave as expected, the node's local transform must\nbe up-to-date. For example, if trying to call this function directly after creating a node,\nyou should call Node:sync() to update the local transform first.\n:return: Returns an x,y pair for the point in local (node) space.",
+        args = "(x: number, y: number)",
+        returns = "()",
+      },
+      getPointInWorldSpace = {
+        type = "method",
+        description = "Given a point in the node's local space, return a point in the world (scene) space.\nNote that for this function to behave as expected, the node's local transform must\nbe up-to-date. For example, if trying to call this function directly after creating a node,\nyou should call Node:sync() to update the local transform first.\n:return: Returns an x,y pair for the point in world (scene) space.",
+        args = "(x: number, y: number)",
+        returns = "()",
       },
       getTimersTimeScale = {
         type = "method",
@@ -1026,6 +1064,12 @@ return {
         args = "(f: number)",
         returns = "()",
       },
+      sync = {
+        type = "method",
+        description = "Synchronises the Cocos2d-x data with the Quick data for this Node. In most scenarios you do\nnot need to explicitly call this function - it is done automatically across the scene, as\npart of the Director's update.",
+        args = "()",
+        returns = "()",
+      },
       timers = {
         type = "value",
         description = "The list (table) of timers attached to this node. The table can be queried for its length, and can be iterated over, but must\nnot be manipulated in any other way. Attempting to insert or remove elements from the table will result in undefined and almost\ncertainly undesirable behaviour.",
@@ -1082,36 +1126,6 @@ return {
       },
     },
   },
-  nui = {
-    type = "class",
-    childs = {
-      createWebView = {
-        type = "method",
-        description = "Create a fullscreen or windowed web view. Two different input types are permitted:\n| ``director:createWebView(url)``\n| ``director:createWebView(values)``\nExamples::\n-- Create a fullscreen web view\nlocal view1 = director:createWebView(\"http://www.google.com/news\")\n-- Create a windowed web view\nlocal view2 = director:createWebView( {\nx=0, y=0, \nw=200, h=100, \ntransparentBackground=true, \nurl=\"http://www.google.com/news\", \n} )",
-        valuetype = "webView",
-        args = "(url: string, values: table)",
-        returns = "(object)",
-      },
-      isReadStringAvailable = {
-        type = "method",
-        description = "Check whether \"readString\" functionality is available on the target device.\nNote that in Quick 1.0, \"readString\" functionality is not supported on Mac, so this function will return false.",
-        args = "()",
-        returns = "(boolean)",
-      },
-      isWebViewAvailable = {
-        type = "method",
-        description = "Check whether web views are available on the target device.",
-        args = "()",
-        returns = "(boolean)",
-      },
-      readString = {
-        type = "method",
-        description = "Creates a modal native dialog box for inputting a text string. The dialog box displays the string being entered, and\nthe native device Input Method Entry (IME) mechanism it used to capture the string (for mobile devices, this is usually\nin the form of a \"soft keyboard\" that slides onto the screen for touch-typing).\nThe user must specify a \"prompt\" string, that will be used as a title for the native dialog box. The user may optionally\nspecify a \"mode\" string, which can be used to configure the IME (e.g. the type of touch keyboard) depending on the type\nof string being captured - e.g to switch to an optimised touch keyboard for inputting URLs, if the device supports it.\nThe default is to use the standard IME (e.g. the standard type of touch keyboard)\nFinally, the user can optionally specify a \"default\" string that will pre-populate the dialog box. The user must then\nuse the IME to edit the string if required.\nAll strings (both input and output) are in UTF8 format.\n- \"email\" - Optimise for email address entry.\n- \"number\" - Optimise for number entry.\n- \"password\" - Optimise for password entry (e.g. hide characters after typing).\n- \"url\" - Optimise for URL entry.\n- \"\" or no input - Standard entry.\notherwise the return value is always of type 'string', even if the 'mode' input is specified as 'number'.",
-        args = "(promptUTF8: string [, mode: string] [, defaultUTF8: string])",
-        returns = "(string or nil)",
-      },
-    },
-  },
   particles = {
     type = "class",
     childs = {
@@ -1162,6 +1176,12 @@ return {
       endSpinVar = {
         type = "value",
         description = "The random variance, in degrees, to add to the final spin of each particle. The final spin\nof each particle will be a random value in the range [endSpin - endSpinVar, endSpin + endSpinVar].\nThe default value is 0.",
+      },
+      isActive = {
+        type = "method",
+        description = "Returns true only if there are any particles still alive.",
+        args = "()",
+        returns = "(boolean)",
       },
       isFull = {
         type = "method",
@@ -1446,70 +1466,70 @@ return {
         description = "Creates a distance joint that constrains the two attached bodies to maintain a constant distance defined\nby the two anchor points. Two different input types are permitted:\n| ``physics:createDistanceJoint(nodeA, nodeB, x1, y1, x2, y2, collideConnected)``\n| ``physics:createDistanceJoint(values)``\nSupported properties, beyond those of the default constructor, include:\n- length (number) - The distance to maintain between the joints\n- frequency (number) - The frequency of any oscillation\n- dampingRatio (number) - The damping ratio of any oscillation",
         valuetype = "jointDistance",
         args = "(nodeA: object, nodeB: object [, x1: number] [, y1: number] [, x2: number] [, y2: number] [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointDistance)",
       },
       createFrictionJoint = {
         type = "method",
         description = "Creates a friction joint: a special kind of revolute / prismatic joint that resists motion, and provides\n2D translational and angular friction. Two different input types are permitted:\n| ``physics:createFrictionJoint(nodeA, nodeB, collideConnected)``\n| ``physics:createFrictionJoint(values)``",
         valuetype = "jointFriction",
         args = "(nodeA: object, nodeB: object [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointFriction)",
       },
       createGearJoint = {
         type = "method",
         description = "Creates a gear joint that can only connect revolute and/or prismatic joints.\nLike the pulley ratio, you can specify a gear ratio. \nHowever, in this case the gear ratio can be negative. \nAlso keep in mind that when one joint is a revolute joint (angular) and the other joint is prismatic (translation), \nthen the gear ratio will have units of length or one over length.\nCaution: Deleting one of the connected joints automatically deletes this joint.\nCaution: The \"nodeB\" of both the connected joints must not be the same, and must be non-static.\nTwo different input types are permitted:\n| ``physics:createGearJoint(jointA, jointB, collideConnected)``\n| ``physics:createGearJoint(values)``",
         valuetype = "jointGear",
         args = "(jointA: object, jointB: object [, ratio: number] [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointGear)",
       },
       createPrismaticJoint = {
         type = "method",
         description = "Creates a prismatic (piston) joint. Two different input types are permitted:\n| ``physics:createPrismaticJoint(nodeA, nodeB, x, y, localAxisX, localAxisY, collideConnected)``\n| ``physics:createPrismaticJoint(values)``",
         valuetype = "jointPrismatic",
         args = "(nodeA: object, nodeB: object, x: number, y: number, localAxisX: number, localAxisY: number [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointPrismatic)",
       },
       createPulleyJoint = {
         type = "method",
         description = "Creates a pulley joint that attaches two bodies with an imaginary rope whose length remains constant: if one body is pulled down, the other one will move up.\nTwo different input types are permitted:\n| ``physics:createPulleyJoint(nodeA, nodeB, x1, y1, x2, y2, collideConnected)``\n| ``physics:createPulleyJoint(values)``",
         valuetype = "jointPulley",
         args = "(nodeA: object, nodeB: object, groundAnchorAX: number, groundAnchorAY: number, groundAnchorBX: number, groundAnchorBY: number [, anchorAX: number] [, anchorAY: number] [, anchorBX: number] [, anchorBY: number] [, ratio: number] [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointPulley)",
       },
       createRevoluteJoint = {
         type = "method",
         description = "Creates a revolute (pivot) joint that constrains the two attached bodies to rotate about a point.\nTwo different input types are permitted:\n| ``physics:createRevoluteJoint(nodeA, nodeB, x, y, collideConnected)``\n| ``physics:createRevoluteJoint(values)``",
         valuetype = "jointRevolute",
         args = "(nodeA: object, nodeB: object, x: number, y: number [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointRevolute)",
       },
       createRopeJoint = {
         type = "method",
         description = "Creates a rope joint that restricts the maximum distance between two points. This can be useful to prevent chains of bodies from stretching, even under high load.\nTwo different input types are permitted:\n| ``physics:createRopeJoint(nodeA, nodeB, x1, y1, x2, y2, collideConnected)``\n| ``physics:createRopeJoint(values)``",
         valuetype = "jointRope",
         args = "(nodeA: object, nodeB: object [, anchorAX: number] [, anchorAY: number] [, anchorBX: number] [, anchorBY: number], values: table)",
-        returns = "(object)",
+        returns = "(jointRope)",
       },
       createTouchJoint = {
         type = "method",
         description = "Creates a \"touch\" (mouse) joint that attaches a body to the world through a spring.\nTwo different input types are permitted:\n| ``physics:createTouchJoint(nodeA, dampingRatio, frequency, maxForce)``\n| ``physics:createTouchJoint(values)``",
         valuetype = "jointTouch",
         args = "(nodeA: object [, dampingRatio: number] [, frequency: number] [, maxForce: number], values: table)",
-        returns = "(object)",
+        returns = "(jointTouch)",
       },
       createWeldJoint = {
         type = "method",
         description = "Creates a weld joint that literaly welds the two attached body in a point.\nTwo different input types are permitted:\n| ``physics:createWeldJoint(nodeA, nodeB, x, y, collideConnected)``\n| ``physics:createWeldJoint(values)``",
         valuetype = "jointWeld",
         args = "(nodeA: object, nodeB: object [, x: number] [, y: number] [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointWeld)",
       },
       createWheelJoint = {
         type = "method",
         description = "Creates a wheel joint that combines a piston and a pivot joint. Two different input types are permitted:\n| ``physics:createWheelJoint(nodeA, nodeB, localAxisX, localAxisY, ax, ay, bx, by, collideConnected)``\n| ``physics:createWheelJoint(values)``",
         valuetype = "jointWheel",
         args = "(nodeA: object, nodeB: object, localAxisX: number, localAxisY: number [, ax: number] [, ay: number] [, bx: number] [, by: number] [, collideConnected: boolean], values: table)",
-        returns = "(object)",
+        returns = "(jointWheel)",
       },
       debugDraw = {
         type = "value",
@@ -1636,7 +1656,7 @@ return {
       },
     },
   },
-  jointdistance = {
+  jointDistance = {
     type = "class",
     childs = {
       dampingRatio = {
@@ -1654,7 +1674,7 @@ return {
     },
     inherits = "joint",
   },
-  jointfriction = {
+  jointFriction = {
     type = "class",
     childs = {
       maxForce = {
@@ -1668,7 +1688,7 @@ return {
     },
     inherits = "joint",
   },
-  jointgear = {
+  jointGear = {
     type = "class",
     childs = {
       joint1 = {
@@ -1686,7 +1706,7 @@ return {
     },
     inherits = "joint",
   },
-  jointprismatic = {
+  jointPrismatic = {
     type = "class",
     childs = {
       jointSpeed = {
@@ -1728,7 +1748,7 @@ return {
     },
     inherits = "joint",
   },
-  jointpulley = {
+  jointPulley = {
     type = "class",
     childs = {
       lengthA = {
@@ -1746,7 +1766,7 @@ return {
     },
     inherits = "joint",
   },
-  jointrevolute = {
+  jointRevolute = {
     type = "class",
     childs = {
       jointAngle = {
@@ -1788,7 +1808,7 @@ return {
     },
     inherits = "joint",
   },
-  jointrope = {
+  jointRope = {
     type = "class",
     childs = {
       maxLength = {
@@ -1798,7 +1818,7 @@ return {
     },
     inherits = "joint",
   },
-  jointtouch = {
+  jointTouch = {
     type = "class",
     childs = {
       dampingRatio = {
@@ -1822,7 +1842,7 @@ return {
     },
     inherits = "joint",
   },
-  jointweld = {
+  jointWeld = {
     type = "class",
     childs = {
       dampingRatio = {
@@ -1836,7 +1856,7 @@ return {
     },
     inherits = "joint",
   },
-  jointwheel = {
+  jointWheel = {
     type = "class",
     childs = {
       jointSpeed = {
@@ -1873,6 +1893,36 @@ return {
       },
     },
     inherits = "joint",
+  },
+  scene = {
+    type = "class",
+    childs = {
+      releaseAnimation = {
+        type = "method",
+        description = "Clears the scene's references to the specified Animation object. If the app maintains any additional\nreferences to this objects then it will persist, otherwise it will become ready for garbage \ncollection.",
+        args = "(animation: object)",
+        returns = "()",
+      },
+      releaseAtlas = {
+        type = "method",
+        description = "Clears the scene's references to the specified Atlas object. If the app maintains any additional\nreferences to this objects then it will persist, otherwise it will become ready for garbage \ncollection.",
+        args = "(atlas: object)",
+        returns = "()",
+      },
+      releaseFont = {
+        type = "method",
+        description = "Clears the scene's references to the specified Font object. If the app maintains any additional\nreferences to this objects then it will persist, otherwise it will become ready for garbage \ncollection.",
+        args = "(font: object)",
+        returns = "()",
+      },
+      releaseResources = {
+        type = "method",
+        description = "Clears the scene's references to all owned Atlas, Animation and Font objects. If the app \nmaintains additional references to any specific objects of these types then they will persist, \notherwise the objects will become ready for garbage collection.",
+        args = "()",
+        returns = "()",
+      },
+    },
+    inherits = "node",
   },
   sprite = {
     type = "class",
@@ -1948,7 +1998,7 @@ return {
         description = "Add a global timed event.",
         valuetype = "timer",
         args = "(funcortable: function or table, period: number, iterations: number, delay: number)",
-        returns = "(object)",
+        returns = "(timer)",
       },
       debugTime = {
         type = "value",
@@ -2355,7 +2405,7 @@ return {
       },
       to = {
         type = "method",
-        description = "Tween a series of node properties over time.\nThe final property values are specified in the params table. To customize the\ntween, you can optionally specify the following non-animating properties in params:\n* params.time (number) - The duration of the tween, in seconds. Default value is 0.5. The duration refers\nto the length of a 'cycle'; see the 'mode' parameter below.\n* params.delay (number) - Any delay in seconds before the tween begins. Default value is 0. If this value is\ngreater than 0, then this period must elapse before any properties start tweening. The 'onStart' callback\nis called only when this period has elapsed.\n* params.delta (boolean) - Whether or not to interpret the specified values as absolute, or relative to the\ncurrent values. The default is false, meaning absolute values. If true, the 'current' values are those\nat the point at which any 'delay' period has elapsed.\n* params.mode (string) - Can be 'clamp', 'repeat' or 'mirror'. The default value is 'clamp'.\n* \"clamp\" - The interpolation value moves from 0 (after any 'delay') to 1 \n(after a further 'time'), whereby any 'onComplete' callback is fired. The function \n'isComplete()' will return true only after this point. The interpolation stays at 1 after \nthis point.\n* \"repeat\" - The interpolation value moves from 0 (after any 'delay') to 1 (after a further \n'time'), whereby any 'onComplete' callback is fired. The interpolation value then starts \nagain at 0, and moves to 1 after a further 'time'; i.e. it continually cycles with a \nperiod of 'time'. The 'onComplete' callback fires after each period. The function \n'isComplete()' NEVER returns true.\n* \"mirror\" - Like \"repeat\", except that the interpolation value alternately ramps up to 1 \nand back down to 0 for each pair of cycles (as opposed to ramping to 1 and then \nimmediately jumping back to 0). For each odd-numbered cycle, the interpolation value \nis (1-r), where r is the value that would be generated from the corresponding \"repeat\" \nmode. The 'onComplete' callback fires after each period. The function 'isComplete()' \nNEVER returns true.\n* params.easing (function) - The tween easing function. Default value is ease.linear. Easing functions\nallow the properties to be animated in a non-linear fashion, for example to slow down at the start or\nend of the animation period. A full list of easing functions is provided above.\n* params.easingValue (number) - The tween easing value. Depending on the easing function being used,\nthis value can affect the 'strength' of the function, for example the degree to which the animation\nspeeds up or slows down at the start or end of the period. Default value depends on the easing function.\n* params.onStart (function or table) - A function or table listener called before the tween \nbegins. Table listeners must have an 'onStart' method. When invoked, the listener function is\npassed the tween's owning node as an input. The 'onStart' listener is called only once any 'delay'\nperiod has elapsed.\n* params.onComplete (function or table) - A function or table listener called after the \ntween completes. Table listeners must have an 'onComplete' method. When invoked, the listener function is\npassed the tween's owning node as an input. The 'onComplete' listener is called at the end of each\ntween 'cycle': if mode is 'clamp', there is only a single cycle, otherwise cycles repeat indefinitely with\nthe period specified by 'time'.\nExample::\nlocal mySprite = director:createSprite(0, 0, \"textures/beachball.png\")\n-- Animate x and alpha properties, over 1 second, after a delay of 0.5 seconds, with the \"powIn\" easing function\ntween:to(mySprite, { time=1, transition=ease.powIn, delta=0.5, x=100, alpha=0 } )\nDifferent 'modes' can be combined with different easing functions to create standard waves. \nFor example:\n* mode=\"repeat\", easing=ease.linear	-- sawtooth wave\n* mode=\"mirror\", easing=ease.linear	-- triangle wave\n* mode=\"mirror\", easing=ease.zero	-- square wave\nAny target value specified in the tween parameters must exist on the target object. Values can \nbe of type 'number' or 'table'. If of type 'table', the table must include values of type \n'number' and exist on the target object.\nExamples:\n* x=10 (type number)\n* xScale=2 (type number)\n* color={r=0} (type table, containing type number)\n* color={r=0, g=255} (type table, containing type number)\n* uvRect={x=1} (type table, containing type number)",
+        description = "Tween a series of node properties over time.\nThe final property values are specified in the params table. To customize the\ntween, you can optionally specify the following non-animating properties in params:\n* params.time (number) - The duration of the tween, in seconds. Default value is 0.5. The duration refers\nto the length of a 'cycle'; see the 'mode' parameter below.\n* params.delay (number) - Any delay in seconds before the tween begins. Default value is 0. If this value is\ngreater than 0, then this period must elapse before any properties start tweening. The 'onStart' callback\nis called only when this period has elapsed.\n* params.delta (boolean) - Whether or not to interpret the specified values as absolute, or relative to the\ncurrent values. The default is false, meaning absolute values. If true, the 'current' values are those\nat the point at which any 'delay' period has elapsed.\n* params.mode (string) - Can be 'clamp', 'repeat' or 'mirror'. The default value is 'clamp'.\n* \"clamp\" - The interpolation value moves from 0 (after any 'delay') to 1 \n(after a further 'time'), whereby any 'onComplete' callback is fired. The function \n'isComplete()' will return true only after this point. The interpolation stays at 1 after \nthis point.\n* \"repeat\" - The interpolation value moves from 0 (after any 'delay') to 1 (after a further \n'time'), whereby any 'onComplete' callback is fired. The interpolation value then starts \nagain at 0, and moves to 1 after a further 'time'; i.e. it continually cycles with a \nperiod of 'time'. The 'onComplete' callback fires after each period. The function \n'isComplete()' NEVER returns true.\n* \"mirror\" - Like \"repeat\", except that the interpolation value alternately ramps up to 1 \nand back down to 0 for each pair of cycles (as opposed to ramping to 1 and then \nimmediately jumping back to 0). For each odd-numbered cycle, the interpolation value \nis (1-r), where r is the value that would be generated from the corresponding \"repeat\" \nmode. The 'onComplete' callback fires after each period. The function 'isComplete()' \nNEVER returns true.\n* params.easing (function) - The tween easing function. Default value is ease.linear. Easing functions\nallow the properties to be animated in a non-linear fashion, for example to slow down at the start or\nend of the animation period. A full list of easing functions is provided above.\n* params.easingValue (number) - The tween easing value. Depending on the easing function being used,\nthis value can affect the 'strength' of the function, for example the degree to which the animation\nspeeds up or slows down at the start or end of the period. Default value depends on the easing function.\n* params.onStart (function or table) - A function or table listener called before the tween \nbegins. Table listeners must have an 'onStart' method. When invoked, the listener function is\npassed the tween's owning node as an input. The 'onStart' listener is called only once any 'delay'\nperiod has elapsed.\n* params.onComplete (function or table) - A function or table listener called after the \ntween completes. Table listeners must have an 'onComplete' method. When invoked, the listener function is\npassed the tween's owning node as an input. The 'onComplete' listener is called at the end of each\ntween 'cycle': if mode is 'clamp', there is only a single cycle, otherwise cycles repeat indefinitely with\nthe period specified by 'time'.\nExample::\nlocal mySprite = director:createSprite(0, 0, \"textures/beachball.png\")\n-- Animate x and alpha properties, over 1 second, after a delay of 0.5 seconds, with the \"powIn\" easing function\ntween:to(mySprite, { time=1, easing=ease.powIn, delay=0.5, x=100, alpha=0 } )\nDifferent 'modes' can be combined with different easing functions to create standard waves. \nFor example:\n* mode=\"repeat\", easing=ease.linear	-- sawtooth wave\n* mode=\"mirror\", easing=ease.linear	-- triangle wave\n* mode=\"mirror\", easing=ease.zero	-- square wave\nAny target value specified in the tween parameters must exist on the target object. Values can \nbe of type 'number' or 'table'. If of type 'table', the table must include values of type \n'number' and exist on the target object.\nExamples:\n* x=10 (type number)\n* xScale=2 (type number)\n* color={r=0} (type table, containing type number)\n* color={r=0, g=255} (type table, containing type number)\n* uvRect={x=1} (type table, containing type number)",
         args = "(target: object, params: table)",
         returns = "(object)",
       },

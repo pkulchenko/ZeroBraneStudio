@@ -17,7 +17,7 @@ local debugTab = {
   { ID_RUNNOW, TR("Run as Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
   { ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file") },
   { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
-  { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging") },
+  { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
   { },
   { ID_STOPDEBUG, TR("S&top Debugging")..KSC(ID_STOPDEBUG), TR("Stop the currently running process") },
   { ID_STEP, TR("Step &Into")..KSC(ID_STEP), TR("Step into") },
@@ -33,7 +33,7 @@ local debugTab = {
 }
 
 local targetDirMenu = wx.wxMenu{
-  {ID_PROJECTDIRCHOOSE, TR("Choose ...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
+  {ID_PROJECTDIRCHOOSE, TR("Choose...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
   {ID_PROJECTDIRFROMFILE, TR("Set From Current File")..KSC(ID_PROJECTDIRFROMFILE), TR("Set project directory from current file")},
 }
 local targetMenu = wx.wxMenu({})
@@ -55,9 +55,10 @@ local function selectInterpreter(id)
   menuBar:Check(id, true)
   menuBar:Enable(id, false)
 
-  if ide.interpreter and ide.interpreter ~= interpreters[id] then
+  local changed = ide.interpreter ~= interpreters[id]
+  if ide.interpreter and changed then
     PackageEventHandle("onInterpreterClose", ide.interpreter) end
-  if interpreters[id] and ide.interpreter ~= interpreters[id] then
+  if interpreters[id] and changed then
     PackageEventHandle("onInterpreterLoad", interpreters[id]) end
 
   ide.interpreter = interpreters[id]
@@ -65,7 +66,7 @@ local function selectInterpreter(id)
   DebuggerShutdown()
 
   ide.frame.statusBar:SetStatusText(ide.interpreter.name or "", 5)
-  ReloadLuaAPI()
+  if changed then ReloadLuaAPI() end
 end
 
 function ProjectSetInterpreter(name)
@@ -256,7 +257,7 @@ frame:Connect(ID_TOGGLEBREAKPOINT, wx.wxEVT_UPDATE_UI,
   function (event)
     local editor = GetEditor()
     event:Enable((ide.interpreter) and (ide.interpreter.hasdebugger) and (editor ~= nil)
-      and (not debugger.running) and (not debugger.scratchpad))
+      and (not debugger.scratchpad))
   end)
 
 frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -298,15 +299,18 @@ frame:Connect(ID_RUNNOW, wx.wxEVT_UPDATE_UI,
   end)
 
 frame:Connect(ID_ATTACHDEBUG, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function ()
-    if (ide.interpreter.fattachdebug) then ide.interpreter:fattachdebug() end
+  function (event)
+    if event:IsChecked() then
+      if (ide.interpreter.fattachdebug) then ide.interpreter:fattachdebug() end
+    else
+      debugger.listen(false) -- stop listening
+    end
   end)
 frame:Connect(ID_ATTACHDEBUG, wx.wxEVT_UPDATE_UI,
   function (event)
     local editor = GetEditor()
-    event:Enable((ide.interpreter) and (ide.interpreter.fattachdebug)
-      and (not debugger.listening) and (debugger.server == nil)
-      and (editor ~= nil) and (not debugger.scratchpad))
+    event:Enable(ide.interpreter and ide.interpreter.fattachdebug and true or false)
+    ide.frame.menuBar:Check(event:GetId(), debugger.listening and true or false)
   end)
 
 frame:Connect(ID_STARTDEBUG, wx.wxEVT_COMMAND_MENU_SELECTED, function () ProjectDebug() end)

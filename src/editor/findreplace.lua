@@ -16,6 +16,8 @@ ide.findReplace = {
   fSubDirs = true, -- search in subdirectories
   fMakeBak = true, -- make bak files for replace in files
 
+  buttons = {},
+
   findTextArray = {}, -- array of last entered find text
   findText = "", -- string to find
   replaceTextArray = {}, -- array of last entered replace text
@@ -303,7 +305,7 @@ function findReplace:RunInFiles(replace)
   if not findReplace:HasText() then return end
 
   findReplace.oveditor = wxstc.wxStyledTextCtrl(findReplace.dialog, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxSize(1,1), wx.wxBORDER_STATIC)
+    wx.wxDefaultPosition, wx.wxSize(1,1), wx.wxBORDER_NONE)
   findReplace.occurrences = 0
 
   ActivateOutput()
@@ -544,6 +546,7 @@ function findReplace:createDialog(replace,infiles)
     function()
       TransferDataFromWindow()
       if (findReplace.infiles) then
+        for _, b in pairs(findReplace.buttons) do b:Disable() end
         findReplace:RunInFiles()
         findReplace.dialog:Destroy()
         findReplace.dialog = nil
@@ -558,6 +561,7 @@ function findReplace:createDialog(replace,infiles)
       event:Skip()
       if findReplace.replace then
         if (findReplace.infiles) then
+          for _, b in pairs(findReplace.buttons) do b:Disable() end
           findReplace:RunInFiles(true)
           findReplace.dialog:Destroy()
           findReplace.dialog = nil
@@ -591,20 +595,26 @@ function findReplace:createDialog(replace,infiles)
       end)
   end
 
-  -- if on OSX then select the current value of the default dropdown
-  -- and don't set the default as it doesn't make Enter to work, but
-  -- prevents associated hotkey (Cmd-F) from working (wx2.9.5).
-  if ide.osname == 'Macintosh' then
-    findTextCombo:SetSelection(0, #findTextCombo:GetValue())
-  else
-    findButton:SetDefault()
-  end
-
   -- reset search when re-creating dialog to avoid modifying selected
   -- fragment after successful search and updated replacement
   findReplace.foundString = false
   findReplace.dialog = findDialog
   findDialog:Show(true)
+
+  -- if on OSX then select the current value of the default dropdown
+  -- and don't set the default as it doesn't make Enter to work, but
+  -- prevents associated hotkey (Cmd-F) from working (wx2.9.5).
+  -- SetFocus has to be done after :Show on OSX as it doesn't put
+  -- the focus on the Find field on some instances of OSX 10.9.2.
+  if mac then
+    findTextCombo:SetSelection(-1, -1)
+    findTextCombo:SetFocus() -- force focus on the Find
+  else
+    findButton:SetDefault()
+  end
+
+  findReplace.buttons = {findButton, replaceButton}
+
   return findDialog
 end
 

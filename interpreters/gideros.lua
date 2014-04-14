@@ -90,15 +90,14 @@ return {
     else
       local cmd = ('"%s"'):format(gideros)
       -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-      pid = CommandLineRun(cmd,self:fworkdir(wfilename),not mac,true,nil,nil,
-        function() ide.debugger.pid = nil end)
+      pid = CommandLineRun(cmd,self:fworkdir(wfilename),not mac,true)
       if not pid then return end
     end
 
     do
       DisplayOutputLn("Starting the player and waiting for the bridge to connect at '"..gdrbridge.."'.")
       local cmd = ('"%s" %s'):format(gdrbridge, 'isconnected')
-      local attempts, connected = 12
+      local attempts, connected = 15
       for _ = 1, attempts do
         local proc = wx.wxProcess()
         proc:Redirect()
@@ -107,7 +106,7 @@ return {
         if not isValidPid(bid, cmd) then return end
 
         local streamin = proc:GetInputStream()
-        for _ = 1, 20 do
+        for _ = 1, 30 do
           if streamin:CanRead() then
             connected = tonumber(streamin:Read(4096)) == 1
             break end

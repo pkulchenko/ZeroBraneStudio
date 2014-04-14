@@ -406,7 +406,6 @@ debugger.shell = function(expression, isstatement)
           DisplayShellErr(err)
         elseif addedret or #values > 0 then
           if forceexpression then -- display elements as multi-line
-            local mobdebug = require "mobdebug"
             for i,v in pairs(values) do -- stringify each of the returned values
               local func = loadstring('return '..v) -- deserialize the value first
               if func then -- if it's deserialized correctly
@@ -442,7 +441,20 @@ local function stoppedAtBreakpoint(file, line)
   return breakpoint > -1 and breakpoint == current
 end
 
-debugger.listen = function()
+debugger.listen = function(start)
+  if start == false then
+    if debugger.listening then
+      debugger.terminate() -- terminate if running
+      copas.removeserver(debugger.listening)
+      DisplayOutputLn(TR("Debugger server stopped at %s:%d.")
+        :format(debugger.hostname, debugger.portnumber))
+      debugger.listening = false
+    else
+      DisplayOutputLn(TR("Can't stop debugger server as it is not started."))
+    end
+    return
+  end
+
   local server, err = socket.bind("*", debugger.portnumber)
   if not server then
     DisplayOutputLn(TR("Can't start debugger server at %s:%d: %s.")
@@ -514,10 +526,9 @@ debugger.listen = function()
               -- if it's an error returned, then handle the error
               if m and m:find("stack traceback:", 1, true) then
                 -- this is an error message sent remotely
-                local func = loadstring("return "..m)
-                if func then
-                  DisplayOutputLn(func())
-                  debugger.terminate()
+                local ok, res = LoadSafe("return "..m)
+                if ok then
+                  DisplayOutputLn(res)
                   return
                 end
               end
@@ -658,7 +669,7 @@ debugger.listen = function()
         end
       end
     end)
-  debugger.listening = true
+  debugger.listening = server
 end
 
 debugger.handle = function(command, server, options)
@@ -747,6 +758,18 @@ debugger.handleAsync = function(command)
     copas.addthread(function () debugger.handle(command) end)
   end
 end
+debugger.handleDirect = function(command)
+  local sock = debugger.socket
+  if debugger.server and sock then
+    local running = debugger.running
+    -- this needs to be short as it will block the UI
+    sock:settimeout(0.25)
+    debugger.handle(command, sock)
+    sock:settimeout(0)
+    -- restore running status
+    debugger.running = running
+  end
+end
 
 debugger.loadfile = function(file)
   return debugger.handle("load " .. file)
@@ -758,13 +781,21 @@ end
 do
   local nextupdatedelta = 0.250
   local nextupdate = TimeGet() + nextupdatedelta
+  local function forceUpdateOnWrap(editor)
+    -- http://www.scintilla.org/ScintillaDoc.html#LineWrapping
+    -- Scintilla doesn't perform wrapping immediately after a content change
+    -- for performance reasons, so the activation calculations can be wrong
+    -- if there is wrapping that pushes the current line out of the screen.
+    -- force editor update that performs wrapping recalculation.
+    if ide.config.editor.usewrap then editor:Update(); editor:Refresh() end
+  end
   debugger.update = function()
     if debugger.server or debugger.listening and TimeGet() > nextupdate then
       copas.step(0)
       nextupdate = TimeGet() + nextupdatedelta
     end
 
-    -- if there are any pending activations
+    -- if there is any pending activation
     if debugger.activate then
       local file, line, content = unpack(debugger.activate)
       if content then
@@ -774,9 +805,14 @@ do
         and not (debugger.options or {}).allowediting then
           editor:SetReadOnly(true)
         end
+        forceUpdateOnWrap(editor)
         activateDocument(file, line)
-      elseif LoadFile(file) then
-        activateDocument(file, line)
+      else
+        local editor = LoadFile(file)
+        if editor then
+          forceUpdateOnWrap(editor)
+          activateDocument(file, line)
+        end
       end
       debugger.activate = nil
     end
@@ -827,7 +863,10 @@ debugger.breaknow = function(command)
   end
 end
 debugger.breakpoint = function(file, line, state)
-  debugger.handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
+  if debugger.running then
+    return debugger.handleDirect((state and "asetb " or "adelb ") .. file .. " " .. line)
+  end
+  return debugger.handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
 end
 debugger.quickeval = function(var, callback)
   if debugger.server and not debugger.running
@@ -863,7 +902,7 @@ function debuggerAddWindow(ctrl, panel, name)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:AddPage(ctrl, TR(name), true)
+  notebook:AddPage(ctrl, name, true)
 
   local mgr = ide.frame.uimgr
   mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
@@ -877,11 +916,11 @@ function debuggerAddWindow(ctrl, panel, name)
 end
 
 function DebuggerAddStackWindow()
-  return debuggerAddWindow(debugger.stackCtrl, "stackpanel", "Stack")
+  return debuggerAddWindow(debugger.stackCtrl, "stackpanel", TR("Stack"))
 end
 
 function DebuggerAddWatchWindow()
-  return debuggerAddWindow(debugger.watchCtrl, "watchpanel", "Watch")
+  return debuggerAddWindow(debugger.watchCtrl, "watchpanel", TR("Watch"))
 end
 
 function debuggerCreateStackWindow()
@@ -1086,7 +1125,6 @@ end
 function DebuggerStop()
   if (debugger.server) then
     debugger.server = nil
-    debugger.pid = nil
     SetAllEditorsReadOnly(false)
     ShellSupportRemote(nil)
     ClearAllCurrentLineMarkers()
@@ -1100,6 +1138,8 @@ function DebuggerStop()
     -- no debugger.server, but scratchpad may still be on. Turn it off.
     DebuggerScratchpadOff()
   end
+  -- debugger can be stopped after "normal" run; need to reset debugger.pid
+  debugger.pid = nil
 end
 
 function DebuggerMakeFileName(editor, filePath)
@@ -1107,8 +1147,6 @@ function DebuggerMakeFileName(editor, filePath)
 end
 
 function DebuggerToggleBreakpoint(editor, line)
-  -- ignore requests to toggle when the debugger is running
-  if debugger.server and debugger.running then return end
   local markers = editor:MarkerGet(line)
   local id = editor:GetId()
   local filePath = debugger.editormap and debugger.editormap[editor]

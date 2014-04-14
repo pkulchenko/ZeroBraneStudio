@@ -33,10 +33,32 @@ function M.warnings_from_string(src, file)
     LI.mark_related_keywords(ast, tokenlist, src)
   end
 
-  return M.show_warnings(ast)
+  local globinit = {}
+  local spec = GetSpec(wx.wxFileName(file):GetExt())
+  for k in pairs(spec and GetApi(spec.apitype or "none").ac.childs or {}) do
+    globinit[k] = true
+  end
+
+  return M.show_warnings(ast, globinit)
 end
 
-function M.show_warnings(top_ast)
+function AnalyzeFile(file)
+  local warn, err, line, pos = M.warnings_from_string(FileRead(file), file)
+  if err then
+    err = err:gsub("line %d+, char %d+", "syntax error")
+  end
+  return warn, err, line, pos
+end
+
+function AnalyzeString(src)
+  local warn, err, line, pos = M.warnings_from_string(src, "src")
+  if err then
+    err = err:gsub("line %d+, char %d+", "syntax error")
+  end
+  return warn, err, line, pos
+end
+
+function M.show_warnings(top_ast, globinit)
   local warnings = {}
   local function warn(msg, linenum, path)
     warnings[#warnings+1] = (path or "?") .. "(" .. (linenum or 0) .. "): " .. msg
@@ -44,7 +66,7 @@ function M.show_warnings(top_ast)
   local function known(o) return not T.istype[o] end
   local function index(f) -- build abc.def.xyz name recursively
     return (f[1].tag == 'Id' and f[1][1] or index(f[1])) .. '.' .. f[2][1] end
-  local isseen, globseen, fieldseen = {}, {}, {}
+  local globseen, isseen, fieldseen = globinit or {}, {}, {}
   LA.walk(top_ast, function(ast)
     local line = ast.lineinfo and ast.lineinfo.first[1] or 0
     local path = ast.lineinfo and ast.lineinfo.first[4] or '?'
@@ -155,11 +177,9 @@ local frame = ide.frame
 local menu = frame.menuBar:GetMenu(frame.menuBar:FindMenu(TR("&Project")))
 
 -- insert after "Compile" item
-for item = 0, menu:GetMenuItemCount()-1 do
-   if menu:FindItemByPosition(item):GetId() == ID_COMPILE then
-     menu:Insert(item+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
-     break
-   end
+local _, compilepos = ide:FindMenuItem(menu, ID_COMPILE)
+if compilepos then
+  menu:Insert(compilepos+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
 end
 
 local debugger = ide.debugger

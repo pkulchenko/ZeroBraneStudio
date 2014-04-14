@@ -55,6 +55,9 @@ local function setPromptText(text)
   out:SetTargetStart(length - string.len(getPromptText()))
   out:SetTargetEnd(length)
   out:ReplaceTarget(text)
+  -- refresh the output window to force recalculation of wrapped lines;
+  -- otherwise a wrapped part of the last line may not be visible.
+  out:Update(); out:Refresh()
   out:GotoPos(out:GetLength())
 end
 
@@ -143,7 +146,7 @@ local function shellPrint(marker, ...)
     text = text .. tostring(x)..(i < cnt and "\t" or "")
   end
   -- add "\n" if it is missing
-  if text then text = text:gsub("\n$", "") .. "\n" end
+  if text then text = text:gsub("\n+$", "") .. "\n" end
 
   local lines = out:GetLineCount()
   local promptLine = isPrompt and getPromptLine() or nil
@@ -391,8 +394,8 @@ out:Connect(wx.wxEVT_KEY_DOWN,
         -- through multiline entry
         if out:GetCurrentLine() > getPromptLine() then break end
 
-        -- if we are not on the caret line, then don't move
-        if not caretOnPromptLine() then return end
+        -- if we are not on the caret line, move normally
+        if not caretOnPromptLine() then break end
 
         local promptText = getPromptText()
         setPromptText(getNextHistoryLine(false, promptText))
@@ -403,7 +406,9 @@ out:Connect(wx.wxEVT_KEY_DOWN,
         local totalLines = out:GetLineCount()-1
         if out:GetCurrentLine() < totalLines then break end
 
+        -- if we are not on the caret line, move normally
         if not caretOnPromptLine() then break end
+
         local promptText = getPromptText()
         setPromptText(getNextHistoryLine(true, promptText))
         return
@@ -429,8 +434,6 @@ out:Connect(wx.wxEVT_KEY_DOWN,
       elseif key == wx.WXK_ESCAPE then
         setPromptText("")
         return
-      elseif key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT then
-        if not caretOnPromptLine(true) then return end
       elseif key == wx.WXK_BACK then
         if not caretOnPromptLine(true) then return end
       elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
@@ -442,6 +445,7 @@ out:Connect(wx.wxEVT_KEY_DOWN,
           or key == wx.WXK_PAGEDOWN or key == wx.WXK_NUMPAD_PAGEDOWN
           or key == wx.WXK_END or key == wx.WXK_NUMPAD_END
           or key == wx.WXK_HOME or key == wx.WXK_NUMPAD_HOME
+          or key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT
           or key == wx.WXK_RIGHT or key == wx.WXK_NUMPAD_RIGHT
           or key == wx.WXK_SHIFT or key == wx.WXK_CONTROL
           or key == wx.WXK_ALT then
@@ -486,7 +490,7 @@ local function inputEditable(line)
     not (out:LineFromPosition(out:GetSelectionStart()) < getPromptLine())
 end
 
--- new Scintilla changed the way markers move when the text is updated
+-- new Scintilla (3.2.1) changed the way markers move when the text is updated
 -- ticket: http://sourceforge.net/p/scintilla/bugs/939/
 -- discussion: https://groups.google.com/forum/?hl=en&fromgroups#!topic/scintilla-interest/4giFiKG4VXo
 if ide.wxver >= "2.9.5" then

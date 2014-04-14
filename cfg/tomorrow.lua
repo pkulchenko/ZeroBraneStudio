@@ -1,10 +1,10 @@
 -- This is a file that sets color scheme based on Tomorrow format.
--- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 
 -- Tomorrow colors from https://github.com/chriskempson/tomorrow-theme
 -- Zenburn colors from https://github.com/jnurmine/Zenburn/blob/master/colors/zenburn.vim (contributed by Srdjan Marković)
 -- Monokai colors from http://www.monokai.nl/blog/2006/07/15/textmate-color-theme/
--- Molokay colors based on https://github.com/tomasr/molokai/blob/master/colors/molokai.vim
+-- Molokai colors based on https://github.com/tomasr/molokai/blob/master/colors/molokai.vim
 -- Solarized colors from https://github.com/altercation/vim-colors-solarized
 
 local theme = ...
@@ -181,16 +181,16 @@ local colors = {
   NotepadPlusPlus = { -- contributed by Florian (https://github.com/SiENcE)
     Background  = H'FFFFFF',
     CurrentLine = H'E9E2FF',
-    Selection   = H'ADADA1',
+    Selection   = H'C0C0C0',
     Foreground  = H'000000',
     Comment     = H'008000',
     Red         = H'FF6900',
-    Orange      = H'00FF00',
+    Orange      = H'FF0000',
     Yellow      = H'FF4E00',
     Green       = H'808080',
-    Aqua        = H'260099',
+    Aqua        = H'000080',
     Blue        = H'2123FF',
-    Purple      = H'FFFFFF',
+    Purple      = H'8000FF',
   },
   SciTeLuaIDE = { -- contributed by Jayanth Acharya
     Background  = H'1B1D1E',
@@ -260,7 +260,6 @@ return {
   calltip = nil,
 
   -- common special (need custom fg & bg)
-  calltipbg = nil,
   sel = {bg = C.Selection},
   caret = {fg = C.Foreground},
   caretlinebg = {bg = C.CurrentLine},
@@ -269,7 +268,7 @@ return {
   edge = {},
 
   indicator = {
-    fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_ROUNDBOX},
+    fncall = {fg = C.Purple, st = wxstc.wxSTC_INDIC_HIDDEN},
     --[[ other possible values are:
       wxSTC_INDIC_PLAIN	 Single-line underline
       wxSTC_INDIC_SQUIGGLE Squiggly underline

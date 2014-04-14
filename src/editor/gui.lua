@@ -53,7 +53,7 @@ local function createFrame()
   statusBar:SetStatusStyles({wx.wxSB_FLAT, wx.wxSB_FLAT, wx.wxSB_FLAT,
     wx.wxSB_FLAT, wx.wxSB_FLAT, wx.wxSB_FLAT})
   statusBar:SetStatusWidths(
-    {-1, section_width*6, section_width, section_width, section_width*4, section_width*4})
+    {-1, section_width*6, section_width, section_width, section_width*5, section_width*4})
   statusBar:SetStatusText(GetIDEString("statuswelcome"))
   
   local mgr = wxaui.wxAuiManager()
@@ -137,13 +137,39 @@ local function createNotebook(frame)
         and debug:traceback():find("'AddPage'"))
 
       if doc and event:GetOldSelection() ~= -1 and not double then
-        SetEditorSelection(notebook:GetSelection()) end
+        -- switching between editor tabs doesn't trigger KILL_FOCUS events
+        -- on OSX (http://trac.wxwidgets.org/ticket/14142); trigger manually
+        if ide.osname == 'Macintosh' then
+          local win = notebook:GetPage(event:GetOldSelection())
+          local ev = wx.wxFocusEvent(wx.wxEVT_KILL_FOCUS)
+          win:GetEventHandler():ProcessEvent(ev)
+        end
+        SetEditorSelection(notebook:GetSelection())
+      end
     end)
 
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
     function (event)
       ClosePage(event:GetSelection())
       event:Veto() -- don't propagate the event as the page is already closed
+    end)
+
+  notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
+    function (event)
+      -- as this event can be on different tab controls,
+      -- need to find the control to add the page to
+      local tabctrl = event:GetEventObject():DynamicCast("wxAuiTabCtrl")
+      -- check if the active page is in the current control
+      local active = tabctrl:GetActivePage()
+      if active >= 0 and tabctrl:GetPage(active).window
+        ~= notebook:GetPage(notebook:GetSelection()) then
+        -- if not, need to activate the control that was clicked on;
+        -- find the last window and switch to it (assuming there is always one)
+        assert(tabctrl:GetPageCount() >= 1, "Expected at least one page in a notebook tab control.")
+        local lastwin = tabctrl:GetPage(tabctrl:GetPageCount()-1).window
+        notebook:SetSelection(notebook:GetPageIndex(lastwin))
+      end
+      NewFile()
     end)
 
   -- tabs can be dragged around which may change their indexes;
@@ -334,10 +360,10 @@ local function createBottomNotebook(frame)
     end)
 
   local errorlog = wxstc.wxStyledTextCtrl(bottomnotebook, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_STATIC)
+    wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
 
   local shellbox = wxstc.wxStyledTextCtrl(bottomnotebook, wx.wxID_ANY,
-    wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_STATIC)
+    wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
 
   bottomnotebook:AddPage(errorlog, TR("Output"), true)
   bottomnotebook:AddPage(shellbox, TR("Local console"), false)

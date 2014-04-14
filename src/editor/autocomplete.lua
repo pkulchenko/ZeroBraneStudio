@@ -107,11 +107,24 @@ end
 -- ToolTip and reserved words list
 -- also fixes function descriptions
 
-local tipwidth = math.max(20, ide.config.acandtip.width or 60)
-local widthmask = ("[^\n]"):rep(tipwidth-10)..("[^\n]?"):rep(10)
-local function fillTips(api,apibasename,apiname)
+local function formatUpToX(s, x)
+  local splitstr = "([ \t]*)(%S*)([ \t]*)(\n?)"
+  local t = {""}
+  for prefix, word, suffix, newline in s:gmatch(splitstr) do
+    if #(t[#t]) + #prefix + #word > x and #t > 0 then
+      table.insert(t, word..suffix)
+    else
+      t[#t] = t[#t]..prefix..word..suffix
+    end
+    if #newline > 0 then table.insert(t, "") end
+  end
+  return table.concat(t, "\n")
+end
+
+local function fillTips(api,apibasename)
   local apiac = api.ac
   local tclass = api.tip
+  local tipwidth = math.max(20, ide.config.acandtip.width)
 
   tclass.staticnames = {}
   tclass.keys = {}
@@ -130,28 +143,20 @@ local function fillTips(api,apibasename,apiname)
   local function traverse (tab,libname)
     if not tab.childs then return end
     for key,info in pairs(tab.childs) do
-      traverse(info,key)
+      local fullkey = (libname ~= "" and libname.."." or "")..key
+      traverse(info, fullkey)
+
       if info.type == "function" or info.type == "method" or info.type == "value" then
-        local libstr = libname ~= "" and libname.."." or ""
-
-        -- fix description
-        local frontname = (info.returns or "(?)").." "..libstr..key.." "..(info.args or "(?)")
-        frontname = frontname
-          :gsub("\n"," ")
-          :gsub("\t","")
-          :gsub("("..widthmask..")[ \t]([^%)])","%1\n %2")
-
-        info.description = (info.description or "")
-          :gsub("\n\n","<br>"):gsub("\n"," "):gsub("<br>","\n")
-          :gsub("[ \t]+"," ")
-          :gsub("("..widthmask..") ","%1\n")
+        local frontname = (info.returns or "(?)").." "..fullkey.." "..(info.args or "(?)")
+        frontname = formatUpToX(frontname:gsub("\n"," "):gsub("\t",""), tipwidth)
+        local description = formatUpToX(info.description or "", tipwidth)
 
         -- build info
         local inf = (info.type == "value" and "" or frontname.."\n")
-          ..info.description
-        local sentence = info.description:match("^(.-)%. ?\n")
+          ..description
+        local sentence = description:match("^(.-)%. ?\n")
         local infshort = (info.type == "value" and "" or frontname.."\n")
-          ..(sentence and sentence.."..." or info.description)
+          ..(sentence and sentence.."..." or description)
         local infshortbatch = (info.returns and info.args) and frontname or infshort
 
         -- add to infoclass
@@ -215,7 +220,8 @@ local function resolveAssign(editor,tx)
     if (key and rest and tab.childs and tab.childs[key]) then
       return getclass(tab.childs[key],rest)
     end
-    if (tab.valuetype) then
+    -- process valuetype, but only if it doesn't reference the current tab
+    if (tab.valuetype and tab ~= ac.childs[tab.valuetype]) then
       return getclass(ac,tab.valuetype.."."..a)
     end
     return tab,a
@@ -264,7 +270,7 @@ function GetTipInfo(editor, content, short, fullmatch)
 
   -- try to resolve the class
   content = content:gsub("%b[]",".0")
-  local tab, rest = resolveAssign(editor, content)
+  local tab = resolveAssign(editor, content)
 
   local caller = content:match("([%w_]+)%(?%s*$")
   local class = (tab and tab.classname
@@ -380,27 +386,26 @@ local function getEditorLines(editor,line,numlines)
     editor:PositionFromLine(line),editor:PositionFromLine(line+numlines+1))
 end
 
-function DynamicWordsAdd(ev,editor,content,line,numlines)
+function DynamicWordsAdd(editor,content,line,numlines)
   if ide.config.acandtip.nodynwords then return end
   local api = editor.api
-  local content = content or getEditorLines(editor,line,numlines)
+  content = content or getEditorLines(editor,line,numlines)
   for word in content:gmatch "[%.:]?%s*([a-zA-Z_]+[a-zA-Z_0-9]+)" do
     addDynamicWord(api,word)
   end
 end
 
-function DynamicWordsRem(ev,editor,content,line,numlines)
+function DynamicWordsRem(editor,content,line,numlines)
   if ide.config.acandtip.nodynwords then return end
   local api = editor.api
-  local content = content or getEditorLines(editor,line,numlines)
+  content = content or getEditorLines(editor,line,numlines)
   for word in content:gmatch "[%.:]?%s*([a-zA-Z_]+[a-zA-Z_0-9]+)" do
     removeDynamicWord(api,word)
   end
 end
 
-function DynamicWordsRemoveAll (editor)
-  local tx = editor:GetText()
-  DynamicWordsRem("close",editor,tx)
+function DynamicWordsRemoveAll(editor)
+  DynamicWordsRem(editor,editor:GetText())
 end
 
 ------------
@@ -409,7 +414,6 @@ end
 local cachemain = {}
 local cachemethod = {}
 local laststrategy
-local lastmethod
 local function getAutoCompApiList(childs,fragment,method)
   fragment = fragment:lower()
   local strategy = ide.config.acandtip.strategy
@@ -496,10 +500,6 @@ local function getAutoCompApiList(childs,fragment,method)
   end
 
   return t
-end
-
-function ClearAutoCompCache()
-  cache = {}
 end
 
 -- make syntype dependent

@@ -15,6 +15,33 @@ local viewMenu = wx.wxMenu {
   { ID_VIEWDEFAULTLAYOUT, TR("&Default Layout")..KSC(ID_VIEWDEFAULTLAYOUT), TR("Reset to default layout") },
   { ID_VIEWFULLSCREEN, TR("Full &Screen")..KSC(ID_VIEWFULLSCREEN), TR("Switch to or from full screen mode") },
 }
+
+do -- Add zoom submenu
+  local zoomMenu = wx.wxMenu{
+    {ID_ZOOMRESET, TR("Zoom to 100%")..KSC(ID_ZOOMRESET)},
+    {ID_ZOOMIN, TR("Zoom In")..KSC(ID_ZOOMIN)},
+    {ID_ZOOMOUT, TR("Zoom Out")..KSC(ID_ZOOMOUT)},
+  }
+
+  frame:Connect(ID_ZOOMRESET, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function() local editor = GetEditorWithFocus()
+      if editor then editor:SetZoom(0) end end)
+  frame:Connect(ID_ZOOMIN, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function() local editor = GetEditorWithFocus()
+      if editor then editor:SetZoom(editor:GetZoom()+1) end end)
+  frame:Connect(ID_ZOOMOUT, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function() local editor = GetEditorWithFocus()
+      if editor then editor:SetZoom(editor:GetZoom()-1) end end)
+
+  -- only enable if there is an editor
+  local iseditor = function (event) event:Enable(GetEditorWithFocus() ~= nil) end
+  for _, id in ipairs({ID_ZOOMRESET, ID_ZOOMIN, ID_ZOOMOUT}) do
+    frame:Connect(id, wx.wxEVT_UPDATE_UI, iseditor)
+  end
+
+  viewMenu:Append(ID_ZOOM, TR("Zoom"), zoomMenu)
+end
+
 menuBar:Append(viewMenu, TR("&View"))
 
 local panels = {

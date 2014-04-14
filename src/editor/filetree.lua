@@ -78,9 +78,11 @@ local function treeAddDir(tree,parent_id,rootdir)
   end
 
   -- cache the mapping from names to tree items
-  local data = wx.wxLuaTreeItemData()
-  data:SetData(cache)
-  tree:SetItemData(parent_id, data)
+  if ide.wxver >= "2.9.5" then
+    local data = wx.wxLuaTreeItemData()
+    data:SetData(cache)
+    tree:SetItemData(parent_id, data)
+  end
 
   tree:SetItemHasChildren(parent_id,
     tree:GetChildrenCount(parent_id, false) > 0)
@@ -136,6 +138,12 @@ end
 local function treeSetConnectorsAndIcons(tree)
   tree:SetImageList(filetree.imglist)
 
+  local function isIt(item, imgtype) return tree:GetItemImage(item) == imgtype end
+
+  function tree:IsDirectory(item_id) return isIt(item_id, IMG_DIRECTORY) end
+  function tree:IsFileKnown(item_id) return isIt(item_id, IMG_FILE_KNOWN) end
+  function tree:IsFileOther(item_id) return isIt(item_id, IMG_FILE_OTHER) end
+
   function tree:GetItemFullName(item_id)
     local tree = self
     local str = tree:GetItemText(item_id)
@@ -151,6 +159,23 @@ local function treeSetConnectorsAndIcons(tree)
     local fullPath = wx.wxFileName(str)
     fullPath:Normalize()
     return fullPath:GetFullPath()
+  end
+
+  function tree:ActivateItem(item_id)
+    local name = tree:GetItemFullName(item_id)
+
+    if PackageEventHandle("onFiletreeActivate", tree, event, item_id) == false then
+      return
+    end
+
+    -- refresh the folder
+    if (tree:IsDirectory(item_id)) then
+      if wx.wxDirExists(name) then treeAddDir(tree,item_id,name)
+      else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
+    else -- open file
+      if wx.wxFileExists(name) then LoadFile(name,nil,true)
+      else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
+    end
   end
 
   local function refreshAncestors(node)
@@ -261,16 +286,7 @@ local function treeSetConnectorsAndIcons(tree)
     end)
   tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED,
     function (event)
-      local item_id = event:GetItem()
-      local name = tree:GetItemFullName(item_id)
-      -- refresh the folder
-      if (tree:GetItemImage(item_id) == IMG_DIRECTORY) then
-        if wx.wxDirExists(name) then treeAddDir(tree,item_id,name)
-        else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
-      else -- open file
-        if wx.wxFileExists(name) then LoadFile(name,nil,true)
-        else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
-      end
+      tree:ActivateItem(event:GetItem())
     end)
   -- handle context menu
   tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
@@ -365,6 +381,14 @@ local function treeSetConnectorsAndIcons(tree)
 
       tree:PopupMenu(menu)
     end)
+  tree:Connect(wx.wxEVT_RIGHT_DOWN,
+    function (event)
+      local item_id = tree:HitTest(event:GetPosition())
+      if PackageEventHandle("onFiletreeRDown", tree, event, item_id) == false then
+        return
+      end
+    end)
+
   -- toggle a folder on a single click
   tree:Connect(wx.wxEVT_LEFT_DOWN,
     function (event)
@@ -373,14 +397,30 @@ local function treeSetConnectorsAndIcons(tree)
       local mask = wx.wxTREE_HITTEST_ONITEMINDENT
         + wx.wxTREE_HITTEST_ONITEMICON + wx.wxTREE_HITTEST_ONITEMRIGHT
       local item_id, flags = tree:HitTest(event:GetPosition())
-      if item_id and tree:GetItemImage(item_id) == IMG_DIRECTORY
-      and bit.band(flags, mask) > 0 then
-        tree:Toggle(item_id)
-        tree:SelectItem(item_id)
+
+      if PackageEventHandle("onFiletreeLDown", tree, event, item_id) == false then
+        return
+      end
+
+      if item_id and bit.band(flags, mask) > 0 then
+        if tree:GetItemImage(item_id) == IMG_DIRECTORY then
+          tree:Toggle(item_id)
+          tree:SelectItem(item_id)
+        else
+          local name = tree:GetItemFullName(item_id)
+          if wx.wxFileExists(name) then LoadFile(name,nil,true) end
+        end
       else
         event:Skip()
       end
       return true
+    end)
+  local parent
+  tree:Connect(wx.wxEVT_COMMAND_TREE_BEGIN_LABEL_EDIT,
+    function (event)
+      local itemsrc = event:GetItem()
+      parent = tree:GetItemParent(itemsrc)
+      if not (itemsrc:IsOk() and parent:IsOk()) then event:Veto() end
     end)
   tree:Connect(wx.wxEVT_COMMAND_TREE_END_LABEL_EDIT,
     function (event)
@@ -389,14 +429,14 @@ local function treeSetConnectorsAndIcons(tree)
       event:Veto()
 
       local itemsrc = event:GetItem()
-      if itemsrc == tree:GetRootItem() then return end -- don't edit root
+      if not itemsrc:IsOk() or not parent or not parent:IsOk() then return end
 
-      local sourcedir = tree:GetItemFullName(tree:GetItemParent(itemsrc))
       local label = event:GetLabel():gsub("^%s+$","") -- clean all spaces
+      local sourcedir = tree:GetItemFullName(parent)
       local target = MergeFullPath(sourcedir, label)
       if event:IsEditCancelled() or label == empty
       or target and not renameItem(itemsrc, target)
-      then refreshAncestors(tree:GetItemParent(itemsrc)) end
+      then refreshAncestors(parent) end
     end)
   tree:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
@@ -414,7 +454,7 @@ local function treeSetConnectorsAndIcons(tree)
   local itemsrc
   tree:Connect(wx.wxEVT_COMMAND_TREE_BEGIN_DRAG,
     function (event)
-      if event:GetItem() ~= tree:GetRootItem() then
+      if tree:GetItemParent(event:GetItem()):IsOk() then
         itemsrc = event:GetItem()
         event:Allow()
       end
@@ -422,7 +462,7 @@ local function treeSetConnectorsAndIcons(tree)
   tree:Connect(wx.wxEVT_COMMAND_TREE_END_DRAG,
     function (event)
       local itemdst = event:GetItem()
-      if not itemdst:IsOk() then return end
+      if not itemdst:IsOk() or not itemsrc:IsOk() then return end
 
       -- check if itemdst is a folder
       local target = tree:GetItemFullName(itemdst)
