@@ -20,6 +20,9 @@ The values shown are the default values.
 - `editor.extraascent = nil`: extra spacing (in pixels) between editor lines (0.51+).
 - `editor.fold = true`: enable folding (0.39+).
 - `editor.foldcompact = true`: set compact fold that includes empty lines after a block.
+- `editor.foldtype = 'box'`: set folding style with `box`, `circle`, `arrow`, and `plus` as accepted values (0.51+).
+- `editor.foldflags = wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED`: set folding flags that control how folded lines are indicated in the text area (0.51+); set to `0` to disable all indicator lines.
+Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw line above if expanded), `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED` (draw line above if contracted), `wxstc.wxSTC_FOLDFLAG_LINEAFTER_EXPANDED` (draw line below if expanded), and `wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED` (draw line below if contracted).
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
