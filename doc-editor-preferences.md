@@ -13,9 +13,9 @@ The values shown are the default values.
 - `editor.autoactivate = false`: auto-activate files during debugging.
 - `editor.autoreload = false`: auto-reload externally modified files (if no conflict detected).
 - `editor.autotabs = false`: use tabs if detected.
-- `editor.calltipdelay = 500`: calltip delay (assign `nil` or `0` to disable).
+- `editor.calltipdelay = 500`: calltip delay; set to `nil` or `0` to disable.
 - `editor.caretline = true`: show caret line.
-- `editor.checkeol = true`: check for mixed end-of-line encodings in loaded files (assign `nil` or `false` to disable).
+- `editor.checkeol = true`: check for mixed end-of-line encodings in loaded files; set to `nil` or `false` to disable.
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
 - `editor.extraascent = nil`: extra spacing (in pixels) between editor lines (0.51+).
 - `editor.fold = true`: enable folding (0.39+).
@@ -36,6 +36,7 @@ The values shown are the default values.
 - `outputshell.fontname = "Courier New"`: set font name.
 - `outputshell.fontsize = 10`: set font size (the default value is `11` on OSX).
 - `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
+- `outputshell.usewrap = true`: wrap long lines (0.51+); set to `nil` or `false` to disable. This setting only applies to the Output window; the Console always wrap its lines.
 
 ## Project/Filetree
 
