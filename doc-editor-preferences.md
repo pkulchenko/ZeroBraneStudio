@@ -33,6 +33,8 @@ Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw
 - `editor.usetabs = false`: enable using tabs.
 - `editor.usewrap = true`: wrap long lines.
 - `editor.whitespace = false`: display whitespaces.
+- `editor.wrapflags = nil`: enable drawing of visual flags to indicate wrapped lines (0.51+).
+Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subline), `wxstc.wxSTC_WRAPVISUALFLAG_START` (beginning of subline), and `wxstc.wxSTC_WRAPVISUALFLAG_MARGIN` (line number margin).
 
 ## Output and Console
 
