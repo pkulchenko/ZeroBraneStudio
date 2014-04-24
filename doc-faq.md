@@ -102,6 +102,13 @@ You can specify `styles.text.bg = {240,240,240}` in [configuration settings](doc
 See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
 
+## How to change the color scheme in the editor?
+
+You can open `cfg/scheme-picker.lua` in the IDE and click on links with color scheme names to test included schemes.
+These schemes can be configured as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L83-L88).
+
+For more information on how to modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
+
 ## How to accept keyboard input for applications started from the IDE?
 
 "print" something using `print` or `io.write` before reading input.
