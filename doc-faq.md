@@ -61,6 +61,10 @@ You can still debug those fragments after adding `require('mobdebug').on()` to t
 For example, if you use an embedded engine, you may want to check if the path reported by the engine is normalized (doesn't include `../` references) by checking the result of `debug.getinfo(1,"S").source`.
 - The script you are debugging may **change the current folder** (for example, using `lfs` module) and load the script (using `dofile`) from the changed folder.
 To make breakpoints work in this case you may want to **use absolute path** with `dofile`.
+- You may be using your own Lua engine that doesn't report file names relative to the project directory (as set in the IDE).
+For example, you set the project directory pointing to `scripts` folder (with `common` subfolder) and the engine reports the file name as `myfile.lua` instead of `common/myfile.lua`;
+the IDE will be looking for `scripts/myfile.lua` instead of `scripts/common/myfile.lua` and the file will not be activated and the breakpoints won't work.
+You may also be using inconsistent path separators in the file names; for example, `common/myfile.lua` in one case and `common\myfile.lua` in another.
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
