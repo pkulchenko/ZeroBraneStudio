@@ -15,5 +15,5 @@ You have two options to get it working:
 (1) **statically compile luasocket** into your application, and
 (2) **put lua52.dll proxy DLL** into the folder with your executable to make all calls to Lua 5.2 interpreter be forwarded to your statically compiled interpreter (follow the instructions for `mkforwardlib-gcc-52.lua` on [this page](http://lua-users.org/wiki/LuaProxyDllThree)).
 
-(**This note is no longer relevant sarting from v0.39+**) Note that the internal Lua engine in ZeroBrane Studio is still using Lua 5.1 and you will not be able to compile any code that uses Lua 5.2 features (like goto statements).
+(**This note is no longer relevant starting from v0.39+**) Note that the internal Lua engine in ZeroBrane Studio is still using Lua 5.1 and you will not be able to compile any code that uses Lua 5.2 features (like goto statements).
 To work around that you can copy the existing Lua interpreter (`interpreters/luadeb.lua` into a different file) and add `skipcompile = true,` option to it, which will skip a required compilation step before executing your script.
