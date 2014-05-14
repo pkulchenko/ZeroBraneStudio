@@ -144,11 +144,11 @@ If you want to continue editing this file in the IDE, you have two choices:
 
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 
-You can start one instance as you normally do and then start the second instance using the following command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173`.
+You can start one instance as you normally do and then start the second instance using the following command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`.
 This command disables a singleinstance check for the second instance and configures it to use port 8173 for debugging.
 You can then use `require('mobdebug').start("domain-name", 8173)` in your application to connect to the second instance for debugging.
 
-If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173`.
+If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
 
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
