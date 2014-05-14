@@ -558,6 +558,9 @@ function filetree:updateProjectDir(newdir)
   -- refresh Recent Projects menu item
   ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID_RECENTPROJECTS))
 
+  -- Add project dir to find replace window
+  PrependStringToArray(ide.findReplace.filedirTextArray, ide.config.path.projectdir) 
+	
   PackageEventHandle("onProjectLoad", newdir)
 end
 
