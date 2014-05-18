@@ -39,6 +39,10 @@ This is mostly useful for remote debugging to specify how the output should be r
 when set to `false` will collect all words from all open editor tabs and offer them as part of the auto-complete list.
 - `acandtip.shorttip = true`: show short calltip when typing; shows long calltip when set to `false`.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
+- `acandtip.strategy = 2`: method of selecting auto-complete candidates:
+    - `0`: substring comparison (`fo`, but not `fb` matches `foo_bar`);
+    - `1`: substring leading characters, CamelCase or _ separated (`fo` and `fb`, but not `fa` match `foo_bar`);
+    - `2`: leading + any correctly ordered fragments (`fo`, `fa`, `fb`, but not `bf` match `foo_bar`).
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
