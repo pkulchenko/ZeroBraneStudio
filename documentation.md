@@ -52,6 +52,7 @@ title: Documentation
 
 ## Extension and Customization
 
+- [Markdown formatting in comments](doc-markdown-formatting.html)
 - [Adding a plugin](doc-plugin.html)
 - [Adding an API/auto-complete description](doc-api-auto-complete.html)
 - [Adding a translation](doc-translation.html)
