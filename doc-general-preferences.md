@@ -3,6 +3,8 @@ layout: default
 title: General Preferences
 ---
 
+<ul id='toc'>&nbsp;</ul>
+
 To **modify default general preferences**, you can use these commands and apply them
 as described in the [configuration](doc-configuration.html) section
 and as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
