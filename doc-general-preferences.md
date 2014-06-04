@@ -46,6 +46,24 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
+## Formats
+
+- `format.menurecentprojects = "%f | %i"`: format of the `Recent Project` menu and the toolbar dropdown.
+- `format.apptitle = "%T - %F"`: format of the application title.
+
+Possible placeholder values to use in formats (0.61+):
+
+- `%f`: full project name (project path)
+- `%s`: short project name (directory name)
+- `%i`: interpreter name
+- `%S`: file name
+- `%F`: file path
+- `%n`: line number
+- `%c`: line content
+- `%T`: application title
+- `%v`: application version
+- `%t`: current tab name
+
 ## Key mapping
 
 To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration.html):
