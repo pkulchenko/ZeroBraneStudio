@@ -47,7 +47,7 @@ For example, if the default hostname is incorrect, **try setting it to `localhos
 - You may be **on VPN**, which may **block connections** or cause the IDE to **incorrectly detect the hostname**.
 You may configure `debugger.hostname` as described above to see if this resolves the issue.
 
-## Why my breakpoints are not triggered?
+## Why breakpoints are not triggered?
 
 Breakpoints set in source files may not work for several reasons:
 
@@ -65,6 +65,7 @@ To make breakpoints work in this case you may want to **use absolute path** with
 For example, you set the project directory pointing to `scripts` folder (with `common` subfolder) and the engine reports the file name as `myfile.lua` instead of `common/myfile.lua`;
 the IDE will be looking for `scripts/myfile.lua` instead of `scripts/common/myfile.lua` and the file will not be activated and the breakpoints won't work.
 You may also be using inconsistent path separators in the file names; for example, `common/myfile.lua` in one case and `common\myfile.lua` in another.
+- If you are loading files using `luaL_loadbuffer`, make sure that the chunk name specified (the last parameter) matches the file location.
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
