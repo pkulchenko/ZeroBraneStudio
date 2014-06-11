@@ -49,7 +49,7 @@ Spend less time typing and more time thinking.
 Edit files in Unicode and run scripts with Unicode file names.
 
 **Function and expression calltip**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -265px -300px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -270px -252px" src="images/t.gif" class="inset"/></a>
 Quickly access function description or variable/expression values while debugging.
 
 **Static analyzer**
@@ -65,7 +65,7 @@ Keep as many files open as you need and navigate them using the file browser or 
 Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) or create your own.
 
 **Watch view**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -250px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inset"/></a>
 The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
 
 **Translatable interface**
@@ -77,17 +77,17 @@ Use one of the provided translations (English, French, Spanish, Russian, German,
 Execute your application as you are coding it. Detect syntax and run-time errors quickly; change numeric parameters on the fly with sliders.
 
 **Pretty printing**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -10px -450px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -531px" src="images/t.gif" class="inset"/></a>
 If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss the integrated pretty printing of any value in a line or block form.
 
 **Project file browser**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -10px -70px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inset"/></a>
 Don't worry about creating a new project, simply open a folder. The current file will be highlighted in the project tree (as long as it is in one of the subfolders).
 
 **Stack view**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -640px -80px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inset"/></a>
 The Stack view provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames. You can even drill down to get values of individual elements in tables.
 
 **Interactive console**
-<a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -10px -500px" src="images/t.gif" class="inset"/></a>
+<a href="images/unicode-console.png"><img style="background:url(images/debugging.png) -8px -504px" src="images/t.gif" class="inset"/></a>
 Want to test something quickly? Run it in the console with full access to your application state and all variables; execute code fragments and change variable values without restarting your application.
