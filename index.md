@@ -19,13 +19,20 @@ immediate feedback, **Markdown formatting** in comments for providing
 instructions with minimal context switching, and **integrated interactive
 materials** for those learning Lua or getting familiar with programming.
 
-For those interested in **game and mobile development**, it supports debugging
-for [Löve 2D](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
+For those interested in **game and mobile development**, the IDE supports debugging for
+[Löve 2D](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
 [Moai](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide),
 [Marmalade Quick](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 and [Cocos2d-x](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio).
+It also supports general Lua debugging for
+[Wireshark](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio),
+[GSL-shell](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio),
+[Adobe Lightroom](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide),
+[OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
+[home automation devices](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio),
+and [more](documentation.html#debugging).
 
 ## Feature highlights
 
