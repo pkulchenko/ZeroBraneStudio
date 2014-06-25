@@ -30,8 +30,10 @@ It also supports general Lua debugging for
 [Wireshark](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio),
 [GSL-shell](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio),
 [Adobe Lightroom](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide),
-[OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
-[home automation devices](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio),
+[OpenResty](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
+[Lapis](http://notebook.kulchenko.com/zerobrane/lapis-debugging-with-zerobrane-studio),
+[Moonscript](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio),
+[home automation](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio),
 and [more](documentation.html#debugging).
 
 ## Feature highlights

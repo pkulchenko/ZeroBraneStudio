@@ -22,7 +22,7 @@ title: Download
 
 - Added support for [OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
 [Lapis](http://notebook.kulchenko.com/zerobrane/lapis-debugging-with-zerobrane-studio),
-and moonscript debugging.
+and [moonscript](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio) debugging.
 - Added **re-indentation** of selected fragment or entire file (`Edit | Source | Correct Indentation`).
 - Added **line mapping support** for debugging Lua-based languages (e.g. moonscript).
 - Added `editor.wrapindentmode` and `editor.wrapstartindent` settings.
