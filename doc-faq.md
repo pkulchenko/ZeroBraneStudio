@@ -7,9 +7,9 @@ title: Frequently Asked Questions
 
 ## What does the bluish line under or around some names mean?
 
-It identifies **function calls**.
+It identifies **function calls**; thit indicator is disabled by default starting from v0.70.
 Depending on your current style it may also be shown as a solid line or a rounded box around a function name.
-You can [disable it](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L98),
+You can [enable/disable it](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L98),
 [change its type](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L104),
 or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L101).
 (Note that before v0.38 you'd need to set/modify `styles.fncall` instead of `styles.indicator.fncall`.)
