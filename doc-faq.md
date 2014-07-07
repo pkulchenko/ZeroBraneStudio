@@ -165,6 +165,11 @@ You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` i
 Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting.html), which uses styles with hidden characters.
 Those characters can't be deleted with some of the delete operations (line 'cut' or 'delete selection') and need to be deleted using `Delete` or `Backspace`.
 
+## I'm getting a message about mixed end-of-line sequences. How do I make them visible?
+
+You may run `GetEditor():SetViewEOL(1)` in the local console; you will see end-of-line sequences marked as `CR`, `LF`, or `CRLF`.
+Re-open the document or run `GetEditor():SetViewEOL(0)` to disable showing end-of-line sequences.
+
 ## How do I show Corona SDK Console window on Windows?
 
 You may add the following line to [system or user configuration](doc-configuration.html): `unhidewindow.ConsoleWindowClass = 0`.
