@@ -35,7 +35,7 @@ You will see a message in the Output window when the program is stopped.
 
 ## Output window
 
-<img style="background:url(images/integrated-materials.png) -10px -500px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/integrated-materials.png) -9px -497px" src="images/t.gif" class="inline"/>
 
 The **Output window** captures the output of the programs you run, plus any **errors** and additional messages you may get during execution of those programs.
 
@@ -43,7 +43,7 @@ The Output window is also used to enter the text your program may read. You will
 
 ## Console window
 
-<img style="background:url(images/unicode-console.png) -10px -500px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/unicode-console.png) -9px -499px" src="images/t.gif" class="inline"/>
 
 The **Console window** allows to run Lua code fragments and calculate values of Lua expressions.
 It will switch automatically between a **local console** that gives you access to the Lua interpreter that runs the IDE
@@ -51,7 +51,7 @@ and a **remote console** that allows you to execute code fragments and change va
 
 ## Project directory
 
-<img style="background:url(images/debugging.png) -10px -70px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inline"/>
 
 The current project directory is displayed in the **Project panel**.
 The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting a file and pressing `Enter` or double-clicking on it.
@@ -75,7 +75,7 @@ The current interpreter is shown on the right side of the status bar (for exampl
 
 ## Debugging programs
 
-<img style="background:url(images/debugging.png) -265px -315px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -234px -234px" src="images/t.gif" class="inline"/>
 
 In addition to running programs you can also debug them, which gives you the ability to pause them, inspect variables, evaluate expressions, make changes to the values, and then continue.
 To **start debugging** go to `Project | Start Debugging`.
@@ -108,7 +108,7 @@ Your code may also need to be written in a way that accomodates requirements of 
 
 ## Toolbar
 
-<img style="background:url(images/unicode-console.png) -304px -47px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -248px -48px" src="images/t.gif" class="inline"/>
 
 Some of the most frequently used commands in the editor are also available on the **toolbar** (which is right above the editor window and below the menu bar).
 There you will find commands to open a new or an existing file, save a file, commands to undo and redo your changes, and commands to search and replace text in your programs.
