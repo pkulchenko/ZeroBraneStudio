@@ -61,7 +61,7 @@ save it in a file named `I_SimplyVirtual.xml` (this is our implementation descri
 </implementation>
 {% endhighlight %}
 
-- Start a debugging session on a Lua script and upload `D_SimplyVirtual.xml`
+- Start a debugging session on a Lua script (not an .xml file!) and upload `D_SimplyVirtual.xml`
 and `I_SimplyVirtual.xml` files to the Vera device by using right click in the
 editor and select `Upload to ...` option from the context menu.
 - Now go to your **Vera device web interface** at `http://device-ip-address/cmh/`
