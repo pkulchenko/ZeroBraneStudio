@@ -19,7 +19,9 @@ The values shown are the default values.
 - `filehistorylength = 20`: set history length for files.
 - `hotexit = nil`: enable quick exit without prompting to save files (0.71+).
 The changes in files and all unsaved buffers should be restored during the next launch.
-This session information is saved in the [.ini file](doc-faq.html#how-do-i-restore-default-configuration-for-recent-files-projects-and-editor-tabs).
+This session information is saved in the [.ini file](#session-configuration).
+- `ini = nil`: provide an alternative location for the [.ini file](#session-configuration).
+If the filename is absolute, it's used as the new location; if it's relative, then the file is created relative to the [system-dependent location](#session-configuration).
 - `language = "en"`: set the language to use in the IDE; this requires a language file in cfg/i18n directory.
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
@@ -102,6 +104,15 @@ The description takes four parameters:
 
 Note that the editor key mapping is different from the IDE key mapping as the former only works when the editor is in focus and the latter may work when other components have focus.
 When there is a conflict, the IDE shortcuts take preference over editor shortcuts.
+
+## Session configuration
+
+Some configuration information that needs to be preserved between launches (windows and panels sizes and positions, open editor tabs, recently used projects and files and so on) is saved in a special file.
+The location (and the name) of this file is system dependent:
+it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `C:\Users\<user>\AppData\Roaming\ZeroBraneStudio.ini` (for v0.36 and later) on Windows,
+`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
+`$HOME/.ZeroBraneStudio` on Linux. 
+You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
 
 ## Command line parameters
 

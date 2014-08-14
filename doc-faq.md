@@ -153,12 +153,7 @@ If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app
 
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
-You can **remove the configuration file** ZeroBrane Studio is using to store these settings.
-The location (and the name) of this file is system dependent:
-it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `C:\Users\<user>\AppData\Roaming\ZeroBraneStudio.ini` (for v0.36 and later) on Windows,
-`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
-`$HOME/.ZeroBraneStudio` on Linux. 
-You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
+You can **remove** the [configuration file](doc-general-preferences.html#session-configuration) ZeroBrane Studio is using to store these settings.
 
 ## Why can't I delete text that includes formatted comments?
 
