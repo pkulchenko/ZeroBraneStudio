@@ -22,7 +22,7 @@ The changes in files and all unsaved buffers should be restored during the next 
 This session information is saved in the [.ini file](doc-faq.html#how-do-i-restore-default-configuration-for-recent-files-projects-and-editor-tabs).
 - `language = "en"`: set the language to use in the IDE; this requires a language file in cfg/i18n directory.
 - `projectautoopen = true`: auto-open windows on project switch.
-- `projecthistorylength = 15`: set history length for projects.
+- `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 
