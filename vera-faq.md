@@ -31,6 +31,14 @@ you can explicitly configure ZBS to use that device
 by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
 `path.vera = 'ip.of.vera.device'`.
 
+## How can I step into files loaded with `require`?
+
+If you have files in `/etc/cmh-ludl` folder that you `require` from the main script, you may not be able to "step into" those files as their full path cannot be mapped to the project path known to the IDE.
+To make it a relative path, which will avoid this issue, you may want to add `require('lfs').chdir('/etc/cmh-ludl')` to your script before `require` commands.
+
+The file you want to "step into" needs to be in the same project folder as the main script.
+To make the file available for debugging, you can either open it in the IDE or configure the IDE to auto-open it for you by adding `editor.autoactivate = true` to the configuration file (`Edit | Preferences | Settings: User`).
+
 ## I had to reset the device and the debugging stopped working. What should I do?
 
 (This is done automatically since v0.14 of the Vera plugin, which is included with v0.50+)
