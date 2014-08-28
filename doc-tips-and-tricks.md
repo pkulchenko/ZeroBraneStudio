@@ -87,13 +87,15 @@ If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "si
 ## Merge and split windows and tabs.
 
 You can **resize** windows by dragging the splitters between them.
-You can also **dock**, **undock**, and **move** the windows by clicking and holding the mouse on the window caption area and dragging the window to a new location.
+To **undock** or **re-dock** the window, doubleclick on the tab background of the notebook in that window (0.60+).
+To **move** the window, click and hold the mouse on the window caption area; then drag the window to a new location.
 To **dock** the window, release the mouse when one side of the main window changes its color to light blue.
-The new configuration will then be used until you reset or change it.
+If you want to avoid docking, press `Ctrl`/`Cmd` button before releasing the mouse button.
+The new configuration will be used until you reset or change it.
 
 ## Move windows without docking them.
 
-`Ctrl-Drag` will move the window without trying to dock it.
+`Ctrl-Drag`/`Cmd-Drag` will move the window without trying to dock it.
 
 ## Show Output and Console windows side by side.
 
