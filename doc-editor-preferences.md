@@ -27,7 +27,7 @@ Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
-- `editor.saveallonrun = nil`: save modified files before executing Run/Debug commands (0.39+).
+- `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (0.39+).
 - `editor.smartindent = true`: use smart indentation.
 - `editor.showfncall = true`: mark function calls.
 - `editor.tabwidth = 2`: set tab width.
