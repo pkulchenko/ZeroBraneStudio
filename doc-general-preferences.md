@@ -53,6 +53,19 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
+## Toolbar
+
+- `toolbar.iconmap = { [ID_OPEN] = {"FILE-OPEN", "Description" }, ... }`: sets the content of toolbar buttons (the icon and the description).
+- `toolbar.icons = { ID_NEW, ID_OPEN, ... ID_SEPARATOR, ...}`: sets the order of the buttons in the toolbar.
+- `toolbar.iconsize = ide.osname == 'Macintosh' and 24 or 16`: the size of the icons in the toolbar. Only two sizes are currently supported: 16 and 24 pixels.
+
+The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) or to `wx.wxBitmap` object; see this plugin for an [example on how to create a toolbar bitmap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/maketoolbar.lua).
+
+Any existing button on the toolbar can be **removed individually** by setting `toolbar.icons[ID-of-the-button]` to `false`.
+If all the buttons between two separators are removed, then two separators are merged into one to keep proper spacing.
+
+When you reference ID value from the config file, make sure to reference them in the **global environment**: `local G = ...; toolbar.icons[G.ID_NEW] = false`.
+
 ## Formats
 
 - `format.menurecentprojects = "%f | %i"`: format of the `Recent Project` menu and the toolbar dropdown.
