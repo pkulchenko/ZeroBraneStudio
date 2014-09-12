@@ -167,4 +167,6 @@ Re-open the document or run `GetEditor():SetViewEOL(0)` to disable showing end-o
 
 ## How do I show Corona SDK Console window on Windows?
 
-You may add the following line to [system or user configuration](doc-configuration.html): `unhidewindow.ConsoleWindowClass = 0`.
+(0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration.html). See [all Corona-specific preferences](doc-corona-preferences.html) for details.
+
+(0.80 and earlier versions) You may add the following line to [system or user configuration](doc-configuration.html): `unhidewindow.ConsoleWindowClass = 0`.
