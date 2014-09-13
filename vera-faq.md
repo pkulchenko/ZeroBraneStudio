@@ -24,10 +24,17 @@ Please check the [debugging troubleshooting section](vera-debugging.html#trouble
 
 When you start a debugging session and the IDE detects you have multiple devices, you will get a prompt to **select a particular device** you want to work with.
 All the subsequent debugging and interactions will be done with that device.
-You won't be asked again until you restart ZeroBrane Studio.
+You won't be asked again until you the IDE.
 
 If you only work with one device and prefer not to see the dialog,
-you can explicitly configure ZBS to use that device
+you can explicitly configure the IDE to use that device
+by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
+`path.vera = 'ip.of.vera.device'`.
+
+## Will the IDE work with my device that is using UI6?
+
+The auto-detection step that identifies the address of your device to connect to may not work if your device is using UI6 firmware.
+You may need to manually configure the IDE to connect to your device
 by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
 `path.vera = 'ip.of.vera.device'`.
 
