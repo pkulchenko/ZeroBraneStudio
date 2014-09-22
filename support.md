@@ -32,9 +32,11 @@ an issue with your code in 5 minutes instead of 15? Get your mobile
 application out faster? Have fun helping your kids or friends learn
 programming using Lua and examples included with the IDE?
 
+ZeroBrane LLC is not a tax-exempt non-profit organization, so your payment is **not tax deductible**.
+
 ## Isn't this an open source project?
-Yes and we make it easy for you to get code from GitHub and
-run it from a cloned copy or an archive. We would still **appreciate your 
+Yes and we make it easy for you to get the code from GitHub and
+run it from a cloned copy or an archive. We would still **appreciate your
 payment in support of this project.** If you decide not to provide financial
 support this time, please consider spreading the word, contributing code,
 helping with [fixes](https://github.com/pkulchenko/ZeroBraneStudio/issues)
