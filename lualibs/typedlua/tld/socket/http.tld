@@ -1,0 +1,17 @@
+interface url_request
+  url:string
+  sink:any?
+  method:string?
+  headers:{string:string}?
+  source:any?
+  step:any?
+  proxy:string?
+  redirect:boolean?
+  create:nil|(any*) -> (any*)
+end
+
+PORT : number
+TIMEOUT : number
+USERAGENT : string
+open : (string, number, (any*) -> (any*)) -> ({any:any})
+request : (string|url_request, string?) -> (number|string, number, {string:string}, number)?

@@ -1,0 +1,18 @@
+--[[
+Typed Lua description file for string manipulation
+]]
+
+byte : (string, number?, number?) -> (number*)
+char : (number*) -> (string)
+dump : ((any*) -> (any*)) -> (string)
+find : (string, string, number?, boolean?) -> (number, number) | (nil)
+format : (string, value*) -> (string)
+gmatch : (string, string) -> (() -> (string*))
+gsub : (string, string, string|{}|(any*) -> (any*), number?) -> (string, number)
+len : (string) -> (number)
+lower : (string) -> (string)
+match : (string, string, number?) -> (string*)
+rep : (string, number, string?) -> (string)
+reverse : (string) -> (string)
+sub : (string, number, number?) -> (string)
+upper : (string) -> (string)

@@ -1,0 +1,28 @@
+BLOCKSIZE : number
+_VERSION : string
+filter : {
+  "cycle" : ((any*) -> (any*), number|string, string?) -> ((any*) -> (any*)),
+  "chain" : ((any*) -> (any*)*) -> ((any*) -> (any*))
+}
+pump : {
+  "all" : ((any*) -> (any*), (any*) -> (any*), nil|(any*) -> (any*)) -> (number)?,
+  "step" : ((any*) -> (any*), (any*) -> (any*)) -> (number)?
+}
+sink : {
+  "chain" : ((any*) -> (any*), (any*) -> (any*), value*) -> ((any*) -> (number)?),
+  "error" : (string) -> (() -> (nil, string)),
+  "file" : (file, string?) -> ((string, string) -> (number)?)?,
+  "null" : () -> (() -> (number)),
+  "simplify" : ((any*) -> (any*)) -> ((string, string) -> (number)?),
+  "table" : ({}) -> ((string, string) -> (number), {string})
+}
+source : {
+  "cat" : ((any*) -> (any*)*) -> (() -> (string)?),
+  "chain" : ((any*) -> (any*), (any*) -> (any*), value*) -> (() -> (string?)),
+  "empty" : () -> (() -> (nil)),
+  "error" : (string) -> (() -> (nil, string)),
+  "file" : (file, string?) -> (() -> (string)?)?,
+  "rewind" : ((any*) -> (any*)) -> (({string}) -> (any)),
+  "simplify" : ((any*) -> (any*)) -> (() -> (string?)),
+  "string" : (string) -> (() -> (string?))
+}

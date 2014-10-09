@@ -1,0 +1,16 @@
+userdata md5_context
+  __tostring : (self) -> (string)
+  clone : (self) -> (self)
+  digest : (self, value) -> (string)
+  new : (self) -> (self)
+  reset : (self) -> (self)
+  update : (self, string*) -> (self)
+end
+
+__tostring : (md5_context) -> (string)
+clone : (md5_context) -> (md5_context)
+digest : (md5_context|string, value) -> (string)
+new : () -> (md5_context)
+reset : (md5_context) -> (md5_context)
+update : (md5_context, string*) -> (md5_context)
+version : string

@@ -1,0 +1,19 @@
+--[[
+Typed Lua description file for operating system facilities
+]]
+
+clock : () -> (number)
+date : (string?, number?) -> (string) | ({"year":number, "month":number, "day":number,
+                                          "hour":number, "min":number, "sec":number,
+                                          "wday":number, "yday":number, "isdst":boolean})
+difftime : (number, number?) -> (number)
+execute : (string?) -> (boolean?, string?, number?)
+exit : (boolean|number?, value) -> ()
+getenv : (string) -> (string?)
+remove : (string) -> (boolean) | (nil, string, number)
+rename : (string, string) -> (boolean) | (nil, string, number)
+setlocale : (string?, string?) -> (string?)
+time : ({"year":number, "month":number, "day":number,
+         "hour":number?, "min":number?, "sec":number?,
+         "wday":number?, "yday":number?, "isdst":boolean?}?) -> (number)
+tmpname : () -> (string)

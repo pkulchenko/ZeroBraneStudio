@@ -1,0 +1,23 @@
+interface parsed_url
+  url:string
+  scheme:string
+  authority:string
+  path:string
+  params:string
+  query:string
+  fragment:string
+  userinfo:string
+  host:string
+  port:string
+  user:string
+  password:string
+end
+
+_VERSION : string
+absolute : (string|parsed_url, string) -> (string)
+build : (parsed_url) -> (string)
+build_path : ({string}, value) -> (string)
+escape : (string) -> (string)
+parse : (string, parsed_url?) -> (parsed_url)?
+parse_path : (string) -> ({string})
+unescape : (string) -> (string)

@@ -1,0 +1,26 @@
+interface mesgt
+  headers:{string:string}
+  body:any
+end
+
+interface send
+  from:string
+  rcpt:string
+  source:any
+  user:string?
+  password:string?
+  server:string?
+  port:number?
+  domain:string?
+  step:any?
+  create:nil|(any*) -> (any*)
+end
+
+DOMAIN : string
+PORT : number
+SERVER : string
+TIMEOUT : number
+ZONE : string
+message : (mesgt) -> (() -> (thread)?)
+open : (string, number, (any*) -> (any*)) -> ({any:any})
+send : (send) -> (number)?

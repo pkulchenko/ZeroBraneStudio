@@ -1,0 +1,108 @@
+
+userdata tcp_client
+  close : (self) -> (number)
+  getpeername : (self) -> (string, string, string)?
+  getsockname : (self) -> (string, string, string)?
+  getstats : (self) -> (number, number, number)
+  receive : (self, string|number?, string?) -> (string, nil, nil)
+  send : (self, string, number?, number?) -> (number, nil, nil) | (nil, string, number)
+  setoption : (self, string, value) -> (number)?
+  getoption : (self) -> (string)?
+  setstats : (self, number?, number?, number) -> (number)
+  settimeout : (self, number, string) -> (number)
+  shutdown : (self, string) -> (number)
+  dirty : (self) -> (boolean)
+  getfd : (self) -> (number)
+  setfd : (self, number) -> ()
+end
+
+userdata tcp_master
+  bind : (self, string, string) -> (number)?
+  close : (self) -> (number)
+  connect : (self, string, string) -> (number)?
+  getsockname : (self) -> (string, string, string)?
+  listen : (self, number?) -> (number)?
+  settimeout : (self, number, string) -> (number)
+  dirty : (self) -> (boolean)
+  getfd : (self) -> (number)
+  setfd : (self, number) -> ()
+end
+
+userdata tcp_server
+  accept : (self) -> (tcp_client)?
+  close : (self) -> (number)
+  getsockname : (self) -> (string, string, string)?
+  setoption : (self, string, value) -> (number)?
+  getoption : (self) -> (string)?
+  settimeout : (self, number, string) -> (number)
+  dirty : (self) -> (boolean)
+  getfd : (self) -> (number)
+  setfd : (self, number) -> ()
+end
+
+userdata udp_unconnected
+  close : (self) -> (number)
+  getsockname : (self) -> (string, string, string)?
+  receive : (self, number?) -> (string)?
+  receivefrom : (self, number) -> (string, string, number)?
+  getoption : (self) -> (string)?
+  sendto : (self, string, string, string) -> (number)?
+  setpeername : (self, string, string) -> (number)?
+  setsockname : (self, string, string) -> (number)?
+  setoption : (self, string, value) -> (number)?
+  settimeout : (self, number, string) -> (number)
+end
+
+userdata udp_connected
+  close : (self) -> (number)
+  getpeername : (self) -> (string, string, string)?
+  getsockname : (self) -> (string, string, string)?
+  receive : (self, number?) -> (string)?
+  getoption : (self) -> (string)?
+  send : (self, string) -> (number)?
+  setpeername : (self, string, string) -> (number)?
+  setoption : (self, string, value) -> (number)?
+  settimeout : (self, number, string) -> (number)
+end
+
+__unload : () -> ()
+BLOCKSIZE : number
+bind : (string, string, number?) -> (tcp_server)?
+choose : ({string:any}) -> ((string, any, any) -> (any*))
+connect : (string, string, string?, string?, string?) -> (tcp_client)?
+connect4 : (string, string, string?, string?) -> (tcp_client)?
+connect6 : (string, string, string?, string?) -> (tcp_client)?
+_DEBUG : boolean?
+dns : {
+  "getaddrinfo" : (string) -> ({{"family":string, "addr":string}})?,
+  "gethostname" : () -> (string)?,
+  "tohostname" : (string) -> (string, {"name":string, "alias":{string}, "ip":{string}})?,
+  "toip" : (string) -> (string, {"name":string, "alias":{string}, "ip":{string}})?,
+  "getnameinfo" : (string?, string?) -> ({string}, string?)?
+}
+gettime : () -> (number)
+newtry : ((any*) -> (any*)) -> ((any*) -> (any*))
+protect : ((any*) -> (any*)) -> ((any*) -> (any*)?)
+select : ({}?, {}?, number?) -> ({}, {}, string)
+sink : (string, any) -> (any)
+sinkt : {
+  "close-when-done" : (any) -> ((value*) -> (value*)),
+  "default" : (any) -> ((value*) -> (value*)),
+  "keep-open" : (any) -> ((value*) -> (value*))
+}
+skip : (number, value*) -> (any*)
+sleep : (number) -> ()
+_SETSIZE : number
+source : (string, any, number?) -> (any)
+sourcet : {
+  "by-length" : (any) -> ((value*) -> (value*)),
+  "default" : (any) -> ((value*) -> (value*)),
+  "until-closed" : (any) -> ((value*) -> (value*))
+}
+tcp : () -> (tcp_master)?
+tcp6 : () -> (tcp_master)?
+try : ((any*) -> (any*)) -> ((any*) -> (any*))
+udp : () -> (udp_unconnected)
+udp6 : () -> (udp_unconnected)
+_VERSION : string
+

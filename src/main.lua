@@ -30,6 +30,7 @@ package.cpath = (
   --[[isosx]] 'bin/lib?.dylib;bin/clibs/?.dylib;')
     .. package.cpath
 package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.lua;lualibs/?/?/init.lua;'
+              .. 'lualibs/typedlua/tld/?.lua;'
               .. package.path
 
 require("wx")

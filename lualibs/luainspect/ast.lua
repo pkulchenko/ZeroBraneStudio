@@ -23,7 +23,7 @@
 
 --! require 'luainspect.typecheck' (context)
 
-local mlc = require 'metalua.compiler'.new()
+local tlc = require 'typedlua.tlparser'
 
 local M = {}
 
@@ -89,7 +89,9 @@ end
 -- FIX? filename currently ignored in Metalua
 -- CATEGORY: Lua parsing
 local function ast_from_string_helper(src, filename)
-  return mlc:src_to_ast(src, filename)
+  local ast, err = tlc.parse(src, filename, false, true)
+  if not ast then error(err, 2) end
+  return ast
 end
 
 

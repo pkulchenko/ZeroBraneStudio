@@ -1,0 +1,25 @@
+--[[
+Typed Lua description file for input and output facilities
+]]
+
+userdata file
+  close : (self) -> (boolean?, string, number?)
+  flush : (self) -> (boolean)
+  lines : (self, string|number*) -> ((number|string*) -> (string*))
+  read : (self, string|number*) -> (string*)
+  seek : (self, string?, number?) -> (number?)
+  setvbuf : (self, string, number?) -> (boolean) | (nil, string, number)
+  write : (self, string|number*) -> (self) | (nil, string, number)
+end
+
+close : (file) -> (boolean?, string, number?)
+flush : () -> (boolean)
+input : (string|file?) -> (file)
+lines : (string?) -> ((number|string*) -> (string*))
+open : (string, string?) -> (file) | (nil, string, number)
+output : (string|file?) -> (file)
+popen : (string, string?) -> (file) | (nil, string, number)
+read : (string|number*) -> (string*)
+tmpfile : () -> (file)
+type : (any) -> (string?)
+write : (string|number*) -> (file) | (nil, string, number)

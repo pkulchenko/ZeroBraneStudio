@@ -1,0 +1,10 @@
+--[[
+Typed Lua description file for table manipulation
+]]
+
+concat : ({string|number}, string?, number?, number?) -> (string)
+insert : ({any}, number, any) -> ()
+pack : (any*) -> ({"n":number, number:any})
+remove : ({any}, number?) -> (any)
+sort : ({any}, nil|(any, any) -> (boolean)) -> ()
+unpack : ({any}, number?, number?) -> (any*)

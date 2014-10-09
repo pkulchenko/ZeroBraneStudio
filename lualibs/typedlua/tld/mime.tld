@@ -1,0 +1,29 @@
+_VERSION : string
+-- low-level
+b64 : (string?, string?) -> (string?, string?)
+dot : (number, string?) -> (string?, number)
+eol : (number, string?, string?) -> (string?, number)
+qp : (string?, string?, string?) -> (string?, string?)
+qpwrp : (number, string?, number?) -> (string?, number)
+unb64 : (string?, string?) -> (string?, string?)
+unqp : (string?, string?) -> (string?, string?)
+wrp : (number, string?, number?) -> (string?, number)
+-- high-level
+decode : (string) -> ((any*) -> (any*))
+decodet : {
+  "base64" : () -> ((any*) -> (any*)),
+  "quoted-printable" : () -> ((any*) -> (any*))
+}
+encode : (string, string?) -> ((any*) -> (any*))
+encodet : {
+  "base64" : () -> ((any*) -> (any*)),
+  "quoted-printable" : (number?) -> ((any*) -> (any*))
+}
+normalize : (string?) -> ((any*) -> (any*))
+stuff : () -> ((any*) -> (any*))
+wrap : (string, number?) -> ((any*) -> (any*))
+wrapt : {
+  "text" : (number?) -> ((any*) -> (any*)),
+  "base64" : () -> ((any*) -> (any*)),
+  "quoted-printable" : () -> ((any*) -> (any*))
+}
