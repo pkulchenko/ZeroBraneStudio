@@ -1,5 +1,7 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
+
 local ide = ide
 local unpack = table.unpack or unpack
 --
@@ -284,22 +286,23 @@ local function packResults(status, ...) return status, {...} end
 local function executeShellCode(tx)
   if tx == nil or tx == '' then return end
 
+  local forcelocalprefix = '^!'
+  local forcelocal = tx:find(forcelocalprefix)
+  tx = tx:gsub(forcelocalprefix, '')
+
   DisplayShellPrompt('')
 
   -- try to compile as statement
   local _, err = loadstring(tx)
   local isstatement = not err
 
-  if remotesend then remotesend(tx, isstatement); return end
+  if remotesend and not forcelocal then remotesend(tx, isstatement); return end
 
   local addedret, forceexpression = true, tx:match("^%s*=%s*")
   tx = tx:gsub("^%s*=%s*","")
   local fn
   fn, err = loadstring("return "..tx)
-  if not forceexpression and err and
-     (err:find("'?<eof>'? expected near '") or
-      err:find("'%(' expected near") or
-      err:find("unexpected symbol near '")) then
+  if not forceexpression and err then
     fn, err = loadstring(tx)
     addedret = false
   end
@@ -374,11 +377,12 @@ function ShellExecuteCode(code)
 end
 
 local function displayShellIntro()
-  DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").."\n"
-    ..TR("Enter Lua code and press Enter to run it.").." "
-    ..TR("Use Shift-Enter for multiline code.").."\n"
-    ..TR("Use 'clear' to clear the shell output and the history.").." "
-    ..TR("Prepend '=' to show complex values on multiple lines."))
+  DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").." "
+    ..TR("Enter Lua code and press Enter to run it.").."\n"
+    ..TR("Use Shift-Enter for multiline code.").."  "
+    ..TR("Use 'clear' to clear the shell output and the history.").."\n"
+    ..TR("Prepend '=' to show complex values on multiple lines.").." "
+    ..TR("Prepend '!' to force local execution."))
   DisplayShellPrompt('')
 end
 

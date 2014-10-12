@@ -1,5 +1,6 @@
--- Copyright (C) Paul Kulchenko 2011-2012
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- styles for comment markup
+---------------------------------------------------------
 
 local MD_MARK_ITAL = '_' -- italic
 local MD_MARK_BOLD = '**' -- bold
@@ -14,7 +15,7 @@ local MD_MARK_MARK = ' ' -- separator
 local MD_LINK_NEWWINDOW = '+' -- indicator to open a new window for links
 local markup = {
   [MD_MARK_BOXD] = {st=25, fg={127,0,127}, b=true},
-  [MD_MARK_CODE] = {st=26, fg={127,127,127}, fs=9},
+  [MD_MARK_CODE] = {st=26, fg={127,127,127}, fs=10},
   [MD_MARK_HEAD] = {st=27, fn="Lucida Console", b=true},
   [MD_MARK_LINK] = {st=28, u=true, hs={32,32,127}},
   [MD_MARK_BOLD] = {st=29, b=true},
@@ -31,7 +32,8 @@ function MarkupAddStyles(styles)
     local style = styles[key] or {}
     -- copy all style features by value
     for feature in pairs(value) do
-      style[feature] = style[feature] or value[feature] end
+      style[feature] = style[feature] or value[feature]
+    end
     style.fg = style.fg or comment.fg
     style.bg = style.bg or comment.bg
     styles[key] = style

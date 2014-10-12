@@ -1,3 +1,4 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- David Manura
@@ -154,8 +155,8 @@ function GetPathWithSep(wxfn)
   return wxfn:GetPath(bit.bor(wx.wxPATH_GET_VOLUME, wx.wxPATH_GET_SEPARATOR))
 end
 
-function FileSysHasContent(dir)
-  local f = wx.wxFindFirstFile(dir,wx.wxFILE + wx.wxDIR)
+function FileDirHasContent(dir)
+  local f = wx.wxFindFirstFile(dir, wx.wxFILE + wx.wxDIR)
   return #f>0
 end
 
@@ -172,6 +173,7 @@ function FileSysGetRecursive(path, recursive, spec, skip)
     local dir = wx.wxDir(path)
     if not dir:IsOpened() then return end
 
+    local log = wx.wxLogNull() -- disable error reporting; will report as needed
     local found, file = dir:GetFirst("*", wx.wxDIR_DIRS)
     while found do
       if not skip or not file:find(skip) then
@@ -196,16 +198,12 @@ function FileSysGetRecursive(path, recursive, spec, skip)
   end
   getDir(path, spec)
 
-  -- explicitly sort files on Linux; directories first
-  if ide.osname == 'Unix' then
-    table.sort(content, function(a,b)
-      local ad, bd = a:sub(-1) == sep, b:sub(-1) == sep
-      -- both are folders or both are files
-      if ad and bd or not ad and not bd then return a < b
-      -- only one is folder; return true if it's the first one
-      else return ad end
-    end)
+  local prefix = '\001' -- prefix to sort directories first
+  local shadow = {}
+  for _, v in ipairs(content) do
+    shadow[v] = (v:sub(-1) == sep and prefix or '')..v:lower()
   end
+  table.sort(content, function(a,b) return shadow[a] < shadow[b] end)
 
   return content
 end
@@ -271,7 +269,8 @@ function FileCopy(file1, file2)
   return wx.wxCopyFile(file1, file2), wx.wxSysErrorMsg()
 end
 
-TimeGet = pcall(require, "socket") and socket.gettime or os.clock
+local ok, socket = pcall(require, "socket")
+TimeGet = ok and socket.gettime or os.clock
 
 function isBinary(text) return text:find("[^\7\8\9\10\12\13\27\32-\255]") end
 
@@ -389,11 +388,13 @@ function LoadLuaFileExt(tab, file, proto)
     if not name then return end
 
     -- check if os/arch matches to allow packages for different systems
+    local osvals = {windows = true, unix = true, macintosh = true}
+    local archvals = {x64 = true, x86 = true}
     local os, arch = name:match("-(%w+)-?(%w*)")
-    if os and os:lower() ~= ide.osname:lower()
-    or arch and #arch > 0 and arch:lower() ~= ide.osarch:lower()
+    if os and os:lower() ~= ide.osname:lower() and osvals[os:lower()]
+    or arch and #arch > 0 and arch:lower() ~= ide.osarch:lower() and archvals[arch:lower()]
     then return end
-    if os then name = name:gsub("-.*","") end
+    if os and osvals[os:lower()] then name = name:gsub("-.*","") end
 
     local success, result = pcall(function()return cfgfn(assert(_G or _ENV))end)
     if not success then
@@ -452,15 +453,71 @@ end
 
 function EscapeMagic(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
 
-function GetEditorWithFocus()
-  local editor = GetEditor()
-  local bnb = ide.frame.bottomnotebook
-  for _,e in pairs({bnb.shellbox, bnb.errorlog}) do
-    local ctrl = e:FindFocus()
-    if ctrl and
-      (ctrl:GetId() == e:GetId()
-       or ide.osname == 'Macintosh' and
-         ctrl:GetParent():GetId() == e:GetId()) then editor = e end
+local function isCtrlFocused(e)
+  local ctrl = e and e:FindFocus()
+  return ctrl and
+    (ctrl:GetId() == e:GetId()
+     or ide.osname == 'Macintosh' and
+       ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
+end
+
+function GetEditorWithFocus(...)
+  -- need to distinguish GetEditorWithFocus() and GetEditorWithFocus(nil)
+  -- as the latter may happen when GetEditor() is passed and returns `nil`
+  if select('#', ...) > 0 then
+    local ed = ...
+    return isCtrlFocused(ed) and ed or nil
   end
-  return editor or nil
+
+  local bnb = ide.frame.bottomnotebook
+  for _, e in pairs({bnb.shellbox, bnb.errorlog}) do
+    if isCtrlFocused(e) then return e end
+  end
+  local editor = GetEditor()
+  return isCtrlFocused(editor) and editor or nil
+end
+
+function GenerateProgramFilesPath(exec, sep)
+  local env = os.getenv('ProgramFiles')
+  return
+    (env and env..'\\'..exec..sep or '')..
+    [[C:\Program Files\]]..exec..sep..
+    [[D:\Program Files\]]..exec..sep..
+    [[C:\Program Files (x86)\]]..exec..sep..
+    [[D:\Program Files (x86)\]]..exec
+end
+
+--[[ format placeholders
+    - %f -- full project name (project path)
+    - %s -- short project name (directory name)
+    - %i -- interpreter name
+    - %S -- file name
+    - %F -- file path
+    - %n -- line number
+    - %c -- line content
+    - %T -- application title
+    - %v -- application version
+    - %t -- current tab name
+--]]
+function ExpandPlaceholders(msg, ph)
+  ph = ph or {}
+  if type(msg) == 'function' then return msg(ph) end
+  local editor = ide:GetEditor()
+  local proj = ide:GetProject() or ""
+  local dirs = wx.wxFileName(proj):GetDirs()
+  local doc = editor and ide:GetDocument(editor)
+  local nb = ide:GetEditorNotebook()
+  local def = {
+    f = proj,
+    s = dirs[#dirs] or "",
+    i = ide:GetInterpreter():GetName() or "",
+    S = doc and doc:GetFileName() or "",
+    F = doc and doc:GetFilePath() or "",
+    n = editor and editor:GetCurrentLine()+1 or 0,
+    c = editor and editor:GetLine(editor:GetCurrentLine()) or "",
+    T = GetIDEString("editor") or "",
+    v = ide.VERSION,
+    t = editor and nb:GetPageText(nb:GetPageIndex(editor)) or "",
+  }
+  return(msg:gsub('%%(%w)', function(p) return ph[p] or def[p] or '?' end))
 end

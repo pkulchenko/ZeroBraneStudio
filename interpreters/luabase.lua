@@ -1,7 +1,5 @@
 function MakeLuaInterpreter(version, name)
 
-local exe
-
 local function exePath(self, version)
   local version = tostring(version):gsub('%.','')
   local mainpath = ide.editorFilename:gsub("[^/\\]+$","")
@@ -19,10 +17,13 @@ return {
   luaversion = version or '5.1',
   fexepath = exePath,
   frun = function(self,wfilename,rundebug)
-    exe = exe or self:fexepath(version or "")
+    local exe = self:fexepath(version or "")
     local filepath = wfilename:GetFullPath()
     if rundebug then
       DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
+
+      -- update arg to point to the proper file
+      rundebug = ('if arg then arg[0] = [[%s]] end '):format(filepath)..rundebug
 
       local tmpfile = wx.wxFileName()
       tmpfile:AssignTempFileName(".")
@@ -50,23 +51,31 @@ return {
     local cmd = '"'..exe..'" '..code..(params and " "..params or "")
 
     -- modify CPATH to work with other Lua versions
-    local clibs = ('/clibs%s/'):format(version and tostring(version):gsub('%.','') or '')
-    local _, cpath = wx.wxGetEnv("LUA_CPATH")
-    if version and cpath and not cpath:find(clibs, 1, true) then
-      wx.wxSetEnv("LUA_CPATH", cpath:gsub('/clibs/', clibs)) end
+    local envname = "LUA_CPATH"
+    if version then
+      local env = "LUA_CPATH_"..string.gsub(version, '%.', '_')
+      if os.getenv(env) then envname = env end
+    end
+
+    local cpath = os.getenv(envname)
+    if rundebug and cpath and not ide.config.path['lua'..(version or "")] then
+      -- prepend osclibs as the libraries may be needed for debugging,
+      -- but only if no path.lua is set as it may conflict with system libs
+      wx.wxSetEnv(envname, ide.osclibs..';'..cpath)
+    end
+    if version and cpath then
+      local cpath = os.getenv(envname)
+      local clibs = string.format('/clibs%s/', version):gsub('%.','')
+      if not cpath:find(clibs, 1, true) then cpath = cpath:gsub('/clibs/', clibs) end
+      wx.wxSetEnv(envname, cpath)
+    end
 
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     local pid = CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() if rundebug then wx.wxRemoveFile(filepath) end end)
 
-    if version and cpath then wx.wxSetEnv("LUA_CPATH", cpath) end
+    if (rundebug or version) and cpath then wx.wxSetEnv(envname, cpath) end
     return pid
-  end,
-  fprojdir = function(self,wfilename)
-    return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-  end,
-  fworkdir = function (self,wfilename)
-    return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
   hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,

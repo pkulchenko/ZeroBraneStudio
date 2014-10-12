@@ -29,8 +29,7 @@ return {
     if not gideros then
       local sep = win and ';' or ':'
       local default =
-           win and ([[C:\Program Files\Gideros]]..sep..[[D:\Program Files\Gideros]]..sep..
-                    [[C:\Program Files (x86)\Gideros]]..sep..[[D:\Program Files (x86)\Gideros]]..sep)
+           win and (GenerateProgramFilesPath('Gideros', sep)..sep)
         or mac and ('/Applications/Gideros Studio/Gideros Player.app/Contents/MacOS'..sep)
         or ''
       local path = default
@@ -135,12 +134,6 @@ return {
       if not isValidPid(bid, cmd) then return end
     end
     return pid
-  end,
-  fprojdir = function(self,wfilename)
-    return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-  end,
-  fworkdir = function(self,wfilename)
-    return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
   hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,

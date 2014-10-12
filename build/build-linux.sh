@@ -43,6 +43,9 @@ for ARG in "$@"; do
   5.2)
     BUILD_52=true
     ;;
+  5.3)
+    BUILD_53=true
+    ;;
   jit)
     BUILD_JIT=true
     ;;
@@ -111,6 +114,14 @@ fi
 LUA_FILENAME="$LUA_BASENAME.tar.gz"
 LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 
+if [ $BUILD_53 ]; then
+  LUAV="53"
+  LUAS=$LUAV
+  LUA_BASENAME="lua-5.3.0-alpha"
+  LUA_FILENAME="$LUA_BASENAME.tar.gz"
+  LUA_URL="http://www.lua.org/work/$LUA_FILENAME"
+fi
+
 if [ $BUILD_JIT ]; then
   LUA_BASENAME="LuaJIT-2.0.2"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
@@ -164,6 +175,10 @@ if [ $BUILD_WXLUA ]; then
   # the following patches wxlua source to fix live coding support in wxlua apps
   # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
   sed -i 's/\(m_wxlState = wxLuaState(wxlState.GetLuaState(), wxLUASTATE_GETSTATE|wxLUASTATE_ROOTSTATE);\)/\/\/ removed by ZBS build process \/\/ \1/' modules/wxlua/wxlcallb.cpp
+
+  # (temporary) fix for compilation issue in wxlua using wxwidgets 3.1+ (r238)
+  sed -i 's/{ "wxSTC_COFFEESCRIPT_HASHQUOTEDSTRING", wxSTC_COFFEESCRIPT_HASHQUOTEDSTRING },/\/\/ removed by ZBS build process/' modules/wxbind/src/wxstc_bind.cpp
+
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_SHARED_LIBS=FALSE \
     -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
     -DwxWidgets_COMPONENTS="stc;html;aui;adv;core;net;base" \

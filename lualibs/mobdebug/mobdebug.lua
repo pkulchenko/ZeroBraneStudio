@@ -1,5 +1,5 @@
 --
--- MobDebug 0.553
+-- MobDebug 0.606
 -- Copyright 2011-14 Paul Kulchenko
 -- Based on RemDebug 1.0 Copyright Kepler Project 2005
 --
@@ -10,6 +10,7 @@ local io = io or require "io"
 local table = table or require "table"
 local string = string or require "string"
 local coroutine = coroutine or require "coroutine"
+local debug = require "debug"
 -- protect require "os" as it may fail on embedded systems without os module
 local os = os or (function(module)
   local ok, res = pcall(require, module)
@@ -18,12 +19,13 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = 0.553,
+  _VERSION = 0.606,
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
-  port = os and os.getenv and tonumber(os.getenv("MOBDEBUG_PORT")) or 8172,
+  port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
   checkcount = 200,
-  yieldtimeout = 0.02,
+  yieldtimeout = 0.02, -- yield timeout (s)
+  connecttimeout = 2, -- connect timeout (s)
 }
 
 local error = error
@@ -46,6 +48,19 @@ local rawget = rawget
 local genv = _G or _ENV
 local jit = rawget(genv, "jit")
 local MOAICoroutine = rawget(genv, "MOAICoroutine")
+
+-- ngx_lua debugging requires a special handling as its coroutine.*
+-- methods use a different mechanism that doesn't allow resume calls
+-- from debug hook handlers.
+-- Instead, the "original" coroutine.* methods are used.
+-- `rawget` needs to be used to protect against `strict` checks, but
+-- ngx_lua hides those in a metatable, so need to use that.
+local metagindex = getmetatable(genv) and getmetatable(genv).__index
+local ngx = type(metagindex) == "table" and metagindex.rawget and metagindex:rawget("ngx") or nil
+local corocreate = ngx and coroutine._create or coroutine.create
+local cororesume = ngx and coroutine._resume or coroutine.resume
+local coroyield = ngx and coroutine._yield or coroutine.yield
+local corostatus = ngx and coroutine._status or coroutine.status
 
 if not setfenv then -- Lua 5.2
   -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
@@ -82,7 +97,6 @@ local iscasepreserving = win or (mac and io.open('/library') ~= nil)
 if jit and jit.off then jit.off() end
 
 local socket = require "socket"
-local debug = require "debug"
 local coro_debugger
 local coro_debugee
 local coroutines = {}; setmetatable(coroutines, {__mode = "k"}) -- "weak" keys
@@ -245,6 +259,8 @@ end)() ---- end of Serpent module
 
 mobdebug.line = serpent.line
 mobdebug.dump = serpent.dump
+mobdebug.linemap = nil
+mobdebug.loadstring = loadstring
 
 local function removebasedir(path, basedir)
   if iscasepreserving then
@@ -280,6 +296,7 @@ local function stack(start)
   end
 
   local stack = {}
+  local linemap = mobdebug.linemap
   for i = (start or 0), 100 do
     local source = debug.getinfo(i, "Snl")
     if not source then break end
@@ -291,8 +308,10 @@ local function stack(start)
     end
 
     table.insert(stack, { -- remove basedir from source
-      {source.name, removebasedir(src, basedir), source.linedefined,
-       source.currentline, source.what, source.namewhat, source.short_src},
+      {source.name, removebasedir(src, basedir),
+       linemap and linemap(source.linedefined, source.source) or source.linedefined,
+       linemap and linemap(source.currentline, source.source) or source.currentline,
+       source.what, source.namewhat, source.short_src},
       vars(i+1)})
     if source.what == 'main' then break end
   end
@@ -450,7 +469,7 @@ local function handle_breakpoint(peer)
   buf = buf .. readnext(peer, 5-#buf)
   if buf ~= 'SETB ' and buf ~= 'DELB ' then return end
 
-  res, err, partial = peer:receive() -- get the rest of the line; blocking
+  local res, _, partial = peer:receive() -- get the rest of the line; blocking
   if not res then
     if partial then buf = buf .. partial end
     return
@@ -504,6 +523,12 @@ local function debug_hook(event, line)
   elseif event == "return" or event == "tail return" then
     stack_level = stack_level - 1
   elseif event == "line" then
+    if mobdebug.linemap then
+      local ok, mappedline = pcall(mobdebug.linemap, line, debug.getinfo(2, "S").source)
+      if ok then line = mappedline end
+      if not line then return end
+    end
+
     -- may need to fall through because of the following:
     -- (1) step_into
     -- (2) step_over and stack_level <= step_level (need stack_level)
@@ -549,14 +574,19 @@ local function debug_hook(event, line)
         -- set on foo.lua will not work if not converted to the same case.
         if iscasepreserving then file = string.lower(file) end
         if file:find("%./") == 1 then file = file:sub(3)
-        else file = file:gsub('^'..q(basedir), '') end
+        else file = file:gsub("^"..q(basedir), "") end
         -- some file systems allow newlines in file names; remove these.
         file = file:gsub("\n", ' ')
       else
         -- this is either a file name coming from loadstring("chunk", "file"),
         -- or the actual source code that needs to be serialized (as it may
         -- include newlines); assume it's a file name if it's all on one line.
-        file = file:find("[\r\n]") and mobdebug.line(file) or file
+        if file:find("[\r\n]") then
+          file = mobdebug.line(file)
+        else
+          if iscasepreserving then file = string.lower(file) end
+          file = file:gsub("\\", "/"):gsub(file:find("^%./") and "^%./" or "^"..q(basedir), "")
+        end
       end
 
       -- set to true if we got here; this only needs to be done once per
@@ -574,7 +604,7 @@ local function debug_hook(event, line)
         setfenv(value, vars)
         local ok, fired = pcall(value)
         if ok and fired then
-          status, res = coroutine.resume(coro_debugger, events.WATCH, vars, file, line, index)
+          status, res = cororesume(coro_debugger, events.WATCH, vars, file, line, index)
           break -- any one watch is enough; don't check multiple times
         end
       end
@@ -594,7 +624,7 @@ local function debug_hook(event, line)
       vars = vars or capture_vars()
       step_into = false
       step_over = false
-      status, res = coroutine.resume(coro_debugger, events.BREAK, vars, file, line)
+      status, res = cororesume(coro_debugger, events.BREAK, vars, file, line)
     end
 
     -- handle 'stack' command that provides stack() information to the debugger
@@ -603,15 +633,15 @@ local function debug_hook(event, line)
         -- resume with the stack trace and variables
         if vars then restore_vars(vars) end -- restore vars so they are reflected in stack values
         -- this may fail if __tostring method fails at run-time
-        local ok, snapshot = pcall(stack, 4)
-        status, res = coroutine.resume(coro_debugger, ok and events.STACK or events.BREAK, snapshot, file, line)
+        local ok, snapshot = pcall(stack, ngx and 5 or 4)
+        status, res = cororesume(coro_debugger, ok and events.STACK or events.BREAK, snapshot, file, line)
       end
     end
 
     -- need to recheck once more as resume after 'stack' command may
     -- return something else (for example, 'exit'), which needs to be handled
     if status and res and res ~= 'stack' then
-      if abort == nil and res == "exit" then os.exit(1, true); return end
+      if not abort and res == "exit" then os.exit(1, true); return end
       abort = res
       -- only abort if safe; if not, there is another (earlier) check inside
       -- debug_hook, which will abort execution at the first safe opportunity
@@ -639,6 +669,30 @@ local function stringify_results(status, ...)
   -- this is done to allow each returned value to be used (serialized or not)
   -- intependently and to preserve "original" comments
   return pcall(mobdebug.dump, t, {sparse = false})
+end
+
+local function isrunning()
+  return coro_debugger and (corostatus(coro_debugger) == 'suspended' or corostatus(coro_debugger) == 'running')
+end
+
+-- this is a function that removes all hooks and closes the socket to
+-- report back to the controller that the debugging is done.
+-- the script that called `done` can still continue.
+local function done()
+  if not (isrunning() and server) then return end
+
+  if not jit then
+    for co, debugged in pairs(coroutines) do
+      if debugged then debug.sethook(co) end
+    end
+  end
+
+  debug.sethook()
+  server:close()
+
+  coro_debugger = nil -- to make sure isrunning() returns `false`
+  seen_hook = nil -- to make sure that the next start() call works
+  abort = nil -- to make sure that callback calls use proper "abort" value
 end
 
 local function debugger_loop(sev, svars, sfile, sline)
@@ -678,7 +732,7 @@ local function debugger_loop(sev, svars, sfile, sline)
         elseif mobdebug.yield then mobdebug.yield()
         end
       elseif not line and err == "closed" then
-        error("Debugger connection unexpectedly closed", 0)
+        error("Debugger connection closed", 0)
       else
         -- if there is something in the pending buffer, prepend it to the line
         if buf then line = buf .. line; buf = nil end
@@ -706,7 +760,7 @@ local function debugger_loop(sev, svars, sfile, sline)
     elseif command == "EXEC" then
       local _, _, chunk = string.find(line, "^[A-Z]+%s+(.+)$")
       if chunk then
-        local func, res = loadstring(chunk)
+        local func, res = mobdebug.loadstring(chunk)
         local status
         if func then
           setfenv(func, eval_env)
@@ -742,16 +796,16 @@ local function debugger_loop(sev, svars, sfile, sline)
 
         if size == 0 and name == '-' then -- RELOAD the current script being debugged
           server:send("200 OK 0\n")
-          coroutine.yield("load")
+          coroyield("load")
         else
           -- receiving 0 bytes blocks (at least in luasocket 2.0.2), so skip reading
           local chunk = size == 0 and "" or server:receive(size)
           if chunk then -- LOAD a new script for debugging
-            local func, res = loadstring(chunk, "@"..name)
+            local func, res = mobdebug.loadstring(chunk, "@"..name)
             if func then
               server:send("200 OK 0\n")
               debugee = func
-              coroutine.yield("load")
+              coroyield("load")
             else
               server:send("401 Error in Expression " .. #res .. "\n")
               server:send(res)
@@ -764,7 +818,7 @@ local function debugger_loop(sev, svars, sfile, sline)
     elseif command == "SETW" then
       local _, _, exp = string.find(line, "^[A-Z]+%s+(.+)%s*$")
       if exp then
-        local func, res = loadstring("return(" .. exp .. ")")
+        local func, res = mobdebug.loadstring("return(" .. exp .. ")")
         if func then
           watchescnt = watchescnt + 1
           local newidx = #watches + 1
@@ -790,7 +844,7 @@ local function debugger_loop(sev, svars, sfile, sline)
     elseif command == "RUN" then
       server:send("200 OK\n")
 
-      local ev, vars, file, line, idx_watch = coroutine.yield()
+      local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
         server:send("202 Paused " .. file .. " " .. line .. "\n")
@@ -806,7 +860,7 @@ local function debugger_loop(sev, svars, sfile, sline)
       server:send("200 OK\n")
       step_into = true
 
-      local ev, vars, file, line, idx_watch = coroutine.yield()
+      local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
         server:send("202 Paused " .. file .. " " .. line .. "\n")
@@ -827,7 +881,7 @@ local function debugger_loop(sev, svars, sfile, sline)
       if command == "OUT" then step_level = stack_level - 1
       else step_level = stack_level end
 
-      local ev, vars, file, line, idx_watch = coroutine.yield()
+      local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
         server:send("202 Paused " .. file .. " " .. line .. "\n")
@@ -851,6 +905,10 @@ local function debugger_loop(sev, svars, sfile, sline)
       end
     elseif command == "SUSPEND" then
       -- do nothing; it already fulfilled its role
+    elseif command == "DONE" then
+      server:send("200 OK\n")
+      done()
+      return -- done with all the debugging
     elseif command == "STACK" then
       -- first check if we can execute the stack command
       -- as it requires yielding back to debug_hook it cannot be executed
@@ -858,7 +916,7 @@ local function debugger_loop(sev, svars, sfile, sline)
       -- in this case we simply return an empty result
       local vars, ev = {}
       if seen_hook then
-        ev, vars = coroutine.yield("stack")
+        ev, vars = coroyield("stack")
       end
       if ev and ev ~= events.STACK then
         server:send("401 Error in Execution " .. #vars .. "\n")
@@ -898,7 +956,7 @@ local function debugger_loop(sev, svars, sfile, sline)
       end
     elseif command == "EXIT" then
       server:send("200 OK\n")
-      coroutine.yield("exit")
+      coroyield("exit")
     else
       server:send("400 Bad Request\n")
     end
@@ -906,11 +964,15 @@ local function debugger_loop(sev, svars, sfile, sline)
 end
 
 local function connect(controller_host, controller_port)
-  return (socket.connect4 or socket.connect)(controller_host, controller_port)
-end
+  local sock, err = socket.tcp()
+  if not sock then return nil, err end
 
-local function isrunning()
-  return coro_debugger and coroutine.status(coro_debugger) == 'suspended'
+  if sock.settimeout then sock:settimeout(mobdebug.connecttimeout) end
+  local res, err = sock:connect(controller_host, controller_port)
+  if sock.settimeout then sock:settimeout() end
+
+  if not res then return nil, err end
+  return sock
 end
 
 local lasthost, lastport
@@ -927,7 +989,7 @@ local function start(controller_host, controller_port)
   controller_port = lastport or mobdebug.port
 
   local err
-  server, err = (socket.connect4 or socket.connect)(controller_host, controller_port)
+  server, err = mobdebug.connect(controller_host, controller_port)
   if server then
     -- correct stack depth which already has some calls on it
     -- so it doesn't go into negative when those calls return
@@ -958,7 +1020,7 @@ local function start(controller_host, controller_port)
         return (dtraceback(...):gsub("(stack traceback:\n)[^\n]*\n", "%1"))
       end
     end
-    coro_debugger = coroutine.create(debugger_loop)
+    coro_debugger = corocreate(debugger_loop)
     debug.sethook(debug_hook, "lcr")
     seen_hook = nil -- reset in case the last start() call was refused
     step_into = true -- start with step command
@@ -981,7 +1043,7 @@ local function controller(controller_host, controller_port, scratchpad)
 
   local exitonerror = not scratchpad
   local err
-  server, err = (socket.connect4 or socket.connect)(controller_host, controller_port)
+  server, err = mobdebug.connect(controller_host, controller_port)
   if server then
     local function report(trace, err)
       local msg = err .. "\n" .. trace
@@ -991,16 +1053,16 @@ local function controller(controller_host, controller_port, scratchpad)
     end
 
     seen_hook = true -- allow to accept all commands
-    coro_debugger = coroutine.create(debugger_loop)
+    coro_debugger = corocreate(debugger_loop)
 
     while true do
       step_into = true -- start with step command
       abort = false -- reset abort flag from the previous loop
       if scratchpad then checkcount = mobdebug.checkcount end -- force suspend right away
 
-      coro_debugee = coroutine.create(debugee)
+      coro_debugee = corocreate(debugee)
       debug.sethook(coro_debugee, debug_hook, "lcr")
-      local status, err = coroutine.resume(coro_debugee)
+      local status, err = cororesume(coro_debugee)
 
       -- was there an error or is the script done?
       -- 'abort' state is allowed here; ignore it
@@ -1020,6 +1082,8 @@ local function controller(controller_host, controller_port, scratchpad)
 	   end
 	   report(debug.traceback(coro_debugee), tostring(err))
           if exitonerror then break end
+          -- check if the debugging is done (coro_debugger is nil)
+          if not coro_debugger then break end
           -- resume once more to clear the response the debugger wants to send
           -- need to use capture_vars(2) as three would be the level of
           -- the caller for controller(), but because of the tail call,
@@ -1028,7 +1092,7 @@ local function controller(controller_host, controller_port, scratchpad)
           -- variable from console, but they will be reset anyway.
           -- This functionality is used when scratchpad is paused to
           -- gain access to remote console to modify global variables.
-          local status, err = coroutine.resume(coro_debugger, events.RESTART, capture_vars(2))
+          local status, err = cororesume(coro_debugger, events.RESTART, capture_vars(2))
           if not status or status and err == "exit" then break end
         end
       end
@@ -1086,7 +1150,7 @@ local function off()
   -- if not, turn the debugging off
   if jit then
     local remove = true
-    for co, debugged in pairs(coroutines) do
+    for _, debugged in pairs(coroutines) do
       if debugged then remove = false; break end
     end
     if remove then debug.sethook() end
@@ -1146,6 +1210,13 @@ local function handle(params, client, options)
         return nil, nil, "Debugger error: unexpected response '" .. breakpoint .. "'"
       end
       if done then break end
+    end
+  elseif command == "done" then
+    client:send(string.upper(command) .. "\n")
+    if client:receive() ~= "200 OK" then
+      print("Unknown error")
+      os.exit(1, true)
+      return nil, nil, "Debugger error: unexpected response after DONE"
     end
   elseif command == "setb" or command == "asetb" then
     _, _, _, file, line = string.find(params, "^([a-z]+)%s+(.-)%s+(%d+)%s*$")
@@ -1397,7 +1468,11 @@ local function handle(params, client, options)
       basedir = dir
 
       client:send("BASEDIR "..(remdir or dir).."\n")
-      local resp = client:receive()
+      local resp, err = client:receive()
+      if not resp then
+        print("Unknown error: "..err)
+        return nil, nil, "Debugger connection closed"
+      end
       local _, _, status = string.find(resp, "^(%d+)%s+%w+%s*$")
       if status == "200" then
         print("New base directory is " .. basedir)
@@ -1428,7 +1503,8 @@ local function handle(params, client, options)
     print("stack                 -- reports stack trace")
     print("output stdout <d|c|r> -- capture and redirect io stream (default|copy|redirect)")
     print("basedir [<path>]      -- sets the base path of the remote application, or shows the current one")
-    print("exit                  -- exits debugger")
+    print("done                  -- stops the debugger and continues application execution")
+    print("exit                  -- exits debugger and the application")
   else
     local _, _, spaces = string.find(params, "^(%s*)$")
     if not spaces then
@@ -1508,26 +1584,6 @@ local function moai()
   end
 end
 
--- this is a function that removes all hooks and closes the socket to
--- report back to the controller that the debugging is done.
--- the script that called `done` can still continue.
-local function done()
-  if not (isrunning() and server) then return end
-
-  if not jit then
-    for co, debugged in pairs(coroutines) do
-      if debugged then debug.sethook(co) end
-    end
-  end
-
-  debug.sethook()
-  server:close()
-
-  coro_debugger = nil -- to make sure isrunning() returns `false`
-  seen_hook = nil -- to make sure that the next start() call works
-  abort = nil -- to make sure that callback calls use proper "abort" value
-end
-
 -- make public functions available
 mobdebug.setbreakpoint = set_breakpoint
 mobdebug.removebreakpoint = remove_breakpoint
@@ -1542,6 +1598,7 @@ mobdebug.off = off
 mobdebug.moai = moai
 mobdebug.coro = coro
 mobdebug.done = done
+mobdebug.pause = function() step_into = true end
 mobdebug.yield = nil -- callback
 
 -- this is needed to make "require 'modebug'" to work when mobdebug

@@ -13,10 +13,8 @@ return {
     if not corona then
       local sep = win and ';' or ':'
       local default =
-           win and ([[C:\Program Files\Corona SDK]]..sep..[[D:\Program Files\Corona SDK]]..sep..
-                    [[C:\Program Files\Corona Labs\Corona SDK]]..sep..[[D:\Program Files\Corona Labs\Corona SDK]]..sep..
-                    [[C:\Program Files (x86)\Corona SDK]]..sep..[[D:\Program Files (x86)\Corona SDK]]..sep..
-                    [[C:\Program Files (x86)\Corona Labs\Corona SDK]]..sep..[[D:\Program Files (x86)\Corona Labs\Corona SDK]]..sep)
+           win and (GenerateProgramFilesPath('Corona SDK', sep)..sep..
+                    GenerateProgramFilesPath('Corona Labs\\Corona SDK', sep)..sep)
         or mac and ('/Applications/CoronaSDK/Corona Simulator.app/Contents/MacOS'..sep)
         or ''
       local path = default
@@ -42,7 +40,7 @@ return {
 
     if rundebug then
       -- start running the application right away
-      DebuggerAttachDefault({startwith = file, redirect = mac and "r" or "c",
+      DebuggerAttachDefault({startwith = file, redirect = "r",
         runstart = ide.config.debugger.runonstart ~= false})
 
       local function needRefresh(mdbl, mdbc)
@@ -56,12 +54,13 @@ return {
         or MergeFullPath(GetPathWithSep(corona), "Resources/mobdebug.lua")
       local mdbl = MergeFullPath(GetPathWithSep(ide.editorFilename), "lualibs/mobdebug/mobdebug.lua")
       local needed = needRefresh(mdbl, mdbc)
+      local mdbcplugin = win and MergeFullPath(wx.wxStandardPaths.Get():GetUserLocalDataDir(),
+        "../../Roaming/Corona Labs/Corona Simulator/Plugins/mobdebug.lua")
       if needed then
         local copied = FileCopy(mdbl, mdbc)
         -- couldn't copy to the Resources/ folder; not have permissions?
         if not copied and win then
-          mdbc = MergeFullPath(wx.wxStandardPaths.Get():GetUserLocalDataDir(),
-            "../../Roaming/Corona Labs/Corona Simulator/Plugins/mobdebug.lua")
+          mdbc = mdbcplugin
           needed = needRefresh(mdbl, mdbc)
           copied = needed and FileCopy(mdbl, mdbc)
         end
@@ -74,21 +73,25 @@ return {
           if not copied then return end
         end
       end
+      -- remove debugger if copied to plugin directory as it may be obsolete
+      if mdbcplugin and mdbcplugin ~= mdbc and wx.wxFileExists(mdbcplugin) then
+        wx.wxRemoveFile(mdbcplugin)
+      end
     end
 
+    local cfg = ide.config.corona or {}
     local debugopt = mac and "-debug 1 -project " or "-debug "
-    local skin = ide.config.corona and ide.config.corona.skin
-      and (" -skin "..ide.config.corona.skin) or ""
-    local cmd = ('"%s" %s"%s"%s')
-      :format(corona, rundebug and debugopt or "", file, skin)
+    local skin = cfg.skin and (" -skin "..ide.config.corona.skin) or ""
+    local noconsole = win and not cfg.showconsole and "-no-console " or ""
+    local cmd = ('"%s" %s%s"%s"%s')
+      :format(corona, noconsole, rundebug and debugopt or "", file, skin)
+
+    local uhw = ide.config.unhidewindow
+    local cwc = uhw and uhw.ConsoleWindowClass
+    if uhw and cfg.showconsole then uhw.ConsoleWindowClass = 0 end
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-    return CommandLineRun(cmd,self:fworkdir(wfilename),true,false)
-  end,
-  fprojdir = function(self,wfilename)
-    return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-  end,
-  fworkdir = function(self,wfilename)
-    return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
+    return CommandLineRun(cmd,self:fworkdir(wfilename),true,true,nil,nil,
+      function() if uhw and cfg.showconsole then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,

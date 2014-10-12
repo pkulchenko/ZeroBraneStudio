@@ -330,7 +330,7 @@ function M.related_keywords(ast, top_ast, tokenlist, src)
         end
       elseif grand_ast.tag == 'Localrec' then
         local tidx = LA.ast_idx_range_in_tokenlist(tokenlist, grand_ast)
-        repeat tidx = tidx + 1 until tokenlist[tidx].tag == 'Keyword' and tokenlist[tidx][1] == 'function'
+        repeat tidx = tidx + 1 until not tokenlist[tidx] or (tokenlist[tidx].tag == 'Keyword' and tokenlist[tidx][1] == 'function')
         local token = tokenlist[tidx]
         keywords[#keywords+1] = token
       end
@@ -770,7 +770,7 @@ function M.infer_values(top_ast, tokenlist, src, report)
         end
         -- Any call to require is handled specially (source analysis).
         if func == require and type(argvalues[1]) == 'string' then
-          local spath = ast.lineinfo.first[4] -- a HACK? relies on AST lineinfo
+          local spath = tostring(ast.lineinfo.first):gsub('<C|','<'):match('<([^|]+)') -- a HACK? relies on AST lineinfo
           local val = M.require_inspect(argvalues[1], report, spath:gsub('[^\\/]+$', ''))
           if known(val) and val ~= nil then
             ast.value = val
@@ -820,7 +820,7 @@ function M.infer_values(top_ast, tokenlist, src, report)
         local x
         local val = function() x=nil end
         local fpos = LA.ast_pos_range(ast, tokenlist)
-        local source = ast.lineinfo.first[4] -- a HACK? relies on AST lineinfo
+        local source = tostring(ast.lineinfo.first):gsub('<C|','<'):match('<([^|]+)') -- a HACK? relies on AST lineinfo
         local linenum = LA.pos_to_linecol(fpos, src)
         local retvals
         if ENABLE_RETURN_ANALYSIS then
@@ -1269,7 +1269,7 @@ function M.ast_to_definition_position(ast, tokenlist)
   if local_ast then
     local tidx = LA.ast_idx_range_in_tokenlist(tokenlist, local_ast)
     if tidx then
-      local spath = ast.lineinfo.first[4] -- a HACK? using lineinfo
+      local spath = tostring(ast.lineinfo.first):gsub('<C|','<'):match('<([^|]+)') -- a HACK? using lineinfo
       fpos = tokenlist[tidx].fpos; path = spath
     end
   end

@@ -11,10 +11,7 @@ return {
     gslshell = gslshell or ide.config.path.gslshell -- check if the path is configured
     if not gslshell then
       local sep = win and ';' or ':'
-      local default =
-           win and ([[C:\Program Files\gsl-shell]]..sep..[[D:\Program Files\gsl-shell]]..sep..
-                    [[C:\Program Files (x86)\gsl-shell]]..sep..[[D:\Program Files (x86)\gsl-shell]]..sep)
-        or ''
+      local default = win and GenerateProgramFilesPath('gsl-shell', sep)..sep or ''
       local path = default
                  ..(os.getenv('PATH') or '')..sep
                  ..(GetPathWithSep(self:fworkdir(wfilename)))..sep
@@ -83,12 +80,6 @@ return {
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() if rundebug then wx.wxRemoveFile(filepath) end end)
-  end,
-  fprojdir = function(self,wfilename)
-    return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-  end,
-  fworkdir = function(self,wfilename)
-    return ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
   hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,

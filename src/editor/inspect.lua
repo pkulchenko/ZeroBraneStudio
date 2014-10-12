@@ -1,5 +1,6 @@
+-- Copyright 2012-14 Paul Kulchenko, ZeroBrane LLC
 -- Integration with LuaInspect
--- (C) 2012 Paul Kulchenko
+---------------------------------------------------------
 
 local M, LA, LI, T = {}
 local FAST = true
@@ -7,7 +8,11 @@ local FAST = true
 local function init()
   if LA then return end
 
-  require "metalua"
+  -- metalua is using 'checks', which noticeably slows the execution
+  -- stab it with out own
+  package.loaded.checks = {}
+  checks = function() end
+
   LA = require "luainspect.ast"
   LI = require "luainspect.init"
   T = require "luainspect.types"
@@ -18,11 +23,15 @@ local function init()
   end
 end
 
+function M.pos2line(pos)
+  return pos and 1 + select(2, M.src:sub(1,pos):gsub(".-\n[^\n]*", ""))
+end
+
 function M.warnings_from_string(src, file)
   init()
 
   local ast, err, linenum, colnum = LA.ast_from_string(src, file)
-  if err then return nil, err, linenum, colnum end
+  if not ast and err then return nil, err, linenum, colnum end
 
   if FAST then
     LI.inspect(ast, nil, src)
@@ -39,42 +48,43 @@ function M.warnings_from_string(src, file)
     globinit[k] = true
   end
 
+  M.src, M.file = src, file
   return M.show_warnings(ast, globinit)
+end
+
+local function cleanError(err)
+  return err and err:gsub(".-:%d+: file%s+",""):gsub(", line (%d+), char %d+", ":%1")
 end
 
 function AnalyzeFile(file)
   local warn, err, line, pos = M.warnings_from_string(FileRead(file), file)
-  if err then
-    err = err:gsub("line %d+, char %d+", "syntax error")
-  end
-  return warn, err, line, pos
+  return warn, cleanError(err), line, pos
 end
 
 function AnalyzeString(src)
-  local warn, err, line, pos = M.warnings_from_string(src, "src")
-  if err then
-    err = err:gsub("line %d+, char %d+", "syntax error")
-  end
-  return warn, err, line, pos
+  local warn, err, line, pos = M.warnings_from_string(src, "<string>")
+  return warn, cleanError(err), line, pos
 end
 
 function M.show_warnings(top_ast, globinit)
   local warnings = {}
   local function warn(msg, linenum, path)
-    warnings[#warnings+1] = (path or "?") .. "(" .. (linenum or 0) .. "): " .. msg
+    warnings[#warnings+1] = (path or M.file or "?") .. ":" .. (linenum or M.pos2line(M.ast.pos) or 0) .. ": " .. msg
   end
   local function known(o) return not T.istype[o] end
   local function index(f) -- build abc.def.xyz name recursively
     return (f[1].tag == 'Id' and f[1][1] or index(f[1])) .. '.' .. f[2][1] end
   local globseen, isseen, fieldseen = globinit or {}, {}, {}
   LA.walk(top_ast, function(ast)
-    local line = ast.lineinfo and ast.lineinfo.first[1] or 0
-    local path = ast.lineinfo and ast.lineinfo.first[4] or '?'
+    M.ast = ast
+    local path, line = tostring(ast.lineinfo):gsub('<C|','<'):match('<([^|]+)|L(%d+)')
     local name = ast[1]
     -- check if we're masking a variable in the same scope
     if ast.localmasking and name ~= '_' and
        ast.level == ast.localmasking.level then
-      local linenum = ast.localmasking.lineinfo.first[1]
+      local linenum = ast.localmasking.lineinfo
+        and tostring(ast.localmasking.lineinfo.first):match('|L(%d+)')
+        or M.pos2line(ast.localmasking.pos)
       local parent = ast.parent and ast.parent.parent
       local func = parent and parent.tag == 'Localrec'
       warn("local " .. (func and 'function' or 'variable') .. " '" ..
@@ -133,7 +143,7 @@ function M.show_warnings(top_ast, globinit)
           and (" in '"..index(ast.parent):gsub("%."..name.."$","").."'")
           or ""
         warn("first use of unknown field '" .. name .."'"..parent,
-          ast.lineinfo.first[1], path)
+          ast.lineinfo and tostring(ast.lineinfo.first):match('|L(%d+)'), path)
       end
     elseif ast.tag == 'Id' and not ast.localdefinition and not ast.definedglobal then
       if not globseen[name] then
@@ -174,29 +184,26 @@ function M.show_warnings(top_ast, globinit)
 end
 
 local frame = ide.frame
-local menu = frame.menuBar:GetMenu(frame.menuBar:FindMenu(TR("&Project")))
 
 -- insert after "Compile" item
-local _, compilepos = ide:FindMenuItem(menu, ID_COMPILE)
+local _, menu, compilepos = ide:FindMenuItem(ID_COMPILE)
 if compilepos then
   menu:Insert(compilepos+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
 end
 
 local debugger = ide.debugger
-local openDocuments = ide.openDocuments
 
 local function analyzeProgram(editor)
-  local editorText = editor:GetText()
-  local id = editor:GetId()
-  local filePath = DebuggerMakeFileName(editor, openDocuments[id].filePath)
-
-  if frame.menuBar:IsChecked(ID_CLEAROUTPUT) then ClearOutput() end
+  if ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT) then ClearOutput() end
   DisplayOutput("Analyzing the source code")
   frame:Update()
 
+  local editorText = editor:GetText()
+  local doc = ide:GetDocument(editor)
+  local filePath = doc:GetFilePath() or doc:GetFileName()
   local warn, err = M.warnings_from_string(editorText, filePath)
   if err then -- report compilation error
-    DisplayOutput(": not completed\n")
+    DisplayOutput((": not completed.\n%s\n"):format(cleanError(err)))
     return false
   end
 
@@ -211,7 +218,9 @@ frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     ActivateOutput()
     local editor = GetEditor()
-    if not analyzeProgram(editor) then CompileProgram(editor, { reportstats = false }) end
+    if not analyzeProgram(editor) then
+      CompileProgram(editor, { reportstats = false, keepoutput = true })
+    end
   end)
 frame:Connect(ID_ANALYZE, wx.wxEVT_UPDATE_UI,
   function (event)

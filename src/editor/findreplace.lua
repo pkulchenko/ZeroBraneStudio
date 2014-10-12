@@ -1,6 +1,8 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
+
 local ide = ide
 ide.findReplace = {
   dialog = nil, -- the wxDialog for find/replace
@@ -41,8 +43,10 @@ ide.findReplace = {
 }
 local findReplace = ide.findReplace
 
+local NOTFOUND = -1
+
 function findReplace:GetEditor()
-  return findReplace.oveditor or GetEditor()
+  return findReplace.oveditor or ide:GetEditorWithLastFocus() or GetEditor()
 end
 
 -------------------- Find replace dialog
@@ -114,7 +118,7 @@ local function shake(window, shakes, duration, vigour)
   local delay = math.floor(duration/shakes/2)
   local position = window:GetPosition() -- get current position
   local deltax = window:GetSize():GetWidth()*vigour
-  for s = 1, shakes do
+  for _ = 1, shakes do
     window:Move(position:GetX()-deltax, position:GetY())
     wx.wxMilliSleep(delay)
     window:Move(position:GetX()+deltax, position:GetY())
@@ -124,18 +128,18 @@ local function shake(window, shakes, duration, vigour)
 end
 
 function findReplace:FindString(reverse)
-  if findReplace:HasText() then
-    local editor = findReplace:GetEditor()
+  local editor = findReplace:GetEditor()
+  if editor and findReplace:HasText() then
     local fDown = iff(reverse, not findReplace.fDown, findReplace.fDown)
     setSearchFlags(editor)
     setTarget(editor, fDown)
     local posFind = editor:SearchInTarget(findReplace.findText)
-    if (posFind == -1) and findReplace.fWrap then
+    if (posFind == NOTFOUND) and findReplace.fWrap then
       editor:SetTargetStart(iff(fDown, 0, editor:GetLength()))
       editor:SetTargetEnd(iff(fDown, editor:GetLength(), 0))
       posFind = editor:SearchInTarget(findReplace.findText)
     end
-    if posFind == -1 then
+    if posFind == NOTFOUND then
       findReplace.foundString = false
       ide.frame:SetStatusText(TR("Text not found."))
       shake(findReplace.dialog)
@@ -143,7 +147,7 @@ function findReplace:FindString(reverse)
       findReplace.foundString = true
       local start = editor:GetTargetStart()
       local finish = editor:GetTargetEnd()
-      EnsureRangeVisible(start, finish)
+      editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(start))
       editor:SetSelection(start, finish)
       ide.frame:SetStatusText("")
     end
@@ -157,15 +161,15 @@ end
 
 function findReplace:FindStringAll(inFileRegister)
   local found = false
-  if findReplace:HasText() then
+  local editor = findReplace:GetEditor()
+  if editor and findReplace:HasText() then
     local findLen = string.len(findReplace.findText)
-    local editor = findReplace:GetEditor()
     local e = setTargetAll(editor)
 
     setSearchFlags(editor)
     local posFind = editor:SearchInTarget(findReplace.findText)
-    if (posFind ~= -1) then
-      while posFind ~= -1 do
+    if (posFind ~= NOTFOUND) then
+      while posFind ~= NOTFOUND do
         inFileRegister(posFind)
         editor:SetTargetStart(posFind + findLen)
         editor:SetTargetEnd(e)
@@ -185,9 +189,11 @@ end
 
 function findReplace:ReplaceString(fReplaceAll, inFileRegister)
   local replaced = false
+  local editor = findReplace:GetEditor()
+  if editor and findReplace:HasText() then
+    -- don't replace in read-only editors
+    if editor:GetReadOnly() then return false end
 
-  if findReplace:HasText() then
-    local editor = findReplace:GetEditor()
     local endTarget = inFileRegister and setTargetAll(editor) or
       setTarget(editor, findReplace.fDown, fReplaceAll, findReplace.fWrap)
 
@@ -195,9 +201,9 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
       setSearchFlags(editor)
       local occurrences = 0
       local posFind = editor:SearchInTarget(findReplace.findText)
-      if (posFind ~= -1) then
+      if (posFind ~= NOTFOUND) then
         if (not inFileRegister) then editor:BeginUndoAction() end
-        while posFind ~= -1 do
+        while posFind ~= NOTFOUND do
           if (inFileRegister) then inFileRegister(posFind) end
 
           local length = editor:GetLength()
@@ -220,16 +226,14 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
       ide.frame:SetStatusText(("%s %s."):format(
         TR("Replaced"), TR("%d instance", occurrences):format(occurrences)))
     else
+      editor:TargetFromSelection()
       -- check if there is anything selected as well as the user can
       -- move the cursor after successful search
       if findReplace.foundString
-      and editor:GetSelectionStart() ~= editor:GetSelectionEnd() then
+      and editor:GetSelectionStart() ~= editor:GetSelectionEnd()
+      -- check that the current selection matches what's being searched for
+      and editor:SearchInTarget(findReplace.findText) ~= NOTFOUND then
         local start = editor:GetSelectionStart()
-
-        -- convert selection to target as we need TargetRE support
-        editor:TargetFromSelection()
-
-        local length = editor:GetLength()
         local replaced = findReplace.fRegularExpr
           and editor:ReplaceTargetRE(findReplace.replaceText)
           or editor:ReplaceTarget(findReplace.replaceText)
@@ -282,7 +286,7 @@ local function ProcInFiles(startdir,mask,subdirs,replace)
           if replace then
             -- check if anything replaced, store changed content, make .bak
             if findReplace:ReplaceString(true,onFileRegister)
-            and findReplace.fMakeBak and FileWrite(file..".bak",filetext) then
+            and (not findReplace.fMakeBak or FileWrite(file..".bak",filetext)) then
               FileWrite(file,findReplace.oveditor:GetText())
             end
           else
@@ -290,7 +294,7 @@ local function ProcInFiles(startdir,mask,subdirs,replace)
           end
 
           -- give time to the UI to refresh
-          if TimeGet() - start > 0.25 then wx.wxYield() end
+          if TimeGet() - start > 0.25 then ide:Yield() end
           if not findReplace.dialog:IsShown() then
             DisplayOutputLn(TR("Cancelled by the user."))
             break
@@ -325,15 +329,8 @@ function findReplace:RunInFiles(replace)
 end
 
 local function getExts()
-  local knownexts = {}
-  for i,spec in pairs(ide.specs) do
-    if (spec.exts) then
-      for n,ext in ipairs(spec.exts) do
-        table.insert(knownexts, "*."..ext)
-      end
-    end
-  end
-  return #knownexts > 0 and table.concat(knownexts, "; ") or nil
+  local knownexts = ide:GetKnownExtensions()
+  return #knownexts > 0 and "*."..table.concat(knownexts, "; *.") or nil
 end
 
 function findReplace:createDialog(replace,infiles)
@@ -393,10 +390,12 @@ function findReplace:createDialog(replace,infiles)
 
     local fname = GetEditorFileAndCurInfo(true)
     if #(findReplace.filedirText) == 0 then
-      findReplace.filedirText = ide.config.path.projectdir
+      findReplace.filedirText = ide:GetProject()
         or fname and fname:GetPath(wx.wxPATH_GET_VOLUME)
         or ""
     end
+
+    PrependStringToArray(ide.findReplace.filedirTextArray, ide:GetProject())
 
     infilesDirStat = wx.wxStaticText(findDialog, wx.wxID_ANY, TR("Directory")..": ")
     infilesDirCombo = wx.wxComboBox(findDialog, wx.wxID_ANY, findReplace.filedirText,
@@ -533,6 +532,8 @@ function findReplace:createDialog(replace,infiles)
   -- https://groups.google.com/d/msg/wx-users/EVJr8GqyNUA/CUALp585E78J
   if (mac and ide.wxver >= "2.9.5") then
     local function simulateEnter()
+      -- the button may be disabled, so check its state first
+      if not findButton:IsEnabled() then return end
       findDialog:AddPendingEvent(wx.wxCommandEvent(
         wx.wxEVT_COMMAND_BUTTON_CLICKED, ID_FIND_NEXT))
     end
@@ -592,6 +593,9 @@ function findReplace:createDialog(replace,infiles)
         if res == wx.wxID_OK then
           infilesDirCombo:SetValue(FixDir(filePicker:GetPath()))
         end
+        -- when the dropdown is used to select the directory on OSX,
+        -- the find dialog moves to the background; this keeps it on top.
+        if ide.osname == 'Macintosh' then findDialog:Raise() end
       end)
   end
 

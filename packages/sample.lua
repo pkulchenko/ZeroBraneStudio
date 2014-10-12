@@ -11,6 +11,8 @@ local P = {
 -- abort further processing.
 -- For `onEditorPreSave` event it means that file saving will be aborted.
 -- For `onEditorKeyDown` event it means that the key will be "eaten".
+-- For `onEditorAction` event it means that the action will not be executed.
+-- For `onFiletreeActivate` event it means that no further processing is done.
 -- For `onEditorCharAdded` event it means that no further processing is done
 -- (but the character is still added to the editor).
 
@@ -24,9 +26,13 @@ local events = {
   onEditorSave =       function(self, editor) end,
   onEditorFocusLost =  function(self, editor) end,
   onEditorFocusSet =   function(self, editor) end,
+  onEditorAction =     function(self, editor, event) end, -- return false
   onEditorKeyDown =    function(self, editor, event) end, -- return false
   onEditorCharAdded =  function(self, editor, event) end, -- return false
-  onFiletreeActivate = function(self, tree, event, item) end,
+  onEditorUserlistSelection = function(self, editor, event) end, -- return false
+  onEditorUpdateUI =   function(self, editor, event) end, -- return false
+  onEditorPainted =    function(self, editor, event) end, -- return false
+  onFiletreeActivate = function(self, tree, event, item) end, -- return false
   onFiletreeLDown =    function(self, tree, event, item) end,
   onFiletreeRDown =    function(self, tree, event, item) end,
   onMenuEditor =       function(self, menu, editor, event) end,
@@ -37,6 +43,7 @@ local events = {
   onProjectClose =     function(self, project) end,
   onInterpreterLoad =  function(self, interpreter) end,
   onInterpreterClose = function(self, interpreter) end,
+  onIdle =             function(self, event) end,
   onIdleOnce =         function(self, event) end,
   onAppFocusLost =     function(self, app) end,
   onAppFocusSet =      function(self, app) end,

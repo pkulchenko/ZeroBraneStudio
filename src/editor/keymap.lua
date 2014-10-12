@@ -32,9 +32,10 @@ ide.config.keymap = {
   [ID_SAVEAS]           = "Alt-Shift-S",
   [ID_SAVEALL]          = "",
   [ID_RECENTFILES]      = "",
-  [ID_RECENTFILESPREV]  = "Ctrl-<",
-  [ID_RECENTFILESNEXT]  = "Ctrl->",
+  [ID_RECENTFILESPREV]  = "Ctrl-,",
+  [ID_RECENTFILESNEXT]  = "Ctrl-.",
   [ID_EXIT]             = "Ctrl-Q",
+  [ID_RECENTPROJECTSPREV] = "Ctrl-Shift-<",
 -- Edit menu
   [ID_CUT]              = "Ctrl-X",
   [ID_COPY]             = "Ctrl-C",
@@ -48,6 +49,10 @@ ide.config.keymap = {
   [ID_COMMENT]          = "Ctrl-U",
   [ID_FOLD]             = "F12",
   [ID_CLEARDYNAMICWORDS] = "",
+  [ID_REINDENT]         = "Ctrl-I",
+  [ID_BOOKMARKTOGGLE]   = "Ctrl-F2",
+  [ID_BOOKMARKNEXT]     = "F2",
+  [ID_BOOKMARKPREV]     = "Shift-F2",
 -- Search menu
   [ID_FIND]             = "Ctrl-F",
   [ID_FINDNEXT]         = "F3",
@@ -121,7 +126,4 @@ ide.config.editor.keymap = {
   -- Opt+Left/Right moves one word left (to the beginning)/right (to the end)
   {wxstc.wxSTC_KEY_LEFT, wxstc.wxSTC_SCMOD_ALT, wxstc.wxSTC_CMD_WORDLEFT, "Macintosh"},
   {wxstc.wxSTC_KEY_RIGHT, wxstc.wxSTC_SCMOD_ALT, wxstc.wxSTC_CMD_WORDRIGHTEND, "Macintosh"},
-  -- Opt+Shift+Left/Right selects one word left (to the beginning)/right (to the end)
-  {wxstc.wxSTC_KEY_LEFT, wxstc.wxSTC_SCMOD_ALT+wxstc.wxSTC_SCMOD_SHIFT, wxstc.wxSTC_CMD_WORDLEFTEXTEND, "Macintosh"},
-  {wxstc.wxSTC_KEY_RIGHT, wxstc.wxSTC_SCMOD_ALT+wxstc.wxSTC_SCMOD_SHIFT, wxstc.wxSTC_CMD_WORDRIGHTENDEXTEND, "Macintosh"},
 }

@@ -1,3 +1,4 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 --          Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -13,6 +14,7 @@ end
 -- so don't use stock IDs on Linux
 local linux = ide.osname == 'Unix'
 
+ID_SEPARATOR        = NewID()
 -- File menu
 ID_NEW              = linux and NewID() or wx.wxID_NEW
 ID_OPEN             = linux and NewID() or wx.wxID_OPEN
@@ -30,8 +32,12 @@ ID_SAVE             = linux and NewID() or wx.wxID_SAVE
 ID_SAVEAS           = linux and NewID() or wx.wxID_SAVEAS
 ID_SAVEALL          = NewID()
 ID_RECENTFILES      = NewID()
+ID_RECENTFILESCLEAR = NewID()
 ID_RECENTFILESPREV  = NewID()
 ID_RECENTFILESNEXT  = NewID()
+ID_RECENTPROJECTS   = NewID()
+ID_RECENTPROJECTSCLEAR = NewID()
+ID_RECENTPROJECTSPREV = NewID()
 ID_EXIT             = linux and NewID() or wx.wxID_EXIT
 -- Edit menu
 ID_CUT              = linux and NewID() or wx.wxID_CUT
@@ -46,6 +52,12 @@ ID_AUTOCOMPLETEENABLE = NewID()
 ID_COMMENT          = NewID()
 ID_FOLD             = NewID()
 ID_CLEARDYNAMICWORDS = NewID()
+ID_SOURCE           = NewID()
+ID_REINDENT         = NewID()
+ID_BOOKMARK         = NewID()
+ID_BOOKMARKTOGGLE   = NewID()
+ID_BOOKMARKNEXT     = NewID()
+ID_BOOKMARKPREV     = NewID()
 -- don't use wx.wxID_PREFERENCES to avoid merging with OSX app menu, because
 -- Apple guidelines describe Preferences as a "normal" item without submenus.
 ID_PREFERENCES      = NewID()
@@ -67,6 +79,9 @@ ID_VIEWFILETREE     = NewID()
 ID_VIEWOUTPUT       = NewID()
 ID_VIEWCALLSTACK    = NewID()
 ID_VIEWWATCHWINDOW  = NewID()
+ID_VIEWOUTLINE      = NewID()
+ID_VIEWTOOLBAR      = NewID()
+ID_VIEWSTATUSBAR    = NewID()
 ID_VIEWDEFAULTLAYOUT = NewID()
 ID_VIEWFULLSCREEN   = NewID()
 ID_VIEWMINIMIZE     = NewID()
@@ -83,6 +98,7 @@ ID_RUNNOW           = NewID()
 ID_ATTACHDEBUG      = NewID()
 ID_STARTDEBUG       = NewID()
 ID_STOPDEBUG        = NewID()
+ID_DETACHDEBUG      = NewID()
 ID_STEP             = NewID()
 ID_STEPOVER         = NewID()
 ID_STEPOUT          = NewID()
@@ -109,6 +125,7 @@ ID_DELETEWATCH      = NewID()
 -- Editor popup menu items
 ID_GOTODEFINITION   = NewID()
 ID_RENAMEALLINSTANCES = NewID()
+ID_REPLACEALLSELECTIONS = NewID()
 ID_QUICKADDWATCH    = NewID()
 ID_QUICKEVAL        = NewID()
 ID_ADDTOSCRATCHPAD  = NewID()

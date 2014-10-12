@@ -1,4 +1,4 @@
--- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 ----------
@@ -64,7 +64,7 @@ function StylesGetDefault()
 
     -- markup
     ['|'] = {fg = {127, 0, 127}},
-    ['`'] = {fg = {127, 127, 127}},
+    ['`'] = {fg = {64, 128, 64}},
     ['['] = {hs = {32, 32, 127}},
 
     -- markers
@@ -89,8 +89,9 @@ function StylesGetDefault()
 end
 
 local markers = {
-  breakpoint = {1, wxstc.wxSTC_MARK_CIRCLE, wx.wxColour(220, 64, 64), wx.wxColour(220, 64, 64)},
-  currentline = {2, wxstc.wxSTC_MARK_ARROW, wx.wxBLACK, wx.wxColour(64, 220, 64)},
+  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, wx.wxColour(196, 64, 64), wx.wxColour(220, 64, 64)},
+  bookmark = {1, wxstc.wxSTC_MARK_SHORTARROW, wx.wxColour(16, 96, 128), wx.wxColour(96, 160, 220)},
+  currentline = {2, wxstc.wxSTC_MARK_ARROW, wx.wxColour(16, 128, 16), wx.wxColour(64, 220, 64)},
   message = {3, wxstc.wxSTC_MARK_CHARACTER+(' '):byte(), wx.wxBLACK, wx.wxColour(220, 220, 220)},
   output = {4, wxstc.wxSTC_MARK_BACKGROUND, wx.wxBLACK, wx.wxColour(240, 240, 240)},
   prompt = {5, wxstc.wxSTC_MARK_ARROWS, wx.wxBLACK, wx.wxColour(220, 220, 220)},
@@ -243,11 +244,16 @@ local specialmapping = {
     local panes = uimgr:GetAllPanes()
     for index = 0, panes:GetCount()-1 do
       local wind = uimgr:GetPane(panes:Item(index).name).window
-      local children = wind:GetChildren()
+
+      -- wxlua compiled with STL doesn't provide GetChildren() method
+      -- as per http://sourceforge.net/p/wxlua/mailman/message/32500995/
+      local ok, children = pcall(function() return wind:GetChildren() end)
+      if not ok then break end
+
       for child = 0, children:GetCount()-1 do
         local data = children:Item(child):GetData()
         local _, window = pcall(function() return data:DynamicCast("wxWindow") end)
-        if window then
+        if window and panes:Item(index).name ~= 'toolbar' then
           window:SetBackgroundColour(bg)
           window:SetForegroundColour(fg)
           window:Refresh()
@@ -310,8 +316,8 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   editor:StyleClearAll()
 
   -- set the default linenumber font size based on the editor font size
-  if styles.linenumber then
-    styles.linenumber.fs = styles.linenumber.fs or ide.config.editor.fontsize - 1
+  if styles.linenumber and not styles.linenumber.fs then
+    styles.linenumber.fs = ide.config.editor.fontsize and (ide.config.editor.fontsize - 1) or nil
   end
 
   for name,style in pairs(styles) do
@@ -341,7 +347,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   if styles.calltip then editor:CallTipUseStyle(2) end
 
   do
-    local defaultfg = styles.text and styles.text.fg or {127,127,127}
+    local defaultfg = {127,127,127}
     local indic = styles.indicator or {}
 
     -- use styles.fncall if not empty and if indic.fncall is empty
@@ -375,7 +381,7 @@ function ReApplySpecAndStyles()
   local openDocuments = ide.openDocuments
   for i,doc in pairs(openDocuments) do
     if (doc.editor.spec) then
-      SetupKeywords(doc.editor,nil,doc.editor.spec)
+      doc.editor:SetupKeywords(nil,doc.editor.spec)
     end
   end
 end

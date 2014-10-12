@@ -1,3 +1,4 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
@@ -41,6 +42,17 @@ ide = {
     editor = {
       foldcompact = true,
       checkeol = true,
+      saveallonrun = false,
+      caretline = true,
+      showfncall = true,
+      autotabs = false,
+      usetabs  = false,
+      tabwidth = 2,
+      usewrap = true,
+      calltipdelay = 500,
+      smartindent = true,
+      fold = true,
+      autoreload = true,
     },
     debugger = {
       verbose = false,
@@ -54,9 +66,18 @@ ide = {
       fullname = 'untitled.lua',
       interpreter = 'luadeb',
     },
-    outputshell = {},
-    filetree = {},
+    outputshell = {
+      usewrap = true,
+    },
+    filetree = {
+      mousemove = true,
+    },
     funclist = {},
+
+    toolbar = {
+      icons = {},
+      iconmap = {},
+    },
 
     keymap = {},
     messages = {},
@@ -68,24 +89,33 @@ ide = {
     autocomplete = true,
     autoanalyzer = true,
     acandtip = {
-      shorttip = false,
+      shorttip = true,
+      nodynwords = true,
       ignorecase = false,
       strategy = 2,
       width = 60,
     },
     arg = {}, -- command line arguments
 
-    activateoutput = false, -- activate output/console on Run/Debug/Compile
+    format = { -- various formatting strings
+      menurecentprojects = "%f | %i",
+      apptitle = "%T - %F",
+    },
+
+    activateoutput = true, -- activate output/console on Run/Debug/Compile
     unhidewindow = false, -- to unhide a gui window
-    allowinteractivescript = false, -- allow interaction in the output window
+    allowinteractivescript = true, -- allow interaction in the output window
+    projectautoopen = true,
+    autorecoverinactivity = 10, -- seconds
+    outlineinactivity = 0.250, -- seconds
     filehistorylength = 20,
-    projecthistorylength = 15,
+    projecthistorylength = 20,
     savebak = false,
     singleinstance = false,
     singleinstanceport = 0xe493,
-    -- HiDPI/Retina display support;
-    -- `false` by default because of issues with indicators with alpha setting
-    hidpi = false,
+    interpreter = "luadeb",
+    hidpi = false, -- HiDPI/Retina display support
+    hotexit = false,
   },
   specs = {
     none = {
@@ -115,6 +145,7 @@ ide = {
 
   -- misc
   exitingProgram = false, -- are we currently exiting, ID_EXIT
+  infocus = nil, -- last component with a focus
   editorApp = wx.wxGetApp(),
   editorFilename = nil,
   openDocuments = {},-- open notebook editor documents[winId] = {
@@ -131,7 +162,6 @@ ide = {
     oNormal = nil,
     oItalic = nil,
     fNormal = nil,
-    dNormal = nil,
   },
 
   osname = wx.wxPlatformInfo.Get():GetOperatingSystemFamilyName(),
@@ -139,6 +169,8 @@ ide = {
   oshome = os.getenv("HOME") or (iswindows and os.getenv('HOMEDRIVE') and os.getenv('HOMEPATH')
     and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH'))),
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
+
+  test = {}, -- local functions used for testing
 }
 
 -- add wx.wxMOD_RAW_CONTROL as it's missing in wxlua 2.8.12.3;
@@ -152,6 +184,7 @@ end
 if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
 -- wxDIR_NO_FOLLOW is missing in wxlua 2.8.12 as well
 if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
+if not wxaui.wxAUI_TB_PLAIN_BACKGROUND then wxaui.wxAUI_TB_PLAIN_BACKGROUND = 2^8 end
 
 if not setfenv then -- Lua 5.2
   -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
@@ -173,7 +206,7 @@ end
 
 dofile "src/version.lua"
 
-for _, file in ipairs({"ids", "style", "keymap", "proto"}) do
+for _, file in ipairs({"ids", "style", "keymap", "proto", "toolbar"}) do
   dofile("src/editor/"..file..".lua")
 end
 
@@ -187,11 +220,11 @@ local function setLuaPaths(mainpath, osname)
   local luadev_path = (luadev
     and ('LUA_DEV/?.lua;LUA_DEV/?/init.lua;LUA_DEV/lua/?.lua;LUA_DEV/lua/?/init.lua')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
-    or "")
+    or nil)
   local luadev_cpath = (luadev
     and ('LUA_DEV/?.dll;LUA_DEV/?51.dll;LUA_DEV/clibs/?.dll;LUA_DEV/clibs/?51.dll')
       :gsub('LUA_DEV', (luadev:gsub('[\\/]$','')))
-    or "")
+    or nil)
 
   if luadev then
     local path, clibs = os.getenv('PATH'), luadev:gsub('[\\/]$','')..'\\clibs'
@@ -204,21 +237,28 @@ local function setLuaPaths(mainpath, osname)
   -- if the path has an excamation mark, allow Lua to expand it as this
   -- expansion happens only once.
   if osname == "Windows" and mainpath:find('%!') then mainpath = "!/../" end
-  wx.wxSetEnv("LUA_PATH", package.path .. ";"
-    .. "./?.lua;./?/init.lua;./lua/?.lua;./lua/?/init.lua" .. ';'
-    .. mainpath.."lualibs/?/?.lua;"..mainpath.."lualibs/?.lua" .. ';'
-    .. luadev_path)
 
-  local clibs =
+  -- if LUA_PATH or LUA_CPATH is not specified, then add ;;
+  -- ;; will be replaced with the default (c)path by the Lua interpreter
+  wx.wxSetEnv("LUA_PATH",
+    (os.getenv("LUA_PATH") or ';') .. ';'
+    .. "./?.lua;./?/init.lua;./lua/?.lua;./lua/?/init.lua" .. ';'
+    .. mainpath.."lualibs/?/?.lua;"..mainpath.."lualibs/?.lua"
+    .. (luadev_path and (';' .. luadev_path) or ''))
+
+  ide.osclibs = -- keep the list to use for other Lua versions
     osname == "Windows" and mainpath.."bin/?.dll;"..mainpath.."bin/clibs/?.dll" or
     osname == "Macintosh" and mainpath.."bin/lib?.dylib;"..mainpath.."bin/clibs/?.dylib" or
     osname == "Unix" and mainpath..("bin/linux/%s/lib?.so;"):format(arch)
                        ..mainpath..("bin/linux/%s/clibs/?.so"):format(arch) or
-    nil
-  if clibs then wx.wxSetEnv("LUA_CPATH",
-    package.cpath .. ';' .. clibs .. ';' .. luadev_cpath) end
-  ide.osclibs = clibs -- keep the list to use for other Lua versions
+    assert(false, "Unexpected OS name")
+
+  wx.wxSetEnv("LUA_CPATH",
+    (os.getenv("LUA_CPATH") or ';') .. ';' .. ide.osclibs
+    .. (luadev_cpath and (';' .. luadev_cpath) or ''))
 end
+
+ide.test.setLuaPaths = setLuaPaths
 
 ---------------
 -- process args
@@ -248,7 +288,9 @@ do
   for index = 2, #arg do
     if (arg[index] == "-cfg" and index+1 <= #arg) then
       table.insert(configs,arg[index+1])
-    elseif arg[index-1] ~= "-cfg" then
+    elseif arg[index-1] ~= "-cfg"
+    -- on OSX command line includes -psn... parameter, don't include these
+    and (ide.osname ~= 'Macintosh' or not arg[index]:find("^-psn")) then
       table.insert(filenames,arg[index])
     end
   end
@@ -296,13 +338,23 @@ local function loadPackages(filter)
   -- check dependencies and assign file names to each package
   local unload = {}
   for fname, package in pairs(ide.packages) do
+    if type(package.dependencies) == 'table'
+    and package.dependencies.osname
+    and not package.dependencies.osname:find(ide.osname, 1, true) then
+      (DisplayOutputLn or print)(
+        ("Package '%s' not loaded: requires %s platform, but you are running %s.")
+          :format(fname, package.dependencies.osname, ide.osname)
+      )
+      table.insert(unload, fname)
+    end
+
     local needsversion = tonumber(package.dependencies)
       or type(package.dependencies) == 'table' and tonumber(package.dependencies[1])
       or -1
     local isversion = tonumber(ide.VERSION)
     if isversion and needsversion > isversion then
       (DisplayOutputLn or print)(
-        ("Package '%s' not loaded: requires version %s, but you are running version %s")
+        ("Package '%s' not loaded: requires version %s, but you are running version %s.")
           :format(fname, needsversion, ide.VERSION)
       )
       table.insert(unload, fname)
@@ -366,10 +418,19 @@ end
 -- process config
 
 -- set ide.config environment
-ide.config.os = os
-ide.config.wxstc = wxstc
+setmetatable(ide.config, {__index = {os = os, wxstc = wxstc, wx = wx}})
 ide.config.load = { interpreters = loadInterpreters, specs = loadSpecs,
   tools = loadTools }
+do
+  local num = 0
+  ide.config.package = function(p)
+    if p then
+      num = num + 1
+      local name = 'config'..num..'package'
+      ide.packages[name] = setmetatable(p, ide.proto.Plugin)
+    end
+  end
+end
 
 LoadLuaConfig(ide.config.path.app.."/config.lua")
 
@@ -425,7 +486,7 @@ loadPackages()
 
 for _, file in ipairs({
     "markup", "settings", "singleinstance", "iofilters",
-    "package", "gui", "filetree", "output", "debugger",
+    "package", "gui", "filetree", "output", "debugger", "outline",
     "editor", "findreplace", "commands", "autocomplete", "shellbox",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",
@@ -435,6 +496,9 @@ end
 
 -- register all the plugins
 PackageEventHandle("onRegister")
+
+-- initialization that was delayed until configs processed and packages loaded
+ProjectUpdateInterpreters()
 
 -- load rest of settings
 SettingsRestoreEditorSettings()
@@ -452,14 +516,14 @@ SettingsRestoreView()
 -- Load the filenames
 
 do
-  for _, fileName in ipairs(filenames) do
-    if fileName ~= "--" then
-      if wx.wxDirExists(fileName) then
-        local dir = wx.wxFileName.DirName(fileName)
+  for _, filename in ipairs(filenames) do
+    if filename ~= "--" then
+      if wx.wxDirExists(filename) then
+        local dir = wx.wxFileName.DirName(filename)
         dir:Normalize() -- turn into absolute path if needed
         ProjectUpdateProjectDir(dir:GetFullPath())
-      else
-        LoadFile(fileName, nil, true)
+      elseif not ActivateFile(filename) then
+        DisplayOutputLn(("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
       end
     end
   end
@@ -470,24 +534,116 @@ end
 
 if app.postinit then app.postinit() end
 
-if ide.osname == 'Macintosh' then
-  ide.frame:SetAcceleratorTable(wx.wxAcceleratorTable({
-     wx.wxAcceleratorEntry(wx.wxACCEL_CTRL, ('M'):byte(), ID_VIEWMINIMIZE)
-  }))
+-- this is a workaround for a conflict between global shortcuts and local
+-- shortcuts (like F2) used in the file tree or a watch panel.
+-- because of several issues on OSX (as described in details in this thread:
+-- https://groups.google.com/d/msg/wx-dev/juJj_nxn-_Y/JErF1h24UFsJ),
+-- the workaround installs a global event handler that manually re-routes
+-- conflicting events when the current focus is on a proper object.
+-- non-conflicting shortcuts are handled through key-down events.
+local remap = {
+  [ID_ADDWATCH]    = ide:GetWatch(),
+  [ID_EDITWATCH]   = ide:GetWatch(),
+  [ID_DELETEWATCH] = ide:GetWatch(),
+  [ID_RENAMEFILE]  = ide:GetProjectTree(),
+  [ID_DELETEFILE]  = ide:GetProjectTree(),
+}
+
+local function rerouteMenuCommand(obj, id)
+  -- check if the conflicting shortcut is enabled:
+  -- (1) SetEnabled wasn't called or (2) Enabled was set to `true`.
+  local uievent = wx.wxUpdateUIEvent(id)
+  obj:ProcessEvent(uievent)
+  if not uievent:GetSetEnabled() or uievent:GetEnabled() then
+    obj:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, id))
+  end
 end
+
+local function remapkey(event)
+  local keycode = event:GetKeyCode()
+  local mod = event:GetModifiers()
+  for id, obj in pairs(remap) do
+    if obj:FindFocus():GetId() == obj:GetId() then
+      local ae = wx.wxAcceleratorEntry(); ae:FromString(KSC(id))
+      if ae:GetFlags() == mod and ae:GetKeyCode() == keycode then
+        rerouteMenuCommand(obj, id)
+        return
+      end
+    end
+  end
+  event:Skip()
+end
+ide:GetWatch():Connect(wx.wxEVT_KEY_DOWN, remapkey)
+ide:GetProjectTree():Connect(wx.wxEVT_KEY_DOWN, remapkey)
+
+local function resolveConflict(localid, globalid)
+  return function(event)
+    local shortcut = ide.config.keymap[localid]
+    for id, obj in pairs(remap) do
+      if ide.config.keymap[id]:lower() == shortcut:lower() then
+        local focus = obj:FindFocus()
+        if focus and focus:GetId() == obj:GetId() then
+          obj:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, id))
+          return
+        -- also need to check for children of objects
+        -- to avoid re-triggering events when labels are being edited
+        elseif focus and focus:GetParent():GetId() == obj:GetId() then
+          return
+        end
+      end
+    end
+    rerouteMenuCommand(ide.frame, globalid)
+  end
+end
+
+local at = {}
+for lid in pairs(remap) do
+  local shortcut = ide.config.keymap[lid]
+  -- find a (potential) conflict for this shortcut (if any)
+  for gid, ksc in pairs(ide.config.keymap) do
+    -- if the same shortcut is used elsewhere (not one of IDs being checked)
+    if shortcut:lower() == ksc:lower() and not remap[gid] then
+      local fakeid = NewID()
+      ide.frame:Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED,
+        resolveConflict(lid, gid))
+
+      local ae = wx.wxAcceleratorEntry(); ae:FromString(ksc)
+      table.insert(at, wx.wxAcceleratorEntry(ae:GetFlags(), ae:GetKeyCode(), fakeid))
+    end
+  end
+end
+
+if ide.osname == 'Macintosh' then
+  table.insert(at, wx.wxAcceleratorEntry(wx.wxACCEL_CTRL, ('M'):byte(), ID_VIEWMINIMIZE))
+end
+ide.frame:SetAcceleratorTable(wx.wxAcceleratorTable(at))
+
 -- only set menu bar *after* postinit handler as it may include adding
 -- app-specific menus (Help/About), which are not recognized by MacOS
 -- as special items unless SetMenuBar is done after menus are populated.
 ide.frame:SetMenuBar(ide.frame.menuBar)
-if ide.wxver < "2.9.5" and ide.osname == 'Macintosh' then -- force refresh to fix the filetree
-  pcall(function() ide.frame:ShowFullScreen(true) ide.frame:ShowFullScreen(false) end)
-end
 
 resumePrint()
 
 PackageEventHandle("onAppLoad")
 
+-- The status bar content is drawn incorrectly if it is shown
+-- after being initially hidden.
+-- Show the statusbar and hide it after showing the frame, which fixes the issue.
+local statusbarfix = ide.osname == 'Windows' and not ide.frame:GetStatusBar():IsShown()
+if statusbarfix then ide.frame:GetStatusBar():Show(true) end
+
 ide.frame:Show(true)
+
+if statusbarfix then ide.frame:GetStatusBar():Show(false) end
+
+-- somehow having wxAuiToolbar "steals" the focus from the editor on OSX;
+-- have to set the focus implicitly on the current editor (if any)
+if ide.osname == 'Macintosh' then
+  local editor = GetEditor()
+  if editor then editor:SetFocus() end
+end
+
 wx.wxGetApp():MainLoop()
 
 -- There are several reasons for this call:

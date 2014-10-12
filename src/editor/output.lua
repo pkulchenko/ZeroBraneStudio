@@ -1,6 +1,8 @@
+-- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
+
 local ide = ide
 local frame = ide.frame
 local notebook = frame.notebook
@@ -98,7 +100,8 @@ function CommandLineToShell(uid,state)
 end
 
 -- logic to "unhide" wxwidget window using winapi
-pcall(function () return require 'winapi' end)
+pcall(require, 'winapi')
+local checkstart, checknext, checkperiod
 local pid = nil
 local function unHideWindow(pidAssign)
   -- skip if not configured to do anything
@@ -107,6 +110,18 @@ local function unHideWindow(pidAssign)
     pid = pidAssign > 0 and pidAssign or nil
   end
   if pid and winapi then
+    local now = TimeGet()
+    if pidAssign and pidAssign > 0 then
+      checkstart, checknext, checkperiod = now, now, 0.02
+    end
+    if now - checkstart > 1 and checkperiod < 0.5 then
+      checkperiod = checkperiod * 2
+    end
+    if now >= checknext then
+      checknext = now + checkperiod
+    else
+      return
+    end
     local wins = winapi.find_all_windows(function(w)
       return w:get_process():get_pid() == pid
     end)
@@ -133,8 +148,27 @@ local function nameTab(tab, name)
   if index then bottomnotebook:SetPageText(index, name) end
 end
 
+function OutputSetCallbacks(pid, proc, callback, endcallback)
+  local streamin = proc and proc:GetInputStream()
+  local streamerr = proc and proc:GetErrorStream()
+  if streamin then
+    streamins[pid] = {stream=streamin, callback=callback,
+      proc=proc, check=proc and proc.IsInputAvailable}
+  end
+  if streamerr then
+    streamerrs[pid] = {stream=streamerr, callback=callback,
+      proc=proc, check=proc and proc.IsErrorAvailable}
+  end
+  customprocs[pid] = {proc=proc, endcallback=endcallback}
+end
+
 function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   if (not cmd) then return end
+
+  -- expand ~ at the beginning of the command
+  if ide.oshome and cmd:find('~') then
+    cmd = cmd:gsub([[^(['"]?)~]], '%1'..ide.oshome:gsub('[\\/]$',''), 1)
+  end
 
   -- try to extract the name of the executable from the command
   -- the executable may not have the extension and may be in quotes
@@ -167,9 +201,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   local params = wx.wxEXEC_ASYNC + wx.wxEXEC_MAKE_GROUP_LEADER + (nohide and wx.wxEXEC_NOHIDE or 0)
   local pid = wx.wxExecute(cmd, params, proc)
 
-  if (oldcwd) then
-    wx.wxFileName.SetCwd(oldcwd)
-  end
+  if oldcwd then wx.wxFileName.SetCwd(oldcwd) end
 
   -- For asynchronous execution, the return value is the process id and
   -- zero value indicates that the command could not be executed.
@@ -182,20 +214,13 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
 
   DisplayOutputLn(TR("Program '%s' started in '%s' (pid: %d).")
     :format(uid, (wdir and wdir or wx.wxFileName.GetCwd()), pid))
-  customprocs[pid] = {proc=proc, uid=uid, endcallback=endcallback, started = TimeGet()}
 
-  local streamin = proc and proc:GetInputStream()
-  local streamerr = proc and proc:GetErrorStream()
+  OutputSetCallbacks(pid, proc, stringcallback, endcallback)
+  customprocs[pid].uid=uid
+  customprocs[pid].started = TimeGet()
+
   local streamout = proc and proc:GetOutputStream()
-  if (streamin) then
-    streamins[pid] = {stream=streamin, callback=stringcallback}
-  end
-  if (streamerr) then
-    streamerrs[pid] = {stream=streamerr, callback=stringcallback}
-  end
-  if (streamout) then
-    streamouts[pid] = {stream=streamout, callback=stringcallback, out=true}
-  end
+  if streamout then streamouts[pid] = {stream=streamout, callback=stringcallback, out=true} end
 
   unHideWindow(pid)
   nameTab(errorlog, TR("Output (running)"))
@@ -226,15 +251,19 @@ local function getStreams()
     for _,v in pairs(tab) do
       -- periodically stop reading to get a chance to process other events
       local processed = 0
-      while (v.stream:CanRead() and processed <= maxread) do
+      while (v.check(v.proc) and processed <= maxread) do
         local str = v.stream:Read(readonce)
+        -- the buffer has readonce bytes, so cut it to the actual size
+        str = str:sub(1, v.stream:LastRead())
         processed = processed + #str
 
         local pfn
         if (v.callback) then
           str,pfn = v.callback(str)
         end
-        if (v.toshell) then
+        if not str then
+          -- skip if nothing to display
+        elseif (v.toshell) then
           DisplayShell(str)
         else
           DisplayOutputNoMarker(str)
@@ -273,6 +302,15 @@ errorlog:Connect(wx.wxEVT_END_PROCESS, function(event)
     local pid = event:GetPid()
     if (pid ~= -1) then
       getStreams()
+      streamins[pid] = nil
+      streamerrs[pid] = nil
+      streamouts[pid] = nil
+
+      if not customprocs[pid] then return end
+      if customprocs[pid].endcallback then customprocs[pid].endcallback() end
+      -- if this wasn't started with CommandLineRun, skip the rest
+      if not customprocs[pid].uid then return end
+
       -- delete markers and set focus to the editor if there is an input marker
       if errorlog:MarkerPrevious(errorlog:GetLineCount(), PROMPT_MARKER_VALUE) > -1 then
         errorlog:MarkerDeleteAll(PROMPT_MARKER)
@@ -281,25 +319,18 @@ errorlog:Connect(wx.wxEVT_END_PROCESS, function(event)
         if editor then editor:SetFocus() end
       end
       nameTab(errorlog, TR("Output"))
-      local runtime = TimeGet() - customprocs[pid].started
 
-      streamins[pid] = nil
-      streamerrs[pid] = nil
-      streamouts[pid] = nil
-      if (customprocs[pid].endcallback) then
-        customprocs[pid].endcallback()
-      end
-      customprocs[pid] = nil
       unHideWindow(0)
-      DebuggerStop()
+      DebuggerStop(true)
       DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
-        :format(runtime, pid))
+        :format(TimeGet() - customprocs[pid].started, pid))
+      customprocs[pid] = nil
     end
   end)
 
 errorlog:Connect(wx.wxEVT_IDLE, function()
     if (#streamins or #streamerrs) then getStreams() end
-    unHideWindow()
+    if ide.osname == 'Windows' then unHideWindow() end
   end)
 
 local jumptopatterns = {
@@ -309,6 +340,8 @@ local jumptopatterns = {
   "^%s*(.-)%((%d+).*%)%s*:",
   --[string "<filename>"]:line:
   '^.-%[string "([^"]+)"%]:(%d+)%s*:',
+  -- <filename>:line:linepos
+  "^%s*(.-):(%d+):(%d+):",
   -- <filename>:line:
   "^%s*(.-):(%d+)%s*:",
 }
@@ -325,36 +358,44 @@ errorlog:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
       if (fname and jumpline) then break end
     end
 
-    if (fname and jumpline) then
-      -- fname may include name of executable, as in "path/to/lua: file.lua";
-      -- strip it and try to find match again if needed.
-      -- try the stripped name first as if it doesn't match, the longer
-      -- name may have parts that may be interpreter as network path and
-      -- may take few seconds to check.
-      local name
-      local fixedname = fname:match(":%s+(.+)")
-      if fixedname then
-        name = GetFullPathIfExists(FileTreeGetDir(), fixedname)
-          or FileTreeFindByPartialName(fixedname)
-      end
-      name = name
-        or GetFullPathIfExists(FileTreeGetDir(), fname)
-        or FileTreeFindByPartialName(fname)
+    if not (fname and jumpline) then return end
 
-      local editor = LoadFile(name or fname,nil,true)
-      if (editor) then
-        jumpline = tonumber(jumpline)
-        jumplinepos = tonumber(jumplinepos)
+    -- fname may include name of executable, as in "path/to/lua: file.lua";
+    -- strip it and try to find match again if needed.
+    -- try the stripped name first as if it doesn't match, the longer
+    -- name may have parts that may be interpreter as network path and
+    -- may take few seconds to check.
+    local name
+    local fixedname = fname:match(":%s+(.+)")
+    if fixedname then
+      name = GetFullPathIfExists(FileTreeGetDir(), fixedname)
+        or FileTreeFindByPartialName(fixedname)
+    end
+    name = name
+      or GetFullPathIfExists(FileTreeGetDir(), fname)
+      or FileTreeFindByPartialName(fname)
 
-        editor:GotoPos(editor:PositionFromLine(math.max(0,jumpline-1))
-          + (jumplinepos and (math.max(0,jumplinepos-1)) or 0))
-        editor:SetFocus()
-
-        -- doubleclick can set selection, so reset it
-        errorlog:SetSelection(event:GetPosition(), event:GetPosition())
-        event:Skip()
+    local editor = LoadFile(name or fname,nil,true)
+    if not editor then
+      local ed = GetEditor()
+      if ed and ide:GetDocument(ed):GetFileName() == (name or fname) then
+        editor = ed
       end
     end
+    if editor then
+      jumpline = tonumber(jumpline)
+      jumplinepos = tonumber(jumplinepos)
+
+      editor:GotoPos(editor:PositionFromLine(math.max(0,jumpline-1))
+        + (jumplinepos and (math.max(0,jumplinepos-1)) or 0))
+      editor:EnsureVisibleEnforcePolicy(jumpline)
+      editor:SetFocus()
+    end
+
+    -- doubleclick can set selection, so reset it
+    local pos = event:GetPosition()
+    if pos == -1 then pos = errorlog:GetLineEndPosition(event:GetLine()) end
+    errorlog:SetSelection(pos, pos)
   end)
 
 local function positionInLine(line)

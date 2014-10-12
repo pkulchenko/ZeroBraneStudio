@@ -23,20 +23,7 @@
 
 --! require 'luainspect.typecheck' (context)
 
--- boilerplate/utility
--- LUA_PATH="?.lua;/path/to/metalua/src/compiler/?.lua;/path/to/metalua/src/lib/?.lua"
--- import modules -- order is important
-require "lexer"
-require "gg"
-require "mlp_lexer"
-require "mlp_misc"
-require "mlp_table"
-require "mlp_meta"
-require "mlp_expr"
-require "mlp_stat"
---require "mlp_ext"
-_G.mlc = {} -- make gg happy
--- Metalua:IMPROVE: make above imports simpler
+local mlc = require 'metalua.compiler'.new()
 
 local M = {}
 
@@ -102,10 +89,7 @@ end
 -- FIX? filename currently ignored in Metalua
 -- CATEGORY: Lua parsing
 local function ast_from_string_helper(src, filename)
-  filename = filename or '(string)'
-  local  lx  = mlp.lexer:newstream (src, filename)
-  local  ast = mlp.chunk(lx)
-  return ast
+  return mlc:src_to_ast(src, filename)
 end
 
 
@@ -370,7 +354,7 @@ function M.get_keywords(ast, src)
   -- Some binary operations have arguments reversed from lexical order.
   -- For example, `a > b` becomes `Op{'lt', `Id 'b', `Id 'a'}
   local oast =
-    (ast.tag == 'Op' and #ast == 3 and ast[2].lineinfo.first[3] > ast[3].lineinfo.first[3])
+    (ast.tag == 'Op' and #ast == 3 and tostring(ast[2].lineinfo.first):match('|L(%d+)') > tostring(ast[3].lineinfo.first):match('|L(%d+)'))
     and {ast[1], ast[3], ast[2]} or ast
 
   local i = 0
@@ -381,18 +365,17 @@ function M.get_keywords(ast, src)
     -- Get position range [fpos,lpos] between subsequent children.
     local fpos
     if i == 0 then  -- before first child
-      fpos = ast.lineinfo.first[3]
+      fpos = tonumber(tostring(ast.lineinfo.first):match('|L(%d+)'))
     else
       local last = oast[i].lineinfo.last; local c = last.comments
-      fpos = (c and #c > 0 and c[#c][3] or last[3]) + 1
+      fpos = (c and #c > 0 and c[#c][3] or tostring(last):match('|L(%d+)')) + 1
     end
     local lpos
     if j == #ast+1 then  -- after last child
-      lpos = ast.lineinfo.last[3]
+      lpos = tonumber(tostring(ast.lineinfo.last):match('|L(%d+)'))
     else
       local first = oast[j].lineinfo.first; local c = first.comments
-      --DEBUG('first', ast.tag, first[3], src:sub(first[3], first[3]+3))
-      lpos = (c and #c > 0 and c[1][2] or first[3]) - 1
+      lpos = (c and #c > 0 and c[1][2] or tostring(first):match('|L(%d+)')) - 1
     end
 
     -- Find keyword in range.
@@ -405,7 +388,6 @@ function M.get_keywords(ast, src)
       if mfpos then
         local mlpos = mlppos-1
         if mlpos > lpos then mlpos = lpos end
-      --DEBUG('look', ast.tag, #ast,i,j,'*', mfpos, tok, mlppos, fpos, lpos, src:sub(fpos, fpos+5))
         if mlpos >= mfpos then
           list[#list+1] = mfpos
           list[#list+1] = mlpos
@@ -441,7 +423,9 @@ function M.ast_to_tokenlist(top_ast, src)
     if isterminal[ast.tag] then -- Extract terminal
       local token = ast
       if ast.lineinfo then
-        token.fpos, token.lpos, token.ast = ast.lineinfo.first[3], ast.lineinfo.last[3], ast
+        token.fpos = tonumber(tostring(ast.lineinfo.first):match('|L(%d+)'))
+        token.lpos = tonumber(tostring(ast.lineinfo.last):match('|L(%d+)'))
+        token.ast = ast
         table.insert(tokens, token)
       end
     else -- Extract non-terminal
@@ -460,7 +444,9 @@ function M.ast_to_tokenlist(top_ast, src)
         if not isseen[comment] then
           comment.tag = 'Comment'
           local token = comment
-          token.fpos, token.lpos, token.ast = comment[2], comment[3], comment
+          token.fpos = tonumber(tostring(comment.lineinfo.first):match('|L(%d+)'))
+          token.lpos = tonumber(tostring(comment.lineinfo.last):match('|L(%d+)'))
+          token.ast = comment
           table.insert(tokens, token)
           isseen[comment] = true
         end

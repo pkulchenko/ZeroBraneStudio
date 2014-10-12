@@ -4,10 +4,10 @@
 local funccall = "([A-Za-z_][A-Za-z0-9_]*)%s*"
 
 return {
-  exts = {"hlsl","fx","fxh",},
+  exts = {"hlsl","fx","fxh","usf",},
   lexer = wxstc.wxSTC_LEX_CPP,
   apitype = "hlsl",
-  sep = "%.",
+  sep = ".",
   linecomment = "//",
   
   isfncall = function(str)
@@ -15,10 +15,12 @@ return {
   end,
 
   isfndef = function(str)
+    local id = "[A-Za-z0-9_]+"
     local l
-    local s,e,cap = string.find(str,"^%s*([A-Za-z0-9_]+%s+[A-Za-z0-9_]+%s*%(.+%))")
-    if (not s) then
-      s,e,cap = string.find(str,"^%s*([A-Za-z0-9_]+%s+[A-Za-z0-9_]+)%s*%(")
+    local s,e,cap,con = string.find(str,"^%s*("..id.."%s+"..id.."%s*%(.*%))%s*([A-Za-z0-9_]?)")
+    s = con == "" and s
+    if (not s and not cap) then
+      s,e,cap = string.find(str,"^%s*("..id.."%s+"..id..")%s*%(")
     end
     if (cap and (string.find(cap,"^return") or string.find(cap,"else"))) then return end
     return s,e,cap,l
