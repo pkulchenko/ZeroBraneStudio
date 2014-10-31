@@ -30,7 +30,7 @@ return {
   ["&Open..."] = "&Öffnen...", -- src\editor\menu_file.lua
   ["&Output/Console Window"] = "&Ausgabefenster/Konsole", -- src\editor\menu_view.lua
   ["&Paste"] = "&Einfügen", -- src\editor\menu_edit.lua, src\editor\editor.lua
-  ["&Project Page"] = "&Projekseite", -- src\editor\menu_help.lua
+  ["&Project Page"] = "&Projektseite", -- src\editor\menu_help.lua
   ["&Project"] = "&Projekt", -- src\editor\inspect.lua, src\editor\menu_project.lua
   ["&Redo"] = "&Wiederholen", -- src\editor\menu_edit.lua, src\editor\editor.lua
   ["&Rename"] = "&Umbenennen", -- src\editor\filetree.lua
