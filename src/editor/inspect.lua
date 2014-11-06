@@ -52,10 +52,25 @@ function M.warnings_from_string(src, file)
   M.src, M.file = src, file
   local t = M.show_warnings(ast, globinit)
   local msgs = require('typedlua.tlchecker').typecheck(ast, src, false)
+  local checkedmsgs = {}
   for _, m in ipairs(msgs) do
     -- skip some of the message types
-    if m.tag ~= 'load' and m.tag ~= 'any' then
-      t[#t+1] = ("%s:%d:%d: (%s) %s"):format(file, m.l, m.c, m.tag, m.msg)
+    if m.tag ~= 'load'
+    and m.tag ~= 'any'
+    and (m.tag ~= 'unused' or not m.msg:find("'_'"))
+    and not m.msg:find("^attempt to index 'nil'") then
+      local msg = m.msg
+      if (m.tag == 'index' or m.tag == 'call') and msg:find("^attempt to") then
+        if checkedmsgs[msg] then
+          msg = nil
+        else
+          checkedmsgs[msg] = true
+          msg = "first "..msg
+        end
+      end
+      if msg then
+        t[#t+1] = ("%s:%d:%d: (%s) %s"):format(file, m.l, m.c, m.tag, msg)
+      end
     end
   end
   table.insert(t, msg)
