@@ -53,7 +53,8 @@ function M.warnings_from_string(src, file)
   local t = M.show_warnings(ast, globinit)
   local msgs = require('typedlua.tlchecker').typecheck(ast, src, false)
   for _, m in ipairs(msgs) do
-    if m.tag ~= 'load' then -- skip all 'load' messages
+    -- skip some of the message types
+    if m.tag ~= 'load' and m.tag ~= 'any' then
       t[#t+1] = ("%s:%d:%d: (%s) %s"):format(file, m.l, m.c, m.tag, m.msg)
     end
   end
