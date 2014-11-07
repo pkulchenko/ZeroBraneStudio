@@ -27,6 +27,6 @@ If you still want to see the log content, it provides a convenient option to **d
 
 * Small, portable, and **cross-platform** (Windows, Mac OSX, and Linux);
 * **Integrated [debugger](vera-debugging.html)** for applications running locally or on Vera devices;
-* **[Interactive console](vera-getting-started.html#console_window)** to test code snippets with local and remote execution;
-* Ability to **[push files to the device](vera-getting-started.html#vera_functions)** and to **[retrieve log files](vera-getting-started.html#vera_functions)** from it;
+* **[Interactive console](vera-getting-started.html#console-window)** to test code snippets with local and remote execution;
+* Ability to **[push files to the device](vera-getting-started.html#vera-functions)** and to **[retrieve log files](vera-getting-started.html#vera-functions)** from it;
 * **[Auto-completion](vera-getting-started.html#autocomplete)** for functions, keywords, and **Luup API**, [documentation](vera-documentation.html), and [more](vera-features.html).

@@ -104,7 +104,7 @@ If you make an error (whether a compile or run-time), it will be reported in the
 To **exit** the scratchpad mode you can close the application, go to `Project | Stop Process`, or go to `Project | Run as Scratchpad`.
 
 Note that this functionality is highly interpreter dependent and some interpreters may not provide it at all (for example, `Corona`) and some may provide in a way that doesn't restart the entire application (for example, `Love2d`, `Moai`, or `Gideros` interpreters).
-Your code may also need to be written in a way that accomodates requirements of those engines. Please consult [live coding tutorials](documentation.html#live_coding) for details.
+Your code may also need to be written in a way that accomodates requirements of those engines. Please consult [live coding tutorials](documentation.html#live-coding) for details.
 
 ## Toolbar
 
@@ -131,4 +131,4 @@ You can change the
 [color scheme](doc-styles-color-schemes.html),
 [general preferences](doc-general-preferences.html),
 [editor preferences](doc-editor-preferences.html),
-and the [IDE keymap](doc-faq.html#how_to_modify_a_key_mapping).
+and the [IDE keymap](doc-faq.html#how-can-i-modify-a-key-mapping).

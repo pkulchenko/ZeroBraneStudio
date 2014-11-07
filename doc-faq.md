@@ -20,7 +20,7 @@ These are **scope indicators**; you can [change their types, colors, or disable 
 
 ## How to specify a directory my script should be executed in for `require` commands to work?
 
-You can set the [project directory](doc-getting-started.html#project_directory), which will be used to set the current directory when your application is run or debugged.
+You can set the [project directory](doc-getting-started.html#project-directory), which will be used to set the current directory when your application is run or debugged.
 
 ## Why stepping into function calls doesn't work in some cases?
 
@@ -125,7 +125,7 @@ If you launch the application outside of the IDE, make sure you **flush the prin
 
 ## How to pass command line arguments?
 
-This is described in the [command line parameters](doc-general-preferences.html#command_line_parameters) section.
+This is described in the [command line parameters](doc-general-preferences.html#command-line-parameters) section.
 
 ## Where is the configuration file stored?
 

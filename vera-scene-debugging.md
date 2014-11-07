@@ -33,9 +33,9 @@ for events triggered from the Vera device:
 [plugins](vera-plugin-debugging.html),
 [watch](vera-watch-debugging.html),
 [request](vera-request-debugging.html),
-and [others](vera-documentation.html#development_and_debugging).
+and [others](vera-documentation.html#development-and-debugging).
 
-In this example we will be using the [simpler method](vera-remote-debugging.html#method_2) that doesn't require
+In this example we will be using the [simpler method](vera-remote-debugging.html#method-2) that doesn't require
 specifying the IP address of the computer that runs ZeroBrane Studio:
 
 - Copy the following code into a new Automation scene on the Vera under the Luup tab.

@@ -13,7 +13,7 @@ This setup will use luasocket bundled with ZeroBrane Studio.
 If your LuaJIT version is not compatible with luasocket (for example, you compiled LuaJIT for 64bit, but included luasocket is 32bit), you will need to compile [luasocket](https://github.com/diegonehab/luasocket) yourself and make the libraries available to your script.
 4. (only needed if your ZeroBrane Studio is v0.38 or less) If running on Windows, another option (assuming LuaJIT is compiled for 32bit) is to simply replace `bin/lua51.dll` with `lua51.dll` from LuaJIT.
 This will make ZeroBrane Studio itself to **run on LuaJIT** as well as all Lua processes started from it (in this case `path.lua` changes are not needed).
-With this option both the [local console](doc-getting-started.html#console_window) will provide access to the LuaJIT interpreter.
+With this option both the [local console](doc-getting-started.html#console-window) will provide access to the LuaJIT interpreter.
 
 Make sure you **use the latest version of LuaJIT** (or at least v2.0.1+) as it is needed to support all debugging features to work.
 Also note that **LuaJIT debugging behavior** is slightly different from Lua 5.1: it may step on the same line several times (which is not a bug);
