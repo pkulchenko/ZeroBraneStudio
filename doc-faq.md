@@ -98,8 +98,10 @@ See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issu
 
 ## Why is the text blurry in the editor when running on retina display (OSX)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration.html).
-Using this setting negatively affects [indicators](doc-styles-color-schemes.html#indicators) that have alpha property, so it is not enabled by default.
+You can set `hidpi = true` in [configuration settings](doc-configuration.html);
+this setting is enabled by default on OSX starting from v0.60.
+
+Note that using this setting negatively affects [indicators](doc-styles-color-schemes.html#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
 ## How to change background color in the editor?
 
@@ -131,7 +133,7 @@ This is covered in the description of system [configuration](doc-configuration.h
 
 ## How can I modify a key mapping?
 
-To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences.html#key_mapping) section.
+To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences.html#key-mapping) section.
 You may also review [xcode-keys](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/xcode-keys.lua) configuration file that can be used to modify keyboard shortcuts to match those in XCode.
 
 ## Why am I getting a warning about "invalid UTF8 character" in the files I open in the editor?
