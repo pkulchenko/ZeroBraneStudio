@@ -13,6 +13,7 @@ The values shown are the default values.
 - `editor.autoactivate = false`: auto-activate files during debugging.
 - `editor.autoreload = false`: auto-reload externally modified files (if no conflict detected).
 - `editor.autotabs = false`: use tabs if detected.
+- `editor.backspaceunindent = true`: remove one level of indentation when use backspace on a tab stop; set to `false` to disable.
 - `editor.calltipdelay = 500`: calltip delay; set to `nil` or `0` to disable.
 - `editor.caretline = true`: show caret line.
 - `editor.checkeol = true`: check for mixed end-of-line encodings in loaded files; set to `nil` or `false` to disable.
