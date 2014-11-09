@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v0.80 (Aug 31 2014)
+# Download ZeroBrane Studio v0.90 (Nov 08 2014)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.80-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-0.80-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.90-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-0.90-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.80-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.80-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.90-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.90-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.80-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.80-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.90-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.90-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.80-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.80-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.90-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.90-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 <div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
@@ -20,14 +20,13 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Added support for expanding table elements in Watch window.
-- Added editing of values in Watch window.
-- Added highlighting all instances of selected text.
-- Added replacing all selected instances using a dialog.
-- Added search in Console and Output windows.
-- Improved compatibility with Lua 5.2 to run the IDE.
-- Added [Document Map](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua)
-and [Refresh Project tree](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugins.
+- Added function outline (`Outline` tab next to the `Project` tab).
+- Added Lua 5.3 (beta) binaries and debugging support.
+- Added scope-aware auto-complete for local and global variables.
+- Added hiding/showing files by type in the project/filetree (use context menu).
+- Added Esperanto (eo) translation.
+- Improved compatibility with Lua 5.2 interpreter.
+- Improved compatibility with system/custom Lua interpreter.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
