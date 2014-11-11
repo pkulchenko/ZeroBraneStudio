@@ -145,6 +145,14 @@ If you want to continue editing this file in the IDE, you have two choices:
 1. Ignore the warning and **change `[SYN]` characters** to whatever text you need *inside ZeroBrane Studio*.
 2. **Convert your files** from the encoding you are using to UTF-8 (65001) and then load them into the IDE.
 
+## How do I run multiple instances of ZeroBrane Studio?
+
+You can start multiple instances if you disable "single instance" check
+either by adding `singleinstance=false` to the configuration file
+or by starting the second instance with the following command: `zbstudio -cfg "singleinstance=false"`.
+
+The single instance check is disabled on OSX by default.
+
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 
 You can start one instance as you normally do and then start the second instance using the following command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`.
