@@ -69,8 +69,9 @@ You may also be using inconsistent path separators in the file names; for exampl
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
-Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window with the code you can then step through.
-If you use an older version, you can specify a filename as the second parameter to `loadstring` and have that file in your project directory with the same content as what's loaded with `loadstring`.
+Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window (when [editor.autoactivate](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) is enabled) with the code you can then step through.
+As an alternative, you can specify a filename as the second parameter to `loadstring` (also as the absolute or relative path) and have that file in your project directory with the same content as what's loaded with `loadstring`.
+
 You can then open that file in the IDE or configure it to [auto-open](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) it for you.
 
 ## Is debugging of Lua 5.2 applications supported?
