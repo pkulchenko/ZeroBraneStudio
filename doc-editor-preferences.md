@@ -20,7 +20,6 @@ The values shown are the default values.
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
 - `editor.extraascent = nil`: extra spacing (in pixels) above the baseline (0.51+).
 - `editor.extradescent = nil`: extra spacing (in pixels) below the baseline (0.61+).
-- `editor.indentguide = true`: show indentation guides (0.90+); set to `false` or `nil` to disable.
 - `editor.fold = true`: enable folding (0.39+).
 - `editor.foldcompact = true`: set compact fold that includes empty lines after a block.
 - `editor.foldtype = 'box'`: set folding style with `box`, `circle`, `arrow`, and `plus` as accepted values (0.51+).
@@ -28,10 +27,11 @@ The values shown are the default values.
 Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw line above if expanded), `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED` (draw line above if contracted), `wxstc.wxSTC_FOLDFLAG_LINEAFTER_EXPANDED` (draw line below if expanded), and `wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED` (draw line below if contracted).
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
+- `editor.indentguide = true`: show indentation guides (0.90+); set to `false` or `nil` to disable.
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (0.39+).
-- `editor.smartindent = true`: use smart indentation.
 - `editor.showfncall = true`: mark function calls.
+- `editor.smartindent = true`: use smart indentation.
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
 - `editor.usewrap = true`: wrap long lines.
