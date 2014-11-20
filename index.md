@@ -3,8 +3,8 @@ layout: default
 ---
 
 ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
-highlighting, code analyzer, live coding, and debugging support
-for Lua 5.1, [Lua 5.2](doc-lua52-debugging.html),
+highlighting, live coding, code analyzer, and debugging support
+for Lua 5.1, [Lua 5.2](doc-lua52-debugging.html), Lua 5.3,
 [LuaJIT](doc-luajit-debugging.html), and [other Lua engines](documentation.html#debugging).
 
 It is **simple and instantly usable** for beginners (as tested with middle and
