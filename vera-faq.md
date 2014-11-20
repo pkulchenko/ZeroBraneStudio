@@ -31,11 +31,11 @@ you can explicitly configure the IDE to use that device
 by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
 `path.vera = 'ip.of.vera.device'`.
 
-## Will the IDE work with my device that is using UI6?
+## Will the IDE work with my device that is using UI6+?
 
-The auto-detection step that identifies the address of your device to connect to may not work if your device is using UI6 firmware.
-You may need to manually configure the IDE to connect to your device
-by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
+The auto-detection step that identifies the address of your device to connect to may not work if your device is using *UI6* or *UI7* firmware.
+If the debugging doesn't start or if you get an error message, you may manually configure the IDE to connect to your device
+by adding the following line to the configuration file (`Edit | Preferences | Settings: User`):
 `path.vera = 'ip.of.vera.device'`.
 
 ## How can I step into files loaded with `require`?
