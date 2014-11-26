@@ -53,6 +53,12 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
+## Outline
+
+- `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
+- `outline.showmethodindicator = false`: show different icons for method indicators (0.81+).
+- `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+); when set to `false`, show several files in the outline with the current one expanded.
+
 ## Toolbar
 
 - `toolbar.iconmap = { [ID_OPEN] = {"FILE-OPEN", "Description" }, ... }`: sets the content of toolbar buttons (the icon and the description).
