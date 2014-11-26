@@ -56,8 +56,10 @@ when set to `false` will collect all words from all open editor tabs and offer t
 ## Outline
 
 - `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
+- `outline.showflat = false`: show all functions as one list (no hierarchy) (0.91+).
 - `outline.showmethodindicator = false`: show different icons for method indicators (0.81+).
 - `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+); when set to `false`, show several files in the outline with the current one expanded.
+- `outline.sort = false`: sort functions by name (0.91+); when set to `false`, show functions in the order of their appearance.
 
 ## Toolbar
 
