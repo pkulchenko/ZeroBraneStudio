@@ -119,10 +119,18 @@ For more information on how to modify colors and appearance of IDE elements, che
 
 ## How to accept keyboard input for applications started from the IDE?
 
-"print" something using `print` or `io.write` before reading input.
+You need to output something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
 If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
+
+## Why don't I see `print` output immediately in the Output window?
+
+Lua (and some engines based on it, like Love2d) has output buffered by default,
+so if you only `print` a small number of bytes, you may see the results only after the script is completed.
+
+If you want to see the `print` output immediately, **add `io.stdout:setvbuf("no")` to your script**, which will turn the buffering on.
+There may be a small performance penalty as the output will be flushed after each `print`, so keep that in mind.
 
 ## How to pass command line arguments?
 
