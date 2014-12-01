@@ -4,12 +4,13 @@ title: Editor Keyboard Shortcuts
 ---
 
 The editor used in ZeroBrane Studio is based on the [Scintilla editing component](http://www.scintilla.org/) and provides access to most of its functionality.
+These commands can be modified using [editor key mapping](doc-general-preferences.html#editor-key-mapping) settings.
 
 **Text editing** commands with no menu equivalents:
 
 - `Tab`: Indent line or current selection
 - `Shift-Tab`: Unindent line or current selection
-- `Ctrl-L/Ctrl-Y`: Cut current line
+- `Ctrl-L`/`Ctrl-Y`: Cut current line
 - `Ctrl-D`: Duplicate selection or current line
 - `Ctrl-Shift-T`: Copy current line
 - `Ctrl-Shift-U`: Uppercase current selection

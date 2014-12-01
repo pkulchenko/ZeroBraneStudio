@@ -53,3 +53,7 @@ Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus am
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
 - `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
+
+## Keyboard shortcuts
+
+The editor provides [default shortcuts](doc-editor-keyboard-shortcuts.html) that can be modified using [editor key mapping](doc-general-preferences.html#editor-key-mapping) settings.
