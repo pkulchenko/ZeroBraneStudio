@@ -21,6 +21,9 @@ Go to a local variable/function definition. Navigate back using the history of s
 **Multi-cursor editing**
 Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
+**Function outline**
+Review and navigate all functions (and their parameters) defined in the current file, including anonymous ones.
+
 **Small**
 With the Windows and OSX installation packages being less than 5MB, it is one of the smallest if not _the smallest_ fully featured IDE.
 
@@ -28,7 +31,7 @@ With the Windows and OSX installation packages being less than 5MB, it is one of
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.
 
 **Debug any Lua application**
-Set breakpoints before or after you start debugging. Step in, over, and out. Break and continue your script. Inspect and modify variables.
+Set breakpoints before or _during_ debugging. Step in, over, and out. Break and continue your script. Review the call stack. Inspect and modify variables.
 
 **Instantly usable**
 Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides _integrated lessons_ on how to use it and _over 50 demo scripts_ to get you started.
