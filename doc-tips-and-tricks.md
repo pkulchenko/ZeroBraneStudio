@@ -65,7 +65,7 @@ For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherV
 All results shown in the `Console` window are pretty printed as one line, with all complex results shown with all their elements.
 To print complex elements on multiple lines, you can prepend the expression with `=`, as in `={1,2,3,'a','b','c'}`.
 
-## Limit results showed while pretty printing in the Console window.
+## Limit results shown while pretty printing in the Console window.
 
 To limit the number of levels shown during pretty printing, instead of `val`, use `return require('mobdebug').line(val, {maxlevel = 1})`, and instead of `=val`, use `return require('mobdebug').line(a, {indent = ' ', maxlevel = 1})`.
 
