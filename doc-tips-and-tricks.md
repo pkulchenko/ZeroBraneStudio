@@ -88,7 +88,7 @@ If you are on OSX, you may need to use `open ZeroBraneStudio.app --args -cfg "si
 
 You can **resize** windows by dragging the splitters between them.
 To **undock** or **re-dock** the window, doubleclick on the tab background of the notebook in that window (0.60+).
-To **move** the window, click and hold the mouse on the window caption area; then drag the window to a new location.
+To **move** the window, click and hold the mouse on the window caption area (when the window is undocked); then drag the window to a new location.
 To **dock** the window, release the mouse when one side of the main window changes its color to light blue.
 If you want to avoid docking, press `Ctrl`/`Cmd` button before releasing the mouse button.
 The new configuration will be used until you reset or change it.
