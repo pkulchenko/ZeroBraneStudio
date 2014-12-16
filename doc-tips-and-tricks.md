@@ -97,6 +97,16 @@ The new configuration will be used until you reset or change it.
 
 `Ctrl-Drag`/`Cmd-Drag` will move the window without trying to dock it.
 
+## Project switching.
+
+You can **change the current project** in several ways:
+
+1. Use `Project | Project Directory | Choose...`.
+2. Use `File | Recent Projects` (0.60+).
+3. Use the context menu in the Project tree (`Right Click`) and then `Project Directory` (0.60+).
+4. Use `Choose a project directory` icon on the toolbar.
+5. Use dropdown next to the `Choose a project directory` icon on the toolbar (0.60+).
+
 ## Show Output and Console windows side by side.
 
 The default configuration shows `Output` and `Console` windows as tabs in the same window.
