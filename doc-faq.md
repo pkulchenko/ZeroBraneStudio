@@ -189,6 +189,12 @@ Re-open the document or run `GetEditor():SetViewEOL(0)` to disable showing end-o
 You can try changing the current line marker to something more visible, like underline by adding the following code to the configuration file: `styles.marker.currentline.ch = wxstc.wxSTC_MARK_UNDERLINE`.
 You can also change the color and the type of the marker: `styles.marker.currentline = {ch = wxstc.wxSTC_MARK_UNDERLINE, bg = {0, 0, 255}}` (this will set the background to `blue`).
 
+## Where do I find the list of functions in the current file?
+
+Before v0.90, the list of functions was available through the dropdown in the toolbar.
+Starting from v0.90, the list of functions is available through a separate tab located next to the project tab.
+The content of the Outline can be [configured in various ways](doc-general-preferences#outline).
+
 ## How do I show Corona SDK Console window on Windows?
 
 (0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration.html). See [all Corona-specific preferences](doc-corona-preferences.html) for details.
