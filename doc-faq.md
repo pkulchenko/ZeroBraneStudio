@@ -78,6 +78,10 @@ You can then open that file in the IDE or configure it to [auto-open](https://gi
 
 Yes; see [Lua 5.2 debugging](doc-lua52-debugging.html) section for details.
 
+## Is debugging of Lua 5.3 applications supported?
+
+Yes; see [Lua 5.3 debugging](doc-lua53-debugging.html) section for details.
+
 ## Is debugging of LuaJIT applications supported?
 
 Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
