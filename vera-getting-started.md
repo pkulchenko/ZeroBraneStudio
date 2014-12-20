@@ -89,7 +89,7 @@ and **continue** execution of your program (using `Project | Continue`).
 
 When your program is running, you can **pause** it by going to `Project | Break`, which will stop your program at the next lua command to be executed.
 
-[Debugging overview](vera-debugging.html) and [remote debugging](vera-remote-debugging.html) sections cover this topic in more detail and provide code examples.
+[Debugging overview](vera-debugging) and [remote debugging](vera-remote-debugging) sections cover this topic in more detail and provide code examples.
 
 ## Vera functions
 

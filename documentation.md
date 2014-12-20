@@ -5,27 +5,27 @@ title: Documentation
 
 ## Getting started
 
-- A **[short and simple overview](doc-getting-started.html)** for those who are new to this development environment.
-- **[Tutorials and demos](tutorials.html)** that cover debugging and live coding for different environments.
-- A list of **[frequently asked questions](doc-faq.html)** about the IDE.
-- **[Lua quick start guide](doc-lua-quick-start-guide.html)**.
-- **[Tips and tricks](doc-tips-and-tricks.html)**, **[Screenshots](screenshots.html)**, and **[Testimonials](testimonials.html)**
+- A **[short and simple overview](doc-getting-started)** for those who are new to this development environment.
+- **[Tutorials and demos](tutorials)** that cover debugging and live coding for different environments.
+- A list of **[frequently asked questions](doc-faq)** about the IDE.
+- **[Lua quick start guide](doc-lua-quick-start-guide)**.
+- **[Tips and tricks](doc-tips-and-tricks)**, **[Screenshots](screenshots)**, and **[Testimonials](testimonials)**
 
 ## Preferences
 
-- [General preferences](doc-general-preferences.html)
-- [Editor preferences](doc-editor-preferences.html)
-- [Editor keyboard shortcuts](doc-editor-keyboard-shortcuts.html)
-- [Styles and color schemes](doc-styles-color-schemes.html)
-- [Configuration](doc-configuration.html)
+- [General preferences](doc-general-preferences)
+- [Editor preferences](doc-editor-preferences)
+- [Editor keyboard shortcuts](doc-editor-keyboard-shortcuts)
+- [Styles and color schemes](doc-styles-color-schemes)
+- [Configuration](doc-configuration)
 
 ## Debugging
 
 - Lua debugging
-- [LuaJIT debugging](doc-luajit-debugging.html)
-- [Lua 5.2 debugging](doc-lua52-debugging.html)
-- [Lua 5.3 debugging](doc-lua53-debugging.html)
-- [Remote debugging](doc-remote-debugging.html)
+- [LuaJIT debugging](doc-luajit-debugging)
+- [Lua 5.2 debugging](doc-lua52-debugging)
+- [Lua 5.3 debugging](doc-lua53-debugging)
+- [Remote debugging](doc-remote-debugging)
 - [Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
@@ -48,14 +48,14 @@ title: Documentation
 
 ## Toolkit-specific
 
-- [Corona](doc-corona-preferences.html)
-- [Moai](doc-moai-preferences.html)
+- [Corona](doc-corona-preferences)
+- [Moai](doc-moai-preferences)
 
 ## Extension and Customization
 
-- [Markdown formatting in comments](doc-markdown-formatting.html)
-- [Adding a plugin](doc-plugin.html)
-- [Adding an API/auto-complete description](doc-api-auto-complete.html)
-- [Adding a translation](doc-translation.html)
+- [Markdown formatting in comments](doc-markdown-formatting)
+- [Adding a plugin](doc-plugin)
+- [Adding an API/auto-complete description](doc-api-auto-complete)
+- [Adding a translation](doc-translation)
 - Adding an interpreter
  

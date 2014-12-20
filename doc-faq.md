@@ -16,11 +16,11 @@ or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/
 
 ## What are the dotted and dashed lines under variable names?
 
-These are **scope indicators**; you can [change their types, colors, or disable them](doc-styles-color-schemes.html#indicators).
+These are **scope indicators**; you can [change their types, colors, or disable them](doc-styles-color-schemes#indicators).
 
 ## How to specify a directory my script should be executed in for `require` commands to work?
 
-You can set the [project directory](doc-getting-started.html#project-directory), which will be used to set the current directory when your application is run or debugged.
+You can set the [project directory](doc-getting-started#project-directory), which will be used to set the current directory when your application is run or debugged.
 
 ## Why stepping into function calls doesn't work in some cases?
 
@@ -42,7 +42,7 @@ You can fix this by selecting `Project | Start Debugger Server`; if it is disabl
 You need to allow this connection for the debugging to work.
 - In rare cases the IDE may **incorrectly detect the hostname** of the computer it runs on, which may prevent the debugging from working.
 The **hostname is shown** in the Output window when the debugging is started: `Debugger server started at <hostname>:<port>`.
-You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences.html#debugger).
+You can use a different hostname by setting `debugger.hostname` value in the [configuration file](doc-general-preferences#debugger).
 For example, if the default hostname is incorrect, **try setting it to `localhost`** by using `debugger.hostname = "localhost"`.
 - You may be **on VPN**, which may **block connections** or cause the IDE to **incorrectly detect the hostname**.
 You may configure `debugger.hostname` as described above to see if this resolves the issue.
@@ -76,16 +76,16 @@ You can then open that file in the IDE or configure it to [auto-open](https://gi
 
 ## Is debugging of Lua 5.2 applications supported?
 
-Yes; see [Lua 5.2 debugging](doc-lua52-debugging.html) section for details.
+Yes; see [Lua 5.2 debugging](doc-lua52-debugging) section for details.
 
 ## Is debugging of Lua 5.3 applications supported?
 
-Yes; see [Lua 5.3 debugging](doc-lua53-debugging.html) section for details.
+Yes; see [Lua 5.3 debugging](doc-lua53-debugging) section for details.
 
 ## Is debugging of LuaJIT applications supported?
 
 Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
-See [LuaJIT debugging](doc-luajit-debugging.html) section for details.
+See [LuaJIT debugging](doc-luajit-debugging) section for details.
 
 ## Why am I getting compilation errors in the IDE when my code runs fine outside of it?
 
@@ -103,23 +103,23 @@ See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issu
 
 ## Why is the text blurry in the editor when running on retina display (OSX)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration.html);
+You can set `hidpi = true` in [configuration settings](doc-configuration);
 this setting is enabled by default on OSX starting from v0.60.
 
-Note that using this setting negatively affects [indicators](doc-styles-color-schemes.html#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
+Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
 ## How to change background color in the editor?
 
-You can specify `styles.text.bg = {240,240,240}` in [configuration settings](doc-configuration.html).
+You can specify `styles.text.bg = {240,240,240}` in [configuration settings](doc-configuration).
 See the [example](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
-To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
+To modify colors and appearance of IDE elements, check [documentation on styles and color schemes](doc-styles-color-schemes).
 
 ## How to change the color scheme in the editor?
 
 You can open `cfg/scheme-picker.lua` in the IDE and click on links with color scheme names to test included schemes.
 These schemes can be configured as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L83-L88).
 
-For more information on how to modify colors and appearance of IDE elements, check [documentation on styles and color schemes](http://studio.zerobrane.com/doc-styles-color-schemes.html).
+For more information on how to modify colors and appearance of IDE elements, check [documentation on styles and color schemes](doc-styles-color-schemes).
 
 ## How to accept keyboard input for applications started from the IDE?
 
@@ -138,15 +138,15 @@ There may be a small performance penalty as the output will be flushed after eac
 
 ## How to pass command line arguments?
 
-This is described in the [command line parameters](doc-general-preferences.html#command-line-parameters) section.
+This is described in the [command line parameters](doc-general-preferences#command-line-parameters) section.
 
 ## Where is the configuration file stored?
 
-This is covered in the description of system [configuration](doc-configuration.html).
+This is covered in the description of system [configuration](doc-configuration).
 
 ## How can I modify a key mapping?
 
-To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences.html#key-mapping) section.
+To modify a key mapping for a particular menu item, see the [key mapping](doc-general-preferences#key-mapping) section.
 You may also review [xcode-keys](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/xcode-keys.lua) configuration file that can be used to modify keyboard shortcuts to match those in XCode.
 
 ## Why am I getting a warning about "invalid UTF8 character" in the files I open in the editor?
@@ -176,11 +176,11 @@ If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app
 
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
-You can **remove** the [configuration file](doc-general-preferences.html#session-configuration) ZeroBrane Studio is using to store these settings.
+You can **remove** the [configuration file](doc-general-preferences#session-configuration) ZeroBrane Studio is using to store these settings.
 
 ## Why can't I delete text that includes formatted comments?
 
-Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting.html), which uses styles with hidden characters.
+Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting), which uses styles with hidden characters.
 Those characters can't be deleted with some of the delete operations (line 'cut' or 'delete selection') and need to be deleted using `Delete` or `Backspace`.
 
 ## I'm getting a message about mixed end-of-line sequences. How do I make them visible?
@@ -201,6 +201,6 @@ The content of the Outline can be [configured in various ways](doc-general-prefe
 
 ## How do I show Corona SDK Console window on Windows?
 
-(0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration.html). See [all Corona-specific preferences](doc-corona-preferences.html) for details.
+(0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration). See [all Corona-specific preferences](doc-corona-preferences) for details.
 
-(0.80 and earlier versions) You may add the following line to [system or user configuration](doc-configuration.html): `unhidewindow.ConsoleWindowClass = 0`.
+(0.80 and earlier versions) You may add the following line to [system or user configuration](doc-configuration): `unhidewindow.ConsoleWindowClass = 0`.

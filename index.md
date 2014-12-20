@@ -4,12 +4,12 @@ layout: default
 
 ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
 highlighting, live coding, code analyzer, and debugging support
-for Lua 5.1, [Lua 5.2](doc-lua52-debugging.html), Lua 5.3,
-[LuaJIT](doc-luajit-debugging.html), and [other Lua engines](documentation.html#debugging).
+for Lua 5.1, [Lua 5.2](doc-lua52-debugging), [Lua 5.3](doc-lua53-debugging),
+[LuaJIT](doc-luajit-debugging), and [other Lua engines](documentation#debugging).
 
 It is **simple and instantly usable** for beginners (as tested with middle and
 high school students with no programming experience), yet
-**[feature-rich](features.html) and extensible** for experienced developers.
+**[feature-rich](features) and extensible** for experienced developers.
 Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **completely customizable with Lua**.
 Unlike&nbsp;TextMate and Sublime Text, it includes a **remote debugger** and a **full IDE feature set**.
 Unlike&nbsp;Decoda, it runs on Windows, Mac OSX, and Linux and supports **on-device debugging**.
@@ -34,16 +34,16 @@ It also supports general Lua debugging for
 [Lapis](http://notebook.kulchenko.com/zerobrane/lapis-debugging-with-zerobrane-studio),
 [Moonscript](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio),
 [home automation](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio),
-and [more](documentation.html#debugging).
+and [more](documentation#debugging).
 
 ## Feature highlights
 
 * Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
 * **Auto-completion** for functions, keywords, and custom APIs;
 * **Interactive console** to test code snippets with local and remote execution;
-* [Live coding](documentation.html#live-coding) with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
+* [Live coding](documentation#live-coding) with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
 [Löve 2D](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide),
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 and [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio);
-* **Integrated debugger** (with support for local and remote debugging), and **[more](features.html)**.
+* **Integrated debugger** (with support for local and remote debugging), and **[more](features)**.

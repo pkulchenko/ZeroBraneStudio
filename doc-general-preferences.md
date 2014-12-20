@@ -6,7 +6,7 @@ title: General Preferences
 <ul id='toc'>&nbsp;</ul>
 
 To **modify default general preferences**, you can use these commands and apply them
-as described in the [configuration](doc-configuration.html) section
+as described in the [configuration](doc-configuration) section
 and as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 The values shown are the default values.
 
@@ -94,7 +94,7 @@ Possible placeholder values to use in formats (0.61+):
 
 ## Key mapping
 
-To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration.html):
+To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration):
 `local G = ...; keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"`.
 This will modify the default shortcut for `Program | Start Debugging` command.
 
@@ -107,7 +107,7 @@ and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenk
 The editor component provides its own shortcut handling mechanism linked to specific editor actions.
 For example, `Ctrl-D` will duplicate the current line.
 
-The editor provides [default commands](doc-editor-keyboard-shortcuts.html) that can be modified to map to the key combinations you prefer.
+The editor provides [default commands](doc-editor-keyboard-shortcuts) that can be modified to map to the key combinations you prefer.
 To modify the key mapping, you can add the following line to the configuration file:
 
 {% highlight lua %}

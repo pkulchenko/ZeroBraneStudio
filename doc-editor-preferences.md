@@ -4,7 +4,7 @@ title: Editor Preferences
 ---
 
 To **modify default editor preferences**, you can use these commands and apply them 
-as described in the [configuration](doc-configuration.html) section
+as described in the [configuration](doc-configuration) section
 and as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 The values shown are the default values.
 
@@ -56,4 +56,4 @@ Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus am
 
 ## Keyboard shortcuts
 
-The editor provides [default shortcuts](doc-editor-keyboard-shortcuts.html) that can be modified using [editor key mapping](doc-general-preferences.html#editor-key-mapping) settings.
+The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can be modified using [editor key mapping](doc-general-preferences#editor-key-mapping) settings.
