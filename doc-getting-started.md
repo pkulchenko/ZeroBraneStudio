@@ -87,7 +87,7 @@ When the debugger is stopped, you can **set/remove breakpoints** (using `Project
 **step through the code** (using `Step Into`, `Step Over`, and `Step Out` commands),
 **inspect variables** using the Watch window (`View | Watch Window`),
 **view the call stack** using the Stack window (`View | Stack Window`),
-**run Lua commands** in the [console](#console_window),
+**run Lua commands** in the [console](#console-window),
 and **continue** execution of your program (using `Project | Continue`).
 
 ## Live coding

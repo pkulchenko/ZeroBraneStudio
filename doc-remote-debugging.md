@@ -18,8 +18,8 @@ or using `Project | Project Directory | Set From Current File`.
 If the application is running on a **different computer**, you need to specify an address of the computer where ZeroBrane Studio is running as the first parameter to the `start()` call: `require('mobdebug').start("12.345.67.89")` or `require('mobdebug').start("domain.name")`.
 You can see the **domain name** to connect to in the Output window when you start debugger server: `Debugger server started at <domain>:8172.`
 * Make `mobdebug.lua` and `luasocket` available to your application. This can be done in one of three ways:
-(1) Set `LUA_PATH` and `LUA_CPATH` before starting your application (see [Setup environment for debugging](#setup_environment_for_debugging));
-(2) Reference path to `mobdebug.lua` and `luasocket` using `package.path` and `package.cpath` (see [Configure path for debugging](#configure_path_for_debugging)); or
+(1) Set `LUA_PATH` and `LUA_CPATH` before starting your application (see [Setup environment for debugging](#setup-environment-for-debugging));
+(2) Reference path to `mobdebug.lua` and `luasocket` using `package.path` and `package.cpath` (see [Configure path for debugging](#configure-path-for-debugging)); or
 (3) Include `mobdebug.lua` with your application by copying it from `lualibs/mobdebug/mobdebug.lua` (this assumes your application already provides `luasocket` support).
 * **Run your application**. You should see a green arrow pointing to the next statement after the `start()` call in ZeroBrane Studio and should be able to step through the code.
 

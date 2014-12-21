@@ -15,7 +15,7 @@ For example, one can write a plugin to add a menu item to turn line wrapping `on
 
 ## Plugin structure
 
-A plugin is a Lua file that returns a table with several fields -- `name`, `description`, `author`, `version` -- and various [event handlers](#event_handler).
+A plugin is a Lua file that returns a table with several fields -- `name`, `description`, `author`, `version` -- and various [event handlers](#event-handler).
 
 For example, the following plugin has only one event handler (`onRegister`) that is called when the plugin is registered:
 
