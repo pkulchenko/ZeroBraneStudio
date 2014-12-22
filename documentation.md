@@ -21,7 +21,7 @@ title: Documentation
 
 ## Debugging
 
-- Lua debugging
+- [Lua debugging](doc-lua-debugging)
 - [LuaJIT debugging](doc-luajit-debugging)
 - [Lua 5.2 debugging](doc-lua52-debugging)
 - [Lua 5.3 debugging](doc-lua53-debugging)
