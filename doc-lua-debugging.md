@@ -73,3 +73,14 @@ you can also mouse over a variable (or select an expression and mouse over it) d
 The value is shown for the simplest expression the cursor is over; for example, if the cursor is over 'a' in `foo.bar`, you will see the value for `foo.bar`, but if the cursor is over 'o' in the same expression, you'll see the value of `foo` instead.
 You can always select the expression to be shown in the tooltip to avoid ambiguity.
 
+## How debugging works
+
+Even though there are different ways to start debugging in the IDE, all of them work the same way:
+the debugger component is loaded into the application being debugged and establishes a socket connection to the IDE.
+The IDE then accepts user commands (step, set breakpoint, remove breakpoint, evaluate an expression, and so on) and sends those commands to the debugger component in the application and receives the results back (if any).
+
+When the application is suspended because of a `step` command, `break` command, or a breakpoint, the IDE will attempt to find and activate a source file where the application is suspended.
+If the file is already opened in the IDE, it will be activated with the current line marker (green arrow by default) pointing to the location of the statement executed next.
+If the file is not opened in the IDE, but the IDE is configured to auto-activate files (`editor.autoactivate = true`), the file will be loaded into the IDE.
+
+See [remote debugging section](doc-remote-debugging) of the documentation for details on how to configure and initiate debugging from your application.
