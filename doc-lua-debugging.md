@@ -84,3 +84,27 @@ If the file is already opened in the IDE, it will be activated with the current 
 If the file is not opened in the IDE, but the IDE is configured to auto-activate files (`editor.autoactivate = true`), the file will be loaded into the IDE.
 
 See [remote debugging section](doc-remote-debugging) of the documentation for details on how to configure and initiate debugging from your application.
+
+## Turning debugging `off` and `on`
+
+You may notice that in some cases the application you are debugging runs much slower than without debugging; when you run it without the debugger the speed is likely to be three to ten times faster.
+This may be okay for many situations, but in some cases when the application is complex, things may get slow.
+
+The debugger provides two methods that allow you to temporarily turn the debugging on and off. If you turn it on/off right around where the changes need to be applied, you can get almost the same performance you see without the debugger.
+
+For example, let's say you have a `bodyCollision` function where you check for collisions and you want to break when a body collision is detected.
+You can turn the debugging off (`require("mobdebug").off()`) right after starting debugging (using `require("mobdebug").start()`) and then turn it on and off around the section you are interested in:
+
+{% highlight lua %}
+function bodyCollision(event)
+  local target = event.target
+  if event.phase == "began" then
+    require("mobdebug").on() --<-- turn the debugger on
+    -- do whatever else needed for collision handling
+    require("mobdebug").off() --<-- turn the debugger off
+  end
+end
+{% endhighlight %}
+
+If you set a breakpoint somewhere between `on()` and `off()` calls, it will fire as expected.
+The rest of the application will be running with a "normal" speed in this case (you can see the difference if you remove all `off()` calls).
