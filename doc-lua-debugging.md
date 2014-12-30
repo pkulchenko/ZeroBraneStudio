@@ -108,3 +108,14 @@ end
 
 If you set a breakpoint somewhere between `on()` and `off()` calls, it will fire as expected.
 The rest of the application will be running with a "normal" speed in this case (you can see the difference if you remove all `off()` calls).
+
+## Coroutine debugging
+
+The debugging of coroutines is disabled by default.
+To enable debugging in coroutines, including stepping into `resume`/`yield` calls and triggering of breakpoints, you may do one of the following:
+
+- add `require('mobdebug').on()` call to that coroutine, which will enable debugging for that particular coroutine, or
+- add `require('mobdebug').coro()` call to your script, which will enable debugging for all coroutines created using `coroutine.create` later in the script.
+
+If you enable coroutine debugging using `require('mobdebug').coro()`, this will **not affect coroutines created using C API** or Lua code wrapped into `coroutine.wrap`.
+You can still debug those fragments after adding `require('mobdebug').on()` to the coroutine code. 
