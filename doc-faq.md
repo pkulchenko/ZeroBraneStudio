@@ -199,6 +199,15 @@ Before v0.90, the list of functions was available through the dropdown in the to
 Starting from v0.90, the list of functions is available through a separate tab located next to the project tab.
 The content of the Outline can be [configured in various ways](doc-general-preferences#outline).
 
+## Why am I getting `mach-o, but wrong architecture` error on OSX?
+
+You may be trying to load a 64bit module using Lua executable that is included with the IDE.
+Since the Lua executable is 32bit, you get the error about incompatible architectures.
+
+To avoid this issue you need to configure the IDE to use your own 64bit Lua executable by setting `path.lua = '/full/path/lua-executable'` in the configuration.
+
+Note that you can still use the IDE to debug your applications as the luasocket library required for debugging is compiled as universal binary and can be loaded into both 32bit and 64bit applications.
+
 ## How do I show Corona SDK Console window on Windows?
 
 (0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration). See [all Corona-specific preferences](doc-corona-preferences) for details.
