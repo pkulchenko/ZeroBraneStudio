@@ -65,7 +65,7 @@ For example, if `tbl` is a table with three values (`{'a', 'b', 'c'}`), you can 
 You can then edit the value of the second element.
 The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
-## The tooltip
+## Tooltip
 
 In addition to being able to use the Console or the Watch window to see the values of variables and expressions,
 you can also mouse over a variable (or select an expression and mouse over it) during debugging to see its value.
