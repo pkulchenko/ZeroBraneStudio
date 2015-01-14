@@ -82,14 +82,42 @@ The debugger will launch your application and stop on the first instruction.
 
 When the debugger is stopped, you can **set/remove breakpoints** (using `Project | Toggle Breakpoint`),
 **step through the code** (using `Step Into`, `Step Over`, and `Step Out` commands),
-**inspect variables** using the Watch window (`View | Watch Window`),
-**view the call stack** using the Stack window (`View | Stack Window`),
+**inspect variables** using the [Watch window](#watch-window) (`View | Watch Window`),
+**view the call stack** using the [Stack window](#stack-window) (`View | Stack Window`),
 **run Lua commands** in the [console](#console-window),
+**check the value of a variable or expression** in a [tooltip](#tooltip),
 and **continue** execution of your program (using `Project | Continue`).
 
 When your program is running, you can **pause** it by going to `Project | Break`, which will stop your program at the next lua command to be executed.
 
 [Debugging overview](vera-debugging) and [remote debugging](vera-remote-debugging) sections cover this topic in more detail and provide code examples.
+
+## Stack window
+
+<img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
+
+The Stack window provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames.
+You can even drill down to get values of individual elements in tables.
+
+## Watch window
+
+<img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
+
+The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
+You can also drill down to get values of individual elements in tables.
+
+In addition to viewing the values that variables or expressions are evaluated to, you may also **change the values of those variables or expressions** and those changes will be reflected in the current stack frame of the application.
+For example, if `tbl` is a table with three values (`{'a', 'b', 'c'}`), you can expand the table, right click on the second element, and select `Edit Value`.
+You can then edit the value of the second element.
+The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
+
+## Tooltip
+
+In addition to being able to use the Console or the Watch window to see the values of variables and expressions,
+you can also mouse over a variable (or select an expression and mouse over it) during debugging to see its value.
+
+The value is shown for the simplest expression the cursor is over; for example, if the cursor is over 'a' in `foo.bar`, you will see the value for `foo.bar`, but if the cursor is over 'o' in the same expression, you'll see the value of `foo` instead.
+You can always select the expression to be shown in the tooltip to avoid ambiguity.
 
 ## Vera functions
 

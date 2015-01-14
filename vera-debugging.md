@@ -34,8 +34,9 @@ When the debugger is stopped, you can **set/remove breakpoints** (using `Project
 **run Lua commands** in the Remote console,
 and **continue** execution of your program (using `Project | Continue`).
 
-You can use the Watch window to **monitor variable values and expression results**.
-The Stack window allows you to **see the stack trace with local variables and upvalues** shown for each stack frame.
+You can use the [Watch window](vera-getting-started#watch-window) to **monitor variable values and expression results**
+or quickly check **the value of a variable or expression** in a [tooltip](#tooltip).
+The [Stack window](vera-getting-started#stack-window) allows you to **see the stack trace with local variables and upvalues** shown for each stack frame.
 
 Using remote console you can **run arbitrary Lua expressions**, including Luup calls, that will be executed in the context of your (suspended) script.
 For example, if the value of a variable `count` in the script is `10` and you execute `count = count + 1`, then the variable value will become `11`, as you'd expect.
