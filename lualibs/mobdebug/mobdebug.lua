@@ -203,15 +203,15 @@ local function s(t, opts)
             local sname = safename(iname, gensym(key)) -- iname is table for local variables
             sref[#sref] = val2str(key,sname,indent,sname,iname,true) end
           sref[#sref+1] = 'placeholder'
-          local path = seen[t]..'['..(seen[key] or globals[key] or gensym(key))..']'
-          sref[#sref] = path..space..'='..space..(seen[value] or val2str(value,nil,indent,path))
+          local path = seen[t]..'['.. tostring(seen[key] or globals[key] or gensym(key))..']'
+          sref[#sref] = path..space..'='..space.. tostring(seen[value] or val2str(value,nil,indent,path))
         else
           out[#out+1] = val2str(value,key,indent,insref,seen[t],plainindex,level+1)
         end
       end
       local prefix = string.rep(indent or '', level)
-      local head = indent and '{\n'..prefix..indent or '{'
-      local body = table.concat(out, ','..(indent and '\n'..prefix..indent or space))
+      local head = indent and '{\n'.. tostring(prefix) .. indent or '{'
+      local body = table.concat(out, ','.. (indent and '\n'..prefix..indent or space))
       local tail = indent and "\n"..prefix..'}' or '}'
       return (custom and custom(tag,head,body,tail) or tag..head..body..tail)..comment(t, level)
     elseif badtype[ttype] then
@@ -266,7 +266,7 @@ local function removebasedir(path, basedir)
   if iscasepreserving then
     -- check if the lowercased path matches the basedir
     -- if so, return substring of the original path (to not lowercase it)
-    return path:lower():find('^'..q(basedir:lower()))
+    return path:lower():find('^'.. q(basedir:lower()))
       and path:sub(#basedir+1) or path
   else
     return string.gsub(path, '^'..q(basedir), '')
@@ -736,7 +736,7 @@ local function debugger_loop(sev, svars, sfile, sline)
         error("Debugger connection closed", 0)
       else
         -- if there is something in the pending buffer, prepend it to the line
-        if buf then line = buf .. line; buf = nil end
+        if buf then line = buf .. tostring(line); buf = nil end
         break
       end
     end
@@ -768,12 +768,12 @@ local function debugger_loop(sev, svars, sfile, sline)
           status, res = stringify_results(pcall(func))
         end
         if status then
-          server:send("200 OK " .. #res .. "\n")
+          server:send("200 OK " .. tostring(#res) .. "\n")
           server:send(res)
         else
           -- fix error if not set (for example, when loadstring is not present)
           if not res then res = "Unknown error" end
-          server:send("401 Error in Expression " .. #res .. "\n")
+          server:send("401 Error in Expression " .. tostring(#res) .. "\n")
           server:send(res)
         end
       else
@@ -826,9 +826,9 @@ local function debugger_loop(sev, svars, sfile, sline)
           watchescnt = watchescnt + 1
           local newidx = #watches + 1
           watches[newidx] = func
-          server:send("200 OK " .. newidx .. "\n")
+          server:send("200 OK " .. tostring(newidx) .. "\n")
         else
-          server:send("401 Error in Expression " .. #res .. "\n")
+          server:send("401 Error in Expression " .. tostring(#res) .. "\n")
           server:send(res)
         end
       else
@@ -850,13 +850,13 @@ local function debugger_loop(sev, svars, sfile, sline)
       local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
-        server:send("202 Paused " .. file .. " " .. line .. "\n")
+        server:send("202 Paused " .. file .. " " .. tostring(line) .. "\n")
       elseif ev == events.WATCH then
-        server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+        server:send("203 Paused " .. file .. " " .. tostring(line) .. " " .. tostring(idx_watch) .. "\n")
       elseif ev == events.RESTART then
         -- nothing to do
       else
-        server:send("401 Error in Execution " .. #file .. "\n")
+        server:send("401 Error in Execution " .. tostring(#file) .. "\n")
         server:send(file)
       end
     elseif command == "STEP" then
@@ -866,13 +866,13 @@ local function debugger_loop(sev, svars, sfile, sline)
       local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
-        server:send("202 Paused " .. file .. " " .. line .. "\n")
+        server:send("202 Paused " .. file .. " " .. tostring(line) .. "\n")
       elseif ev == events.WATCH then
-        server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+        server:send("203 Paused " .. file .. " " .. tostring(line) .. " " .. tostring(idx_watch) .. "\n")
       elseif ev == events.RESTART then
         -- nothing to do
       else
-        server:send("401 Error in Execution " .. #file .. "\n")
+        server:send("401 Error in Execution " .. tostring(#file) .. "\n")
         server:send(file)
       end
     elseif command == "OVER" or command == "OUT" then
@@ -887,13 +887,13 @@ local function debugger_loop(sev, svars, sfile, sline)
       local ev, vars, file, line, idx_watch = coroyield()
       eval_env = vars
       if ev == events.BREAK then
-        server:send("202 Paused " .. file .. " " .. line .. "\n")
+        server:send("202 Paused " .. file .. " " .. tostring(line) .. "\n")
       elseif ev == events.WATCH then
-        server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+        server:send("203 Paused " .. file .. " " .. tostring(line) .. " " .. tostring(idx_watch) .. "\n")
       elseif ev == events.RESTART then
         -- nothing to do
       else
-        server:send("401 Error in Execution " .. #file .. "\n")
+        server:send("401 Error in Execution " .. tostring(#file) .. "\n")
         server:send(file)
       end
     elseif command == "BASEDIR" then
@@ -922,14 +922,14 @@ local function debugger_loop(sev, svars, sfile, sline)
         ev, vars = coroyield("stack")
       end
       if ev and ev ~= events.STACK then
-        server:send("401 Error in Execution " .. #vars .. "\n")
+        server:send("401 Error in Execution " .. tostring(#vars) .. "\n")
         server:send(vars)
       else
         local ok, res = pcall(mobdebug.dump, vars, {nocode = true, sparse = false})
         if ok then
-          server:send("200 OK " .. res .. "\n")
+          server:send("200 OK " .. tostring(res) .. "\n")
         else
-          server:send("401 Error in Execution " .. #res .. "\n")
+          server:send("401 Error in Execution " .. tostring(#res) .. "\n")
           server:send(res)
         end
       end
@@ -949,7 +949,7 @@ local function debugger_loop(sev, svars, sfile, sline)
             for n = 1, #tbl do
               tbl[n] = select(2, pcall(mobdebug.line, tbl[n], {nocode = true, comment = false})) end
             local file = table.concat(tbl, "\t").."\n"
-            server:send("204 Output " .. stream .. " " .. #file .. "\n" .. file)
+            server:send("204 Output " .. stream .. " " .. tostring(#file) .. "\n" .. file)
           end
         end)
         if not default then genv.print() end -- "fake" print to start printing loop
@@ -971,7 +971,7 @@ local function connect(controller_host, controller_port)
   if not sock then return nil, err end
 
   if sock.settimeout then sock:settimeout(mobdebug.connecttimeout) end
-  local res, err = sock:connect(controller_host, controller_port)
+  local res, err = sock:connect(tostring(controller_host), tostring(controller_port))
   if sock.settimeout then sock:settimeout() end
 
   if not res then return nil, err end
@@ -1050,7 +1050,7 @@ local function controller(controller_host, controller_port, scratchpad)
   if server then
     local function report(trace, err)
       local msg = err .. "\n" .. trace
-      server:send("401 Error in Execution " .. #msg .. "\n")
+      server:send("401 Error in Execution " .. tostring(#msg) .. "\n")
       server:send(msg)
       return err
     end
@@ -1338,7 +1338,7 @@ local function handle(params, client, options)
 
         local file = string.gsub(exp, "\\", "/") -- convert slash
         file = removebasedir(file, basedir)
-        client:send("LOAD " .. #lines .. " " .. file .. "\n")
+        client:send("LOAD " .. tostring(#lines) .. " " .. file .. "\n")
         if #lines > 0 then client:send(lines) end
       end
       while true do
