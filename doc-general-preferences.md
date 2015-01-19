@@ -61,6 +61,11 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+); when set to `false`, show several files in the outline with the current one expanded.
 - `outline.sort = false`: sort functions by name (0.91+); when set to `false`, show functions in the order of their appearance.
 
+## Custom APIs
+
+- `api = nil`: set the list of APIs to be loaded for specific or all interpreters.
+For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all interpreters and `bar` API for the `luadeb` interpreter.
+
 ## Toolbar
 
 - `toolbar.iconmap = { [ID_OPEN] = {"FILE-OPEN", "Description" }, ... }`: sets the content of toolbar buttons (the icon and the description).
