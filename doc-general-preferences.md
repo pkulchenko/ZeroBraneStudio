@@ -63,7 +63,7 @@ when set to `false` will collect all words from all open editor tabs and offer t
 
 ## Custom APIs
 
-- `api = nil`: set the list of APIs to be loaded for specific or all interpreters.
+- `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91)+.
 For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all interpreters and `bar` API for the `luadeb` interpreter.
 
 ## Toolbar
