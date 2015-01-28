@@ -17,7 +17,7 @@ return {
                  ..(os.getenv('HOME') and os.getenv('HOME') .. '/bin' or '')
       local paths = {}
       for p in path:gmatch("[^"..sep.."]+") do
-        torch = torch or GetFullPathIfExists(p, 'torch')
+        torch = torch or GetFullPathIfExists(p, 'th')
         table.insert(paths, p)
       end
       if not torch then
@@ -35,10 +35,6 @@ return {
     local luapath =      ''
     luapath = luapath .. torchroot .. "share/lua/5.1/?.lua;"
     luapath = luapath .. torchroot .. "share/lua/5.1/?/init.lua;"
-    luapath = luapath .. torchroot .. "share/torch/lua/?.lua;"
-    luapath = luapath .. torchroot .. "share/torch/lua/?/init.lua;"
-    luapath = luapath .. torchroot .. "lib/lua/5.1/?.lua;"
-    luapath = luapath .. torchroot .. "lib/lua/5.1/?/init.lua"
     local _, path = wx.wxGetEnv("LUA_PATH")
     if path then
        wx.wxSetEnv("LUA_PATH", luapath..";"..path)
@@ -46,12 +42,8 @@ return {
     local luacpath = ''
     luacpath = luacpath .. torchroot .. "lib/lua/5.1/?.so;"
     luacpath = luacpath .. torchroot .. "lib/lua/5.1/?.dylib;"
-    luacpath = luacpath .. torchroot .. "lib/torch/?.so;"
-    luacpath = luacpath .. torchroot .. "lib/torch/?.dylib;"
     luacpath = luacpath .. torchroot .. "lib/lua/5.1/loadall.so;"
     luacpath = luacpath .. torchroot .. "lib/lua/5.1/loadall.dylib;"
-    luacpath = luacpath .. torchroot .. "lib/torch/loadall.so;"
-    luacpath = luacpath .. torchroot .. "lib/torch/loadall.dylib;"
     local _, cpath = wx.wxGetEnv("LUA_CPATH")
     if cpath then
        wx.wxSetEnv("LUA_CPATH", luacpath..";"..cpath)
