@@ -111,24 +111,9 @@ end
 -- ToolTip and reserved words list
 -- also fixes function descriptions
 
-local function formatUpToX(s, x)
-  local splitstr = "([ \t]*)(%S*)([ \t]*)(\n?)"
-  local t = {""}
-  for prefix, word, suffix, newline in s:gmatch(splitstr) do
-    if #(t[#t]) + #prefix + #word > x and #t > 0 then
-      table.insert(t, word..suffix)
-    else
-      t[#t] = t[#t]..prefix..word..suffix
-    end
-    if #newline > 0 then table.insert(t, "") end
-  end
-  return table.concat(t, "\n")
-end
-
 local function fillTips(api,apibasename)
   local apiac = api.ac
   local tclass = api.tip
-  local tipwidth = math.max(20, ide.config.acandtip.width)
 
   tclass.staticnames = {}
   tclass.keys = {}
@@ -144,16 +129,17 @@ local function fillTips(api,apibasename)
   local shortfinfo = tclass.shortfinfo
   local shortfinfoclass = tclass.shortfinfoclass
 
-  local function traverse (tab,libname)
+  local function traverse (tab, libname, format)
     if not tab.childs then return end
+    format = tab.format or format
     for key,info in pairs(tab.childs) do
       local fullkey = (libname ~= "" and libname.."." or "")..key
-      traverse(info, fullkey)
+      traverse(info, fullkey, format)
 
       if info.type == "function" or info.type == "method" or info.type == "value" then
         local frontname = (info.returns or "(?)").." "..fullkey.." "..(info.args or "(?)")
-        frontname = formatUpToX(frontname:gsub("\n"," "):gsub("\t",""), tipwidth)
-        local description = formatUpToX(info.description or "", tipwidth)
+        frontname = frontname:gsub("\n"," "):gsub("\t","")
+        local description = info.description or ""
 
         -- build info
         local inf = ((info.type == "value" and "" or frontname.."\n")
@@ -161,6 +147,10 @@ local function fillTips(api,apibasename)
         local sentence = description:match("^(.-)%. ?\n")
         local infshort = ((info.type == "value" and "" or frontname.."\n")
           ..(sentence and sentence.."..." or description))
+        if type(format) == 'function' then -- apply custom formatting if requested
+          inf = format(fullkey, info, inf)
+          infshort = format(fullkey, info, infshort)
+        end
         local infshortbatch = (info.returns and info.args) and frontname or infshort
 
         -- add to infoclass
@@ -204,7 +194,7 @@ local function generateAPIInfo(only)
   end
 end
 
-function UpdateAssignCache(editor)
+local function updateAssignCache(editor)
   if (editor.spec.typeassigns and not editor.assignscache) then
     local assigns = editor.spec.typeassigns(editor)
     editor.assignscache = {
@@ -267,7 +257,7 @@ end
 function GetTipInfo(editor, content, short, fullmatch)
   if not content then return end
 
-  UpdateAssignCache(editor)
+  updateAssignCache(editor)
 
   -- try to resolve the class
   content = content:gsub("%b[]",".0")
@@ -302,16 +292,18 @@ local function reloadAPI(only,subapis)
 end
 
 function ReloadLuaAPI()
-  local interpreterapi = ide.interpreter
-  interpreterapi = interpreterapi and interpreterapi.api
-  if (interpreterapi) then
-    local apinames = {}
-    for _, v in ipairs(interpreterapi) do
-      apinames[v] = true
-    end
-    interpreterapi = apinames
-  end
-  reloadAPI("lua",interpreterapi)
+  local interp = ide.interpreter
+  local cfgapi = ide.config.api
+  local fname = interp and interp.fname
+  local intapi = cfgapi and fname and cfgapi[fname]
+  local apinames = {}
+  -- general APIs as configured
+  for _, v in ipairs(type(cfgapi) == 'table' and cfgapi or {}) do apinames[v] = true end
+  -- interpreter-specific APIs as configured
+  for _, v in ipairs(type(intapi) == 'table' and intapi or {}) do apinames[v] = true end
+  -- interpreter APIs
+  for _, v in ipairs(interp and interp.api or {}) do apinames[v] = true end
+  reloadAPI("lua",apinames)
 end
 
 do
@@ -477,7 +469,6 @@ local function getAutoCompApiList(childs,fragment,method)
       ((method and v.type ~= "value")
         or (not method and v.type ~= "method"))) then
       local used = {}
-      --
       local kl = key:lower()
       for i=0,#key do
         local k = kl:sub(1,i)
@@ -507,8 +498,7 @@ local function getAutoCompApiList(childs,fragment,method)
   return t
 end
 
--- make syntype dependent
-function CreateAutoCompList(editor,key)
+function CreateAutoCompList(editor,key,pos)
   local api = editor.api
   local tip = api.tip
   local ac = api.ac
@@ -519,7 +509,7 @@ function CreateAutoCompList(editor,key)
   -- ignore keywords
   if tip.keys[key] then return end
 
-  UpdateAssignCache(editor)
+  updateAssignCache(editor)
 
   local tab,rest = resolveAssign(editor,key)
   local progress = tab and tab.childs
@@ -587,6 +577,27 @@ function CreateAutoCompList(editor,key)
 
   -- handle (multiple) inheritance; add matches from the parent class/lib
   addInheritance(tab, apilist, {[tab] = true})
+
+  -- include local/global variables
+  if ide.config.acandtip.symbols and not key:find(q(sep)) then
+    local vars, context = {}
+    local tokens = editor:GetTokenList()
+    for _, token in ipairs(tokens) do
+      if token.fpos and pos and token.fpos > pos then break end
+      if token[1] == 'Id' or token[1] == 'Var' then
+        local var = token.name
+        if var ~= key and var:find(key, 1, true) == 1 then
+          -- if it's a global variable, store in the auto-complete list,
+          -- but if it's local, store separately as it needs to be checked
+          table.insert(token.context[var] and vars or apilist, var)
+        end
+        context = token.context
+      end
+    end
+    for _, var in pairs(context and vars or {}) do
+      if context[var] then table.insert(apilist, var) end
+    end
+  end
 
   local compstr = ""
   if apilist then

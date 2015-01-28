@@ -109,20 +109,24 @@ function findReplace:GetSelectedString()
 end
 
 local function shake(window, shakes, duration, vigour)
-  shakes = shakes or 4
-  duration = duration or 0.5
-  vigour = vigour or 0.05
-
   if not window then return end
 
-  local delay = math.floor(duration/shakes/2)
+  shakes = shakes or 3
+  duration = duration or 0.2 -- in seconds
+  vigour = vigour or 0.03
+
+  local function oneshake(x, y, delay)
+    local s = os.clock()
+    window:Move(x, y)
+    window:Update() window:Refresh() -- force refresh
+    wx.wxMilliSleep(math.max(0, math.floor((delay-(os.clock()-s))*1000)))
+  end
+  local delay = duration/shakes/2
   local position = window:GetPosition() -- get current position
   local deltax = window:GetSize():GetWidth()*vigour
   for _ = 1, shakes do
-    window:Move(position:GetX()-deltax, position:GetY())
-    wx.wxMilliSleep(delay)
-    window:Move(position:GetX()+deltax, position:GetY())
-    wx.wxMilliSleep(delay)
+    oneshake(position:GetX()-deltax, position:GetY(), delay)
+    oneshake(position:GetX()+deltax, position:GetY(), delay)
   end
   window:Move(position) -- restore position
 end
@@ -147,7 +151,7 @@ function findReplace:FindString(reverse)
       findReplace.foundString = true
       local start = editor:GetTargetStart()
       local finish = editor:GetTargetEnd()
-      editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(start))
+      editor:ShowPosEnforcePolicy(finish)
       editor:SetSelection(start, finish)
       ide.frame:SetStatusText("")
     end
@@ -229,8 +233,7 @@ function findReplace:ReplaceString(fReplaceAll, inFileRegister)
       editor:TargetFromSelection()
       -- check if there is anything selected as well as the user can
       -- move the cursor after successful search
-      if findReplace.foundString
-      and editor:GetSelectionStart() ~= editor:GetSelectionEnd()
+      if editor:GetSelectionStart() ~= editor:GetSelectionEnd()
       -- check that the current selection matches what's being searched for
       and editor:SearchInTarget(findReplace.findText) ~= NOTFOUND then
         local start = editor:GetSelectionStart()
@@ -312,6 +315,7 @@ function findReplace:RunInFiles(replace)
     wx.wxDefaultPosition, wx.wxSize(1,1), wx.wxBORDER_NONE)
   findReplace.occurrences = 0
 
+  ClearOutput()
   ActivateOutput()
 
   local startdir = findReplace.filedirText
@@ -500,7 +504,7 @@ function findReplace:createDialog(replace,infiles)
   mainSizer:SetSizeHints(findDialog)
   findDialog:SetSizer(mainSizer)
 
-  local function TransferDataFromWindow()
+  local function transferDataFromWindow()
     findReplace.fWholeWord = wholeWordCheckBox:GetValue()
     findReplace.fMatchCase = matchCaseCheckBox:GetValue()
     findReplace.fWrap = wrapAroundCheckBox:GetValue()
@@ -545,7 +549,7 @@ function findReplace:createDialog(replace,infiles)
 
   findDialog:Connect(ID_FIND_NEXT, wx.wxEVT_COMMAND_BUTTON_CLICKED,
     function()
-      TransferDataFromWindow()
+      transferDataFromWindow()
       if (findReplace.infiles) then
         for _, b in pairs(findReplace.buttons) do b:Disable() end
         findReplace:RunInFiles()
@@ -558,7 +562,7 @@ function findReplace:createDialog(replace,infiles)
 
   findDialog:Connect(ID_REPLACE, wx.wxEVT_COMMAND_BUTTON_CLICKED,
     function(event)
-      TransferDataFromWindow()
+      transferDataFromWindow()
       event:Skip()
       if findReplace.replace then
         if (findReplace.infiles) then
@@ -577,7 +581,7 @@ function findReplace:createDialog(replace,infiles)
   if replaceAllButton then
     findDialog:Connect(ID_REPLACE_ALL, wx.wxEVT_COMMAND_BUTTON_CLICKED,
       function(event)
-        TransferDataFromWindow()
+        transferDataFromWindow()
         event:Skip()
         findReplace:ReplaceString(true)
       end)

@@ -5,7 +5,6 @@
 
 local ide = ide
 local frame = ide.frame
-local notebook = frame.notebook
 local bottomnotebook = frame.bottomnotebook
 local errorlog = bottomnotebook.errorlog
 
@@ -34,7 +33,8 @@ end
 
 StylesApplyToEditor(ide.config.stylesoutshell,errorlog,ide.font.oNormal,ide.font.oItalic)
 
-function ClearOutput()
+function ClearOutput(force)
+  if not (force or ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)) then return end
   errorlog:SetReadOnly(false)
   errorlog:ClearAll()
   errorlog:SetReadOnly(true)
@@ -145,7 +145,7 @@ end
 
 local function nameTab(tab, name)
   local index = bottomnotebook:GetPageIndex(tab)
-  if index then bottomnotebook:SetPageText(index, name) end
+  if index ~= -1 then bottomnotebook:SetPageText(index, name) end
 end
 
 function OutputSetCallbacks(pid, proc, callback, endcallback)

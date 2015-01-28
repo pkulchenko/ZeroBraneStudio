@@ -107,6 +107,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   end
 
   editor:Colourise(0, -1)
+  editor:ResetTokenList() -- reset list of tokens if this is a reused editor
   editor:Thaw()
 
   local edcfg = ide.config.editor
@@ -200,8 +201,14 @@ end
 
 function ActivateFile(filename)
   local name, suffix, value = filename:match('(.+):([lLpP]?)(%d+)$')
-  if name and not wx.wxFileExists(filename) and wx.wxFileExists(name) then
+  if name and not wx.wxFileExists(filename) and not wx.wxIsAbsolutePath(filename) then
     filename = name
+  end
+
+  -- check if non-existing file can be loaded from the project folder;
+  -- this is to handle: "project file" used on the command line
+  if not wx.wxFileExists(filename) and not wx.wxIsAbsolutePath(filename) then
+    filename = GetFullPathIfExists(ide:GetProject(), filename) or filename
   end
 
   local opened = LoadFile(filename, nil, true)
@@ -335,6 +342,7 @@ function SaveFileAs(editor)
         editor:ClearDocumentStyle() -- remove styles from the document
         editor:SetupKeywords(GetFileExt(filePath))
         IndicateAll(editor)
+        IndicateFunctionsOnly(editor)
         MarkupStyle(editor)
       end
       saved = true
@@ -582,9 +590,7 @@ function CompileProgram(editor, params)
   local func, err = loadstring(StripShebang(editor:GetText()), '@'..filePath)
   local line = not func and tonumber(err:match(":(%d+)%s*:")) or nil
 
-  if not params.keepoutput and ide.frame.menuBar:IsChecked(ID_CLEAROUTPUT) then
-    ClearOutput()
-  end
+  if not params.keepoutput then ClearOutput() end
 
   compileTotal = compileTotal + 1
   if func then
@@ -735,7 +741,8 @@ function SetOpenTabs(params)
       DisplayOutputLn(TR("File '%s' is missing and can't be recovered.")
         :format(doc.filepath))
     else
-      local editor = doc.filepath and LoadFile(doc.filepath,nil,true,true) or NewFile(doc.filename)
+      local editor = (doc.filepath and LoadFile(doc.filepath,nil,true,true)
+        or findUnusedEditor() or NewFile(doc.filename))
       local opendoc = openDocuments[editor:GetId()]
       if doc.content then
         editor:SetText(doc.content)
@@ -929,7 +936,8 @@ local function closeWindow(event)
   frame.uimgr:UnInit()
   frame:Hide() -- hide the main frame while the IDE exits
 
-  if ide.session.timer then ide.session.timer:Stop() end
+  -- stop all the timers
+  for _, timer in pairs(ide.timers) do timer:Stop() end
 
   event:Skip()
 end
@@ -989,6 +997,9 @@ ide.editorApp:Connect(wx.wxEVT_SET_FOCUS, function(event)
   event:Skip()
 end)
 
+local updateInterval = 250 -- time in ms
+wx.wxUpdateUIEvent.SetUpdateInterval(updateInterval)
+
 ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
   function(event)
     if not ide.exitingProgram then
@@ -999,19 +1010,25 @@ ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
         pcall(function() ide.infocus:SetFocus() end)
       end
 
+      local active = event:GetActive()
       -- save auto-recovery record when making the app inactive
-      if not event:GetActive() then saveAutoRecovery(true) end
+      if not active then saveAutoRecovery(true) end
+      -- also collect all the garbage
+      if not active then collectgarbage() end
 
-      local event = event:GetActive() and "onAppFocusSet" or "onAppFocusLost"
-      PackageEventHandle(event, ide.editorApp)
+      -- disable UI refresh when app is inactive, but only when not running
+      wx.wxUpdateUIEvent.SetUpdateInterval(
+        (active or ide:GetLaunchedProcess()) and updateInterval or -1)
+
+      PackageEventHandle(active and "onAppFocusSet" or "onAppFocusLost", ide.editorApp)
     end
     event:Skip()
   end)
 
 if ide.config.autorecoverinactivity then
-  ide.session.timer = wx.wxTimer(frame)
+  ide.timers.session = wx.wxTimer(frame)
   -- check at least 5s to be never more than 5s off
-  ide.session.timer:Start(math.min(5, ide.config.autorecoverinactivity)*1000)
+  ide.timers.session:Start(math.min(5, ide.config.autorecoverinactivity)*1000)
 end
 
 function PaneFloatToggle(window)

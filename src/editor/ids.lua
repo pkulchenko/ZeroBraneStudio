@@ -25,6 +25,9 @@ ID_NEWFILE          = NewID()
 ID_NEWDIRECTORY     = NewID()
 ID_RENAMEFILE       = NewID()
 ID_DELETEFILE       = NewID()
+ID_HIDEEXTENSION    = NewID()
+ID_SHOWEXTENSION    = NewID()
+ID_SHOWEXTENSIONALL = NewID()
 ID_OPENEXTENSION    = NewID()
 ID_COPYFULLPATH     = NewID()
 ID_SHOWLOCATION     = NewID()
@@ -58,6 +61,11 @@ ID_BOOKMARK         = NewID()
 ID_BOOKMARKTOGGLE   = NewID()
 ID_BOOKMARKNEXT     = NewID()
 ID_BOOKMARKPREV     = NewID()
+ID_NAVIGATE         = NewID()
+ID_NAVIGATETOFILE   = NewID()
+ID_NAVIGATETOLINE   = NewID()
+ID_NAVIGATETOSYMBOL = NewID()
+ID_NAVIGATETOMETHOD = NewID()
 -- don't use wx.wxID_PREFERENCES to avoid merging with OSX app menu, because
 -- Apple guidelines describe Preferences as a "normal" item without submenus.
 ID_PREFERENCES      = NewID()
@@ -72,7 +80,6 @@ ID_FINDSELECTPREV   = NewID()
 ID_REPLACE          = NewID()
 ID_FINDINFILES      = NewID()
 ID_REPLACEINFILES   = NewID()
-ID_GOTOLINE         = NewID()
 ID_SORT             = NewID()
 -- View menu
 ID_VIEWFILETREE     = NewID()
@@ -131,11 +138,10 @@ ID_QUICKEVAL        = NewID()
 ID_ADDTOSCRATCHPAD  = NewID()
 
 local ids = {}
-function ID (name)
-	ids[name] = ids[name] or NewID()
-	return ids[name]
+function IDgen (name)
+  ids[name] = ids[name] or NewID()
+  return ids[name]
 end
+function IDget (name) return ids[name] end
 
-function IDget (name)
-	return ids[name]
-end
+ID = setmetatable({}, ide.proto.ID)

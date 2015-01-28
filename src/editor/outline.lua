@@ -1,20 +1,14 @@
 -- Copyright 2014 Paul Kulchenko, ZeroBrane LLC
 
 local ide = ide
-ide.outline = {}
+ide.outline = {
+  imglist = ide:CreateImageList("OUTLINE", "FILE-NORMAL", "VALUE-LCALL",
+    "VALUE-GCALL", "VALUE-ACALL", "VALUE-SCALL", "VALUE-MCALL"),
+}
 
-local image = { FILE = 0, LFUNCTION = 1, GFUNCTION = 2 }
-
-do
-  local getBitmap = (ide.app.createbitmap or wx.wxArtProvider.GetBitmap)
-  local size = wx.wxSize(16,16)
-  local imglist = wx.wxImageList(16,16)
-  imglist:Add(getBitmap("FILE-NORMAL", "OTHER", size)) -- 0 = file known spec
-  imglist:Add(getBitmap("VALUE-CALL", "OTHER", size)) -- 1
-  imglist:Add(getBitmap("VALUE-CALL-GLOBAL", "OTHER", size)) -- 2
-  ide.outline.imglist = imglist
-end
-
+local image = { FILE = 0, LFUNCTION = 1, GFUNCTION = 2, AFUNCTION = 3,
+  SMETHOD = 4, METHOD = 5,
+}
 local q = EscapeMagic
 local caches = {}
 
@@ -26,7 +20,7 @@ local function setData(ctrl, item, value)
   end
 end
 
-local function outlineRefresh(editor)
+local function outlineRefresh(editor, force)
   if not editor then return end
   local tokens = editor:GetTokenList()
   local text = editor:GetText()
@@ -34,6 +28,7 @@ local function outlineRefresh(editor)
   local varname = "([%w_][%w_"..q(sep:sub(1,1)).."]*)"
   local funcs = {}
   local var = {}
+  local outcfg = ide.config.outline or {}
   for _, token in ipairs(tokens) do
     local op = token[1]
     if op == 'Var' or op == 'Id' then
@@ -56,15 +51,22 @@ local function outlineRefresh(editor)
         end
       end
       local ftype = image.LFUNCTION
-      if name and (var.name == name and var.fpos == pos
-        or var.name and name:find('^'..var.name..'['..q(sep)..']')) then
+      if not name then
+        ftype = image.AFUNCTION
+      elseif outcfg.showmethodindicator and name:find('['..q(sep)..']') then
+        ftype = name:find(q(sep:sub(1,1))) and image.SMETHOD or image.METHOD
+      elseif var.name == name and var.fpos == pos
+      or var.name and name:find('^'..var.name..'['..q(sep)..']') then
         ftype = var.global and image.GFUNCTION or image.LFUNCTION
       end
-      funcs[#funcs+1] = {
-        name = (name or '~')..params,
-        depth = depth,
-        image = ftype,
-        pos = name and pos or token.fpos}
+      if name or outcfg.showanonymous then
+        funcs[#funcs+1] = {
+          name = (name or outcfg.showanonymous)..params,
+          depth = depth,
+          image = ftype,
+          pos = name and pos or token.fpos,
+        }
+      end
     end
   end
 
@@ -79,16 +81,21 @@ local function outlineRefresh(editor)
     local root = ctrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
-    fileitem = ctrl:AppendItem(root, filename, image.FILE)
-    setData(ctrl, fileitem, editor)
-    ctrl:SetItemBold(fileitem, true)
-    ctrl:SortChildren(root)
+    if outcfg.showonefile then
+      fileitem = root
+    else
+      fileitem = ctrl:AppendItem(root, filename, image.FILE)
+      setData(ctrl, fileitem, editor)
+      ctrl:SetItemBold(fileitem, true)
+      ctrl:SortChildren(root)
+    end
     cache.fileitem = fileitem
   end
 
   do -- check if any changes in the cached function list
     local prevfuncs = cache.funcs or {}
     local nochange = #funcs == #prevfuncs
+    local resort = {} -- items that need to be re-sorted
     if nochange then
       for n, func in ipairs(funcs) do
         func.item = prevfuncs[n].item -- carry over cached items
@@ -97,6 +104,7 @@ local function outlineRefresh(editor)
         elseif nochange then
           if func.name ~= prevfuncs[n].name then
             ctrl:SetItemText(prevfuncs[n].item, func.name)
+            if outcfg.sort then resort[ctrl:GetItemParent(prevfuncs[n].item)] = true end
           end
           if func.image ~= prevfuncs[n].image then
             ctrl:SetItemImage(prevfuncs[n].item, func.image)
@@ -105,7 +113,12 @@ local function outlineRefresh(editor)
       end
     end
     cache.funcs = funcs -- set new cache as positions may change
-    if nochange then return end -- return if no visible changes
+    if nochange and not force then -- return if no visible changes
+      if outcfg.sort then -- resort items for all parents that have been modified
+        for item in pairs(resort) do ctrl:SortChildren(item) end
+      end
+      return
+    end
   end
 
   -- refresh the tree
@@ -118,14 +131,28 @@ local function outlineRefresh(editor)
   ctrl:Freeze()
   ctrl:DeleteChildren(fileitem)
   local stack = {fileitem}
+  local resort = {} -- items that need to be re-sorted
   for n, func in ipairs(funcs) do
-    local item = ctrl:AppendItem(stack[func.depth], func.name, func.image)
+    local depth = outcfg.showflat and 1 or func.depth
+    local parent = stack[depth]
+    while not parent do depth = depth - 1; parent = stack[depth] end
+    local item = ctrl:AppendItem(parent, func.name, func.image)
+    if outcfg.sort then resort[parent] = true end
     setData(ctrl, item, n)
     func.item = item
     stack[func.depth+1] = item
   end
+  if outcfg.sort then -- resort items for all parents that have been modified
+    for item in pairs(resort) do ctrl:SortChildren(item) end
+  end
   ctrl:ExpandAllChildren(fileitem)
-  ctrl:ScrollTo(fileitem)
+  -- scroll to the fileitem, but only if it's not a root item (as it's hidden)
+  if fileitem:GetValue() ~= ctrl:GetRootItem():GetValue() then
+    ctrl:ScrollTo(fileitem)
+    ctrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+  else -- otherwise, scroll to the top
+    ctrl:SetScrollPos(wx.wxVERTICAL, 0, true)
+  end
   ctrl:Thaw()
 
   if win and win ~= ide:GetMainFrame():FindFocus() then win:SetFocus() end
@@ -136,12 +163,12 @@ local function outlineCreateOutlineWindow()
   local ctrl = wx.wxTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height),
     wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE
-    + wx.wxTR_HIDE_ROOT)
+    + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   ide.outline.outlineCtrl = ctrl
-  ide.outline.timer = wx.wxTimer(ctrl)
+  ide.timers.outline = wx.wxTimer(ctrl)
 
-  local root = ctrl:AddRoot("Outline")
+  ctrl:AddRoot("Outline")
   ctrl:SetImageList(ide.outline.imglist)
   ctrl:SetFont(ide.font.fNormal)
 
@@ -151,22 +178,27 @@ local function outlineCreateOutlineWindow()
     if ctrl:GetItemImage(item_id) == image.FILE then
       -- activate editor tab
       local editor = data:GetData()
-      if editor then ide:GetDocument(editor):SetActive() end
+      if not ide:GetEditorWithFocus(editor) then ide:GetDocument(editor):SetActive() end
     else
       -- activate tab and move cursor based on stored pos
       -- get file parent
+      local onefile = (ide.config.outline or {}).showonefile
       local parent = ctrl:GetItemParent(item_id)
-      while parent:IsOk() and ctrl:GetItemImage(parent) ~= image.FILE do
-        parent = ctrl:GetItemParent(parent)
+      if not onefile then -- find the proper parent
+        while parent:IsOk() and ctrl:GetItemImage(parent) ~= image.FILE do
+          parent = ctrl:GetItemParent(parent)
+        end
+        if not parent:IsOk() then return end
       end
-      if not parent:IsOk() then return end
       -- activate editor tab
-      local editor = ctrl:GetItemData(parent):GetData()
+      local editor = onefile and GetEditor() or ctrl:GetItemData(parent):GetData()
       local cache = caches[editor]
       if editor and cache then
-        ide:GetDocument(editor):SetActive()
         -- move to position in the file
         editor:GotoPosEnforcePolicy(cache.funcs[data:GetData()].pos-1)
+        -- only set editor active after positioning as this may change focus,
+        -- which may regenerate the outline, which may invalidate `data` value
+        if not ide:GetEditorWithFocus(editor) then ide:GetDocument(editor):SetActive() end
       end
     end
   end
@@ -178,7 +210,7 @@ local function outlineCreateOutlineWindow()
       + wx.wxTREE_HITTEST_ONITEMICON + wx.wxTREE_HITTEST_ONITEMRIGHT)
     local item_id, flags = ctrl:HitTest(event:GetPosition())
 
-    if item_id and bit.band(flags, mask) > 0 then
+    if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
       ctrl:ActivateItem(item_id)
     else
       event:Skip()
@@ -200,7 +232,7 @@ local function outlineCreateOutlineWindow()
 
   local layout = ide:GetSetting("/view", "uimgrlayout")
   if not layout or not layout:find("outlinepanel") then
-    ide:AddPanelDocked(ide.frame.projnotebook, ctrl, "outlinepanel", TR("Outline"), reconfigure, false)
+    ide:AddPanelDocked(ide:GetProjectNotebook(), ctrl, "outlinepanel", TR("Outline"), reconfigure, false)
   else
     ide:AddPanel(ctrl, "outlinepanel", TR("Outline"), reconfigure)
   end
@@ -218,17 +250,29 @@ end
 
 outlineCreateOutlineWindow()
 
-ide.packages['core.outline'] = setmetatable({
+function OutlineFunctions(editor)
+  -- force token refresh (as these may be not updated yet)
+  if #editor:GetTokenList() == 0 then
+    while IndicateAll(editor) do end
+  end
+
+  outlineRefresh(editor, true)
+  return caches[editor].funcs
+end
+
+ide:AddPackage('core.outline', {
     -- remove the editor from the list
     onEditorClose = function(self, editor)
       local cache = caches[editor]
       local fileitem = cache and cache.fileitem
-      if fileitem then ide.outline.outlineCtrl:Delete(fileitem) end
       caches[editor] = nil -- remove from cache
+      if (ide.config.outline or {}).showonefile then return end
+      if fileitem then ide.outline.outlineCtrl:Delete(fileitem) end
     end,
 
     -- handle rename of the file in the current editor
     onEditorSave = function(self, editor)
+      if (ide.config.outline or {}).showonefile then return end
       local cache = caches[editor]
       local fileitem = cache and cache.fileitem
       local doc = ide:GetDocument(editor)
@@ -240,18 +284,41 @@ ide.packages['core.outline'] = setmetatable({
 
     -- go over the file items to turn bold on/off or collapse/expand
     onEditorFocusSet = function(self, editor)
+      if (ide.config.outline or {}).showonefile then
+        outlineRefresh(editor, true)
+        return
+      end
+
       local cache = caches[editor]
       local fileitem = cache and cache.fileitem
+      local ctrl = ide.outline.outlineCtrl
+      local itemname = ide:GetDocument(editor):GetFileName()
+
+      -- fix file name if it changed in the editor
+      if fileitem and ctrl:GetItemText(fileitem) ~= itemname then
+        ctrl:SetItemText(fileitem, itemname)
+      end
+
+      -- if the editor is not in the cache, which may happen if the user
+      -- quickly switches between tabs that don't have outline generated,
+      -- regenerate it manually
+      if not cache and ide.config.outlineinactivity then
+        ide.timers.outline:Start(ide.config.outlineinactivity*1000, wx.wxTIMER_ONE_SHOT)
+      end
+
       eachNode(function(ctrl, item)
           local found = fileitem and item:GetValue() == fileitem:GetValue()
-          if found and not ctrl:IsBold(item) then
-            ctrl:SetItemBold(item, true)
-            ctrl:ExpandAllChildren(item)
-            ctrl:ScrollTo(item)
-          elseif not found and ctrl:IsBold(item) then
+          if not found and ctrl:IsBold(item) then
             ctrl:SetItemBold(item, false)
-            ctrl:Collapse(item)
+            ctrl:CollapseAllChildren(item)
           end
         end)
+
+      if fileitem and not ctrl:IsBold(fileitem) then
+        ctrl:SetItemBold(fileitem, true)
+        ctrl:ExpandAllChildren(fileitem)
+        ctrl:ScrollTo(fileitem)
+        ctrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+      end
     end,
-  }, ide.proto.Plugin)
+  })

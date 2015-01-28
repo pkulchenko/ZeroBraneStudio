@@ -64,12 +64,6 @@ style = {
   caretlinebg = nil,
   fold = nil,
   whitespace = nil,
-
-  -- special, functioncall indicator
-  fncall = {
-    fg = {r,g,b},
-    st = wxstc.wxSTC_INDIC_BOX,
-  },
 }
 
 -- config definition
@@ -78,11 +72,8 @@ style = {
 -- content is optional
 -- config is loaded into existing config table
 config = {
-  appname = "zbstudio", -- by default the launcher name
-
   path = { -- path for tools/interpreters
-    luxinia = "C:/luxbin/", -- path to luxinia exe
-    projectdir = "", -- the project directory, used by some tools/interpreters
+    lua = "C:/lua/lua.exe", -- path to lua exe
   },
   editor = {
     fontname = "Courier New", -- default font
@@ -108,6 +99,8 @@ config = {
     nomousezoom = nil, -- disable zooming using mouse wheel
     autoreload = nil, -- trigger auto-reload when file is updated
     saveallonrun = nil, -- save all modified files before Run/Debug
+    indentguide = true, -- show indentation guides
+    backspaceunindent = true, -- unindent when backspace is used
   },
 
   default = {
@@ -155,12 +148,14 @@ config = {
     shorttip = false,   -- tooltips are compact during typing
     nodynwords = false, -- no dynamic words (user entered words)
     ignorecase = false, -- ignores case when performing comparison with autocomplete list
+    symbols = true,     -- include local/global symbols
     startat = 2,        -- start suggesting dynamic words after 2 characters
-    strategy = 0,
+    strategy = 2,
     -- 0: is string comparison
     -- 1: substring leading characters (camel case or _ separated)
     -- 2: leading + any correctly ordered fragments (default)
     width = 60, -- width of the tooltip text (in characters)
+    maxlength = 450,   -- max length of the tooltip on the screen
   },
 
   arg = {}, -- command line arguments

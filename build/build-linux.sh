@@ -1,12 +1,19 @@
 #!/bin/bash
 
-if [ "$(uname -m)" = "x86_64" ]; then
-  FPIC="-fpic"
-  ARCH="x64"
-else
-  FPIC=""
-  ARCH="x86"
-fi
+case "$(uname -m)" in
+	x86_64)
+		FPIC="-fpic"
+		ARCH="x64"
+		;;
+	armv7l)
+		FPIC="-fpic"
+		ARCH="armhf"
+		;;
+	*)
+		FPIC=""
+		ARCH="x86"
+		;;
+esac
 
 # ZBS binary directory
 BIN_DIR="$(dirname "$PWD")/bin/linux/$ARCH"
@@ -45,6 +52,7 @@ for ARG in "$@"; do
     ;;
   5.3)
     BUILD_53=true
+    BUILD_FLAGS="$BUILD_FLAGS -DLUA_COMPAT_APIINTCASTS"
     ;;
   jit)
     BUILD_JIT=true
@@ -117,7 +125,7 @@ LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 if [ $BUILD_53 ]; then
   LUAV="53"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.3.0-alpha"
+  LUA_BASENAME="lua-5.3.0-beta"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://www.lua.org/work/$LUA_FILENAME"
 fi

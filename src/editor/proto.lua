@@ -12,6 +12,7 @@ ide.proto.Document = {__index = {
   SetModified = function(self, modified) SetDocumentModified(self.editor:GetId(), modified) end,
   SetTabText = function(self, text) SetDocumentModified(self.editor:GetId(), self.isModified, text) end,
   SetActive = function(self) SetEditorSelection(self.index) end,
+  Save = function(self) return SaveFile(self.editor, self.filePath) end
 }}
 
 ide.proto.Plugin = {__index = {
@@ -41,3 +42,8 @@ ide.proto.Debugger = {__index = {
   GetHostName = function(self) return self.hostname end,
   GetPortNumber = function(self) return self.portnumber end,
 }}
+
+ide.proto.ID = {
+  __index = function(t, id) return _G['ID_'..id] end,
+  __call = function(t, id) return IDgen(id) end,
+}

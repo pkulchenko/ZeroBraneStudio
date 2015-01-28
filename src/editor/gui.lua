@@ -38,7 +38,7 @@ local function createFrame()
   frame:Connect(wx.wxEVT_DROP_FILES,function(evt)
       local files = evt:GetFiles()
       if not files or #files == 0 then return end
-      for i,f in ipairs(files) do
+      for _, f in ipairs(files) do
         LoadFile(f,nil,true)
       end
     end)
@@ -87,7 +87,6 @@ local function createToolBar(frame)
   -- there are two sets of icons: use 24 on OSX and 16 on others.
   local iconsize = tbIconSize()
   local toolBmpSize = wx.wxSize(iconsize, iconsize)
-  local getBitmap = (ide.app.createbitmap or wx.wxArtProvider.GetBitmap)
   local icons, prev = ide.config.toolbar.icons
   for _, id in ipairs(icons) do
     if icons[id] ~= false then -- skip explicitly disabled icons
@@ -100,7 +99,7 @@ local function createToolBar(frame)
         if iconmap then
           local icon, description = unpack(iconmap)
           local isbitmap = type(icon) == "userdata" and icon:GetClassInfo():GetClassName() == "wxBitmap"
-          local bitmap = isbitmap and icon or getBitmap(icon, "TOOLBAR", toolBmpSize)
+          local bitmap = isbitmap and icon or ide:GetBitmap(icon, "TOOLBAR", toolBmpSize)
           toolBar:AddTool(id, "", bitmap, TR(description)..SCinB(id))
         end
       end
@@ -292,7 +291,9 @@ local function addDND(notebook)
       local notebookfrom = event:GetDragSource()
       if notebookfrom ~= ide.frame.notebook then
         -- disable cross-notebook movement of specific tabs
-        local winid = notebookfrom:GetPage(event:GetSelection()):GetId()
+        local win = notebookfrom:GetPage(event:GetSelection())
+        if not win then return end
+        local winid = win:GetId()
         if winid == ide:GetOutput():GetId()
         or winid == ide:GetConsole():GetId()
         or winid == ide:GetProjectTree():GetId()
@@ -414,9 +415,7 @@ local function createBottomNotebook(frame)
     end)
 
   errorlog:Connect(ID_CLEAROUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function(event)
-      ClearOutput()
-    end)
+    function(event) ClearOutput(true) end)
 
   local shellbox = wxstc.wxStyledTextCtrl(bottomnotebook, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
@@ -469,7 +468,7 @@ do
     Name("notebook"):
     CenterPane():PaneBorder(false))
   mgr:AddPane(frame.projnotebook, wxaui.wxAuiPaneInfo():
-    Name("projpanel"):CaptionVisible(false):Caption(TR("Project")):
+    Name("projpanel"):CaptionVisible(false):
     MinSize(200,200):FloatingSize(200,400):
     Left():Layer(1):Position(1):PaneBorder(false):
     CloseButton(true):MaximizeButton(false):PinButton(true))
@@ -479,9 +478,12 @@ do
     Bottom():Layer(1):Position(1):PaneBorder(false):
     CloseButton(true):MaximizeButton(false):PinButton(true))
 
-  for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
-    frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do
-    uimgr:GetArtProvider():SetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE, 2)
+  if type(ide.config.bordersize) == 'number' then
+    for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
+      frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do
+      uimgr:GetArtProvider():SetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE,
+        ide.config.bordersize)
+    end
   end
 
   for _, nb in pairs {frame.bottomnotebook, frame.projnotebook} do

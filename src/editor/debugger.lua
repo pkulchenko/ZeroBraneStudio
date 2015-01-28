@@ -23,19 +23,9 @@ debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
   return hostname and socket.dns.toip(hostname) and hostname or "localhost"
 end)()
+debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP")
 
 local image = { STACK = 0, LOCAL = 1, UPVALUE = 2 }
-
-do
-  local getBitmap = (ide.app.createbitmap or wx.wxArtProvider.GetBitmap)
-  local size = wx.wxSize(16,16)
-  local imglist = wx.wxImageList(16,16)
-  imglist:Add(getBitmap("VALUE-CALL", "OTHER", size)) -- 0 = stack call
-  imglist:Add(getBitmap("VALUE-LOCAL", "OTHER", size)) -- 1 = local variables
-  imglist:Add(getBitmap("VALUE-UP", "OTHER", size)) -- 2 = upvalues
-  debugger.imglist = imglist
-end
-
 local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
@@ -47,9 +37,9 @@ local activate = {CHECKONLY = 1, NOREPORT = 2}
 
 local function serialize(value, options) return mobdebug.line(value, options) end
 
-local stackmaxlength = ide.config.debugger.stackmaxlength or 400
-local stackmaxnum = ide.config.debugger.stackmaxnum or 400
-local stackmaxlevel = ide.config.debugger.stackmaxlevel or 3
+local stackmaxlength = ide.config.debugger.maxdatalength
+local stackmaxnum = ide.config.debugger.maxdatanum
+local stackmaxlevel = ide.config.debugger.maxdatalevel
 local params = {comment = false, nocode = true, maxlevel = stackmaxlevel, maxnum = stackmaxnum}
 
 local function fixUTF8(...)
@@ -96,7 +86,7 @@ local function updateWatchesSync(onlyitem)
           watchCtrl:SetItemValueIfExpandable(item, nil)
         else
           if #values == 0 then values = {'nil'} end
-          local ok, res = LoadSafe("return "..values[1])
+          local _, res = LoadSafe("return "..values[1])
           watchCtrl:SetItemValueIfExpandable(item, res)
         end
 
@@ -442,7 +432,7 @@ debugger.shell = function(expression, isstatement)
           if #values == 0 and (forceexpression or not isstatement) then
             values = {'nil'}
           end
-          DisplayShell(fixUTF8(unpack(values)))
+          DisplayShell(unpack(values))
         end
 
         -- refresh Stack and Watch windows if executed a statement (and no err)
@@ -724,7 +714,7 @@ end
 local function nameOutputTab(name)
   local nbk = ide.frame.bottomnotebook
   local index = nbk:GetPageIndex(ide:GetOutput())
-  if index then nbk:SetPageText(index, name) end
+  if index ~= -1 then nbk:SetPageText(index, name) end
 end
 
 debugger.handle = function(command, server, options)
@@ -961,7 +951,8 @@ end
 local function debuggerCreateStackWindow()
   local stackCtrl = wx.wxTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height),
-    wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE + wx.wxTR_HIDE_ROOT)
+    wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE
+    + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   debugger.stackCtrl = stackCtrl
 
@@ -1035,7 +1026,7 @@ local function debuggerCreateWatchWindow()
   local watchCtrl = wx.wxTreeCtrl(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(width, height),
     wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE
-    + wx.wxTR_HIDE_ROOT + wx.wxTR_EDIT_LABELS)
+    + wx.wxTR_HIDE_ROOT + wx.wxTR_EDIT_LABELS + wx.wxNO_BORDER)
 
   debugger.watchCtrl = watchCtrl
 
@@ -1260,6 +1251,7 @@ function DebuggerStop(resetpid)
     debuggerToggleViews(false)
     local lines = TR("traced %d instruction", debugger.stats.line):format(debugger.stats.line)
     DisplayOutputLn(TR("Debugging session completed (%s)."):format(lines))
+    nameOutputTab(debugger.pid and TR("Output (running)") or TR("Output"))
   else
     -- it's possible that the application couldn't start, or that the
     -- debugger in the application didn't start, which means there is
@@ -1311,7 +1303,7 @@ function DebuggerRefreshScratchpad()
         debugger.scratchpad.running = now
       end
     else
-      local clear = ide.frame.menuBar:IsChecked(ID_CLEAROUTPUT)
+      local clear = ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)
       local filePath = debuggerMakeFileName(scratchpadEditor)
 
       -- wrap into a function call to make "return" to work with scratchpad
@@ -1330,7 +1322,7 @@ function DebuggerRefreshScratchpad()
         debugger.scratchpad.updated = false
         debugger.scratchpad.runs = (debugger.scratchpad.runs or 0) + 1
 
-        if clear then ClearOutput() end
+        if clear then ClearOutput(true) end
 
         -- the code can be running in two ways under scratchpad:
         -- 1. controlled by the application, requires stopper (most apps)

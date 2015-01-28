@@ -12,7 +12,9 @@ local unpack = table.unpack or unpack
 if islinux then
   local file = io.popen("uname -m")
   if file then
-    arch = file:read("*a"):find("x86_64") and "x64" or "x86"
+    local machine=file:read("*l")
+    local archtype= { x86_64="x64", armv7l="armhf" }
+    arch = archtype[machine] or "x86"
     file:close()
   end
 end
@@ -53,6 +55,8 @@ ide = {
       smartindent = true,
       fold = true,
       autoreload = true,
+      indentguide = true,
+      backspaceunindent = true,
     },
     debugger = {
       verbose = false,
@@ -60,6 +64,9 @@ ide = {
       port = nil,
       runonstart = nil,
       redirect = nil,
+      maxdatalength = 400,
+      maxdatanum = 400,
+      maxdatalevel = 3,
     },
     default = {
       name = 'untitled',
@@ -72,7 +79,16 @@ ide = {
     filetree = {
       mousemove = true,
     },
-    funclist = {},
+    outline = {
+      showanonymous = '~',
+      showflat = false,
+      showmethodindicator = false,
+      showonefile = false,
+      sort = false,
+    },
+    commandbar = {
+      prefilter = 250, -- number of records after which to apply filtering
+    },
 
     toolbar = {
       icons = {},
@@ -80,6 +96,9 @@ ide = {
     },
 
     keymap = {},
+    imagemap = {
+      ['VALUE-MCALL'] = 'VALUE-SCALL',
+    },
     messages = {},
     language = "en",
 
@@ -92,10 +111,13 @@ ide = {
       shorttip = true,
       nodynwords = true,
       ignorecase = false,
+      symbols = true,
       strategy = 2,
       width = 60,
+      maxlength = 450,
     },
     arg = {}, -- command line arguments
+    api = {}, -- additional APIs to load
 
     format = { -- various formatting strings
       menurecentprojects = "%f | %i",
@@ -110,6 +132,7 @@ ide = {
     outlineinactivity = 0.250, -- seconds
     filehistorylength = 20,
     projecthistorylength = 20,
+    bordersize = 2,
     savebak = false,
     singleinstance = false,
     singleinstanceport = 0xe493,
@@ -127,6 +150,7 @@ ide = {
   interpreters = {},
   packages = {},
   apis = {},
+  timers = {},
 
   proto = {}, -- prototypes for various classes
 
@@ -206,7 +230,7 @@ end
 
 dofile "src/version.lua"
 
-for _, file in ipairs({"ids", "style", "keymap", "proto", "toolbar"}) do
+for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar"}) do
   dofile("src/editor/"..file..".lua")
 end
 
@@ -243,7 +267,8 @@ local function setLuaPaths(mainpath, osname)
   wx.wxSetEnv("LUA_PATH",
     (os.getenv("LUA_PATH") or ';') .. ';'
     .. "./?.lua;./?/init.lua;./lua/?.lua;./lua/?/init.lua" .. ';'
-    .. mainpath.."lualibs/?/?.lua;"..mainpath.."lualibs/?.lua"
+    .. mainpath.."lualibs/?/?.lua;"..mainpath.."lualibs/?.lua;"
+    .. mainpath.."lualibs/?/?/init.lua;"..mainpath.."lualibs/?/init.lua"
     .. (luadev_path and (';' .. luadev_path) or ''))
 
   ide.osclibs = -- keep the list to use for other Lua versions
@@ -282,8 +307,8 @@ do
   end
 
   ide.editorFilename = fullPath
-  ide.config.path.app = fullPath:match("([%w_-%.]+)$"):gsub("%.[^%.]*$","")
-  assert(ide.config.path.app, "no application path defined")
+  ide.appname = fullPath:match("([%w_-%.]+)$"):gsub("%.[^%.]*$","")
+  assert(ide.appname, "no application path defined")
 
   for index = 2, #arg do
     if (arg[index] == "-cfg" and index+1 <= #arg) then
@@ -301,7 +326,7 @@ end
 ----------------------
 -- process application
 
-ide.app = dofile(ide.config.path.app.."/app.lua")
+ide.app = dofile(ide.appname.."/app.lua")
 local app = assert(ide.app)
 
 local function loadToTab(filter, folder, tab, recursive, proto)
@@ -329,7 +354,7 @@ end
 local function loadPackages(filter)
   loadToTab(filter, "packages", ide.packages, false, ide.proto.Plugin)
   if ide.oshome then
-    local userpackages = MergeFullPath(ide.oshome, ".zbstudio/packages")
+    local userpackages = MergeFullPath(ide.oshome, "."..ide.appname.."/packages")
     if wx.wxDirExists(userpackages) then
       loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
     end
@@ -418,7 +443,7 @@ end
 -- process config
 
 -- set ide.config environment
-setmetatable(ide.config, {__index = {os = os, wxstc = wxstc, wx = wx}})
+setmetatable(ide.config, {__index = {os = os, wxstc = wxstc, wx = wx, ID = ID}})
 ide.config.load = { interpreters = loadInterpreters, specs = loadSpecs,
   tools = loadTools }
 do
@@ -432,7 +457,7 @@ do
   end
 end
 
-LoadLuaConfig(ide.config.path.app.."/config.lua")
+LoadLuaConfig(ide.appname.."/config.lua")
 
 ide.editorApp:SetAppName(GetIDEString("settingsapp"))
 
@@ -462,7 +487,7 @@ loadTools()
 do
   ide.configs = {
     system = MergeFullPath("cfg", "user.lua"),
-    user = ide.oshome and MergeFullPath(ide.oshome, ".zbstudio/user.lua"),
+    user = ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/user.lua"),
   }
 
   -- process configs
@@ -471,8 +496,17 @@ do
 
   -- process all other configs (if any)
   for _, v in ipairs(configs) do LoadLuaConfig(v, true) end
-
   configs = nil
+
+  -- check and apply default styles in case a user resets styles in the config
+  for _, styles in ipairs({"styles", "stylesoutshell"}) do
+    if not ide.config[styles] then
+      print(("Ignored incorrect value of '%s' setting in the configuration file")
+        :format(styles))
+      ide.config[styles] = StylesGetDefault()
+    end
+  end
+
   local sep = GetPathSeparator()
   if ide.config.language then
     LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
@@ -485,8 +519,8 @@ loadPackages()
 -- Load App
 
 for _, file in ipairs({
-    "markup", "settings", "singleinstance", "iofilters",
-    "package", "gui", "filetree", "output", "debugger", "outline",
+    "markup", "settings", "singleinstance", "iofilters", "package",
+    "gui", "filetree", "output", "debugger", "outline", "commandbar",
     "editor", "findreplace", "commands", "autocomplete", "shellbox",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",

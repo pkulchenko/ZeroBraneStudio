@@ -1,29 +1,18 @@
-local icons = {}
-local CreateBitmap = function(id, client, size)
-  local width = size:GetWidth()
-  local key = width .. "/" .. id
-  local fileClient = "zbstudio/res/" .. key .. "-" .. client .. ".png"
-  local fileKey = "zbstudio/res/" .. key .. ".png"
-  local file
-  if wx.wxFileName(fileClient):FileExists() then file = fileClient
-  elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
-  else return wx.wxArtProvider.GetBitmap(id, client, size) end
-  local icon = icons[file] or wx.wxBitmap(file)
-  icons[file] = icon
-  return icon
-end
-local ide = ide
-local app = {
-  createbitmap = CreateBitmap,
+local skipspecs = {
+  cg = true, glsl = true, luxres = true, opencl = true, sql = true,
+  cbase = true, hlsl = true, oglgpuprog = true, ptx = true, text = true,
+}
+return {
   loadfilters = {
     tools = function(file) return false end,
-    specs = function(file) return file:find('spec[/\\]lua%.lua$') end,
+    specs = function(file) return not skipspecs[file:match('spec[/\\]([^/\\]+)%.lua$') or ''] end,
     interpreters = function(file) return not file:find('estrela') end,
   },
 
   postinit = function ()
+    local ide = ide
     local bundle = wx.wxIconBundle()
-    local files = FileSysGetRecursive("zbstudio/res", false, "*.ico")
+    local files = FileSysGetRecursive(ide:GetAppName().."/res", false, "*.ico")
     local icons = 0
     for i,file in ipairs(files) do
       icons = icons + 1
@@ -62,5 +51,3 @@ local app = {
     help = "zerobranestudio",
   },
 }
-
-return app
