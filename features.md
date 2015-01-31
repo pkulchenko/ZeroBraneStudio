@@ -89,7 +89,7 @@ Don't worry about creating a new project, simply open a folder. The current file
 
 **Stack view**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inset"/></a>
-The Stack view provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames. You can even drill down to get values of individual elements in tables.
+Explore not only the call stack with function names, but also all local variables and upvalues for each of the stack frames. Drill down to get values of individual elements in tables.
 
 **Interactive console**
 <a href="images/unicode-console.png"><img style="background:url(images/debugging.png) -8px -504px" src="images/t.gif" class="inset"/></a>
