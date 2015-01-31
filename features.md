@@ -69,7 +69,7 @@ Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) 
 
 **Watch view**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inset"/></a>
-The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
+Use a convenient way to evaluate variables and expressions (including tables) after every step of the debugger.
 
 **Translatable interface**
 <a href="images/internationalization-russian.png"><img style="background:url(images/internationalization-russian.png) -220px -30px" src="images/t.gif" class="inset"/></a>
