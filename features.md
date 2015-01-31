@@ -71,10 +71,6 @@ Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) 
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inset"/></a>
 Use a convenient way to evaluate variables and expressions (including tables) after every step of the debugger.
 
-**Translatable interface**
-<a href="images/internationalization-russian.png"><img style="background:url(images/internationalization-russian.png) -220px -30px" src="images/t.gif" class="inset"/></a>
-Use one of the provided translations (English, French, Spanish, Russian, German, Chinese and Italian) or creare your own.
-
 **Live coding**
 <a href="images/scratchpad-linux-mint.png"><img style="background:url(images/scratchpad-linux-mint.png) -580px -300px" src="images/t.gif" class="inset"/></a>
 Execute your application as you are coding it. Detect syntax and run-time errors quickly; change numeric parameters on the fly with sliders.
@@ -82,6 +78,10 @@ Execute your application as you are coding it. Detect syntax and run-time errors
 **Pretty printing**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -531px" src="images/t.gif" class="inset"/></a>
 If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss the integrated pretty printing of any value in a line or block form.
+
+**Translatable interface**
+<a href="images/internationalization-russian.png"><img style="background:url(images/internationalization-russian.png) -220px -30px" src="images/t.gif" class="inset"/></a>
+Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, and Brazilian Portuguese) or creare your own.
 
 **Project file browser**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inset"/></a>
