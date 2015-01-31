@@ -43,10 +43,6 @@ Want to integrate ZeroBrane Studio with your own Lua engine? If none of the prov
 <a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -620px -600px" src="images/t.gif" class="inset"/></a>
 Run it without fearing it will take over your computer.
 
-**Auto-complete**
-<a href="images/autocomplete-osx.png"><img style="background:url(images/autocomplete-osx.png) -310px -290px" src="images/t.gif" class="inset"/></a>
-Spend less time typing and more time thinking.
-
 **Unicode friendly**
 <a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -245px -205px" src="images/t.gif" class="inset"/></a>
 Edit files in Unicode and run scripts with Unicode file names.
@@ -58,6 +54,10 @@ Quickly access function description or variable/expression values while debuggin
 **Static analyzer**
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -30px -280px" src="images/t.gif" class="inset"/></a>
 Detect typos, non-localized variables, and unused parameters before running your code.
+
+**Auto-complete**
+<a href="images/autocomplete-osx.png"><img style="background:url(images/autocomplete-osx.png) -310px -290px" src="images/t.gif" class="inset"/></a>
+Use auto-complete to save time on typing API functions and variable names (scope-aware).
 
 **Multi-file editing**
 <a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -220px -70px" src="images/t.gif" class="inset"/></a>
