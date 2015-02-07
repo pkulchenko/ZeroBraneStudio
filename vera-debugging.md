@@ -76,6 +76,11 @@ When you start debugging, the IDE may display the message with the server addres
 If the address shown is not correct, or can't be reached from the Vera device, the debugging is not going to work.
 To **set the correct address**, you can specify `debugger.hostname = 'correct.IPaddress.or.hostname'` in the [configuration](doc-configuration.html) file and restart the IDE.
 
+* **Debugging doesn't start because the address of the device or the IDE is detected incorrectly.**
+When you start debugging, the IDE will try to detect the address of the device and will use the IP address of the computer to configure the debugger.
+If you are **running on VPN**, it may cause the IDE to incorrectly detect the address of the device or the computer running the IDE.
+You may want to disable the VPN (and run `ipconfig /renew`) or configure `debugger.hostname` as described above to see if this resolves the issue.
+
 * **Debugging doesn't start because of a conflict with existing Lua installation (OSX).**
 In some rare cases the debugging doesn't start as the system fails to load a dynamic library that has incorrect architecture.
 You may see a message `dyld: Library not loaded: liblua.dylib`
