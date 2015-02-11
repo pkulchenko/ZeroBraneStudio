@@ -110,29 +110,7 @@ and the full list of IDs in [src/editor/keymap.lua](https://github.com/pkulchenk
 
 ## Editor key mapping
 
-The editor component provides its own shortcut handling mechanism linked to specific editor actions.
-For example, `Ctrl-D` will duplicate the current line.
-
-The editor provides [default commands](doc-editor-keyboard-shortcuts) that can be modified to map to the key combinations you prefer.
-To modify the key mapping, you can add the following line to the configuration file:
-
-{% highlight lua %}
-editor.keymap[#editor.keymap+1] =
-  {('E'):byte(), wxstc.wxSTC_SCMOD_CTRL, wxstc.wxSTC_CMD_LINEEND}
-{% endhighlight %}
-
-This will bind `Ctrl-E` combination to remove the line content from the current position to the end of the line.
-The description takes four parameters:
-
-- key code, which may be a code for a visible character (`('E'):byte()`) or a [special code](http://www.scintilla.org/ScintillaDoc.html#KeyBindings) (`wxstc.wxSTC_KEY_UP`);
-- key modifiers, which is a combination of `wxstc.wxSTC_SCMOD_CTRL`, `wxstc.wxSTC_SCMOD_SHIFT`, `wxstc.wxSTC_SCMOD_META`, and `wxstc.wxSTC_SCMOD_ALT`.
-To **combine several modifiers**, make a sum of their values: `wxstc.wxSTC_SCMOD_CTRL + wxstc.wxSTC_SCMOD_SHIFT`.
-On **OSX**, the Command key is mapped to wxSTC_SCMOD_CTRL and the Control key to wxSTC_SCMOD_META.
-- [Keyboard command](http://www.scintilla.org/ScintillaDoc.html#KeyboardCommands), which specify the action that needs to be tied to the key combination;
-- operating system, which is one of `'Windows'`, `'Macintosh'`, and `'Unix'` strings. If no operating system is specified, then the combination is available on all systems.
-
-Note that the editor key mapping is different from the IDE key mapping as the former only works when the editor is in focus and the latter may work when other components have focus.
-When there is a conflict, the IDE shortcuts take preference over editor shortcuts.
+The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can be modified using [editor key mapping](doc-editor-preferences#keyboard-shortcuts) settings.
 
 ## Session configuration
 
