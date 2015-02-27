@@ -12,6 +12,12 @@ Vera is the name of the device being sold by Vera Control,
 MiOS is a development company for the same software engine that runs on Vera devices.
 See [this post](http://forum.micasaverde.com/index.php/topic,3132.msg13469.html#msg13469) for some additional details.
 
+## What Vera devices are supported?
+
+It has been confirmed to work with **Vera 3**, **VeraLite**, and **VeraEdge** devices, but it *may* work with other versions of Vera devices as well.
+
+If you are using **newer versions of Vera firmware** (UI6 or UI7), be sure to check [this answer in the FAQ](#will-the-ide-work-with-my-device-that-is-using-ui6).
+
 ## How can I check what version of the Vera plugin I have?
 
 You can run `ide.packages.vera.version` in the Local console.

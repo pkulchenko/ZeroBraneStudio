@@ -23,7 +23,7 @@ You also get a product key that allows you to use _ZeroBrane Studio for Vera_ fr
 
 ## What Vera devices are supported?
 
-It has been tested with **Vera 3** and **VeraLite** devices, but it *may* work with other versions of Vera devices as well.
+It has been tested with **Vera 3**, **VeraLite**, and **VeraEdge** devices, but it *may* work with other versions of Vera devices as well.
 You should feel free to buy and try if it works for you; if it doesn't, we can either try to make it work or refund your payment.
 
 If you are using **newer versions of Vera firmware** (UI6 or UI7), be sure to check [this answer in the FAQ](vera-faq.html#will-the-ide-work-with-my-device-that-is-using-ui6).
