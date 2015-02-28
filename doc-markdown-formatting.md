@@ -33,3 +33,8 @@ The difference between `shell` and `inline` is that `shell` will show executed c
 
 The colors/styles of markup elements can be customized by referencing their symbols as the field in the `styles` table.
 For example, `styles.['['] = {hs = {0, 0, 255}}` will set the link color to blue.
+
+The markdown formatting includes _hidden_ markup,
+which prevents deletion of selected fragments that include that markup using `Ctrl-X` or `Shift-Del` shortcuts.
+The workaround is to use `Delete` or `Backspace` keys to delete those selected fragments.
+
