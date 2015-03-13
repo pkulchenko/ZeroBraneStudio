@@ -62,6 +62,11 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+); when set to `false`, show several files in the outline with the current one expanded.
 - `outline.sort = false`: sort functions by name (0.91+); when set to `false`, show functions in the order of their appearance.
 
+## Static analyzer
+
+- `staticanalyzer.infervalue = false`: enable static analysis that infers values (0.96+).
+This allows for additional reporting on unknown fields, but takes significantly more time.
+
 ## Custom APIs
 
 - `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91)+.
