@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v0.95 (Jan 30 2015)
+# Download ZeroBrane Studio v1.00 (Mar 13 2015)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.95-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-0.95-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.00-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.00-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.95-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.95-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.00-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.00-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.95-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-0.95-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.00-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.00-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-0.95-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-0.95-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.00-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.00-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 <div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
@@ -20,12 +20,12 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Added fuzzy search with `Go To File`, `Go To Symbol`, `Go To Line`, and `Insert Library Function` (available through `Search | Navigate` menu).
-- Added auto-complete support for LDoc '@tparam' and '@param[type=...]'.
-- Added armhf architecture support (thanks to Ard van Breemen).
-- Updated static analyzer and internal parser to support `goto`/labels and bitops for Lua 5.2/5.3.
-- Updated Mobdebug to improve Lua 5.3 compatibility (thanks to Andrew Starks).
-- Update API descriptions with functions new in Lua 5.3.
+- Added directory mapping to the project tree.
+- Added `Run to Cursor`.
+- Added support to set/unset start file for a project.
+- Added opening/creating file from the command bar.
+- Added `staticanalyzer.infervalue` to enable deeper/slower analysis.
+- Updated Corona API for v2015.2576.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
