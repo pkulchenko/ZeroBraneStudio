@@ -67,6 +67,11 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `staticanalyzer.infervalue = false`: enable static analysis that infers values (0.96+).
 This allows for additional reporting on unknown fields, but takes significantly more time.
 
+## Command Bar
+
+- `commandbar.prefilter = 250`: set the number of records processed in command bar at which to apply pre filtering to speed up fuzzy matching process (0.91+).
+The records that don't have all symbols entered will be filtered out before matching algorithm is applied.
+
 ## Custom APIs
 
 - `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91)+.
