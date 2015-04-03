@@ -34,7 +34,7 @@ If you make an error (whether a compile or run-time), it will be reported in the
 
 To **exit** the scratchpad mode you can close the application, go to `Project | Stop Process`, or go to `Project | Run as Scratchpad`.
 
-Note that this functionality is highly interpreter dependent and some interpreters may not provide it at all (for example, `Corona`) and some may provide in a way that doesn't restart the entire application (for example, `Love2d`, `Moai`, or `Gideros` interpreters).
+Note that this functionality is highly interpreter dependent and some interpreters may not provide it at all (for example, `Corona`) and some may provide in a way that doesn't restart the entire application (for example, `LÖVE`, `Moai`, or `Gideros` interpreters).
 Your code may also need to be written in a way that accomodates requirements of those engines. Please consult [live coding tutorials](documentation#live-coding) for details.
 
 ## Console window

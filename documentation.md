@@ -26,7 +26,7 @@ title: Documentation
 - [Lua 5.2 debugging](doc-lua52-debugging)
 - [Lua 5.3 debugging](doc-lua53-debugging)
 - [Remote debugging](doc-remote-debugging)
-- [Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
+- [LÖVE/Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
 - [Marmalade Quick debugging](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio)
@@ -41,7 +41,7 @@ title: Documentation
 ## Live coding
 
 - [Lua live coding](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)
-- [Love2d live coding](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)
+- [LÖVE/Love2d live coding](http://notebook.kulchenko.com/zerobrane/live-coding-with-love)
 - [Moai live coding](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio)
 - [Gideros live coding](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide)
 - [Corona live coding](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio)

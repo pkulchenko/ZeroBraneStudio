@@ -130,7 +130,7 @@ If you launch the application outside of the IDE, make sure you **flush the prin
 
 ## Why don't I see `print` output immediately in the Output window?
 
-Lua (and some engines based on it, like Love2d) has output buffered by default,
+Lua (and some engines based on it, like LÖVE) has output buffered by default,
 so if you only `print` a small number of bytes, you may see the results only after the script is completed.
 
 If you want to see the `print` output immediately, **add `io.stdout:setvbuf("no")` to your script**, which will turn the buffering on.

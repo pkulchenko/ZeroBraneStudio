@@ -142,7 +142,7 @@ The parameters set using the first option will only be active until you exit the
 Some interpreters also allow interpreter specific arguments:
 
 - `arg.lua`: sets arguments for Lua interpreters,
-- `arg.love2d`: sets arguments for Love2d interpreter, and
+- `arg.love2d`: sets arguments for LÖVE/Love2d interpreter, and
 - `arg.gslshell`: sets arguments for GSL-shell interpreter.
 
 ## Interpreter path
@@ -154,7 +154,7 @@ You can use this setting to specify an alternative interpreter you want to use (
 Note that the **full executable name** is expected, not a directory name. The values shown are examples, not default values.
 
 - `path.lua = 'd:/lua/lua'`: specify path to Lua interpreter.
-- `path.love2d = 'd:/lua/love/love'`: specify path to love2d executable.
+- `path.love2d = 'd:/lua/love/love'`: specify path to LÖVE/love2d executable.
 - `path.moai = 'd:/lua/moai/moai'`: specify path to Moai executable.
 - `path.gideros = 'd:/Program Files/Gideros/GiderosPlayer.exe'`: specify path to Gideros executable.
 - `path.corona = 'd:/path/to/Corona SDK/Corona Simulator.exe'`: specify path to Corona executable.

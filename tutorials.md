@@ -9,17 +9,17 @@ title: Tutorials
 [Live coding in Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style)
 demonstrates how to use _live coding_ with different scripts running in ZeroBrane Studio.
 
-**Tutorial 2: Löve debugging**
+**Tutorial 2: LÖVE debugging**
 
 <iframe width="512" height="362" src="https://www.youtube-nocookie.com/embed/Gi6rrwWvMFE?vq=hd720&amp;rel=0" frameborder="0">&nbsp;</iframe>
-[Löve debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
-demonstrates _debugging and auto-complete_ support for [Löve 2D game engine](http://love2d.org/).
+[LÖVE debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
+demonstrates _debugging and auto-complete_ support for [LÖVE game engine](http://love2d.org/).
 
-**Tutorial 3: Live coding with Löve**
+**Tutorial 3: Live coding with LÖVE**
 
 <iframe width="512" height="362" src="https://www.youtube-nocookie.com/embed/odGXWCa2oAY?vq=hd720&amp;rel=0" frameborder="0">&nbsp;</iframe>
 [Live coding with Löve](http://notebook.kulchenko.com/zerobrane/live-coding-with-love) tutorial
-demonstrates how to use _live coding to change game parameters_ using [Löve 2D](http://love2d.org/)
+demonstrates how to use _live coding to change game parameters_ using [LÖVE](http://love2d.org/)
 scripts running in ZeroBrane Studio.
 
 **Tutorial 4: Gideros live coding**
