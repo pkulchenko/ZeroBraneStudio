@@ -65,6 +65,32 @@ function PackageRegister(file, ...)
   return PackageEventHandleOne(file, "onRegister", ...)
 end
 
+function ide:ThemeNotebook(notebook)
+  local theme = self.config.theme
+  if theme.simpletabart then
+	  notebook:SetArtProvider(wxaui.wxAuiSimpleTabArt())
+  end
+  if theme.tabartsize > 0 then
+    local font = wx.wxFont(theme.tabartsize,
+      wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+      wx.wxFONTWEIGHT_NORMAL, false, "",
+      wx.wxFONTENCODING_DEFAULT)
+    notebook:GetArtProvider():SetMeasuringFont(font)
+  end
+end
+function ide:ThemePanel(page, name)
+  local theme = self.config.theme
+  if theme.panebgcols then
+    local color = theme.panebgcols[name]
+    if color == nil then
+      color = theme.panebgcols['default']
+    end
+    if color then
+      page:SetBackgroundColour(wx.wxColour(unpack(color)))
+    end
+  end
+end
+
 function ide:GetRootPath(path)
   return MergeFullPath(GetPathWithSep(ide.editorFilename), path or '')
 end
@@ -279,6 +305,11 @@ function ide:GetBitmap(id, client, size)
   local im = ide.config.imagemap
   local width = size:GetWidth()
   local key = width.."/"..id
+  local customkey = ide.config.theme.customicons[key]
+  if customkey ~= nil then
+    key = customkey
+  end
+  
   local keyclient = key.."-"..client
   local mapped = im[keyclient] or im[id.."-"..client] or im[key] or im[id]
   if im[id.."-"..client] then keyclient = width.."/"..im[id.."-"..client]
@@ -386,11 +417,14 @@ end
 
 local panels = {}
 function ide:AddPanel(ctrl, panel, name, conf)
+  self:ThemePanel(ctrl, name)
   local width, height = 360, 200
   local notebook = wxaui.wxAuiNotebook(ide.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
+  ide:ThemeNotebook(notebook)
+    
   notebook:AddPage(ctrl, name, true)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
     function() PaneFloatToggle(notebook) end)
@@ -411,6 +445,7 @@ function ide:AddPanel(ctrl, panel, name, conf)
 end
 
 function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate)
+  self:ThemePanel(ctrl, name)
   notebook:AddPage(ctrl, name, activate ~= false)
   panels[name] = {ctrl, panel, name, conf}
   return notebook
