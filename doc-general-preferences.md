@@ -44,8 +44,9 @@ This is mostly useful for remote debugging to specify how the output should be r
 ## Auto-complete and tooltip
 
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
-when set to `false` will collect all words from all open editor tabs and offer them as part of the auto-complete list.
-- `acandtip.shorttip = true`: show short calltip when typing; shows long calltip when set to `false`.
+set to `false` to collect all words from all open editor tabs and offer them as part of the auto-complete list.
+- `acandtip.shorttip = true`: show short calltip when typing;
+set to `false` to show a long calltip.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
 - `acandtip.strategy = 2`: method of selecting auto-complete candidates:
     - `0`: substring comparison (`fo`, but not `fb` matches `foo_bar`);
@@ -59,8 +60,10 @@ when set to `false` will collect all words from all open editor tabs and offer t
 - `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
 - `outline.showflat = false`: show all functions as one list (no hierarchy) (0.91+).
 - `outline.showmethodindicator = false`: show different icons for method indicators (0.81+).
-- `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+); when set to `false`, show several files in the outline with the current one expanded.
-- `outline.sort = false`: sort functions by name (0.91+); when set to `false`, show functions in the order of their appearance.
+- `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+);
+set to `false` to show several files in the outline with the current one expanded.
+- `outline.sort = false`: sort functions by name (0.91+);
+set to `false` to show functions in the order of their appearance.
 
 ## Static analyzer
 
