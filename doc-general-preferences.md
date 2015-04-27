@@ -65,6 +65,16 @@ set to `false` to show several files in the outline with the current one expande
 - `outline.sort = false`: sort functions by name (0.91+);
 set to `false` to show functions in the order of their appearance.
 
+## Search
+
+- `autocomplete = true`: enable auto-complete suggestions in find/replace fields (1.01+).
+- `contextlinesbefore = 2`: set the number of context lines to shown _before_ the match line in search results (1.01+).
+- `contextlinesafter = 2`: set the number of context lines to shown _after_ the match line in search results (1.01+).
+- `showaseditor = true`: show the search results as an editor (1.01+);
+set to `false` to show the results next to the `Output` tab.
+- `zoom = 0`: set the zoom level for the search results (1.01+);
+set the value to a to a negative number (from -1 to -7) to make the results smaller or to a positive number (from 1 to 7) to make the results larger than the default value.
+
 ## Static analyzer
 
 - `staticanalyzer.infervalue = false`: enable static analysis that infers values (0.96+).
