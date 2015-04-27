@@ -92,8 +92,8 @@ For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all inter
 
 ## Toolbar
 
-- `toolbar.iconmap = { [ID_OPEN] = {"FILE-OPEN", "Description" }, ... }`: sets the content of toolbar buttons (the icon and the description).
-- `toolbar.icons = { ID_NEW, ID_OPEN, ... ID_SEPARATOR, ...}`: sets the order of the buttons in the toolbar.
+- `toolbar.iconmap = { [ID.OPEN] = {"FILE-OPEN", "Description" }, ... }`: sets the content of toolbar buttons (the icon and the description).
+- `toolbar.icons = { ID.NEW, ID.OPEN, ... ID.SEPARATOR, ...}`: sets the order of the buttons in the toolbar.
 - `toolbar.iconsize = ide.osname == 'Macintosh' and 24 or 16`: the size of the icons in the toolbar. Only two sizes are currently supported: 16 and 24 pixels.
 
 The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) or to `wx.wxBitmap` object; see this plugin for an [example on how to create a toolbar bitmap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/maketoolbar.lua).
@@ -101,7 +101,8 @@ The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) o
 Any existing button on the toolbar can be **removed individually** by setting `toolbar.icons[ID-of-the-button]` to `false`.
 If all the buttons between two separators are removed, then two separators are merged into one to keep proper spacing.
 
-When you reference ID value from the config file, make sure to reference them in the **global environment**: `local G = ...; toolbar.icons[G.ID_NEW] = false`.
+When you reference ID value from the config file, make sure to use `ID.value` syntax: `toolbar.icons[ID.NEW] = false` (0.95+).
+When using an older version (before 0.95), reference them in the **global environment**: `local G = ...; toolbar.icons[G.ID_NEW] = false`.
 
 ## Formats
 
@@ -124,7 +125,7 @@ Possible placeholder values to use in formats (0.61+):
 ## Key mapping
 
 To modify a key mapping for a particular menu item, you can add the following command to your [configuration](doc-configuration):
-`local G = ...; keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"`.
+`keymap[ID.STARTDEBUG] = "Ctrl-Shift-D"`.
 This will modify the default shortcut for `Program | Start Debugging` command.
 
 See an [example in user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L18),
