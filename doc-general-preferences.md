@@ -68,9 +68,10 @@ set to `false` to show functions in the order of their appearance.
 
 ## Search
 
+- `search.autohide = false`: hide search panel after find/replace operation (1.01+).
 - `search.autocomplete = true`: enable auto-complete suggestions in find/replace fields (1.01+).
-- `search.contextlinesbefore = 2`: set the number of context lines to shown _before_ the match line in search results (1.01+).
 - `search.contextlinesafter = 2`: set the number of context lines to shown _after_ the match line in search results (1.01+).
+- `search.contextlinesbefore = 2`: set the number of context lines to shown _before_ the match line in search results (1.01+).
 - `search.showaseditor = true`: show the search results as an editor (1.01+);
 set to `false` to show the results next to the `Output` tab.
 - `search.zoom = 0`: set the zoom level for the search results (1.01+);
