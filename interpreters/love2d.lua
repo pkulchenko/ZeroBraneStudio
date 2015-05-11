@@ -5,8 +5,8 @@ local win = ide.osname == "Windows"
 local mac = ide.osname == "Macintosh"
 
 return {
-  name = "Love2d",
-  description = "Love2d game engine",
+  name = "LÖVE",
+  description = "LÖVE game engine",
   api = {"baselib", "love2d"},
   frun = function(self,wfilename,rundebug)
     love2d = love2d or ide.config.path.love2d -- check if the path is configured
@@ -26,14 +26,15 @@ return {
         table.insert(paths, p)
       end
       if not love2d then
-        DisplayOutput("Can't find love2d executable in any of the following folders: "
-          ..table.concat(paths, ", ").."\n")
+        DisplayOutputLn("Can't find love2d executable in any of the following folders: "
+          ..table.concat(paths, ", "))
         return
       end
     end
 
     if not GetFullPathIfExists(self:fworkdir(wfilename), 'main.lua') then
-      DisplayOutput("Can't find 'main.lua' file in the current project folder.\n")
+      DisplayOutputLn(("Can't find 'main.lua' file in the current project folder: '%s'.")
+        :format(self:fworkdir(wfilename)))
       return
     end
 
@@ -41,11 +42,17 @@ return {
       DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
     end
 
+    -- suppress hiding ConsoleWindowClass as this is used by Love console
+    local uhw = ide.config.unhidewindow
+    local cwc = uhw and uhw.ConsoleWindowClass
+    if uhw then uhw.ConsoleWindowClass = 0 end
+
     local params = ide.config.arg.any or ide.config.arg.love2d
     local cmd = ('"%s" "%s"%s%s'):format(love2d, self:fworkdir(wfilename),
       params and " "..params or "", rundebug and ' -debug' or '')
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-    return CommandLineRun(cmd,self:fworkdir(wfilename),true,true)
+    return CommandLineRun(cmd,self:fworkdir(wfilename),true,true,nil,nil,
+      function() if uhw then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
   fattachdebug = function(self) DebuggerAttachDefault() end,

@@ -75,7 +75,7 @@ local function outlineRefresh(editor, force)
   caches[editor] = cache
 
   -- add file
-  local filename = ide:GetDocument(editor):GetFileName()
+  local filename = ide:GetDocument(editor):GetTabText()
   local fileitem = cache.fileitem
   if not fileitem then
     local root = ctrl:GetRootItem()
@@ -129,7 +129,13 @@ local function outlineRefresh(editor, force)
   local win = ide:GetMainFrame():FindFocus()
 
   ctrl:Freeze()
+
+  -- disabling event handlers is not strictly necessary, but it's expected
+  -- to fix a crash on Windows that had DeleteChildren in the trace (#442).
+  ctrl:SetEvtHandlerEnabled(false)
   ctrl:DeleteChildren(fileitem)
+  ctrl:SetEvtHandlerEnabled(true)
+
   local stack = {fileitem}
   local resort = {} -- items that need to be re-sorted
   for n, func in ipairs(funcs) do
@@ -277,14 +283,14 @@ ide:AddPackage('core.outline', {
       local fileitem = cache and cache.fileitem
       local doc = ide:GetDocument(editor)
       local ctrl = ide.outline.outlineCtrl
-      if doc and fileitem and ctrl:GetItemText(fileitem) ~= doc:GetFileName() then
-        ctrl:SetItemText(fileitem, doc:GetFileName())
+      if doc and fileitem and ctrl:GetItemText(fileitem) ~= doc:GetTabText() then
+        ctrl:SetItemText(fileitem, doc:GetTabText())
       end
     end,
 
     -- go over the file items to turn bold on/off or collapse/expand
     onEditorFocusSet = function(self, editor)
-      if (ide.config.outline or {}).showonefile then
+      if (ide.config.outline or {}).showonefile and ide.config.outlineinactivity then
         outlineRefresh(editor, true)
         return
       end
@@ -292,7 +298,7 @@ ide:AddPackage('core.outline', {
       local cache = caches[editor]
       local fileitem = cache and cache.fileitem
       local ctrl = ide.outline.outlineCtrl
-      local itemname = ide:GetDocument(editor):GetFileName()
+      local itemname = ide:GetDocument(editor):GetTabText()
 
       -- fix file name if it changed in the editor
       if fileitem and ctrl:GetItemText(fileitem) ~= itemname then

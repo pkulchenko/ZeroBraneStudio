@@ -80,9 +80,9 @@ function ide:GetEditor(index) return GetEditor(index) end
 function ide:GetEditorWithFocus(ed) return GetEditorWithFocus(ed) end
 function ide:GetEditorWithLastFocus()
   -- make sure ide.infocus is still a valid component and not "some" userdata
-  return (pcall(function() ide.infocus:GetId() end)
-    and ide.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
-    and ide.infocus:DynamicCast("wxStyledTextCtrl") or nil)
+  return (self:IsValidCtrl(self.infocus)
+    and self.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
+    and self.infocus:DynamicCast("wxStyledTextCtrl") or nil)
 end
 function ide:GetMenuBar() return self.frame.menuBar end
 function ide:GetStatusBar() return self.frame.statusBar end
@@ -105,7 +105,7 @@ function ide:GetKnownExtensions(ext)
 end
 
 function ide:FindTopMenu(item)
-  local index = ide:GetMenuBar():FindMenu(TR(item))
+  local index = ide:GetMenuBar():FindMenu((TR)(item))
   return ide:GetMenuBar():GetMenu(index), index
 end
 function ide:FindMenuItem(itemid, menu)
@@ -157,6 +157,11 @@ function ide:GetEditorNotebook() return self.frame.notebook end
 function ide:GetOutputNotebook() return self.frame.bottomnotebook end
 function ide:GetProjectNotebook() return self.frame.projnotebook end
 function ide:GetProject() return FileTreeGetDir() end
+function ide:GetProjectStartFile()
+  local projectdir = FileTreeGetDir()
+  local startfile = ide.filetree.settings.startfile[projectdir]
+  return MergeFullPath(projectdir, startfile), startfile
+end
 function ide:GetLaunchedProcess() return self.debugger and self.debugger.pid end
 function ide:GetProjectTree() return ide.filetree.projtreeCtrl end
 function ide:GetOutlineTree() return ide.outline.outlineCtrl end
@@ -164,7 +169,117 @@ function ide:GetWatch() return self.debugger and self.debugger.watchCtrl end
 function ide:GetStack() return self.debugger and self.debugger.stackCtrl end
 function ide:Yield() wx.wxYield() end
 function ide:CreateBareEditor() return CreateEditor(true) end
+function ide:CreateStyledTextCtrl(...)
+  local editor = wxstc.wxStyledTextCtrl(...)
+  function editor:GotoPosEnforcePolicy(pos)
+    self:GotoPos(pos)
+    self:EnsureVisibleEnforcePolicy(self:LineFromPosition(pos))
+  end
+
+  function editor:CanFold()
+    local foldable = false
+    for m = 0, ide.MAXMARGIN do
+      if editor:GetMarginWidth(m) > 0
+      and editor:GetMarginMask(m) == wxstc.wxSTC_MASK_FOLDERS then
+        foldable = true
+      end
+    end
+    return foldable
+  end
+
+  -- circle through "fold all" => "hide base lines" => "unfold all"
+  function editor:FoldSome()
+    editor:Colourise(0, -1) -- update doc's folding info
+    local foldall = false -- at least on header unfolded => fold all
+    local hidebase = false -- at least one base is visible => hide all
+    local lines = editor:GetLineCount()
+
+    for ln = 0, lines-1 do
+      local foldRaw = editor:GetFoldLevel(ln)
+      local foldLvl = foldRaw % 4096
+      local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
+
+      -- at least one header is expanded
+      foldall = foldall or (foldHdr and editor:GetFoldExpanded(ln))
+
+      -- at least one base can be hidden
+      hidebase = hidebase or (
+        not foldHdr
+        and ln > 1 -- first line can't be hidden, so ignore it
+        and foldLvl == wxstc.wxSTC_FOLDLEVELBASE
+        and bit.band(foldRaw, wxstc.wxSTC_FOLDLEVELWHITEFLAG) == 0
+        and editor:GetLineVisible(ln))
+    end
+
+    -- shows lines; this doesn't change fold status for folded lines
+    if not foldall and not hidebase then editor:ShowLines(0, lines-1) end
+
+    for ln = 0, lines-1 do
+      local foldRaw = editor:GetFoldLevel(ln)
+      local foldLvl = foldRaw % 4096
+      local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
+
+      if foldall then
+        if foldHdr and editor:GetFoldExpanded(ln) then
+          editor:ToggleFold(ln)
+        end
+      elseif hidebase then
+        if not foldHdr and (foldLvl == wxstc.wxSTC_FOLDLEVELBASE) then
+          editor:HideLines(ln, ln)
+        end
+      else -- unfold all
+        if foldHdr and not editor:GetFoldExpanded(ln) then
+          editor:ToggleFold(ln)
+        end
+      end
+    end
+    editor:EnsureCaretVisible()
+  end
+
+  local function getMarginWidth(editor)
+    local width = 0
+    for m = 0, ide.MAXMARGIN do width = width + editor:GetMarginWidth(m) end
+    return width
+  end
+
+  function editor:ShowPosEnforcePolicy(pos)
+    local line = self:LineFromPosition(pos)
+    self:EnsureVisibleEnforcePolicy(line)
+    -- skip the rest if line wrapping is on
+    if editor:GetWrapMode() ~= wxstc.wxSTC_WRAP_NONE then return end
+    local xwidth = self:GetClientSize():GetWidth() - getMarginWidth(self)
+    local xoffset = self:GetTextExtent(self:GetLine(line):sub(1, pos-self:PositionFromLine(line)+1))
+    self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
+  end
+
+  function editor:ClearAny()
+    local length = self:GetLength()
+    local selections = ide.wxver >= "2.9.5" and self:GetSelections() or 1
+    self:Clear() -- remove selected fragments
+
+    -- check if the modification has failed, which may happen
+    -- if there is "invisible" text in the selected fragment.
+    -- if there is only one selection, then delete manually.
+    if length == self:GetLength() and selections == 1 then
+      self:SetTargetStart(self:GetSelectionStart())
+      self:SetTargetEnd(self:GetSelectionEnd())
+      self:ReplaceTarget("")
+    end
+  end
+
+  return editor
+end
+
 function ide:LoadFile(...) return LoadFile(...) end
+
+function ide:CopyToClipboard(text)
+  if wx.wxClipboard:Get():Open() then
+    wx.wxClipboard:Get():SetData(wx.wxTextDataObject(text))
+    wx.wxClipboard:Get():Close()
+    return true
+  end
+  return false
+end
 
 function ide:GetSetting(path, setting)
   local settings = self.settings
@@ -215,7 +330,7 @@ function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
 end
 
 function ide:CreateImageList(group, ...)
-  local log = wx.wxLogNull() -- disable error reporting in popup
+  local _ = wx.wxLogNull() -- disable error reporting in popup
   local size = wx.wxSize(16,16)
   local imglist = wx.wxImageList(16,16)
   for i = 1, select('#', ...) do
@@ -228,6 +343,33 @@ function ide:CreateImageList(group, ...)
   return imglist
 end
 
+local tintdef = 100
+local function iconFilter(bitmap, tint)
+  if type(tint) == 'function' then return tint(bitmap) end
+  if type(tint) ~= 'table' or #tint ~= 3 then return bitmap end
+
+  local tr, tg, tb = tint[1]/255, tint[2]/255, tint[3]/255
+  local pi = 0.299*tr + 0.587*tg + 0.114*tb -- pixel intensity
+  local perc = (tint[0] or tintdef)/tintdef
+  tr, tg, tb = tr*perc, tg*perc, tb*perc
+
+  local img = bitmap:ConvertToImage()
+  for x = 0, img:GetWidth()-1 do
+    for y = 0, img:GetHeight()-1 do
+      if not img:IsTransparent(x, y) then
+        local r, g, b = img:GetRed(x, y)/255, img:GetGreen(x, y)/255, img:GetBlue(x, y)/255
+        local gs = (r + g + b) / 3
+        local weight = 1-4*(gs-0.5)*(gs-0.5)
+        r = math.max(0, math.min(255, math.floor(255 * (gs + (tr-pi) * weight))))
+        g = math.max(0, math.min(255, math.floor(255 * (gs + (tg-pi) * weight))))
+        b = math.max(0, math.min(255, math.floor(255 * (gs + (tb-pi) * weight))))
+        img:SetRGB(x, y, r, g, b)
+      end
+    end
+  end
+  return wx.wxBitmap(img)
+end
+
 local icons = {} -- icon cache to avoid reloading the same icons
 function ide:GetBitmap(id, client, size)
   local im = ide.config.imagemap
@@ -235,9 +377,10 @@ function ide:GetBitmap(id, client, size)
   local key = width.."/"..id
   local keyclient = key.."-"..client
   local mapped = im[keyclient] or im[id.."-"..client] or im[key] or im[id]
-  if im[id.."-"..client] then keyclient = width.."/"..im[id.."-"..client]
-  elseif im[keyclient] then keyclient = im[keyclient]
-  elseif im[id] then
+  -- mapped may be a file name/path or wxImage object; take that into account
+  if type(im[id.."-"..client]) == 'string' then keyclient = width.."/"..im[id.."-"..client]
+  elseif type(im[keyclient]) == 'string' then keyclient = im[keyclient]
+  elseif type(im[id]) == 'string' then
     id = im[id]
     key = width.."/"..id
     keyclient = key.."-"..client
@@ -245,12 +388,13 @@ function ide:GetBitmap(id, client, size)
 
   local fileClient = ide:GetAppName() .. "/res/" .. keyclient .. ".png"
   local fileKey = ide:GetAppName() .. "/res/" .. key .. ".png"
+  local isImage = type(mapped) == 'userdata' and mapped:GetClassInfo():GetClassName() == 'wxImage'
   local file
-  if mapped and wx.wxFileName(mapped):FileExists() then file = mapped
+  if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else return wx.wxArtProvider.GetBitmap(id, client, size) end
-  local icon = icons[file] or wx.wxBitmap(file)
+  local icon = icons[file] or iconFilter(wx.wxBitmap(file), ide.config.imagetint)
   icons[file] = icon
   return icon, file
 end
@@ -372,6 +516,10 @@ end
 function ide:IsPanelDocked(panel)
   local layout = ide:GetSetting("/view", "uimgrlayout")
   return layout and not layout:find(panel)
+end
+
+function ide:IsValidCtrl(ctrl)
+  return ctrl and pcall(function() ctrl:GetId() end)
 end
 
 function ide:RestorePanelByLabel(name)

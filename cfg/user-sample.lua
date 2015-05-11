@@ -16,8 +16,8 @@ luaspec.exts[#luaspec.exts+1] = "luaz"
 luaspec.keywords[1] = luaspec.keywords[1] .. ' foo'
 
 -- to modify a key mapping; see the full list of IDs in src/editor/keymap.lua
-local G = ...
-keymap[G.ID_STARTDEBUG] = "Ctrl-Shift-D"
+-- starting from v0.95, ID.<menuid> can be used instead of G.ID_<menuid>
+keymap[ID.STARTDEBUG] = "Ctrl-Shift-D"
 
 -- to change font size to 12
 editor.fontsize = 12 -- this is mapped to ide.config.editor.fontsize
@@ -157,3 +157,8 @@ styles["keywords"..num] = {fg = {240, 0, 0}, b = true}
 -- enable `Opt+Shift+Left/Right` shortcut on OSX
 editor.keymap[#editor.keymap+1] = {wxstc.wxSTC_KEY_LEFT, wxstc.wxSTC_SCMOD_ALT+wxstc.wxSTC_SCMOD_SHIFT, wxstc.wxSTC_CMD_WORDLEFTEXTEND, "Macintosh"}
 editor.keymap[#editor.keymap+1] = {wxstc.wxSTC_KEY_RIGHT, wxstc.wxSTC_SCMOD_ALT+wxstc.wxSTC_SCMOD_SHIFT, wxstc.wxSTC_CMD_WORDRIGHTENDEXTEND, "Macintosh"}
+
+-- enable Emacs bindings to use `Ctrl-A` and `Ctrl-E` to go to the line start/end
+editor.keymap[#editor.keymap+1] = {('A'):byte(), wxstc.wxSTC_SCMOD_CTRL, wxstc.wxSTC_CMD_HOME}
+editor.keymap[#editor.keymap+1] = {('E'):byte(), wxstc.wxSTC_SCMOD_CTRL, wxstc.wxSTC_CMD_LINEEND}
+keymap[ID.SELECTALL] = nil -- remove `Ctrl-A` shortcut from `SelectAll`

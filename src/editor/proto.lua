@@ -1,6 +1,9 @@
 -- Copyright 2013-14 Paul Kulchenko, ZeroBrane LLC
 ---------------------------------------------------------
 
+local q = EscapeMagic
+local modpref = ide.MODPREF
+
 ide.proto.Document = {__index = {
   GetFileName = function(self) return self.fileName end,
   GetFilePath = function(self) return self.filePath end,
@@ -9,8 +12,18 @@ ide.proto.Document = {__index = {
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self) return self.index end,
   IsModified = function(self) return self.isModified end,
-  SetModified = function(self, modified) SetDocumentModified(self.editor:GetId(), modified) end,
-  SetTabText = function(self, text) SetDocumentModified(self.editor:GetId(), self.isModified, text) end,
+  SetModified = function(self, modified)
+    self.isModified = modified
+    self:SetTabText()
+  end,
+  SetTabText = function(self, text)
+    ide:GetEditorNotebook():SetPageText(self.index,
+      (self.isModified and modpref or '')..(text or self:GetTabText()))
+  end,
+  GetTabText = function(self)
+    if self.index == nil then return self.fileName end
+    return ide:GetEditorNotebook():GetPageText(self.index):gsub("^"..q(modpref), "")
+  end,
   SetActive = function(self) SetEditorSelection(self.index) end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end
 }}
@@ -44,6 +57,6 @@ ide.proto.Debugger = {__index = {
 }}
 
 ide.proto.ID = {
-  __index = function(t, id) return _G['ID_'..id] end,
-  __call = function(t, id) return IDgen(id) end,
+  __index = function(_, id) return _G['ID_'..id] end,
+  __call = function(_, id) return IDgen(id) end,
 }

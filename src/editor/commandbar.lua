@@ -4,7 +4,6 @@
 local maxlines = 8
 local row_height = 46
 local row_width = 450
-local win = ide.osname == 'Windows'
 
 function CommandBarShow(params)
   local onDone, onUpdate, onItem, onSelection, defaultText, selectedText =
@@ -14,21 +13,28 @@ function CommandBarShow(params)
   local linesnow = #lines
   local linenow = 0
 
-  local ed = ide:GetEditor()
-  local pos = ed and ed:GetScreenPosition() or ide:GetEditorNotebook():GetScreenPosition()
+  local nb = ide:GetEditorNotebook()
+  local pos = nb:GetScreenPosition()
   if pos then
-    pos:SetX(pos:GetX()+ide:GetEditorNotebook():GetClientSize():GetWidth()-row_width-16)
-    pos:SetY(pos:GetY()+2)
-    if not win then pos = ide:GetMainFrame():ScreenToClient(pos) end
+    local miny
+    for p = 0, nb:GetPageCount()-1 do
+      local y = nb:GetPage(p):GetScreenPosition():GetY()
+      -- just in case, compare with the position of the notebook itself;
+      -- this is needed because the tabs that haven't been refreshed yet
+      -- may report 0 as their screen position on Linux, which is incorrect.
+      if y > pos:GetY() and (not miny or y < miny) then miny = y end
+    end
+    pos:SetX(pos:GetX()+nb:GetClientSize():GetWidth()-row_width-16)
+    pos:SetY((miny or pos:GetY())+2)
   else
     pos = wx.wxDefaultPosition
   end
 
-  local frame = win and wx.wxFrame(ide:GetMainFrame(), wx.wxID_ANY, "Command Bar",
+  local frame = wx.wxFrame(ide:GetMainFrame(), wx.wxID_ANY, "Command Bar",
     pos, wx.wxDefaultSize,
-    wx.wxFRAME_TOOL_WINDOW + wx.wxFRAME_FLOAT_ON_PARENT + wx.wxNO_BORDER)
+    wx.wxFRAME_NO_TASKBAR + wx.wxFRAME_FLOAT_ON_PARENT + wx.wxNO_BORDER)
   local panel = wx.wxPanel(frame or ide:GetMainFrame(), wx.wxID_ANY,
-    win and wx.wxDefaultPosition or pos, wx.wxDefaultSize, wx.wxFULL_REPAINT_ON_RESIZE)
+    wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxFULL_REPAINT_ON_RESIZE)
   local search = wx.wxTextCtrl(panel, wx.wxID_ANY, "\1",
     wx.wxDefaultPosition,
     -- make the text control a bit smaller on OSX
@@ -36,8 +42,6 @@ function CommandBarShow(params)
     wx.wxTE_PROCESS_ENTER + wx.wxTE_PROCESS_TAB + wx.wxNO_BORDER)
   local results = wx.wxScrolledWindow(panel, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(0, 0))
-
-  if not frame then frame = panel end
 
   local style, styledef = ide.config.styles, StylesGetDefault()
   local textcolor = wx.wxColour(unpack(style.text.fg or styledef.text.fg))
@@ -172,7 +176,10 @@ function CommandBarShow(params)
 
   local function onKeyDown(event)
     local keycode = event:GetKeyCode()
-    if event:GetModifiers() ~= wx.wxMOD_NONE then
+    if keycode == wx.WXK_RETURN then
+      onExit(linenow)
+      return
+    elseif event:GetModifiers() ~= wx.wxMOD_NONE then
       event:Skip()
       return
     elseif keycode == wx.WXK_UP then

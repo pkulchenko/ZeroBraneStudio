@@ -189,7 +189,7 @@ end
 local function generateAPIInfo(only)
   for i,api in pairs(apis) do
     if ((not only) or i == only) then
-      fillTips(api,"",i)
+      fillTips(api,"")
     end
   end
 end
@@ -226,8 +226,19 @@ local function resolveAssign(editor,tx)
   local c
   if (assigns) then
     -- find assign
-    local change = true
+    local change, n, stopat = true, 0, os.clock() + 0.2
     while (change) do
+      -- abort the check if the auto-complete is taking too long
+      if n > 50 and os.clock() > stopat then
+        if ide.config.acandtip.warning then
+          DisplayOutputLn("Warning: Auto-complete was aborted after taking too long to complete."
+            .. " Please report this warning along with the text you were typing to support@zerobrane.com.")
+        end
+        break
+      else
+        n = n + 1
+      end
+
       local classname = nil
       c = ""
       change = false
@@ -245,6 +256,8 @@ local function resolveAssign(editor,tx)
         end
       end
       tx = c
+      -- if there is any class duplication, abort the loop
+      if classname and select(2, c:gsub(classname, classname)) > 1 then break end
     end
   else
     c = tx
@@ -453,7 +466,7 @@ local function getAutoCompApiList(childs,fragment,method)
     return ret
   end
 
-  if cache[childs] then
+  if cache[childs] and cache[childs][fragment] then
     return cache[childs][fragment]
   end
 

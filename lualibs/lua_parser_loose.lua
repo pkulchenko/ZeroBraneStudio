@@ -9,10 +9,6 @@ local PARSE = {}
 local unpack = table.unpack or unpack
 local LEX = require 'lua_lexer_loose'
 
-local function warn(message, position)
-  io.stderr:write('WARNING: ', tostring(position), ': ', message, '\n')
-end
-
 --[[
  Loose parser.
 
@@ -47,11 +43,7 @@ function PARSE.parse_scope(lx, f, level)
   end
   local function scope_end(opt, lineinfo)
     local scope = #scopes
-    if scope <= 1 then
-      warn("'end' without opening block", lineinfo)
-    else
-      table.remove(scopes)
-    end
+    if scope > 1 then table.remove(scopes) end
     local inside_local = false
     for scope = scope-1, 1, -1 do
       if scopes[scope].inside_local then inside_local = true; break end
@@ -188,14 +180,30 @@ function PARSE.parse_scope(lx, f, level)
       end
       local scope = #scopes
       local inside_local = scopes[scope].inside_local ~= nil
+      -- either this is inside a table or it continues from a comma,
+      -- which may be a field assignment, so assume it's in a table
       if (scopes[scope].inside_table or cprev[1] == ',')
       and cnext.tag == 'Keyword' and cnext[1] == '=' then
-        -- table field
-        f('String', c[1], c.lineinfo, inside_local)
+        -- table field; table fields are tricky to handle during incremental
+        -- processing as "a = 1" may be either an assignment (in which case
+        -- 'a' is Id) or a field initialization (in which case it's a String).
+        -- Since it's not possible to decide between two cases in isolation,
+        -- this is not a good place to insert a break; instead, the break is
+        -- inserted at the location of the previous keyword, which allows
+        -- to properly handle those cases. The desired location of
+        -- the restart point is returned as the `nobreak` value.
+        f('String', c[1], c.lineinfo,
+          inside_local or cprev and cprev.tag == 'Keyword' and cprev.lineinfo)
       elseif cprev.tag == 'Keyword' and (cprev[1] == ':' or cprev[1] == '.') then
         f('String', c[1], c.lineinfo, true)
       else
-        f('Id', c[1], c.lineinfo, inside_local)
+        f('Id', c[1], c.lineinfo, true)
+        -- this looks like the left side of (multi-variable) assignment
+        while lx:peek().tag == 'Keyword' and lx:peek()[1] == ',' do
+          local c = lx:next(); if lx:peek().tag ~= 'Id' then break end
+          c = lx:next()
+          f('Id', c[1], c.lineinfo, true)
+        end
       end
     end
     
@@ -249,11 +257,7 @@ function PARSE.parse_scope_resolve(lx, f, vars)
       vars = newscope(vars, name, lineinfo)
     elseif op == 'EndScope' then
       local mt = getmetatable(vars)
-      if mt == nil then
-        warn("'end' without opening block.", lineinfo)
-      else
-        vars = mt.__index
-      end
+      if mt ~= nil then vars = mt.__index end
     elseif op == 'Id'
     or op == 'String' or op == 'FunctionCall' or op == 'Function' then
       -- Just make callback

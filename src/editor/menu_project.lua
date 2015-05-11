@@ -16,7 +16,7 @@ local uimgr = frame.uimgr
 
 local debugTab = {
   { ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file") },
-  { ID_RUNNOW, TR("Run as Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
+  { ID_RUNNOW, TR("Run As Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
   { ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file") },
   { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
   { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
@@ -26,6 +26,7 @@ local debugTab = {
   { ID_STEP, TR("Step &Into")..KSC(ID_STEP), TR("Step into") },
   { ID_STEPOVER, TR("Step &Over")..KSC(ID_STEPOVER), TR("Step over") },
   { ID_STEPOUT, TR("Step O&ut")..KSC(ID_STEPOUT), TR("Step out of the current function") },
+  { ID_RUNTO, TR("Run To Cursor")..KSC(ID_RUNTO), TR("Run to cursor") },
   { ID_TRACE, TR("Tr&ace")..KSC(ID_TRACE), TR("Trace execution showing each executed line") },
   { ID_BREAK, TR("&Break")..KSC(ID_BREAK), TR("Break execution at the next executed line of code") },
   { },
@@ -60,9 +61,11 @@ local function selectInterpreter(id)
 
   local changed = ide.interpreter ~= interpreters[id]
   if ide.interpreter and changed then
-    PackageEventHandle("onInterpreterClose", ide.interpreter) end
+    PackageEventHandle("onInterpreterClose", ide.interpreter)
+  end
   if interpreters[id] and changed then
-    PackageEventHandle("onInterpreterLoad", interpreters[id]) end
+    PackageEventHandle("onInterpreterLoad", interpreters[id])
+  end
 
   ide.interpreter = interpreters[id]
 
@@ -74,8 +77,12 @@ end
 
 function ProjectSetInterpreter(name)
   local id = IDget("debug.interpreter."..name)
-  if (not interpreters[id]) then return end
-  selectInterpreter(id)
+  if id and interpreters[id] then
+    selectInterpreter(id)
+  else
+    DisplayOutputLn(("Can't find interpreter '%s'; using the default interpreter instead.")
+      :format(name))
+  end
 end
 
 local function evSelectInterpreter(event)
@@ -96,7 +103,7 @@ function ProjectUpdateInterpreters()
   table.sort(names)
 
   interpreters = {}
-  for i, file in ipairs(names) do
+  for _, file in ipairs(names) do
     local inter = ide.interpreters[file]
     local id = ID("debug.interpreter."..file)
     inter.fname = file
@@ -121,7 +128,10 @@ end
 -- Project directory handling
 
 function ProjectUpdateProjectDir(projdir,skiptree)
+  -- strip trailing spaces as this may create issues with "path/ " on Windows
+  projdir = projdir:gsub("%s+$","")
   local dir = wx.wxFileName.DirName(FixDir(projdir))
+  dir:Normalize() -- turn into absolute path if needed
   if not wx.wxDirExists(dir:GetFullPath()) then return end
 
   projdir = dir:GetPath(wx.wxPATH_GET_VOLUME) -- no trailing slash
@@ -129,9 +139,8 @@ function ProjectUpdateProjectDir(projdir,skiptree)
   ide.config.path.projectdir = projdir ~= "" and projdir or nil
   frame:SetStatusText(projdir)
   frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
-  if (not skiptree) then
-    ide.filetree:updateProjectDir(projdir)
-  end
+  if (not skiptree) then ide.filetree:updateProjectDir(projdir) end
+  return true
 end
 
 local function projChoose(event)
@@ -144,13 +153,12 @@ local function projChoose(event)
   local filePicker = wx.wxDirDialog(frame, TR("Choose a project directory"),
     projectdir ~= "" and projectdir or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
   if filePicker:ShowModal(true) == wx.wxID_OK then
-    ProjectUpdateProjectDir(filePicker:GetPath())
+    return ProjectUpdateProjectDir(filePicker:GetPath())
   end
-  return true
+  return false
 end
 
 frame:Connect(ID_PROJECTDIRCHOOSE, wx.wxEVT_COMMAND_MENU_SELECTED, projChoose)
-frame:Connect(ID_PROJECTDIRCHOOSE, wx.wxEVT_COMMAND_BUTTON_CLICKED, projChoose)
 
 local function projFromFile(event)
   local editor = GetEditor()
@@ -187,12 +195,12 @@ local function getNameToRun(skipcheck)
     return
   end
 
-  local id = editor:GetId()
-  if not openDocuments[id].filePath then SetDocumentModified(id, true) end
+  local doc = ide:GetDocument(editor)
+  if not doc:GetFilePath() then doc:SetModified(true) end
   if not SaveIfModified(editor) then return end
   if ide.config.editor.saveallonrun then SaveAll(true) end
 
-  return wx.wxFileName(openDocuments[id].filePath)
+  return wx.wxFileName(ide:GetProjectStartFile() or doc:GetFilePath())
 end
 
 function ActivateOutput()
@@ -320,7 +328,6 @@ frame:Connect(ID_ATTACHDEBUG, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 frame:Connect(ID_ATTACHDEBUG, wx.wxEVT_UPDATE_UI,
   function (event)
-    local editor = GetEditor()
     event:Enable(ide.interpreter and ide.interpreter.fattachdebug and true or false)
     ide.frame.menuBar:Check(event:GetId(), debugger.listening and true or false)
   end)
@@ -358,6 +365,18 @@ frame:Connect(ID_DETACHDEBUG, wx.wxEVT_UPDATE_UI,
   function (event)
     event:Enable((debugger.server ~= nil) and (not debugger.running)
       and (not debugger.scratchpad))
+  end)
+
+frame:Connect(ID_RUNTO, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function ()
+    local editor = GetEditor()
+    debugger.runto(editor, editor:GetCurrentLine())
+  end)
+frame:Connect(ID_RUNTO, wx.wxEVT_UPDATE_UI,
+  function (event)
+    local editor = GetEditor()
+    event:Enable((debugger.server ~= nil) and (not debugger.running)
+      and (editor ~= nil) and (not debugger.scratchpad))
   end)
 
 frame:Connect(ID_STEP, wx.wxEVT_COMMAND_MENU_SELECTED,

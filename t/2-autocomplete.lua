@@ -27,6 +27,15 @@ ok(pcall(CreateAutoCompList, editor, "%1000"),
 
 editor:SetText('')
 editor:AddText([[
+  local tweaks = require("tweaks")
+  local require = tweaks.require
+  local modules = tweaks.modules]])
+
+ok(limit(10000, function() CreateAutoCompList(editor, "tweaks.modules") end),
+  "Auto-complete doesn't loop for recursive 'modules'.")
+
+editor:SetText('')
+editor:AddText([[
   result = result.list[1]  --> "does the test" test
   result.1
 ]])
@@ -51,6 +60,15 @@ editor:AddText([[
 
 ok(limit(10000, function() EditorAutoComplete(editor) end),
   "Auto-complete doesn't loop for classes that reference '...'.")
+
+editor:SetText('')
+editor:AddText([[
+  buf = str
+  str = buf..str
+  buf = buf..]])
+
+ok(limit(10000, function() EditorAutoComplete(editor) end),
+  "Auto-complete doesn't loop for string concatenations with self-reference.")
 
 -- create a valuetype self-reference
 -- this is to test "s = Scan(); s:" fragment
@@ -95,6 +113,14 @@ ok(not (CreateAutoCompList(editor, "pri.") or ""):match('print'),
   "Auto-complete doesn't offer 'print' after 'pri.'.")
 
 editor:SetText('')
+editor:AddText(' -- a = io\na:')
+editor:Colourise(0, -1) -- set proper styles
+editor.assignscache = false
+
+ok((CreateAutoCompList(editor, "a:") or "") == "",
+  "Auto-complete doesn't process assignments in comments.")
+
+editor:SetText('')
 editor:AddText('-- @tparam string foo\n')
 editor.assignscache = false
 
@@ -108,6 +134,25 @@ editor.assignscache = false
 ok((CreateAutoCompList(editor, "foo:") or ""):match('byte'),
   "Auto-complete offers methods for variable defined as '@param[type=string]'.")
 
+local strategy = ide.config.acandtip.strategy
+ide.config.acandtip.strategy = 1
+
+editor:SetText('')
+editor:AddText('local value\nprint(va')
+IndicateAll(editor)
+
+local status, res = pcall(CreateAutoCompList, editor, "va")
+ok(status and (res or ""):match('value'),
+  "Auto-complete offers methods for strategy=1' (1/2).")
+
+editor:SetText('')
+editor:AddText('local value\nprint(va')
+
+local status, res = pcall(CreateAutoCompList, editor, "va")
+ok(status and (res or ""):match('value'),
+  "Auto-complete offers methods for strategy=1' (2/2).")
+
 -- cleanup
+ide.config.acandtip.strategy = strategy
 ide:GetDocument(editor).isModified = false
 ClosePage()

@@ -140,8 +140,8 @@ return {
 
     while (line <= endline) do
       local ls = editor:PositionFromLine(line)
-      local s = bit.band(editor:GetStyleAt(ls),31)
       local tx = editor:GetLine(line) --= string
+      local s = bit.band(editor:GetStyleAt(ls + #tx:match("^%s*") + 2),31)
 
       -- check for assignments
       local sep = editor.spec.sep
@@ -164,6 +164,8 @@ return {
           :gsub("%b()","")
           :gsub("%b{}","")
           :gsub("%b[]",".0")
+          -- replace concatenation with addition to avoid misidentifying types
+          :gsub("%.%.+","+")
           -- remove comments; they may be in strings, but that's okay here
           :gsub("%-%-.*",""))
         if (typ and (typ:match(",") or typ:match("%sor%s") or typ:match("%sand%s"))) then

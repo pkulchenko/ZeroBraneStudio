@@ -15,8 +15,8 @@ local findMenu = wx.wxMenu{
   { ID_FIND, TR("&Find")..KSC(ID_FIND), TR("Find text") },
   { ID_FINDNEXT, TR("Find &Next")..KSC(ID_FINDNEXT), TR("Find the next text occurrence") },
   { ID_FINDPREV, TR("Find &Previous")..KSC(ID_FINDPREV), TR("Find the earlier text occurence") },
-  { ID_FINDSELECTNEXT, TR("Select and Find Next")..KSC(ID_FINDSELECTNEXT), TR("Select the word under cursor and find its next occurrence") },
-  { ID_FINDSELECTPREV, TR("Select and Find Previous")..KSC(ID_FINDSELECTPREV), TR("Select the word under cursor and find its previous occurrence") },
+  { ID_FINDSELECTNEXT, TR("Select And Find Next")..KSC(ID_FINDSELECTNEXT), TR("Select the word under cursor and find its next occurrence") },
+  { ID_FINDSELECTPREV, TR("Select And Find Previous")..KSC(ID_FINDSELECTPREV), TR("Select the word under cursor and find its previous occurrence") },
   { ID_REPLACE, TR("&Replace")..KSC(ID_REPLACE), TR("Find and replace text") },
   { },
   { ID_FINDINFILES, TR("Find &In Files")..KSC(ID_FINDINFILES), TR("Find text in files") },
@@ -64,8 +64,8 @@ frame:Connect(ID_FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
       editor:SetMainSelection(selection)
       editor:ShowPosEnforcePolicy(editor:GetCurrentPos())
     else
-      if findReplace:GetSelectedString() or findReplace:HasText() then
-        findReplace:FindString()
+      if findReplace:SetFind(findReplace:GetFind() or findReplace:GetSelection()) then
+        findReplace:Find()
       else
         findReplace:Show(false)
       end
@@ -82,8 +82,8 @@ frame:Connect(ID_FINDPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
       editor:SetMainSelection(selection)
       editor:ShowPosEnforcePolicy(editor:GetCurrentPos())
     else
-      if findReplace:GetSelectedString() or findReplace:HasText() then
-        findReplace:FindString(true) -- search up
+      if findReplace:SetFind(findReplace:GetFind() or findReplace:GetSelection()) then
+        findReplace:Find(true) -- search up
       else
         findReplace:Show(false)
       end
@@ -94,43 +94,18 @@ frame:Connect(ID_FINDPREV, wx.wxEVT_UPDATE_UI, onUpdateUISearchMenu)
 -- Select and Find behaves like Find if there is a current selection;
 -- if not, it selects a word under cursor (if any) and does find.
 
-local function selectWordUnderCaret(editor)
-  local pos = editor:GetCurrentPos()
-  local text = editor:GetTextRange( -- try to select a word under caret
-    editor:WordStartPosition(pos, true), editor:WordEndPosition(pos, true))
-  return #text > 0 and text or editor:GetTextRange( -- try to select a non-word under caret
-      editor:WordStartPosition(pos, false), editor:WordEndPosition(pos, false))
-end
 frame:Connect(ID_FINDSELECTNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
-    if editor:GetSelectionStart() ~= editor:GetSelectionEnd() then
-      ide.frame:AddPendingEvent(
-      wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_FINDNEXT))
-      return
-    end
-
-    local text = selectWordUnderCaret(editor)
-    if #text > 0 then
-      findReplace.findText = text
-      findReplace:FindString()
+    if findReplace:SetFind(findReplace:GetSelection() or findReplace:GetWordAtCaret()) then
+      findReplace:Find()
     end
   end)
 frame:Connect(ID_FINDSELECTNEXT, wx.wxEVT_UPDATE_UI, onUpdateUISearchMenu)
 
 frame:Connect(ID_FINDSELECTPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
-    if editor:GetSelectionStart() ~= editor:GetSelectionEnd() then
-      ide.frame:AddPendingEvent(
-      wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_FINDPREV))
-      return
-    end
-
-    local text = selectWordUnderCaret(editor)
-    if #text > 0 then
-      findReplace.findText = text
-      findReplace:FindString(true)
+    if findReplace:SetFind(findReplace:GetSelection() or findReplace:GetWordAtCaret()) then
+      findReplace:Find(true)
     end
   end)
 frame:Connect(ID_FINDSELECTPREV, wx.wxEVT_UPDATE_UI, onUpdateUISearchMenu)
@@ -170,6 +145,7 @@ local function navigateTo(default, selected)
         ed:EnsureVisibleEnforcePolicy(origline-1)
       end
 
+      local pindex = preview and nb:GetPageIndex(preview)
       if enter then
         local fline, sline, tabindex = unpack(t or {})
         local ed = ide:GetEditor()
@@ -195,7 +171,7 @@ local function navigateTo(default, selected)
             end
           end
         -- set line position in the (current) editor if requested
-        elseif text and text:find(special.LINE) then
+        elseif text and text:find(special.LINE..'(%d+)%s*$') then
           local toline = tonumber(text:match(special.LINE..'(%d+)'))
           if toline and ed then
             ed:GotoLine(toline-1)
@@ -204,16 +180,22 @@ local function navigateTo(default, selected)
           end
         elseif tabindex then -- switch to existing tab
           SetEditorSelection(tabindex)
-          if preview then -- close preview if not selected
-            local pindex = nb:GetPageIndex(preview)
-            if pindex ~= tabindex then ClosePage(pindex) end
+          if pindex and pindex ~= tabindex then ClosePage(pindex) end
+        -- load a new file (into preview if set)
+        elseif sline or text then
+          -- 1. use "text" if Ctrl/Cmd-Enter is used
+          -- 2. otherwise use currently selected file
+          -- 3. otherwise use "text"
+          local file = (wx.wxGetKeyState(wx.WXK_CONTROL) and text) or sline or text
+          local fullPath = MergeFullPath(ide:GetProject(), file)
+          if not LoadFile(fullPath, preview or nil)
+          and not ProjectUpdateProjectDir(fullPath) then
+            if pindex then ClosePage(pindex) end
           end
-        elseif sline then -- load a new file (into preview if set)
-          LoadFile(MergeFullPath(ide:GetProject(), sline), preview or nil, true)
         end
       else
         -- close preview
-        if preview then ClosePage(nb:GetPageIndex(preview)) end
+        if pindex then ClosePage(pindex) end
         -- restore original selection if canceled
         if nb:GetSelection() ~= selection then nb:SetSelection(selection) end
       end
@@ -299,21 +281,13 @@ local function navigateTo(default, selected)
             end
           end
         end
-      elseif text and text:find(special.LINE) then
+      elseif text and text:find(special.LINE..'(%d+)%s*$') then
         local toline = tonumber(text:match(special.LINE..'(%d+)'))
         if toline and ed then markLine(ed, toline) end
       elseif text and #text > 0 and projdir and #projdir > 0 then
         -- populate the list of files
-        if not files then
-          files = FileSysGetRecursive(projdir, true)
-          for k = #files, 1, -1 do
-            if IsDirectory(files[k]) then
-              table.remove(files, k)
-            else
-              files[k] = files[k]:gsub("^"..q(projdir), "")
-            end
-          end
-        end
+        files = files or FileSysGetRecursive(projdir, true, "*",
+          {sort = false, path = false, folder = false, skipbinary = true})
         local topscore
         for _, item in ipairs(CommandBarScoreItems(files, text, 100)) do
           local file, score = unpack(item)
@@ -365,7 +339,7 @@ local function navigateTo(default, selected)
       elseif file then
         -- skip binary files with unknown extensions
         if #ide:GetKnownExtensions(GetFileExt(file)) > 0
-        or not isBinary(FileRead(file, 2048)) then
+        or not IsBinary(FileRead(file, 2048)) then
           preview = preview or NewFile()
           preview:SetEvtHandlerEnabled(false)
           LoadFile(file, preview, true, true)

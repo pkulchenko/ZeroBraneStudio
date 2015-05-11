@@ -208,17 +208,6 @@ function GetEditorFileAndCurInfo(nochecksave)
   return fn,info
 end
 
--- Set if the document is modified and update the notebook page text
-function SetDocumentModified(id, modified, text)
-  local modpref, doc = '* ', openDocuments[id]
-  if not doc then return end
-  local pageText = text or notebook:GetPageText(doc.index):gsub("^"..EscapeMagic(modpref), "")
-
-  if modified then pageText = modpref..pageText end
-  openDocuments[id].isModified = modified
-  notebook:SetPageText(doc.index, pageText)
-end
-
 function EditorAutoComplete(editor)
   if not (editor and editor.spec) then return end
 
@@ -251,7 +240,9 @@ function EditorAutoComplete(editor)
   -- for example, if typing 'foo' in front of 'bar', 'foobar' is not offered
   local right = linetx:sub(localpos+1,#linetx):match("^([%a_]+[%w_]*)")
   if userList and right then
-    userList = userList:gsub("%f[%w_]"..lt..right.."%f[%W]",""):gsub("  +"," ")
+    -- remove all spaces that may be left if "foo" removed from "foo foo"
+    userList = (userList:gsub("%f[%w_]"..lt..right.."%f[%W]","")
+      :gsub("^ +",""):gsub(" +$",""):gsub("  +"," "))
   end
 
   -- don't show the list if it only suggests what's already typed
@@ -517,7 +508,7 @@ function IndicateAll(editor, lines)
 
   -- this function can be called for an editor tab that is already closed
   -- when there are still some pending events for it, so handle it.
-  if not pcall(function() editor:GetId() end) then return end
+  if not ide:IsValidCtrl(editor) then return end
 
   -- if markvars is not set in the spec, nothing else to do
   if not (editor.spec and editor.spec.marksymbols) then return end
@@ -629,8 +620,10 @@ function IndicateAll(editor, lines)
 
       if indic.varmasking then IndicateOne(indicator.MASKING, lineinfo, #name) end
     end
-    if lineinfo and not nobreak and (op == 'Statement' or op == 'String') and TimeGet()-s > canwork then
-      delayed[editor] = {lineinfo, vars}
+    -- in some rare cases `nobreak` may be a number indicating a desired
+    -- position from which to start in case of a break
+    if lineinfo and nobreak ~= true and (op == 'Statement' or op == 'String') and TimeGet()-s > canwork then
+      delayed[editor] = {tonumber(nobreak) or lineinfo, vars}
       break
     end
   end
@@ -660,19 +653,18 @@ end
 -- ----------------------------------------------------------------------------
 -- Create an editor
 function CreateEditor(bare)
-  local editor = wxstc.wxStyledTextCtrl(notebook, editorID,
-    wx.wxDefaultPosition, wx.wxSize(0, 0),
-    wx.wxBORDER_NONE)
+  local editor = ide:CreateStyledTextCtrl(notebook, editorID,
+    wx.wxDefaultPosition, wx.wxSize(0, 0), wx.wxBORDER_NONE)
 
   editorID = editorID + 1 -- increment so they're always unique
 
   editor.matchon = false
   editor.assignscache = false
-  editor.autocomplete = false
   editor.bom = false
   editor.jumpstack = {}
   editor.ctrlcache = {}
   editor.tokenlist = {}
+  editor.onidle = {}
   -- populate cache with Ctrl-<letter> combinations for workaround on Linux
   -- http://wxwidgets.10942.n7.nabble.com/Menu-shortcuts-inconsistentcy-issue-td85065.html
   for id, shortcut in pairs(ide.config.keymap) do
@@ -786,31 +778,13 @@ function CreateEditor(bare)
     editor:AutoCompStops([[ \n\t=-+():.,;*/!"'$%&~'#°^@?´`<>][|}{]])
   end
 
-  function editor:GotoPosEnforcePolicy(pos)
-    self:GotoPos(pos)
-    self:EnsureVisibleEnforcePolicy(self:LineFromPosition(pos))
-  end
-
-  local function getMarginWidth(editor)
-    local width = 0
-    for m = 0, 7 do width = width + editor:GetMarginWidth(m) end
-    return width
-  end
-
-  function editor:ShowPosEnforcePolicy(pos)
-    local line = self:LineFromPosition(pos)
-    self:EnsureVisibleEnforcePolicy(line)
-    if edcfg.usewrap then return end -- skip the rest if line wrapping is on
-    local xwidth = self:GetClientSize():GetWidth() - getMarginWidth(editor)
-    local xoffset = self:GetTextExtent(self:GetLine(line):sub(1, pos-self:PositionFromLine(line)+1))
-    self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
-  end
-
   function editor:GetTokenList() return self.tokenlist end
   function editor:ResetTokenList() self.tokenlist = {}; return self.tokenlist end
 
   function editor:SetupKeywords(...) return SetupKeywords(self, ...) end
   function editor:ValueFromPosition(pos) return getValAtPosition(self, pos) end
+
+  function editor:DoWhenIdle(func) table.insert(self.onidle, func) end
 
   -- GotoPos should work by itself, but it doesn't (wx 2.9.5).
   -- This is likely because the editor window hasn't been refreshed yet,
@@ -850,13 +824,12 @@ function CreateEditor(bare)
       if marginno == margin.MARKER then
         DebuggerToggleBreakpoint(editor, line)
       elseif marginno == margin.FOLD then
+        local header = bit.band(editor:GetFoldLevel(line),
+          wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
         if wx.wxGetKeyState(wx.WXK_SHIFT) and wx.wxGetKeyState(wx.WXK_CONTROL) then
-          FoldSome()
-        else
-          local level = editor:GetFoldLevel(line)
-          if HasBit(level, wxstc.wxSTC_FOLDLEVELHEADERFLAG) then
-            editor:ToggleFold(line)
-          end
+          editor:FoldSome()
+        elseif header then
+          editor:ToggleFold(line)
         end
       end
     end)
@@ -867,14 +840,15 @@ function CreateEditor(bare)
         editor.assignscache = false
       end
       local evtype = event:GetModificationType()
+      local pos = event:GetPosition()
+      local firstLine = editor:LineFromPosition(pos)
       local inserted = bit.band(evtype, wxstc.wxSTC_MOD_INSERTTEXT) ~= 0
       local deleted = bit.band(evtype, wxstc.wxSTC_MOD_DELETETEXT) ~= 0
       if (inserted or deleted) then
         SetAutoRecoveryMark()
 
-        local firstLine = editor:LineFromPosition(event:GetPosition())
         local linesChanged = inserted and event:GetLinesAdded() or 0
-        table.insert(editor.ev, {event:GetPosition(), linesChanged})
+        table.insert(editor.ev, {pos, linesChanged})
         DynamicWordsAdd(editor, nil, firstLine, linesChanged)
       end
 
@@ -883,29 +857,37 @@ function CreateEditor(bare)
 
       if (beforeInserted or beforeDeleted) then
         -- unfold the current line being changed if folded
-        local firstLine = editor:LineFromPosition(event:GetPosition())
-        if not editor:GetFoldExpanded(firstLine) then editor:ToggleFold(firstLine) end
+        local lastLine = editor:LineFromPosition(pos+event:GetLength())
+        if not editor:GetFoldExpanded(firstLine)
+        or not editor:GetLineVisible(firstLine)
+        or not editor:GetLineVisible(lastLine) then
+          editor:ToggleFold(firstLine)
+          for line = firstLine, lastLine do
+            if not editor:GetLineVisible(line) then editor:ToggleFold(line) end
+          end
+        end
       end
 
       -- hide calltip/auto-complete after undo/redo/delete
       local undodelete = (wxstc.wxSTC_MOD_DELETETEXT
         + wxstc.wxSTC_PERFORMED_UNDO + wxstc.wxSTC_PERFORMED_REDO)
       if bit.band(evtype, undodelete) ~= 0 then
-        if editor:CallTipActive() then editor:CallTipCancel() end
-        if editor:AutoCompActive() then editor:AutoCompCancel() end
+        editor:DoWhenIdle(function(editor)
+            if editor:CallTipActive() then editor:CallTipCancel() end
+            if editor:AutoCompActive() then editor:AutoCompCancel() end
+          end)
       end
       
       if ide.config.acandtip.nodynwords then return end
       -- only required to track changes
 
       if beforeDeleted then
-        local pos = event:GetPosition()
         local text = editor:GetTextRange(pos, pos+event:GetLength())
         local _, numlines = text:gsub("\r?\n","%1")
-        DynamicWordsRem(editor,nil,editor:LineFromPosition(pos), numlines)
+        DynamicWordsRem(editor,nil,firstLine, numlines)
       end
       if beforeInserted then
-        DynamicWordsRem(editor,nil,editor:LineFromPosition(event:GetPosition()), 0)
+        DynamicWordsRem(editor,nil,firstLine, 0)
       end
     end)
 
@@ -943,7 +925,9 @@ function CreateEditor(bare)
 
           if edcfg.smartindent
           -- don't apply smartindent to multi-line comments or strings
-          and not (editor.spec.iscomment[style] or editor.spec.isstring[style])
+          and not (editor.spec.iscomment[style]
+            or editor.spec.isstring[style]
+            or (MarkupIsAny and MarkupIsAny(style)))
           and editor.spec.isdecindent and editor.spec.isincindent then
             local closed, blockend = editor.spec.isdecindent(linedone)
             local opened = editor.spec.isincindent(linedone)
@@ -976,9 +960,9 @@ function CreateEditor(bare)
 
       elseif ide.config.autocomplete then -- code completion prompt
         local trigger = linetxtopos:match("["..editor.spec.sep.."%w_]+$")
-        -- make sure .autocomplete is never `nil` or editor.autocomplete fails
-        editor.autocomplete = trigger and (#trigger > 1 or trigger:match("["..editor.spec.sep.."]"))
-          and true or false
+        if trigger and (#trigger > 1 or trigger:match("["..editor.spec.sep.."]")) then
+          editor:DoWhenIdle(function(editor) EditorAutoComplete(editor) end)
+        end
       end
     end)
 
@@ -1066,12 +1050,14 @@ function CreateEditor(bare)
 
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED,
     function ()
-      SetDocumentModified(editor:GetId(), false)
+      local doc = ide:GetDocument(editor)
+      if doc then doc:SetModified(false) end
     end)
 
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTLEFT,
     function ()
-      SetDocumentModified(editor:GetId(), true)
+      local doc = ide:GetDocument(editor)
+      if doc then doc:SetModified(true) end
     end)
 
   -- "updateStatusText" should be called in UPDATEUI event, but it creates
@@ -1104,6 +1090,8 @@ function CreateEditor(bare)
   local alreadyProcessed = 0
   editor:Connect(wxstc.wxEVT_STC_UPDATEUI,
     function (event)
+      PackageEventHandle("onEditorUpdateUI", editor, event)
+
       -- some of UPDATEUI events are triggered by blinking cursor, and since
       -- there are no changes, the rest of the processing can be skipped;
       -- the reason for `alreadyProcessed` is that it is not possible
@@ -1118,8 +1106,6 @@ function CreateEditor(bare)
          alreadyProcessed = 0
       end
       alreadyProcessed = alreadyProcessed + 1
-
-      PackageEventHandle("onEditorUpdateUI", editor, event)
 
       if ide.osname ~= 'Windows' then updateStatusText(editor) end
 
@@ -1145,11 +1131,7 @@ function CreateEditor(bare)
 
   editor:Connect(wx.wxEVT_IDLE,
     function (event)
-      -- show auto-complete if needed
-      if editor.autocomplete then
-        EditorAutoComplete(editor)
-        editor.autocomplete = false
-      end
+      while #editor.onidle > 0 do table.remove(editor.onidle)(editor) end
     end)
 
   editor:Connect(wx.wxEVT_LEFT_DOWN,
@@ -1204,8 +1186,15 @@ function CreateEditor(bare)
       local first, last = 0, notebook:GetPageCount()-1
       if PackageEventHandle("onEditorKeyDown", editor, event) == false then
         -- this event has already been handled
-      elseif keycode == wx.WXK_ESCAPE and ide.frame:IsFullScreen() then
-        ShowFullScreen(false)
+      elseif keycode == wx.WXK_ESCAPE then
+        if editor:CallTipActive() or editor:AutoCompActive() then
+          event:Skip()
+        elseif ide.findReplace:IsShown() then
+          ide.findReplace:Hide()
+          editor:SetFocus()
+        elseif ide:GetMainFrame():IsFullScreen() then
+          ShowFullScreen(false)
+        end
       -- Ctrl-Home and Ctrl-End don't work on OSX with 2.9.5+; fix it
       elseif ide.osname == 'Macintosh' and ide.wxver >= "2.9.5"
         and (mod == wx.wxMOD_RAW_CONTROL or mod == (wx.wxMOD_RAW_CONTROL + wx.wxMOD_SHIFT))
@@ -1228,18 +1217,7 @@ function CreateEditor(bare)
         and (mod == wx.wxMOD_NONE) then
         -- Delete and Backspace behave the same way for selected text
         if #(editor:GetSelectedText()) > 0 then
-          local length = editor:GetLength()
-          local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
-          editor:Clear() -- remove selected fragments
-
-          -- check if the modification has failed, which may happen
-          -- if there is "invisible" text in the selected fragment.
-          -- if there is only one selection, then delete manually.
-          if length == editor:GetLength() and selections == 1 then
-            editor:SetTargetStart(editor:GetSelectionStart())
-            editor:SetTargetEnd(editor:GetSelectionEnd())
-            editor:ReplaceTarget("")
-          end
+          editor:ClearAny()
         else
           local pos = editor:GetCurrentPos()
           if keycode == wx.WXK_BACK then

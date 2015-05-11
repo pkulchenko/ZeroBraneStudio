@@ -1,5 +1,183 @@
 # ZeroBrane Studio Changelog
 
+## v1.00 (Mar 13 2015)
+
+### Highlights
+  - Added directory mapping to the project tree (closes #223).
+  - Added `Run to Cursor` (closes #413).
+  - Added support to set/unset start file for a project (closes #411).
+  - Added opening/creating file from the command bar (#31).
+  - Added `staticanalyzer.infervalue` to enable deeper/slower analysis (#414).
+  - Updated Corona API for v2015.2576.
+
+### Improvements
+  - Added `staticanalyzer.infervalue` to enable deeper/slower analysis (#414).
+  - Added project path in the error reporting for love2d/corona interpreters.
+  - Added an example with enabling Emacs bindings in the editor.
+  - Added Russian translations for new messages (#70).
+  - Added a warning on class resolution taking too much time in auto-complete.
+  - Added check for empty/comment lines when breakpoints are set.
+  - Added directory mapping to the project tree (closes #223).
+  - Added `Run to Cursor` (closes #413).
+  - Added document method `GetTabText` (#166).
+  - Added showing love2d console when requested.
+  - Added support to set/unset start file for a project (closes #411).
+  - Added requesting attention for debugger even when the file is not activated.
+  - Added reporting of location in more cases when debugging is suspended.
+  - Added starting debugging even when the file is not opened in the IDE.
+  - Added switching project directory from the command bar (#31).
+  - Added trimming of trailing spaces in the directory name when switching projects.
+  - Added closing preview if the file failed to load in commandbar (#31).
+  - Added handling of `Ctrl/Cmd-Enter` in commandbar to force open file (#31).
+  - Added skipping loading files with empty and directory names.
+  - Added trimming of trailing spaces in the file name when loading a file.
+  - Added file selection in the project tree after saving a new file.
+  - Added opening/creating file from the command bar (#31).
+  - Disabled menu item for renaming/editing for mapped directories (#223).
+  - Disabled field checks for local parameters in staic analyzer (closes #421).
+  - Improved static analyzer to handle more cases with `infervalue` set (#414).
+  - Refactored use of image constants in the project tree.
+  - Refactored document modification tracking to remove `SetDocumentModified`.
+  - Refactored path normalization for project directory.
+  - Updated Corona API for v2015.2576.
+  - Updated static analyzer output formatting.
+  - Updated analyzer to also check value of `pairs` parameter (#414).
+  - Updated `debugging suspended` message to not trigger with `runonstart`.
+  - Updated messages in interpreters to fix line endings.
+  - Updated lettercase in menu items for consistency.
+  - Updated UpdateUI handling to fix multi-view refresh, as in DocumentMap (#352).
+  - Updated Outline to use editor tab text (instead of a file name).
+  - Updated message on failure to start debugging to add the file name.
+  - Updated `debugging suspended` message to put location in quotes.
+  - Updated line check in command bar to not trigger on Windows file names.
+  - updated glewgl api (glew 1.12.0)
+
+### Fixes
+  - Fixed analyzer to check value of `ipairs` parameter (fixes #414).
+  - Fixed OS detection on Linux that sets `DYLD_LIBRARY_PATH` (fixes #417).
+  - Fixed saving auto-recovery record with no editor tabs opened (fixes #418).
+  - Fixed looping in auto-complete when processing recursive assignments.
+  - Fixed filename used in the recovery message.
+  - Fixed Output/Console window to stay shown after failure to start debugging.
+  - Fixed an issue with search initiated from Output/Console panels (fixes #406).
+  - Fixed auto-complete for non-default `acandtip.strategy` values (fixed #409).
+  - Fixed loading file with absolute name and line number (fixes #408).
+
+## v0.95 (Jan 30 2015)
+
+### Highlights
+  - Added fuzzy search with `Go To File`, `Go To Symbol`, `Go To Line`, and `Insert Library Function`.
+  - Added auto-complete support for LDoc '@tparam' and '@param[type=...]'.
+  - Added armhf architecture support (thanks to Ard van Breemen).
+  - Updated static analyzer to support `goto`/labels and bitops for Lua 5.2/5.3.
+  - Updated internal parser to support Lua 5.2/5.3 syntax.
+  - Updated Mobdebug to improve Lua 5.3 compatibility (thanks to Andrew Starks).
+  - Update API descriptions with functions new in Lua 5.3.
+
+### Special thanks
+  - To [Ard van Breemen](https://github.com/ardje) for armhf architecture support.
+  - To [Evandro Costa](https://github.com/evandro-costa) for Brazilian Portuguese (pt-br) translation.
+  - To [Andrew Starks](https://github.com/andrewstarks) for Lua 5.3 compatibility improvements.
+  - To [Alexis Jarreau](https://github.com/Fringale) for French translation update.
+  - To [Leo Bartoloni](https://github.com/bartoleo) for Italian translation update.
+  - To [riidom](https://github.com/riidom) for German translation update.
+
+### Improvements
+  - Added showing/hiding Output/Console panel during debugging.
+  - Added `bordersize` to configure sash size.
+  - Added package `LoadFile` method (#166).
+  - Added Russian translation for new messages (#70).
+  - Added syntax highlighting for functions new in Lua 5.3.
+  - Added `commandbar.prefilter` to commandbar to improve performance (#31).
+  - Added custom formatting for APIs.
+  - Added `Insert Library Function` to `Navigate` menu.
+  - Added hiding tooltip/auto-complete popup after undo/redo/delete operations.
+  - Added `api` handling to the config to support custom APIs.
+  - Added Lapis and Moonscript debugging links to README.
+  - Added `Contributing` section to README.
+  - Added LICENSE link to README.
+  - Added Lua 5.3 links to README; updated links to remove '.html'.
+  - Added `PgUp` and `PgDn` navigation for commandbar (#31).
+  - Added auto-complete support for LDoc '@tparam' and '@param[type=...]'.
+  - Added Brazilian Portuguese (pt-br) translation.
+  - Added showing the symbol under cursor in `Go To Symbol` (#385).
+  - Added `editor:ValueFromPosition` method (#166).
+  - Added `Go To Symbol` support to the commandbar (#31, closes #385).
+  - Allowed renaming of files with different case in the project tree.
+  - Added update of file name in the Outline when editor tab is updated (#337).
+  - Added check for `styles` being reset in the config file (closes #383).
+  - Added loading file from project directory with "proj file" on command line.
+  - Added skipping of binary files in commandbar preview (#31).
+  - Added CONTRIBUTING file.
+  - Added clearing Output window before showing Find-in-Files results.
+  - Added default values for Outline config settings (#337).
+  - Added package `GetProjectNotebook` method (#166).
+  - Added saving Outline tab configuration in the Project notebook (#337).
+  - Added `outline.sort` option to sort items in the outline (#337).
+  - Added `outline.showflat` option to show flat outline (#337).
+  - Added package `GetOutlineTree` method (#166).
+  - Add support for armhf architecture
+  - Added document `Save` method (#166).
+  - Added `init.lua` to the search path (fixes `require 'dist'`).
+  - Added forced garbage collection when switching from the app.
+  - Added penalty for missing characters in fuzzy search (#31).
+  - Added line navigation to `Navigate` menu (#31).
+  - Added handling of line numbers in command bar (#31).
+  - Added caching to improve commandbar performance on large folders (#31).
+  - Added setting explicit focus on preview tab in commandbar (#31).
+  - Added preview on first selection in commandbar (#31).
+  - Added file preview to commandbar (#31).
+  - Added fuzzy search for files in commandbar (closes #31).
+  - Added displaying the list of current tabs for commandbar (#31).
+  - Added commandbar prototype for file navigation (#31).
+  - Added reset of tokens when editor content is reloaded (#337).
+  - Enabled html and C/cpp specs by default (#395).
+  - Improved handling of complex types in LDoc expressions in auto-complete.
+  - Improved failed search 'shake' visualization by forcing window redraw.
+  - Improved command line file check for relative files on Windows.
+  - Split console output into shorter lines to improve memory usage and handling.
+  - Renamed `debugger.stackmax*` settings to `debugger.maxdata*`.
+  - Removed double check for invalid UTF-8 output in console.
+  - Refactored ID handling to allow using `ID.COMMENT` in config files.
+  - Removed `wxwidgets` from the list of default APIs for Lua interpreters.
+  - Refactored handling of special symbols in commandbar (#31).
+  - Removed border from tree controls (#305).
+  - Updated language files with new messages (#70).
+  - Update API descriptions with functions new in Lua 5.3.
+  - Updated loose parser to support Lua 5.2+ labels.
+  - Updated loose parser to support `goto` and Lua 5.3 bitops.
+  - Updated Metalua to support Lua 5.3 bitops.
+  - Updated Metalua to support `goto`/labels in static analysis for Lua 5.2/5.3.
+  - Upgraded Mobdebug (v0.611) to fix tooltips during Corona debugging (closes #387).
+  - Updated `CommandBarShow` to accept text fragment to select (#31).
+  - Updated `GetKnownExtensions` to accept an optional extension to match against.
+  - Updated `FileRead` to accept optional length.
+  - Updated layout settings to use constants and new package API.
+  - Updated parser to avoid splitting `foo.bar` in incremental processing.
+  - Upgraded MobDebug (0.61) to add `basedir` support.
+  - Updated status refresh to only happen for the active editor.
+  - Updated toolbar UI checks to happen when running/debugging (#352).
+  - Updated Corona integration to hide console on OSX (2014.2393+).
+  - Upgraded Mobdebug to 0.613 to improve Lua 5.3 compatibility (#401); thanks to @andrewstarks.
+  - Updated usage instructions in README.
+  - Update de.lua
+
+### Incompatibilities
+  - Renamed `debugger.stackmax*` settings to `debugger.maxdata*`.
+  - Removed `wxwidgets` from the list of default APIs for Lua interpreters; use `api` config setting to include it.
+
+### Fixes
+  - Fixed search navigation to shift horizontally when `usewrap` is off.
+  - Fixed indentation for lines with mixed string separators (#324, #388).
+  - Fixed indentation for lines with escaped slashes (#324, closes #388).
+  - Fixed find-and-replace to replace in already selected fragment if matched.
+  - Fixed refresh of files in command bar preview when selected (#31).
+  - Fixed recovery of empty (`untitled`) tabs.
+  - Fixed an auto-complete issue after `repeat until <var>`.
+  - Fixed setting focus to the editor in commandbar with one tab (#31).
+  - Fixed auto-complete after text not separated by a whitespace or bracket.
+  - Fixed an error when disabling outline by setting `outlineinactivity=nil`.
+
 ## v0.90 (Nov 08 2014)
 
 ### Highlights

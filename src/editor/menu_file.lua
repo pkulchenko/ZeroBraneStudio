@@ -185,12 +185,14 @@ frame:Connect(ID_NEW, wx.wxEVT_COMMAND_MENU_SELECTED, function() return NewFile(
 frame:Connect(ID_OPEN, wx.wxEVT_COMMAND_MENU_SELECTED, OpenFile)
 frame:Connect(ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    local editor = GetEditor()
-    SaveFile(editor, openDocuments[editor:GetId()].filePath)
+    local editor = ide.findReplace:CanSave(GetEditorWithFocus()) or GetEditor()
+    local doc = ide:GetDocument(editor)
+    SaveFile(editor, doc and doc:GetFilePath() or nil)
   end)
 frame:Connect(ID_SAVE, wx.wxEVT_UPDATE_UI,
   function (event)
-    event:Enable(EditorIsModified(GetEditor()))
+    event:Enable(ide.findReplace:CanSave(GetEditorWithFocus())
+      and true or EditorIsModified(GetEditor()))
   end)
 
 frame:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -220,11 +222,18 @@ frame:Connect(ID_SAVEALL, wx.wxEVT_UPDATE_UI,
 
 frame:Connect(ID_CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    ClosePage() -- this will find the current editor tab
+    local editor = GetEditorWithFocus()
+    local nb = ide:GetOutputNotebook()
+    local index = editor and nb:GetPageIndex(editor)
+    if index and ide.findReplace:IsPreview(editor) and index >= 0 then
+      nb:DeletePage(index) -- close preview tab
+    else
+      ClosePage() -- this will find the current editor tab
+    end
   end)
 frame:Connect(ID_CLOSE, wx.wxEVT_UPDATE_UI,
   function (event)
-    event:Enable(GetEditor() ~= nil)
+    event:Enable(ide.findReplace:IsPreview(GetEditorWithFocus()) or GetEditor() ~= nil)
   end)
 
 frame:Connect(ID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED,

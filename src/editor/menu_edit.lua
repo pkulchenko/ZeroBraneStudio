@@ -61,7 +61,10 @@ local function onUpdateUIEditMenu(event)
   }
   local menu_id = event:GetId()
   local enable =
-    menu_id == ID_PASTE and editor:CanPaste() or
+    -- pasting is allowed when the document is not read-only and the selection
+    -- (if any) has no protected text; since pasting handles protected text,
+    -- use GetReadOnly() instead of CanPaste()
+    menu_id == ID_PASTE and (not editor:GetReadOnly()) or
     menu_id == ID_UNDO and editor:CanUndo() or
     menu_id == ID_REDO and editor:CanRedo() or
     alwaysOn[menu_id]
@@ -90,13 +93,22 @@ local function onEditMenu(event)
     end
   end
 
+  local spos, epos = editor:GetSelectionStart(), editor:GetSelectionEnd()
   if menu_id == ID_CUT then
-    if editor:GetSelectionStart() == editor:GetSelectionEnd()
-      then editor:LineCut() else editor:Cut() end
+    if spos == epos then editor:LineCopy() else editor:Copy() end
+    if spos == epos then
+      local line = editor:LineFromPosition(spos)
+      spos, epos = editor:PositionFromLine(line), editor:PositionFromLine(line+1)
+      editor:SetSelectionStart(spos)
+      editor:SetSelectionEnd(epos)
+    end
+    if spos ~= epos then editor:ClearAny() end
   elseif menu_id == ID_COPY then
-    if editor:GetSelectionStart() == editor:GetSelectionEnd()
-      then editor:LineCopy() else editor:Copy() end
-  elseif menu_id == ID_PASTE then editor:Paste()
+    if spos == epos then editor:LineCopy() else editor:Copy() end
+  elseif menu_id == ID_PASTE then
+    -- first clear the text in case there is any hidden markup
+    if spos ~= epos then editor:ClearAny() end
+    editor:Paste()
   elseif menu_id == ID_SELECTALL then editor:SelectAll()
   elseif menu_id == ID_UNDO then editor:Undo()
   elseif menu_id == ID_REDO then editor:Redo()
@@ -116,12 +128,6 @@ for _, event in pairs({
 }) do
   frame:Connect(event, wx.wxEVT_UPDATE_UI, onUpdateUIEditorInFocus)
 end
-
-frame:Connect(ID_FOLD, wx.wxEVT_UPDATE_UI,
-  function(event)
-    local editor = GetEditorWithFocus(GetEditor())
-    event:Enable(ide.config.editor.fold and editor ~= nil)
-  end)
 
 frame:Connect(ID_COMMENT, wx.wxEVT_UPDATE_UI,
   function(event)
@@ -267,11 +273,11 @@ local function reIndent(editor, buf)
   local decindent, incindent = editor.spec.isdecindent, editor.spec.isincindent
   if not (decindent and incindent) then return end
 
-  local line = editor:LineFromPosition(editor:GetSelectionStart())
+  local edline = editor:LineFromPosition(editor:GetSelectionStart())
   local indent = 0
   local text = ''
   -- find the last non-empty line in the previous block (if any)
-  for n = line-1, 1, -1 do
+  for n = edline-1, 1, -1 do
     indent = editor:GetLineIndentation(n)
     text = editor:GetLine(n)
     if text:match('[^\r\n]') then break end
@@ -283,9 +289,12 @@ local function reIndent(editor, buf)
   local indents = {}
   local isstatic = {}
   for line = 1, #buf+1 do
-    local style = bit.band(editor:GetStyleAt(editor:PositionFromLine(line-1)), 31)
+    local ls = editor:PositionFromLine(edline+line-1)
+    local style = bit.band(editor:GetStyleAt(ls), 31)
     -- don't reformat multi-line comments or strings
-    isstatic[line] = editor.spec.iscomment[style] or editor.spec.isstring[style]
+    isstatic[line] = (editor.spec.iscomment[style]
+      or editor.spec.isstring[style]
+      or (MarkupIsAny and MarkupIsAny(style)))
     if not isstatic[line] or line == 1 or not isstatic[line-1] then
       local closed, blockend = decindent(text)
       local opened = incindent(text)
@@ -320,8 +329,13 @@ frame:Connect(ID_REINDENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     processSelection(editor, function(buf) reIndent(editor, buf) end)
   end)
 
+frame:Connect(ID_FOLD, wx.wxEVT_UPDATE_UI,
+  function(event)
+    local editor = GetEditorWithFocus()
+    event:Enable(editor and editor:CanFold() or false)
+  end)
 frame:Connect(ID_FOLD, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) FoldSome() end)
+  function (event) GetEditorWithFocus():FoldSome() end)
 
 local BOOKMARK_MARKER = StylesGetMarker("bookmark")
 local BOOKMARK_MARKER_VALUE = 2^BOOKMARK_MARKER

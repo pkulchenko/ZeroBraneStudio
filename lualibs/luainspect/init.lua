@@ -703,12 +703,31 @@ function M.infer_values(top_ast, tokenlist, src, report)
       if #iter_ast == 1 and iter_ast[1].tag == 'Call' and iter_ast[1][1].value == ipairs then
         for i, var_ast in ipairs(varlist_ast) do
           if i == 1 then set_value(var_ast, T.number)
-          elseif i == 2 then set_value(var_ast, T.universal)
+          -- handle the type of the value as the type of the first element
+          -- in the table that is a parameter for ipairs
+          elseif i == 2 then
+            local t_ast = iter_ast[1][2]
+            local value = T.universal
+            if (known(t_ast.value) or T.istabletype[t_ast.value]) then
+              local ok; ok, value = pzcall(tindex, {t_ast, {tag='Number', 1}}, t_ast.value, 1)
+              if not ok then value = T.error(t_ast.value) end
+            end
+            set_value(var_ast, value)
           else set_value(var_ast, nil) end
         end
       elseif #iter_ast == 1 and iter_ast[1].tag == 'Call' and iter_ast[1][1].value == pairs then
+        local t_ast = iter_ast[1][2]
+        local value = T.universal
+        local key
+        if t_ast.value and (known(t_ast.value) or T.istabletype[t_ast.value]) then
+          key = next(t_ast.value)
+          local ok; ok, value = pzcall(tindex, {t_ast, {tag='String', key}}, t_ast.value, key)
+          if not ok then value = T.error(t_ast.value) end
+        end
+
         for i, var_ast in ipairs(varlist_ast) do
-          if i <= 2 then set_value(var_ast, T.number)
+          if i == 1 then set_value(var_ast, type(key))
+          elseif i == 2 then set_value(var_ast, value)
           else set_value(var_ast, nil) end
         end
       else -- general case, unknown iterator
@@ -820,8 +839,7 @@ function M.infer_values(top_ast, tokenlist, src, report)
         local x
         local val = function() x=nil end
         local fpos = LA.ast_pos_range(ast, tokenlist)
-        local source = tostring(ast.lineinfo.first):gsub('<C|','<'):match('<([^|]+)') -- a HACK? relies on AST lineinfo
-        local linenum = LA.pos_to_linecol(fpos, src)
+        local source, linenum = tostring(ast.lineinfo.first):gsub('<C|','<'):match('<([^|]+)|L(%d+)') -- a HACK? relies on AST lineinfo
         local retvals
         if ENABLE_RETURN_ANALYSIS then
           retvals = get_func_return_values(ast) --Q:move outside of containing conditional?

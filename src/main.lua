@@ -4,8 +4,13 @@
 
 -- put bin/ and lualibs/ first to avoid conflicts with included modules
 -- that may have other versions present somewhere else in path/cpath.
+local function isproc()
+  local file = io.open("/proc")
+  if file then file:close() end
+  return file ~= nil
+end
 local iswindows = os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')
-local islinux = not iswindows and io.open("/proc")
+local islinux = not iswindows and isproc()
 local arch = "x86" -- use 32bit by default
 local unpack = table.unpack or unpack
 
@@ -36,6 +41,8 @@ dofile "src/util.lua"
 -- IDE
 --
 ide = {
+  MODPREF = "* ",
+  MAXMARGIN = 4,
   config = {
     path = {
       projectdir = "",
@@ -64,6 +71,7 @@ ide = {
       port = nil,
       runonstart = nil,
       redirect = nil,
+      requestattention = true,
       maxdatalength = 400,
       maxdatanum = 400,
       maxdatalevel = 3,
@@ -88,6 +96,17 @@ ide = {
     },
     commandbar = {
       prefilter = 250, -- number of records after which to apply filtering
+    },
+    staticanalyzer = {
+      infervalue = false, -- off by default as it's a slower mode
+    },
+    search = {
+      autocomplete = true,
+      contextlinesbefore = 2,
+      contextlinesafter = 2,
+      showaseditor = true,
+      zoom = 0,
+      autohide = false,
     },
 
     toolbar = {
@@ -115,6 +134,7 @@ ide = {
       strategy = 2,
       width = 60,
       maxlength = 450,
+      warning = true,
     },
     arg = {}, -- command line arguments
     api = {}, -- additional APIs to load
@@ -139,6 +159,9 @@ ide = {
     interpreter = "luadeb",
     hidpi = false, -- HiDPI/Retina display support
     hotexit = false,
+    -- file exclusion lists
+    excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"},
+    binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"},
   },
   specs = {
     none = {
@@ -511,6 +534,10 @@ do
   if ide.config.language then
     LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
   end
+  -- always load 'en' as it's requires as a fallback for pluralization
+  if ide.config.language ~= 'en' then
+    LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep.."en.lua")
+  end
 end
 
 loadPackages()
@@ -553,17 +580,13 @@ do
   for _, filename in ipairs(filenames) do
     if filename ~= "--" then
       if wx.wxDirExists(filename) then
-        local dir = wx.wxFileName.DirName(filename)
-        dir:Normalize() -- turn into absolute path if needed
-        ProjectUpdateProjectDir(dir:GetFullPath())
+        ProjectUpdateProjectDir(filename)
       elseif not ActivateFile(filename) then
         DisplayOutputLn(("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
       end
     end
   end
-
-  local notebook = ide.frame.notebook
-  if notebook:GetPageCount() == 0 then NewFile() end
+  if ide:GetEditorNotebook():GetPageCount() == 0 then NewFile() end
 end
 
 if app.postinit then app.postinit() end
