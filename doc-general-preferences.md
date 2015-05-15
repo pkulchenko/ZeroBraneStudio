@@ -23,7 +23,7 @@ The changes in files and all unsaved buffers should be restored during the next 
 This session information is saved in the [.ini file](#session-configuration).
 - `ini = nil`: provide an alternative location for the [.ini file](#session-configuration).
 If the filename is absolute, it's used as the new location; if it's relative, then the file is created relative to the [system-dependent location](#session-configuration).
-- `language = "en"`: set the language to use in the IDE; this requires a language file in cfg/i18n directory.
+- `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
@@ -39,7 +39,7 @@ Use `'c'` for 'copying' (appears in the application output and the Output panel)
 or `'d'` for 'default' (only appears in the application output).
 This is mostly useful for remote debugging to specify how the output should be redirected.
 - `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (1.0+).
-- `debugger.runonstart = false`: execute script immediately after starting debugging.
+- `debugger.runonstart = false`: execute script immediately after starting debugging (when set to `true`) or stop on the first Lua statement (when set to `false`).
 - `debugger.verbose = false`: enable verbose output.
 
 ## Auto-complete and tooltip
