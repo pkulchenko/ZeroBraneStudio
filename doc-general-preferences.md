@@ -29,6 +29,20 @@ If the filename is absolute, it's used as the new location; if it's relative, th
 - `savebak = false`: create backup on file save.
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 
+## File exclusion lists
+
+- `excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"}`: set the list of files to be excluded from any processing by the IDE (1.10+).
+These files and directories will not be displayed in the project tree and will not be searched.
+They can still be opened in the IDE when opened directly using `File Open` and similar operations.
+- `binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"}`: set the list of files to be recognized as binary files (1.10+).
+These files are displayed in the project tree, but will be skipped from fuzzy search and find- and replace-in-files operations.
+
+File names without a wildcard `*` will be applied as is; file names that end with a path separator (both `\\` and `/` work on all platforms) will be applied as directory names.
+For example, `.svn` and `*.svn` will exclude all files with `svn` extension and `.svn/` and `.svn\` will completely skip processing of the `.svn` directory.
+
+In addition to that, `**` pattern is handled differently from `*` pattern and means a match in all (sub-)directories.
+For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not in its subdirectories, while `abc/**.lua` will exclude all Lua files in `abc` directory and all its subdirectories and `abc/` will exclude `abc` directory along with all its subdirectories.
+
 ## Debugger
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
