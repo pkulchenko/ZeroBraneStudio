@@ -8,27 +8,27 @@ title: Getting Started
 ## Editor
 
 The editor allows you to open several programs or files and work on them at the same time.
-Each opened file has its own page with a name and a tab at the top of the page.
+Each file is opened in its own page, with its name in a tab at the top of the page.
 You can **switch** between pages by clicking on those tabs.
-You can also **close** those pages when you don't need them by using the `File | Close Page` menu or its shortcut `Ctrl-W` (`Cmd-W` on OSX).
+You can also **close** those pages when you don't need them by using the `File | Close Page` menu command or its shortcut `Ctrl-W` (`Cmd-W` on OSX).
 
-## Saving and opening programs
+## Opening and saving files
 
-To **save** a program you can go to the `File | Save` menu at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on OSX). If the program does not have a name yet, you will be asked to provide a name for it.
+To **open** a program or file you can select the `File | Open` menu command or use its shortcut `Ctrl-O` (`Cmd-O` on OSX). Or, you can double click on the file name in the `Project` panel on the left. The editor will open that file for you in a new tab, or will activate one of the existing tabs if the file is already opened.
 
-To **open** a program or file you can go to the `File | Open` menu (or use its shortcut) or double click on the file name in the `Project` panel on the left. The editor will open that file for you or will activate one of the existing pages if the file is already opened.
+To **save** a program you can select the `File | Save` menu command at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on OSX). If the program does not have a name yet, you will be asked to provide a name for it.
 
 ## Exiting the IDE
 
-To **exit** the development environment you are using, go to the `File | Quit` menu.
+To **exit** ZeroBrane Studio, select the `File | Quit` menu command.
 You will be prompted to save any unsaved changes.
 The IDE will restore the editor tabs you are using the next time you start it.
 
 ## Running programs
 
-To **execute** a program you can go to `Project | Run` menu.
-This will run your program in a separate process using the interpreter you selected to run it (the Lua interpreter by default).
-The Output window will show the output of the program (if any) and some messages from the IDE that details what script is being executed and from what directory.
+To **execute** a program you can select `Project | Run` menu command.
+This will run your program in a separate process using the interpreter you selected to run it; by default this is the Lua interpreter, which executes your code in LuaJIT.
+The [Output window](#output-window) will show the output of the program (if any) and some messages from the IDE that detail what script is being executed and from what directory.
 
 To **abort** the program from the IDE you can go to `Project | Stop Process`.
 You will see a message in the Output window when the program is stopped.
@@ -45,7 +45,7 @@ The Output window is also used to enter the text your program may read. You will
 
 <img style="background:url(images/unicode-console.png) -9px -499px" src="images/t.gif" class="inline"/>
 
-The **Console window** allows to run Lua code fragments and calculate values of Lua expressions.
+The **Console window** allows you to run Lua code fragments and calculate values of Lua expressions.
 It will switch automatically between a **local console** that gives you access to the Lua interpreter that runs the IDE
 and a **remote console** that allows you to execute code fragments and change variable values in your application when it is stopped in the debugger.
 
@@ -54,13 +54,14 @@ and a **remote console** that allows you to execute code fragments and change va
 <img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inline"/>
 
 The current project directory is displayed in the **Project panel**.
-The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting a file and pressing `Enter` or double-clicking on it.
+The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting its name and pressing `Enter`, or double-clicking on it.
 
 To **change** the current project directory you have several options:
-(1) use the dropdown to select one of the project directories you used previously,
-(2) type or copy a new path into the dropdown at the top of the project panel,
-(3) go to `Project | Project Directory | Choose...` and set a new directory, or
-(4) go to `Project | Project Directory | Set From Current File` to set it to the same directory as the path of the current file.
+
+1. use the dropdown to select one of the project directories you used previously,
+2. type or copy a new path into the dropdown at the top of the project panel,
+3. go to `Project | Project Directory | Choose...` and set a new directory, or
+4. go to `Project | Project Directory | Set From Current File` to set it to the same directory as the path of the current file.
 
 ## Selecting interpreter
 
@@ -99,10 +100,10 @@ and **continue** execution of your program (using `Project | Continue`).
 To **enable** this mode go to `Project | Run as Scratchpad` (when it is available) and your program will be started as during debugging.
 You will continue to have access to the editor tab from which the scratchpad has been started and all the changes you make will be seen in your application.
 
-In addition to regular editing, you can also mouse over a number (all the number in your script will be underlined as you can see in the screenshot on the right) and drag a virtual sliders left or right to change the value of that number.
+In addition to regular editing, you can also mouse over a number (all numbers will be underlined as seen in the screenshot on the right) and drag a virtual slider left or right to change the value of that number.
 If you make an error (whether a compile or run-time), it will be reported in the Output window.
 
-To **exit** the scratchpad mode you can close the application, go to `Project | Stop Process`, or go to `Project | Run as Scratchpad`.
+To **exit** the scratchpad mode you can close the application, go to `Project | Stop Process`, or go to `Project | Run as Scratchpad` again to toggle scratchpad mode off.
 
 Note that this functionality is highly interpreter dependent and some interpreters may not provide it at all (for example, `Corona`) and some may provide in a way that doesn't restart the entire application (for example, `LÖVE`, `Moai`, or `Gideros` interpreters).
 Your code may also need to be written in a way that accomodates requirements of those engines. Please consult [live coding tutorials](documentation#live-coding) for details.
@@ -111,9 +112,10 @@ Your code may also need to be written in a way that accomodates requirements of 
 
 <img style="background:url(images/debugging.png) -248px -48px" src="images/t.gif" class="inline"/>
 
-Some of the most frequently used commands in the editor are also available on the **toolbar** (which is right above the editor window and below the menu bar).
-There you will find commands to open a new or an existing file, save a file, commands to undo and redo your changes, and commands to search and replace text in your programs.
-You will also find most frequently used debugger commands (`Start Debugging`, `Stop process`, `Break`, `Step Into`, `Step Over`, `Step Out`, `Toggle Breakpoint`, `Stack Windows`, and `Watch Window`).
+Some of the most frequently used commands in the editor are also available on the **toolbar** (which is right above the editor window, and below the menu bar on Windows and Linux).
+There you will find commands to open a new or existing file, or save a file, commands to undo and redo your changes, and commands to search and replace text in your programs.
+
+You will also find the most frequently used debugger commands (`Start Debugging`, `Stop process`, `Break`, `Step Into`, `Step Over`, `Step Out`, `Toggle Breakpoint`, `Stack Windows`, and `Watch Window`).
 The toolbar also includes a dropdown that lists all the functions recognized in the currently edited file and allows to navigate between those functions by selecting them from the list.
 
 ## Configuring the IDE

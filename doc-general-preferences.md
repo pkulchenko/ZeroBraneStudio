@@ -181,7 +181,7 @@ These settings can be used to change the location of the executable file for dif
 In most cases you don't need to specify this as ZeroBrane Studio will check default locations for the executable, but in those cases when auto-detection fails, you can specify the path yourself.
 You can use this setting to specify an alternative interpreter you want to use (for example, LuaJIT instead of Lua interpreter).
 
-Note that the **full executable name** is expected, not a directory name. The values shown are examples, not default values.
+Note that the **full executable name** is expected, not a directory name. The values shown are example values for a Windows system, not default values.
 
 - `path.lua = 'd:/lua/lua'`: specify path to Lua interpreter.
 - `path.love2d = 'd:/lua/love/love'`: specify path to LÖVE/love2d executable.
