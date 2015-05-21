@@ -40,4 +40,4 @@ These commands can be modified using [editor key mapping](doc-general-preference
 - `Ctrl-Keypad/`: Restore text size to normal
 - `Ctrl-MouseWheel`: Magnify/Reduce text size
 
-**Note for Mac OSX users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab` and `Ctrl-Shift-Tab` commands.
+**Note for Mac OSX users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab`, `Ctrl-Shift-Tab`, `Ctrl-PgUp`, and `Ctrl-PgDn` commands.
