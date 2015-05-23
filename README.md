@@ -45,7 +45,7 @@ $ luarocks install mobdebug
 ```bash
 $ git clone https://github.com/soumith/zbs-torch.git
 $ cd zbs-torch
-$ sh zbstudio.sh
+$ ./zbstudio.sh
 ```
 
 ## Usage
@@ -55,7 +55,7 @@ To debug a torch file,
 * Start zbs from the zbs-torch directory with the command
 
 ```bash
-$ sh zbstudio.sh
+$ ./zbstudio.sh
 ```
 * Start the debugger server from "Project->Start Debugger Server"
 
