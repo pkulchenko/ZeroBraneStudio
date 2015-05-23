@@ -58,6 +58,8 @@ This is mostly useful for remote debugging to specify how the output should be r
 
 ## Auto-complete and tooltip
 
+- `acandtip.droprest = true`: drops the rest of the word on auto-complete (1.11+);
+set to `false` to disable and keep the rest of the word.
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
 set to `false` to collect all words from all open editor tabs and offer them as part of the auto-complete list.
 - `acandtip.shorttip = true`: show short calltip when typing;
@@ -67,6 +69,8 @@ set to `false` to show a long calltip.
     - `0`: substring comparison (`fo`, but not `fb` matches `foo_bar`);
     - `1`: substring leading characters, CamelCase or _ separated (`fo` and `fb`, but not `fa` match `foo_bar`);
     - `2`: leading + any correctly ordered fragments (`fo`, `fa`, `fb`, but not `bf` match `foo_bar`).
+- `acandtip.symbols = true`: offers local and global variables in the current file in auto-complete (0.90+);
+both local and global variables are offered in a scope-aware way, so they are offered only in those scopes where they are available.
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
