@@ -24,4 +24,4 @@ Make sure you **confirm your subscription** by clicking on the link in the confi
 The maillist is hosted by freelists.org and the confirmation email may show its `from` address as `FreeLists Mailing List Manager`.
 You can also **unsubscribe or change your subscription** settings [here](http://www.freelists.org/cgi-bin/lsg2.cgi/l=zerobrane).
 
-Please review the [documentation](documentation.html) and the [FAQ](doc-faq.html) before posting to see if your question or issue has already been covered.
+Please review the [documentation](documentation) and the [FAQ](doc-faq) before posting to see if your question or issue has already been covered.

@@ -26,7 +26,7 @@ You can also update an existing file to add/modify those messages that have rece
 
 ## Configuring language
 
-You can specify the language for the user interface by adding the following line to one of the [configuration files](doc-configuration.html):
+You can specify the language for the user interface by adding the following line to one of the [configuration files](doc-configuration):
 
 {% highlight lua %}
 language = "ru"

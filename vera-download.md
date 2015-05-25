@@ -19,14 +19,14 @@ title: Download
 <div class="thank-you" id="thank-you">
   Thank you for your interest in ZeroBrane Studio for Vera.
   You do not seem to have a valid product key to download ZeroBrane Studio for Vera.
-  You can review <a href="vera.html">information about the product</a> and <a href="vera-documentation.html">the documentation</a>, or <a href="vera-buy.html">buy the product</a>.
+  You can review <a href="vera">information about the product</a> and <a href="vera-documentation">the documentation</a>, or <a href="vera-buy">buy the product</a>.
 </div>
 <div class="separator">&nbsp;</div>
 
 If you are new to the product, you can start by checking
-the [Getting Started guide](vera-getting-started.html),
-the [tutorial page](vera-tutorials.html),
-or by reading the [documentation page](vera-documentation.html)
+the [Getting Started guide](vera-getting-started),
+the [tutorial page](vera-tutorials),
+or by reading the [documentation page](vera-documentation)
 with links to debugging overview and other useful resources.
 
 ## What are the most significant changes in this version?
@@ -51,5 +51,5 @@ As an alternative, you can **move those system settings to user settings** (`Edi
 
 ## What do I do if I have questions or want to receive product updates?
 
-Several ways to stay in touch are listed [here](community.html). If you have any problems, please [contact us](email:support@zerobrane.com) and we will get it sorted out.
+Several ways to stay in touch are listed [here](community). If you have any problems, please [contact us](email:support@zerobrane.com) and we will get it sorted out.
 We also read [Vera/MCV user forums](http://forum.micasaverde.com/) and will be happy to answer any questions you may have there.

@@ -44,7 +44,7 @@ The second option may also be preferable for Mac OS X users as the `packages/` f
 
 Plugins may have its own configuration in the same way as the IDE does.
 The configuration can be retrieved using `GetConfig` method, which returns a table with all configuration values.
-For example, if one of the IDE [configuration files](doc-configuration.html) includes this assignment `pluginname = {value = 1, anothervalue = 2}`, then the assigned table will be returned as the result of the `GetConfig` method.
+For example, if one of the IDE [configuration files](doc-configuration) includes this assignment `pluginname = {value = 1, anothervalue = 2}`, then the assigned table will be returned as the result of the `GetConfig` method.
 
 ## Plugin data
 
@@ -120,7 +120,7 @@ This registering of the specification will have the same effect as putting this 
 
 ## Registering an API
 
-[Custom API definitions](doc-api-auto-complete.html) that are used to provide function tooltips and auto-complete functionality can be added by registering an API definition.
+[Custom API definitions](doc-api-auto-complete) that are used to provide function tooltips and auto-complete functionality can be added by registering an API definition.
 This is done using `AddAPI(group, name, api)` and `RemoveAPI(group, name)` methods.
 For example, to add `sample.val1` and `sample.val2` methods, you may use the following:
 
@@ -158,7 +158,7 @@ return {
 }
 {% endhighlight %}
 
-See the [custom API definitions](doc-api-auto-complete.html) section for details and examples on how to describe complex definitions.
+See the [custom API definitions](doc-api-auto-complete) section for details and examples on how to describe complex definitions.
 
 ## Registering an interpreter
 

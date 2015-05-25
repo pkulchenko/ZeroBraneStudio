@@ -20,15 +20,15 @@ and also gets the old and the new values for the variable.
 
 ## Debugging Lua code in a watch (`variable_watch`) callback
 
-ZeroBrane Studio provides [two methods to debug Lua code](vera-remote-debugging.html)
+ZeroBrane Studio provides [two methods to debug Lua code](vera-remote-debugging)
 for events triggered from the Vera device:
-[scenes](vera-scene-debugging.html),
-[plugins](vera-plugin-debugging.html),
-[watch](vera-watch-debugging.html),
-[request](vera-request-debugging.html),
-and [others](vera-documentation.html#development-and-debugging).
+[scenes](vera-scene-debugging),
+[plugins](vera-plugin-debugging),
+[watch](vera-watch-debugging),
+[request](vera-request-debugging),
+and [others](vera-documentation#development-and-debugging).
 
-In this example we will be using the [simpler method](vera-remote-debugging.html#method-2) that doesn't require
+In this example we will be using the [simpler method](vera-remote-debugging#method-2) that doesn't require
 specifying the IP address of the computer that runs ZeroBrane Studio:
 
 - Open a new editor tab in the IDE, add the following code and

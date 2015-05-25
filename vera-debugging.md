@@ -43,7 +43,7 @@ For example, if the value of a variable `count` in the script is `10` and you ex
 
 In addition to running/debugging Lua code from ZeroBrane Studio, you can
 also start the debugging from the device (which may be triggered by Lua code
-included in scenes or plugins). See the [remote debugging](vera-remote-debugging.html)
+included in scenes or plugins). See the [remote debugging](vera-remote-debugging)
 section for details on how this can be done.
 
 ## Vera functions
@@ -74,7 +74,7 @@ instead of `table: address`.
 * **Debugging doesn't start becase the IDE address is detected incorrectly.**
 When you start debugging, the IDE may display the message with the server address: `Using 'x.x.x.x' as the debugger server address.` (You'll see the message if you are using `vera` plugin v0.12+).
 If the address shown is not correct, or can't be reached from the Vera device, the debugging is not going to work.
-To **set the correct address**, you can specify `debugger.hostname = 'correct.IPaddress.or.hostname'` in the [configuration](doc-configuration.html) file and restart the IDE.
+To **set the correct address**, you can specify `debugger.hostname = 'correct.IPaddress.or.hostname'` in the [configuration](doc-configuration) file and restart the IDE.
 
 * **Debugging doesn't start because the address of the device or the IDE is detected incorrectly.**
 When you start debugging, the IDE will try to detect the address of the device and will use the IP address of the computer to configure the debugger.

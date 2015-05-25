@@ -15,7 +15,7 @@ title: Download
   <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.10-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.10-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
-<div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support.html">supporting the project</a>.</div>
+<div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support">supporting the project</a>.</div>
 <div class="separator">&nbsp;</div>
 
 ## What are the most significant changes in this version?
@@ -35,4 +35,4 @@ As an alternative, you can **move those system settings to user settings** (`Edi
 
 ## What if I have questions or want to receive product updates?
 
-Several ways to stay in touch are listed [here](community.html).
+Several ways to stay in touch are listed [here](community).

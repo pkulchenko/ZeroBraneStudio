@@ -35,7 +35,7 @@ save it in a file named `D_SimplyVirtual.xml` (this is our device description).
     <deviceType>urn:schemas-zerobrane-com:device:SimplyVirtual1</deviceType>
     <friendlyName>ZeroBrane Virtual Test</friendlyName>
     <manufacturer>ZeroBrane</manufacturer>
-    <manufacturerURL>http://studio.zerobrane.com/vera.html</manufacturerURL>
+    <manufacturerURL>http://studio.zerobrane.com/vera</manufacturerURL>
     <implementationList>
       <implementationFile>I_SimplyVirtual.xml</implementationFile>
     </implementationList>

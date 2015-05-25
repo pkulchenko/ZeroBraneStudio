@@ -8,7 +8,7 @@ in one case the **debugging is initiated from the IDE** (`Project | Start Debugg
 and in the other case the **debugging is started remotely**, from the Vera device,
 when triggered by a scene, plugin, or as part of startup Lua code.
 
-If you are already familiar with [Vera debugging you start from the IDE](vera-debugging.html)
+If you are already familiar with [Vera debugging you start from the IDE](vera-debugging)
 you may notice that it didn't require any modifications to the Lua code itself,
 but in the case of a remote request we need to **specify when to start and
 stop debugging** and where to send the debugging request.
@@ -17,11 +17,11 @@ There are **two methods for initiating a remote debugging session** in your Luup
 and they both use `require('mobdebug').start()` to start the debugging
 and `require('mobdebug').done()` to continue execution of the script without debugging.
 
-Both of these methods are described using [scene debugging](vera-scene-debugging.html) as an example,
+Both of these methods are described using [scene debugging](vera-scene-debugging) as an example,
 but they work in exactly the same way for other types of debugging
-([plugins](vera-plugin-debugging.html),
-[watch](vera-watch-debugging.html),
-[request](vera-request-debugging.html), and others).
+([plugins](vera-plugin-debugging),
+[watch](vera-watch-debugging),
+[request](vera-request-debugging), and others).
 
 ## Method 1
 

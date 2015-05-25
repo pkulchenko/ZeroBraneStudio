@@ -11,7 +11,7 @@
  <link rel="stylesheet" media="all" href="stylesheets/styles.css" type="text/css" />
  <link rel="stylesheet" media="all" href="stylesheets/syntax.css" type="text/css" />
  <link rel="stylesheet" media="print" href="stylesheets/print.css" type="text/css" />
- {% capture root %}./vera.html{%endcapture%}
+ {% capture root %}./vera{%endcapture%}
  {% capture title %}{% if page.title %}{{ page.title }} - {% elsif post.title %}{{ post.title }} - {% endif %}{% endcapture %}
 
  {% if page.url == '/vera-buy.html' %}
@@ -94,12 +94,12 @@ $(document).ready(function(){
      <div id="menu-wrapper">
       <h1><div>{% if page.title %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
       <div id="menu-links">
-        {% if page.url == '/vera-buy.html'%}<strong>Buy</strong>{% else %}<a href="vera-buy.html">Buy</a>{% endif %}
-        {% if page.url == '/vera-features.html'%}<strong>Features</strong>{% else %}<a href="vera-features.html">Features</a>{% endif %}
-        {% if page.url == '/vera-screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="vera-screenshots.html">Screenshots</a>{% endif %}
-        {% if page.url == '/vera-tutorials.html'%}<strong>Tutorials</strong>{% else %}<a href="vera-tutorials.html">Tutorials</a>{% endif %}
-        {% if page.url == '/vera-documentation.html'%}<strong>Documentation</strong>{% else %}<a href="vera-documentation.html">Documentation</a>{% endif %}
-        {% if page.url == '/vera-license-agreement.html'%}<strong>License</strong>{% else %}<a href="vera-license-agreement.html">License</a>{% endif %}
+        {% if page.url == '/vera-buy.html'%}<strong>Buy</strong>{% else %}<a href="vera-buy">Buy</a>{% endif %}
+        {% if page.url == '/vera-features.html'%}<strong>Features</strong>{% else %}<a href="vera-features">Features</a>{% endif %}
+        {% if page.url == '/vera-screenshots.html'%}<strong>Screenshots</strong>{% else %}<a href="vera-screenshots">Screenshots</a>{% endif %}
+        {% if page.url == '/vera-tutorials.html'%}<strong>Tutorials</strong>{% else %}<a href="vera-tutorials">Tutorials</a>{% endif %}
+        {% if page.url == '/vera-documentation.html'%}<strong>Documentation</strong>{% else %}<a href="vera-documentation">Documentation</a>{% endif %}
+        {% if page.url == '/vera-license-agreement.html'%}<strong>License</strong>{% else %}<a href="vera-license-agreement">License</a>{% endif %}
       </div>
      </div>
     </div>
@@ -122,7 +122,7 @@ $(document).ready(function(){
         <div id="beta-columns-left">
          <div class="widget">
           <h3 class="widget-header">
-            <span class="gh-btn"><a class="button" href="vera-buy.html">Buy and Download v0.90</a></span>
+            <span class="gh-btn"><a class="button" href="vera-buy">Buy and Download v0.90</a></span>
             <span style="float: right; margin-top: -2px">
               <img src="./images/win.png" />
               <img src="./images/mac.png" />
@@ -131,7 +131,7 @@ $(document).ready(function(){
           </h3>
          </div>
          <div class="widget">
-          <a href="vera-screenshots.html"><img style="background:url(images/vera-debugging.png) -240px -440px" src="images/t.gif" class="inset"/></a>
+          <a href="vera-screenshots"><img style="background:url(images/vera-debugging.png) -240px -440px" src="images/t.gif" class="inset"/></a>
          </div>
          <div class="widget">
           <div class="widget-content Testimonials">

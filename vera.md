@@ -6,8 +6,8 @@ _ZeroBrane Studio for Vera_ is a **lightweight Lua integrated development enviro
 with **debugging support for [Vera](http://getvera.com/)**
 home automation devices (also known as MiCasaVerde or MCV).
 
-The IDE is **[simple](vera-getting-started.html) and instantly usable** for beginners,
-yet **[feature-rich](vera-features.html) and extensible** for experienced developers.
+The IDE is **[simple](vera-getting-started) and instantly usable** for beginners,
+yet **[feature-rich](vera-features) and extensible** for experienced developers.
 It provides a **powerful editor** with code completion and syntax highlighting,
 a **code analyzer** helpful in finding errros and typos,
 and **advanced debugger** for debugging Lua **scripts**, **scene events**, and **plugins**
@@ -26,7 +26,7 @@ If you still want to see the log content, it provides a convenient option to **d
 ## Feature highlights
 
 * Small, portable, and **cross-platform** (Windows, Mac OSX, and Linux);
-* **Integrated [debugger](vera-debugging.html)** for applications running locally or on Vera devices;
-* **[Interactive console](vera-getting-started.html#console-window)** to test code snippets with local and remote execution;
-* Ability to **[push files to the device](vera-getting-started.html#vera-functions)** and to **[retrieve log files](vera-getting-started.html#vera-functions)** from it;
-* **[Auto-completion](vera-getting-started.html#autocomplete)** for functions, keywords, and **Luup API**, [documentation](vera-documentation.html), and [more](vera-features.html).
+* **Integrated [debugger](vera-debugging)** for applications running locally or on Vera devices;
+* **[Interactive console](vera-getting-started#console-window)** to test code snippets with local and remote execution;
+* Ability to **[push files to the device](vera-getting-started#vera-functions)** and to **[retrieve log files](vera-getting-started#vera-functions)** from it;
+* **[Auto-completion](vera-getting-started#autocomplete)** for functions, keywords, and **Luup API**, [documentation](vera-documentation), and [more](vera-features).

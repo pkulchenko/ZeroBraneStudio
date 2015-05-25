@@ -4,7 +4,7 @@ title: Styles and Color schemes
 ---
 
 To **modify colors and appearance** of text, markers, or indicators in the editor and Output/Console panels,
-you can use these commands and apply them as described in the [configuration](doc-configuration.html) section
+you can use these commands and apply them as described in the [configuration](doc-configuration) section
 and as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
 
 ## Example

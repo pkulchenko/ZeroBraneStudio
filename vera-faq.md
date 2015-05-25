@@ -24,7 +24,7 @@ You can run `ide.packages.vera.version` in the Local console.
 
 ## Debugging doesn't start because of an incorrect IP address. How do I fix that?
 
-Please check the [debugging troubleshooting section](vera-debugging.html#troubleshooting) for a possible solution.
+Please check the [debugging troubleshooting section](vera-debugging#troubleshooting) for a possible solution.
 
 ## I have several Vera devices; how do I select one to work with?
 
@@ -61,4 +61,4 @@ To reset the current configuration, which will restore the removed component, yo
 
 ## Where is the configuration file stored?
 
-This is covered in the description of system [configuration](doc-configuration.html).
+This is covered in the description of system [configuration](doc-configuration).

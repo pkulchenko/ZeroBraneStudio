@@ -6,9 +6,9 @@ title: Lua 5.2 Debugging
 ZeroBrane Studio supports **debugging of Lua 5.2 applications** in several ways:
 
 1. (v0.39+) A Lua 5.2 interpreter is included in ZeroBrane Studio. You can select it by going to `Project | Lua Interpreter | Lua 5.2`.
-2. A Lua 5.2 application can be debugged as any other application using [remote debugging](doc-remote-debugging.html).
+2. A Lua 5.2 application can be debugged as any other application using [remote debugging](doc-remote-debugging).
 3. (v0.35+) A Lua 5.2 interpreter can **replace the default Lua interpreter** used by ZeroBrane Studio.
-To do that, you need to set `path.lua = "/full/path/to/lua52_executable"` in [cfg/user.lua](doc-configuration.html).
+To do that, you need to set `path.lua = "/full/path/to/lua52_executable"` in [cfg/user.lua](doc-configuration).
 
 If you are using your own Lua 5.2 interpreter and have it **statically compiled on Windows**, you *may* run into issues with debugging as the luasocket library that is included with ZeroBrane Studio is compiled against lua52.dll.
 You have two options to get it working:

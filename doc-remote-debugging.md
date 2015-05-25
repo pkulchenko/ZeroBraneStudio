@@ -61,11 +61,11 @@ and on **Mac OS X** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneS
 (You may need to right click on the application and select `Show Package Contents` to navigate to that location on OS X).
 
 * **I can't step into functions defined in other files in my project.**
-You either need to open them in the IDE before you want to step through them, or to [configure](doc-configuration.html) the IDE to auto-open files requested during debugging using `editor.autoactivate = true`.
+You either need to open them in the IDE before you want to step through them, or to [configure](doc-configuration) the IDE to auto-open files requested during debugging using `editor.autoactivate = true`.
 
 * **The host name is detected incorrectly.**
 In some rare cases the domain name detected by ZeroBrane Studio cannot be resolved, which prevents the debugger from working.
-You can specify the domain name or address you want to use by [configuring](doc-configuration.html) the IDE with `debugger.hostname="domain"`.
+You can specify the domain name or address you want to use by [configuring](doc-configuration) the IDE with `debugger.hostname="domain"`.
 
 * **I get `dynamic libraries not enabled` error.**
 You may get the following error when loading `socket.core` on Linux:

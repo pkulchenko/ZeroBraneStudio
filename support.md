@@ -17,7 +17,7 @@ title: Support
  </table>
  <div id="next-step">
   <span class="gh-btn"><a class="button" id="pay-with-card-button" href="#">Pay with Card</a></span>
-  <a href="download.html?not-this-time" id="no-payment-text">Take me to the download page this time &#187;</a>
+  <a href="download?not-this-time" id="no-payment-text">Take me to the download page this time &#187;</a>
  </div>
 </form>
 <div class="separator">&nbsp;</div>
@@ -40,5 +40,5 @@ run it from a cloned copy or an archive. We would still **appreciate your
 payment in support of this project.** If you decide not to provide financial
 support this time, please consider spreading the word, contributing code,
 helping with [fixes](https://github.com/pkulchenko/ZeroBraneStudio/issues)
-or [documentation](documentation.html),
+or [documentation](documentation),
 and answering questions other users may have.
