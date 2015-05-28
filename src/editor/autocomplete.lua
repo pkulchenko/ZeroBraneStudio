@@ -613,40 +613,30 @@ function CreateAutoCompList(editor,key,pos)
   end
 
   local compstr = ""
-  if apilist and #apilist > 0 then
+  if apilist then
     if (#rest > 0) then
       local strategy = ide.config.acandtip.strategy
 
       if (strategy == 2 and #apilist < 128) then
-        local num, max = 0, #rest
-        local prefixpat = rest:gsub(".",function(c)
-            num = num + 1
-            local l = c:lower()..c:upper()
-            return "(["..l.."]"..(num > 1 and "?" or "")
-          end)..(")"):rep(num-1)..")"
-        num = 0
-        local pat = rest:gsub(".",function(c)
-            num = num + 1
-            local l = c:lower()..c:upper()
-            -- don't include trailing characters
-            return "["..l.."]" .. (num < max and "([^"..l.." ]*)" or "")
-          end)
-
+        -- when matching "ret": "ret." < "re.t" < "r.et"
+        local pat = rest:gsub(".", function(c) return "["..c:lower()..c:upper().."](.-)" end)
+        local weights = {}
+        local penalty = 0.1
+        local function weight(str)
+          if not weights[str] then
+            local w = 0
+            str:gsub(pat,function(...)
+                local l = {...}
+                -- penalize gaps between matches, more so at the beginning
+                for n, v in ipairs(l) do w = w + #v * (1 + (#l-n)*penalty) end
+              end)
+            weights[str] = w
+          end
+          return weights[str]
+        end
         table.sort(apilist,function(a,b)
-            local _, ma, mb
-
-            -- check for longest matching prefix first; always at least 1
-            _, ma = a:find(prefixpat)
-            _, mb = b:find(prefixpat)
-            if ma ~= mb then return ma > mb end
-
-            -- prefer items with fewer letters in between hits.
-            -- magic number: skip 13 chars per letter in original prefix match.
-            local chopped = pat:sub(ma*13 + 1)
-            _, ma = a:find(chopped, ma)
-            _, mb = b:find(chopped, mb)
-            if ma == mb then return a:lower()<b:lower() end
-
+            local ma, mb = weight(a), weight(b)
+            if (ma == mb) then return a:lower()<b:lower() end
             return ma<mb
           end)
       else
