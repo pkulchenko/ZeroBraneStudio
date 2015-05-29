@@ -101,6 +101,9 @@ The solution in this case is to **"fix" the escape sequence** and replace `\/` w
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
 See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
 
+(v1.11+) If you are using v1.11 or later, this may no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
+You may still need to enable it for other executables (for example, `bin/lua.exe`) as needed to make the applications you start from the IDE dpi-aware as well.
+
 ## Why is the text blurry in the editor when running on retina display (OSX)?
 
 You can set `hidpi = true` in [configuration settings](doc-configuration);
