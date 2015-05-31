@@ -16,7 +16,7 @@ Depending on your interpreter configuration, the debugger may stop your program 
 When your program is running, you can **pause** it by going to `Project | Break`, which will stop your program at the next lua command executed.
 
 When the debugger is stopped, you can **set/remove breakpoints** (using `Project | Toggle Breakpoint`),
-**step through the code** (using `Project | Step Into`, `Project | Step Over`, and `Project | Step Out` commands),
+**step through the code** (using `Project | Step Into`, `Project | Step Over`, `Project | Step Out`, and `Project | Run To Cursor` commands),
 **inspect variables** using the Watch window (`View | Watch Window`),
 **view the call stack** using the Stack window (`View | Stack Window`),
 **run Lua commands** in the [console](#console-window),

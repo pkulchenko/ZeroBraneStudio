@@ -30,14 +30,14 @@ With the Windows and OSX installation packages being less than 5MB, it is one of
 **Configurable**
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.
 
-**Debug any Lua application**
-Set breakpoints before or _during_ debugging. Step in, over, and out. Break and continue your script. Review the call stack. Inspect and modify variables.
-
 **Instantly usable**
 Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides _integrated lessons_ on how to use it and _over 50 demo scripts_ to get you started.
 
 **Custom intepreters**
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
+
+**Debug any Lua application**
+Set breakpoints before or _during_ debugging. Step in, over, and out. Run to cursor, break and continue your script. Review the call stack. Inspect and modify variables.
 
 **Lightweight**
 <a href="images/unicode-console.png"><img style="background:url(images/unicode-console.png) -620px -600px" src="images/t.gif" class="inset"/></a>
