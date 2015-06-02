@@ -46,6 +46,8 @@ You can see other matches if you continue pressing `TAB`.
 (0.50+) To **auto-reload externally modified files** set `editor.autoreload` configuration setting to true.
 If no conflict is detected, the file content is going to be reloaded and its current markers (breakpoints and others) are going to be restored if possible.
 
+(0.80+) This option is enabled by default.
+
 ## Quick jump to the function call from the Stack view.
 
 To **jump to the position in the source code referred to in the Stack window**, double click on a function name in the stack frame.
