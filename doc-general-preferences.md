@@ -47,6 +47,9 @@ For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not 
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname to use for debugging.
+- `debugger.maxdatalength = 400`: set limit (in bytes) for the data shown in the Stack and Watch results.
+- `debugger.maxdatanum = 400`: limit the number of elements for tables shown in the Stack and Watch results.
+- `debugger.maxdatalevel = 3`: limit the number of nested levels for tables shown in the Stack and Watch results.
 - `debugger.redirect = nil`: specify how `print` results should be redirected in the application being debugged (0.39+).
 Use `'c'` for 'copying' (appears in the application output and the Output panel),
 `'r'` for 'redirecting' (only appears in the Output panel),
