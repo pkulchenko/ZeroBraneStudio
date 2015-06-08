@@ -66,6 +66,7 @@ For example, you set the project directory pointing to `scripts` folder (with `c
 the IDE will be looking for `scripts/myfile.lua` instead of `scripts/common/myfile.lua` and the file will not be activated and the breakpoints won't work.
 You may also be using inconsistent path separators in the file names; for example, `common/myfile.lua` in one case and `common\myfile.lua` in another.
 - If you are loading files using `luaL_loadbuffer`, make sure that the chunk name specified (the last parameter) matches the file location.
+- If breakpoints are still not working, you may want to enable verbose debugging (`debugger.verbose=true`) as this will provide additional information about paths reported by the interpreter and used by the IDE.
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
