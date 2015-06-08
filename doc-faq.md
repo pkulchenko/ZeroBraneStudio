@@ -16,7 +16,13 @@ or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/
 
 ## What are the dotted and dashed lines under variable names?
 
-These are **scope indicators**; you can [change their types, colors, or disable them](doc-styles-color-schemes#indicators).
+These are **scope indicators**: **global variables** are marked with solid underlines,
+**local variables** are maked with dotted underlines,
+local variables that shadow other local variables in the same scope are marked with dashed underlines,
+and those local variables that are shadowed by other local variables are striken out.
+For example, in `local foo = 1; local foo = 2`, first `foo` variable will be striken out as it's shadowed by the second `foo` instance and the second `foo` variable will be marked with dashed underline.
+
+You can [change their types, colors, or disable them](doc-styles-color-schemes#indicators).
 
 ## How to specify a directory my script should be executed in for `require` commands to work?
 
