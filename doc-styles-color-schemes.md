@@ -47,6 +47,7 @@ You can change the color of an indicator (by setting its `fg` property), its typ
 - `styles.indicator.fncall = {fg = {240,0,0}}`: set color
 - `styles.indicator.fncall = nil`: disable the indicator
 
+If you want to **disable an indicator**, set its value to `nil`: `styles.indicator.varlocal = nil`.
 If you want to **disable all indicators**, use `styles.indicator = {}`.
 
 The following list shows possible **indicator types**:

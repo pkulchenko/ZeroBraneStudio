@@ -30,7 +30,8 @@ Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw
 - `editor.indentguide = true`: show indentation guides (0.90+); set to `false` or `nil` to disable.
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (0.39+).
-- `editor.showfncall = true`: mark function calls.
+- `editor.showfncall = false`: mark function calls;
+set to `true` to add an [indicator for function calls](doc-styles-color-schemes#Indicators).
 - `editor.smartindent = true`: use smart indentation.
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
