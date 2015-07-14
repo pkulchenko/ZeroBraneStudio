@@ -47,4 +47,5 @@ and [more](documentation#debugging).
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 GSL-Shell and other Lua engines;
-* **Integrated debugger** (with support for local and remote debugging), and **[more](features)**.
+* **Integrated debugger** (with support for local and remote debugging);
+* **Fuzzy search** for files, symbols, and library functions, **function outline**, and **[more](features)**.
