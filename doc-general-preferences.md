@@ -168,7 +168,7 @@ The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can 
 
 Some configuration information that needs to be preserved between launches (windows and panels sizes and positions, open editor tabs, recently used projects and files and so on) is saved in a special file.
 The location (and the name) of this file is system dependent:
-it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `C:\Users\<user>\AppData\Roaming\ZeroBraneStudio.ini` (for v0.36 and later) on Windows,
+it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `%APPDATA%\ZeroBraneStudio.ini` (for v0.36 and later) on Windows (`%APPDATA%` is mapped to a hidden folder `C:\Users\<user>\AppData\Roaming`),
 `$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
