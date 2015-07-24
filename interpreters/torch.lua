@@ -9,7 +9,7 @@ return {
     torch = torch or ide.config.path.torch -- check if the path is configured
     -- Go search for torch
     if not torch then
-      local sep = ':'
+      local sep =  (ide.osname == "Windows" and '; ' or ':')
       local default = ''
       local path = default
                  ..(os.getenv('PATH') or '')..sep
@@ -17,9 +17,10 @@ return {
                  ..(os.getenv('HOME') and os.getenv('HOME') .. '/bin' or '')
       local paths = {}
       for p in path:gmatch("[^"..sep.."]+") do
-        torch = torch or GetFullPathIfExists(p, 'th')
+        torch = torch or GetFullPathIfExists(p, (ide.osname == "Windows" and 'th.bat ' or 'th'))
         table.insert(paths, p)
       end
+      
       if not torch then
         DisplayOutput("Can't find torch executable in any of the folders in PATH or TORCH_BIN: "
           ..table.concat(paths, ", ").."\n")
@@ -66,7 +67,10 @@ return {
     
     -- local code = ([[xpcall(function() io.stdout:setvbuf('no'); %s end,function(err) print(debug.traceback(err)) end)]]):format(script)
     -- local cmd = '"'..torch..'" -e "'..code..'"'
-    local cmd = 'bash -c "cd $(dirname ' .. filepath .. ') && ' .. torch .. ' ' .. filepath .. ' "' 
+    local cmd = 'bash -c "cd $(dirname ' .. filepath .. ') && ' .. torch .. ' ' .. filepath .. ' "'
+    if ide.osname == "Windows" then
+      cmd = 'cmd /c "cd ' .. filepath .. '/../ && ' .. torch .. ' ' .. filepath .. ' "' 
+    end
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
       function() ide.debugger.pid = nil end)
