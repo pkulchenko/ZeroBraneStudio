@@ -27,7 +27,10 @@ The values shown are the default values.
 Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw line above if expanded), `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED` (draw line above if contracted), `wxstc.wxSTC_FOLDFLAG_LINEAFTER_EXPANDED` (draw line below if expanded), and `wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED` (draw line below if contracted).
 - `editor.fontname = "Courier New"`: set font name.
 - `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
-- `editor.indentguide = true`: show indentation guides (0.90+); set to `false` or `nil` to disable.
+- `editor.indentguide = true`: show indentation guides (0.90+);
+set to `false` or `nil` to disable;
+set to `wxstc.wxSTC_IV_LOOKFORWARD` to show indentation guides beyond the actual indentation up to the level of the next non-empty line
+and to `wxstc.wxSTC_IV_LOOKBOTH` to show indentation guides beyond the actual indentation up to the level of the next non-empty line or previous non-empty line whichever is the greater (1.11+).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (0.39+).
 - `editor.showfncall = false`: mark function calls;
