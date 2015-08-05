@@ -119,6 +119,10 @@ If you want to see them side by side, you can **drag one of the tabs to a differ
 (0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
 Using `Ctrl+Scroll` still zooms only the current editor tab.
 
+## Document map (plugin).
+
+To enable document map that provides a bird's-eye view of the currently edited document, you can use [document map plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua).
+
 ## Clone view (plugin).
 
 To be able to open and edit the same file in multiple windows, you can use [clone view plugin](http://notebook.kulchenko.com/zerobrane/clone-editor-view-plugin-for-zerobrane-studio).
