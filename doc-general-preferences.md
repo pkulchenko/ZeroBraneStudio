@@ -29,6 +29,7 @@ if it only contains the file name (for example, `file.ini`), then the file is cr
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
+- `symbolindexinactivity = 2`: trigger indexing of project files for symbol search after N seconds of inactivity (1.11+).
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 
 ## File exclusion lists
