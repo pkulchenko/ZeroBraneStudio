@@ -110,6 +110,7 @@ This allows for additional reporting on unknown fields, but takes significantly 
 - `commandbar.maxitems = 30`: set maximum number of items to show (1.11+).
 - `commandbar.prefilter = 250`: set the number of records processed in command bar at which to apply pre filtering to speed up fuzzy matching process (0.91+).
 The records that don't have all symbols entered will be filtered out before matching algorithm is applied.
+- `commandbar.width = 0.35`: set command bar width (1.11+); when the value is less than 1, the size is in proportion to the width of the application window; otherwise, it is the size in pixels.
 
 ## Custom APIs
 
