@@ -333,7 +333,7 @@ ide:GetMainFrame():Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
 
     local file = ide:GetDocument(ed):GetFilePath()
     if file then -- a new (untitled) file may not have path
-      CommandLineRun(('make "%s"'):format(file), ide:GetProject(), true)
+      ide:ExecuteCommand('make', ide:GetProject(), function(s) DisplayOutput(s) end)
     end
   end)
 {% endhighlight %}
