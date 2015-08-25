@@ -114,6 +114,10 @@ You can **change the current project** in several ways:
 The default configuration shows `Output` and `Console` windows as tabs in the same window.
 If you want to see them side by side, you can **drag one of the tabs to a different location** inside the same window and dock it there.
 
+## Clear the content of the Output window.
+
+The content of the `Output` window can be cleared by accessing context menu (right click of the mouse) and selecting `Clear Output Window`.
+
 ## Zooming all editor tabs.
 
 (0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
