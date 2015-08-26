@@ -92,6 +92,13 @@ When the debugger is stopped, you can **set/remove breakpoints** (using `Project
 **run to cursor location** (`Project | Run To Cursor`),
 and **continue** execution of your program (using `Project | Continue`).
 
+## Stack window
+
+<img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
+
+The **Stack window** provides not only the call stack with function names, but also presents all **local variables and upvalues** for each of the stack frames.
+You can even drill down to get values of individual elements in tables.
+
 ## Watch window
 
 <img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
