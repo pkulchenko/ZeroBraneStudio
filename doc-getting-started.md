@@ -92,6 +92,15 @@ When the debugger is stopped, you can **set/remove breakpoints** (using `Project
 **run to cursor location** (`Project | Run To Cursor`),
 and **continue** execution of your program (using `Project | Continue`).
 
+## Watch window
+
+<img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
+
+The **Watch window** provides access to the values of variables and expressions **during debugging**.
+All results with table values can be expanded to view and modify table elements.
+To update the **value** of a table element, select `Edit Value` from the popup menu or use `F2` shortcut.
+After entering the new value and pressing `Enter`, the new value will be sent to the application being debugger and will also be reflected in the Watch window.
+
 ## Live coding
 
 <img style="background:url(images/scratchpad-linux-mint.png) -270px -120px" src="images/t.gif" class="inline"/>
