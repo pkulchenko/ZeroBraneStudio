@@ -103,10 +103,14 @@ You can even drill down to get values of individual elements in tables.
 
 <img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
 
-The **Watch window** provides access to the values of variables and expressions **during debugging**.
-All results with table values can be expanded to view and modify table elements.
-To update the **value** of a table element, select `Edit Value` from the popup menu or use `F2` shortcut.
+The **Watch window** provides a convenient way to evaluate variables and expressions after every stopping in the debugger.
+You can also drill down to get values of individual elements in tables.
+
+In addition to viewing the values that variables or expressions are evaluated to, you may also **change the values of those variables or expressions** and those changes will be reflected in the current stack frame of the application.
+For example, if `tbl` is a table with three values (`{'a', 'b', 'c'}`), you can expand the table, right click on the second element, and select `Edit Value`.
+You can then edit the value of the second element.
 After entering the new value and pressing `Enter`, the new value will be sent to the application being debugger and will also be reflected in the Watch window.
+The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
 ## Live coding
 

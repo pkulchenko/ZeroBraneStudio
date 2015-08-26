@@ -51,19 +51,20 @@ You can execute any expression in the console and the result will be pretty prin
 
 <img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
 
-The Stack window provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames.
+The **Stack window** provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames.
 You can even drill down to get values of individual elements in tables.
 
 ## Watch window
 
 <img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
 
-The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
+The **Watch window** provides a convenient way to evaluate variables and expressions after every stopping in the debugger.
 You can also drill down to get values of individual elements in tables.
 
 In addition to viewing the values that variables or expressions are evaluated to, you may also **change the values of those variables or expressions** and those changes will be reflected in the current stack frame of the application.
 For example, if `tbl` is a table with three values (`{'a', 'b', 'c'}`), you can expand the table, right click on the second element, and select `Edit Value`.
 You can then edit the value of the second element.
+After entering the new value and pressing `Enter`, the new value will be sent to the application being debugger and will also be reflected in the Watch window.
 The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
 ## Tooltip
