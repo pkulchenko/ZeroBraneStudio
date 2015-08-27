@@ -105,9 +105,18 @@ You can **change the current project** in several ways:
 
 1. Use `Project | Project Directory | Choose...`.
 2. Use `File | Recent Projects` (0.60+).
-3. Use the context menu in the Project tree (`Right Click`) and then `Project Directory` (0.60+).
+3. Use the context menu in the Project tree (mouse right click) and then `Project Directory` (0.60+).
 4. Use `Choose a project directory` icon on the toolbar.
 5. Use dropdown next to the `Choose a project directory` icon on the toolbar (0.60+).
+
+## Project tree refresh
+
+When new files are added to or removed from the file system outside of the IDE, these changes may not be reflected in the project tree immediately.
+To refresh the project tree you have several options:
+
+1. Collapse/Expand a particular directory, which will refresh its content.
+2. (1.10+) Use `Refresh` item in the context menu in the project tree (mouse right click).
+3. Install [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
 
 ## Show Output and Console windows side by side.
 
