@@ -24,6 +24,11 @@ You can set the [project directory](doc-getting-started#project-directory), whic
 You need to have a file opened in the IDE before you can step into functions defined in that file.
 You can also configure the IDE to [auto-open files](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) for you.
 
+## How to refresh the files shown in the Project tree after the changes made outside of the IDE?
+
+When new files are added to or removed from the file system outside of the IDE, these changes may not be reflected in the project tree immediately.
+See the [Project refresh section](doc-tips-and-tricks#project-tree-refresh) in the documentation on how to make the tree to refresh.
+
 ## Why do I get a warning about attempt to connect to port 8172 when I start debugging?
 
 The IDE is using port 8172 to communicate with the application being debugged.
