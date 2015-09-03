@@ -67,9 +67,10 @@ return {
     
     -- local code = ([[xpcall(function() io.stdout:setvbuf('no'); %s end,function(err) print(debug.traceback(err)) end)]]):format(script)
     -- local cmd = '"'..torch..'" -e "'..code..'"'
-    local cmd = 'bash -c "cd $(dirname ' .. filepath .. ') && ' .. torch .. ' ' .. filepath .. ' "'
+    local params = ide.config.arg.any or ide.config.arg.lua
+    local cmd = 'bash -c "cd $(dirname ' .. filepath .. ') && ' .. torch .. ' ' .. filepath .. ' ' .. params .. '"'
     if ide.osname == "Windows" then
-      cmd = 'cmd /c "cd ' .. filepath .. '/../ && ' .. torch .. ' ' .. filepath .. ' "' 
+      cmd = 'cmd /c "cd ' .. filepath .. '/../ && ' .. torch .. ' ' .. filepath .. ' ' .. params .. '"'
     end
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
     return CommandLineRun(cmd,self:fworkdir(wfilename),true,false,nil,nil,
