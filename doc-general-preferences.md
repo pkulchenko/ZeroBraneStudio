@@ -83,6 +83,7 @@ both local and global variables are offered in a scope-aware way, so they are of
 ## Outline
 
 - `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
+- `outline.showcurrentfunction = true`: highlight the current function under the cursor in the Outline window (1.11+).
 - `outline.showflat = false`: show all functions as one list (no hierarchy) (0.91+).
 - `outline.showmethodindicator = false`: show different icons for method indicators (0.81+).
 - `outline.showonefile = false`: show only functions from the current active file in the outline (0.81+);
