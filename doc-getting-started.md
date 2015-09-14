@@ -112,6 +112,13 @@ You can then edit the value of the second element.
 After entering the new value and pressing `Enter`, the new value will be sent to the application being debugger and will also be reflected in the Watch window.
 The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
+## Outline window
+
+The **Outline window** provides a way to see the structure of the current file with all the functions and their parameters shown either in the order in which they are defined in a file (default) or as a sorted list.
+
+Clicking on the function name will scroll the file to the position where the function is defined.
+Anonymous functions are indicated using `~` for the name. There are several settings specific to display of the outlines, as documented in the [Outline section](doc-general-preferences#outline).
+
 ## Live coding
 
 <img style="background:url(images/scratchpad-linux-mint.png) -270px -120px" src="images/t.gif" class="inline"/>
