@@ -25,6 +25,7 @@ This session information is saved in the [.ini file](#session-configuration).
 If the filename is absolute, it's used as the new location;
 (1.11+) if it's relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
+- `interpreter = nil`: set the default interpreter used for new projects (1.11+).
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
