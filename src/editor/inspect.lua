@@ -27,8 +27,10 @@ function M.warnings_from_string(src, file)
   local ast, err, linenum, colnum = LA.ast_from_string(src, file)
   if not ast and err then return nil, err, linenum, colnum end
 
+  LI.uninspect(ast)
   if ide.config.staticanalyzer.infervalue then
     local tokenlist = LA.ast_to_tokenlist(ast, src)
+    LI.clear_cache()
     LI.inspect(ast, tokenlist, src)
     LI.mark_related_keywords(ast, tokenlist, src)
   else
@@ -207,6 +209,8 @@ if compilepos then
 end
 
 local function analyzeProgram(editor)
+  -- save all files (if requested) for "infervalue" analysis to keep the changes on disk
+  if ide.config.editor.saveallonrun and ide.config.staticanalyzer.infervalue then SaveAll(true) end
   if ide:GetLaunchedProcess() == nil and not ide:GetDebugger():IsConnected() then ClearOutput() end
   DisplayOutput("Analyzing the source code")
   frame:Update()
