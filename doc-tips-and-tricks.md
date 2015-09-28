@@ -132,6 +132,20 @@ The content of the `Output` window can be cleared by accessing context menu (rig
 (0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
 Using `Ctrl+Scroll` still zooms only the current editor tab.
 
+## Show numeric values in Watch/Console in hexadecimal format.
+
+To change the format of numeric values, add the following fragment to the [configuration](doc-configuration) file or execute it in the Local Console (in which case it will only be active for the current session):
+
+{% highlight lua %}
+debugger.init = [[
+  local mdb = require('mobdebug')
+  mdb.origline, mdb.line = mdb.line, function(v) return mdb.origline(v, {numformat = "0x%x"}) end
+]]
+{% endhighlight %}
+
+This will affect all the numbers shown in the Watch, Stack, tooltips, and Remote Console windows.
+To switch back either remove the configuration setting or reset `debugger.init` back to an empty value.
+
 ## Document map (plugin).
 
 To enable document map that provides a bird's-eye view of the currently edited document, you can use [document map plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua).
