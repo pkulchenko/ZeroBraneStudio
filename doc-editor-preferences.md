@@ -46,18 +46,6 @@ Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subl
 Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus amount set by `editor.wrapstartindent`), `wxstc.wxSTC_WRAPINDENT_SAME` (align to first subline indent), and `wxstc.wxSTC_WRAPINDENT_INDENT` (align to first subline indent plus one more level of indentation).
 - `editor.wrapstartindent = 0`: set the size of indentation of sublines for wrapped lines in terms of the average character width (0.61+).
 
-## Output and Console
-
-- `outputshell.fontname = "Courier New"`: set font name.
-- `outputshell.fontsize = 10`: set font size (the default value is `11` on OSX).
-- `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
-- `outputshell.usewrap = true`: wrap long lines (0.51+); set to `nil` or `false` to disable. This setting only applies to the Output window; the Console always wraps its lines.
-
-## Project/Filetree
-
-- `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
-- `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
-
 ## Keyboard shortcuts
 
 The editor component provides its own shortcut handling mechanism linked to specific editor actions.

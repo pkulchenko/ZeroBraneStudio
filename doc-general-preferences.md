@@ -33,20 +33,6 @@ if it only contains the file name (for example, `file.ini`), then the file is cr
 - `symbolindexinactivity = 2`: trigger indexing of project files for symbol search after N seconds of inactivity (1.11+).
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 
-## File exclusion lists
-
-- `excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"}`: set the list of files to be excluded from any processing by the IDE (1.10+).
-These files and directories will not be displayed in the project tree and will not be searched.
-They can still be opened in the IDE when opened directly using `File Open` and similar operations.
-- `binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"}`: set the list of files to be recognized as binary files (1.10+).
-These files are displayed in the project tree, but will be skipped from fuzzy search and find- and replace-in-files operations.
-
-File names without a wildcard `*` will be applied as is; file names that end with a path separator (both `\\` and `/` work on all platforms) will be applied as directory names.
-For example, `.svn` and `*.svn` will exclude all files with `svn` extension and `.svn/` and `.svn\` will completely skip processing of the `.svn` directory.
-
-In addition to that, `**` pattern is handled differently from `*` pattern and means a match in all (sub-)directories.
-For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not in its subdirectories, while `abc/**.lua` will exclude all Lua files in `abc` directory and all its subdirectories and `abc/` will exclude `abc` directory along with all its subdirectories.
-
 ## Debugger
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
@@ -80,6 +66,18 @@ set to `false` to show a long calltip.
 both local and global variables are offered in a scope-aware way, so they are offered only in those scopes where they are available.
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
+
+## Output and Console
+
+- `outputshell.fontname = "Courier New"`: set font name.
+- `outputshell.fontsize = 10`: set font size (the default value is `11` on OSX).
+- `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
+- `outputshell.usewrap = true`: wrap long lines (0.51+); set to `nil` or `false` to disable. This setting only applies to the Output window; the Console always wraps its lines.
+
+## Project/Filetree
+
+- `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
+- `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
 
 ## Outline
 
@@ -118,6 +116,20 @@ The records that don't have all symbols entered will be filtered out before matc
 - `commandbar.showallsymbols = true`: show symbols from all indexed files in the project and not just from currently opened files (1.11+);
 set to `false` to limit the symbols to currently opened files.
 - `commandbar.width = 0.35`: set command bar width (1.11+); when the value is less than 1, the size is in proportion to the width of the application window; otherwise, it is the size in pixels.
+
+## File exclusion lists
+
+- `excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"}`: set the list of files to be excluded from any processing by the IDE (1.10+).
+These files and directories will not be displayed in the project tree and will not be searched.
+They can still be opened in the IDE when opened directly using `File Open` and similar operations.
+- `binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"}`: set the list of files to be recognized as binary files (1.10+).
+These files are displayed in the project tree, but will be skipped from fuzzy search and find- and replace-in-files operations.
+
+File names without a wildcard `*` will be applied as is; file names that end with a path separator (both `\\` and `/` work on all platforms) will be applied as directory names.
+For example, `.svn` and `*.svn` will exclude all files with `svn` extension and `.svn/` and `.svn\` will completely skip processing of the `.svn` directory.
+
+In addition to that, `**` pattern is handled differently from `*` pattern and means a match in all (sub-)directories.
+For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not in its subdirectories, while `abc/**.lua` will exclude all Lua files in `abc` directory and all its subdirectories and `abc/` will exclude `abc` directory along with all its subdirectories.
 
 ## Custom APIs
 
