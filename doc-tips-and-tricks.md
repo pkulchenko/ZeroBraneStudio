@@ -146,6 +146,10 @@ debugger.init = [[
 This will affect all the numbers shown in the Watch, Stack, tooltips, and Remote Console windows.
 To switch back either remove the configuration setting or reset `debugger.init` back to an empty value.
 
+## Adding custom API.
+
+To add your own custom API to be recognized in auto-complete and tooltips, you can use the [`api` configuration setting](doc-general-preferences#custom-apis).
+
 ## Document map (plugin).
 
 To enable document map that provides a bird's-eye view of the currently edited document, you can use [document map plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua).
