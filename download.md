@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v1.10 (May 13 2015)
+# Download ZeroBrane Studio v1.20 (Oct 08 2015)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.10-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.10-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.20-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.20-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.10-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.10-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.20-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.20-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.10-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.10-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.20-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.20-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.10-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.10-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.20-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.20-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 <div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support">supporting the project</a>.</div>
@@ -20,11 +20,15 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Redesigned search functionality; added incremental search and replace-in-files preview.
-- Added `excludelist`/`binarylist` to exclude files and folders.
-- Added skipping binary files during find-in-files and fuzzy search.
-- Updated love2d API for v0.9.2.
-- Upgraded Mobdebug (0.62) to add vararg processing.
+- Added indexing of project files for project-wide symbol search.
+- Added support for `file@symbol` fuzzy search.
+- Improved auto-complete order of results and suggestions for case-sensitive matches.
+- Improved application performance and memory usage.
+- Improved memory handling for large files.
+- Updated Windows launcher to add dpi awareness for high dpi monitors.
+- Upgraded Lua 5.3 interpreter to 5.3.1.
+- Fixed a memory leak after a search panel is opened.
+- Fixed an occasional crash from the filetree on Linux.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
