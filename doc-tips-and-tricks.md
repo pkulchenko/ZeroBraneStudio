@@ -156,8 +156,12 @@ To enable document map that provides a bird's-eye view of the currently edited d
 
 ## Clone view (plugin).
 
-To be able to open and edit the same file in multiple windows, you can use [clone view plugin](http://notebook.kulchenko.com/zerobrane/clone-editor-view-plugin-for-zerobrane-studio).
+To open and edit the same file in multiple windows, you can use [clone view plugin](http://notebook.kulchenko.com/zerobrane/clone-editor-view-plugin-for-zerobrane-studio).
 
 ## Real-time watches (plugin).
 
-To be able to display values from your program while it is running, you can use [real-time watches view plugin](http://notebook.kulchenko.com/zerobrane/real-time-watches-plugin-zerobrane-studio).
+To display values from your program while it is running, you can use [real-time watches view plugin](http://notebook.kulchenko.com/zerobrane/real-time-watches-plugin-zerobrane-studio).
+
+## Project settings (plugin).
+
+To set project-specific settings, you can use [project settings plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua).
