@@ -63,6 +63,9 @@ and on **Mac OS X** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneS
 * **I can't step into functions defined in other files in my project.**
 You either need to open them in the IDE before you want to step through them, or to [configure](doc-configuration) the IDE to auto-open files requested during debugging using `editor.autoactivate = true`.
 
+* **Breakpoints are not triggered.**
+You may want to check [this FAQ answer](doc-faq#why-breakpoints-are-not-triggered) for possible reasons and suggestions on how to fix this.
+
 * **The host name is detected incorrectly.**
 In some rare cases the domain name detected by ZeroBrane Studio cannot be resolved, which prevents the debugger from working.
 You can specify the domain name or address you want to use by [configuring](doc-configuration) the IDE with `debugger.hostname="domain"`.
