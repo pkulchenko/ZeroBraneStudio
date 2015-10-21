@@ -13,7 +13,7 @@ The values shown are the default values.
 ## General
 
 - `activateoutput = true`: activate Output or Console window on new content added.
-- `allowinteractivescript = true`: allow interaction in the output window.
+- `allowinteractivescript = true`: allow interaction in the output window (**removed** in 1.21+).
 - `autoanalyzer = true`: enable autoanalyzer that adds scope aware indicators to variables (up to v0.50 it was spelled as `autoanalizer`).
 - `autorecoverinactivity = 10`: trigger saving autorecovery after N seconds of inactivity; set to `nil` to disable autorecovery.
 - `bordersize = 2`: set the size of the border (sash) between windows and panels (0.91+).
