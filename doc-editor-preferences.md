@@ -44,6 +44,8 @@ set to `true` to add an [indicator for function calls](doc-styles-color-schemes#
 Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subline), `wxstc.wxSTC_WRAPVISUALFLAG_START` (beginning of subline), and `wxstc.wxSTC_WRAPVISUALFLAG_MARGIN` (line number margin).
 - `editor.wrapindentmode = wxstc.wxSTC_WRAPINDENT_FIXED`: enable wrapped sublines to be indented to the position of their first subline or one more indent level (0.61+).
 Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus amount set by `editor.wrapstartindent`), `wxstc.wxSTC_WRAPINDENT_SAME` (align to first subline indent), and `wxstc.wxSTC_WRAPINDENT_INDENT` (align to first subline indent plus one more level of indentation).
+- `editor.wrapmode = wxstc.wxSTC_WRAP_WORD`: set the type of wrapping applied (1.21+).
+Possible values: `wxstc.wxSTC_WRAP_WORD` (wrap on word or style boundaries), `wxstc.wxSTC_WRAP_CHAR` (wrap between any characters), `wxstc.wxSTC_WRAP_WHITESPACE` (wrap on whitespace), and `wxstc.wxSTC_WRAP_NONE` (no line wrapping).
 - `editor.wrapstartindent = 0`: set the size of indentation of sublines for wrapped lines in terms of the average character width (0.61+).
 
 ## Keyboard shortcuts
