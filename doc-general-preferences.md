@@ -134,6 +134,22 @@ For example, `.svn` and `*.svn` will exclude all files with `svn` extension and 
 In addition to that, `**` pattern is handled differently from `*` pattern and means a match in all (sub-)directories.
 For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not in its subdirectories, while `abc/**.lua` will exclude all Lua files in `abc` directory and all its subdirectories and `abc/` will exclude `abc` directory along with all its subdirectories.
 
+## Printing
+
+- `print.magnification = -3`: set font size used for printing relative to the screen font size.
+- `print.wrapmode = wxstc.wxSTC_WRAP_WORD`: set the text wrapping to wrap on word and style boundaries for printed content (1.21+).
+Possible values: `wxstc.wxSTC_WRAP_WORD` (wrap on word or style boundaries), `wxstc.wxSTC_WRAP_CHAR` (wrap between any characters), `wxstc.wxSTC_WRAP_WHITESPACE` (wrap on whitespace), and `wxstc.wxSTC_WRAP_NONE` (no line wrapping).
+- `print.colourmode = wxstc.wxSTC_PRINT_BLACKONWHITE`: set to print all text as black on white background (1.21+).
+Possible values: `wxstc.wxSTC_PRINT_NORMAL` (print using the current screen colors), `wxstc.wxSTC_PRINT_INVERTLIGHT` (invert colors for dark backgrounds), `wxstc.wxSTC_PRINT_BLACKONWHITE` (print all text as black on white background), `wxstc.wxSTC_COLOURONWHITE` (print everything in its own color on white background), and `wxstc.wxSTC_COLOURWHITEDEFAULTBG` (print everything in its own color on white background except line numbers that use their own background color).
+- `print.header = "%S\t%D\t%p/%P"`: set the header for printed content (1.21+).
+- `print.footer = nil`: set the footer for printed content (1.21+).
+
+The values for the header and the footer are strings that may include arbitraty text and various placeholders.
+In addition to [placeholders from this list](#formats), `%D` can be used for the current timestamp, `%p` for the current page, and `%P` for the total number of pages.
+Each string may include tabs to separate parts of the header/footer that have different adjustments.
+The first value is left adjusted, the second value is centered and the third value is right adjusted.
+For example, the value `\t\tPage %p of %P` for the header will print `Page 1 of 1` adjusted to the right for one-page output.
+
 ## Custom APIs
 
 - `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91)+.
