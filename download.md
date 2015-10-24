@@ -20,11 +20,11 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Added indexing of project files for project-wide symbol search.
+- Added project-wide fuzzy symbol search.
 - Added support for `file@symbol` fuzzy search.
-- Improved auto-complete order of results and suggestions for case-sensitive matches.
 - Improved application performance and memory usage.
 - Improved memory handling for large files.
+- Improved auto-complete order of results and suggestions for case-sensitive matches.
 - Updated Windows launcher to add dpi awareness for high dpi monitors.
 - Upgraded Lua 5.3 interpreter to 5.3.1.
 - Fixed a memory leak after a search panel is opened.
