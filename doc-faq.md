@@ -129,7 +129,7 @@ For more information on how to modify colors and appearance of IDE elements, che
 
 ## How to accept keyboard input for applications started from the IDE?
 
-You need to output something using `print` or `io.write` before reading input.
+(This is no longer necessary for 1.21+) You need to output something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
 If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
