@@ -172,6 +172,19 @@ If all the buttons between two separators are removed, then two separators are m
 When you reference ID value from the config file, make sure to use `ID.value` syntax: `toolbar.icons[ID.NEW] = false` (0.95+).
 When using an older version (before 0.95), reference them in the **global environment**: `local G = ...; toolbar.icons[G.ID_NEW] = false`.
 
+## Images
+
+Images loaded as toolbar and other icons can be **tinted**; this allows for easy changes to the style of the IDE without any modifications to the images themselves.
+
+- `imagetint = nil`: set the color (as `{0-255, 0-255, 0-255}` for red, green, and blue values) to tint images with (1.10+);
+    - `imagetint={ 0, 71, 171}` -- cobalt
+    - `imagetint={196, 30, 58}` -- cardinal
+    - `imagetint={168, 81, 11}` -- amber
+    - `imagetint={81, 168, 11}` -- swamp
+    - `imagetint={81, 11, 168}` -- pink
+    - `imagetint={168, 11, 81}` -- red
+    - `imagetint={11, 168, 81}` -- verdigris
+
 ## Formats
 
 - `format.menurecentprojects = "%f | %i"`: format of the `Recent Project` menu and the toolbar dropdown.
