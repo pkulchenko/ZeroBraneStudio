@@ -132,6 +132,13 @@ The content of the `Output` window can be cleared by accessing context menu (rig
 (0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
 Using `Ctrl+Scroll` still zooms only the current editor tab.
 
+## Sorting of functions in the Outline.
+
+To change the order of functions displayed in the `Outline` between **sorted** and **in the order of appearence in the source file**,
+access the context menu (right click on the mouse) in the `Outline` and select toggle `Sort By Name`.
+
+To change the default order, add the following to the [configuration](doc-configuration) file: `outline.sort = true/false`.
+
 ## Show numeric values in Watch/Console in hexadecimal format.
 
 To change the format of numeric values, add the following fragment to the [configuration](doc-configuration) file or execute it in the Local Console (in which case it will only be active for the current session):
