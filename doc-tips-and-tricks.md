@@ -38,7 +38,7 @@ When you select all instance of a variable, you can **navigate them forward and 
 
 ## Search in the console history.
 
-(0.39+) To **search commands in the console history**, you can start typing the command and then use `TAB`, which will auto-complete the last matching command.
+(0.39+) To **search and auto-complete commands in the console history**, you can start typing the command and then use `TAB`, which will auto-complete the last matching command.
 You can see other matches if you continue pressing `TAB`.
 
 ## Auto-reload externally modified files.
