@@ -71,15 +71,19 @@ return {
   end,
   isincindent = function(str)
     -- remove "long" comments and escaped slashes (to process \' and \" below)
-    str = str:gsub('%-%-%[=*%[.-%]=*%]',''):gsub([[\\]],'')
+    str = str:gsub('%-%-%[=*%[.-%]=*%]',''):gsub('\\[\\\'"]','')
     while true do
       local num, sep = nil, str:match("['\"]")
       if not sep then break end
       str, num = str:gsub(sep..".-\\"..sep,sep):gsub(sep..".-"..sep,"")
       if num == 0 then break end
     end
-    -- strip comments after strings are processed and remove all function calls
-    str = str:gsub('%-%-.*',''):gsub("%b()","()")
+    str = (str
+      :gsub('%[=*%[.-%]=*%]','') -- remove long strings
+      :gsub('%[=*%[.*','') -- remove partial long strings
+      :gsub('%-%-.*','') -- strip comments after strings are processed
+      :gsub("%b()","()") -- remove all function calls
+    )
 
     local term = str:match("^%s*(%w+)%W*")
     local terminc = term and incindent[term] and 1 or 0
@@ -160,6 +164,10 @@ return {
         local var,typ = tx:match("%s*"..identifier.."%s*=%s*([^;]+)")
 
         var = var and var:gsub("local",""):gsub("%s","")
+        -- handle `require` as a special case that returns a type that matches its parameter
+        -- (this is without deeper analysis on loaded files and should work most of the time)
+        local req = typ and typ:match("^require%s*%(?%s*['\"](.+)['\"]%s*%)?")
+        typ = req or typ
         typ = (typ and typ
           :gsub("%b()","")
           :gsub("%b{}","")
@@ -189,7 +197,7 @@ return {
 
         if (var and typ) then
           local class,func = typ:match(varname.."["..q(sep).."]"..varname)
-          if (assigns[typ]) then
+          if (assigns[typ] and not req) then
             assigns[var] = assigns[typ]
           elseif (func) then
             local added
@@ -253,6 +261,7 @@ return {
     [[bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract
       bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift
       coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield
+      coroutine.isyieldable
       debug.debug debug.getfenv debug.gethook debug.getinfo debug.getlocal
       debug.getmetatable debug.getregistry debug.getupvalue debug.getuservalue debug.setfenv
       debug.sethook debug.setlocal debug.setmetatable debug.setupvalue debug.setuservalue
@@ -262,6 +271,7 @@ return {
       math.abs math.acos math.asin math.atan math.atan2 math.ceil math.cos math.cosh math.deg math.exp
       math.floor math.fmod math.frexp math.ldexp math.log math.log10 math.max math.min math.modf
       math.pow math.rad math.random math.randomseed math.sin math.sinh math.sqrt math.tan math.tanh
+      math.type math.tointeger math.maxinteger math.mininteger math.ult
       os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname
       package.loadlib package.searchpath package.seeall package.config
       package.cpath package.loaded package.loaders package.path package.preload package.searchers

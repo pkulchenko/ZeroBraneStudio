@@ -1,4 +1,4 @@
--- Copyright 2012-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2012-15 Paul Kulchenko, ZeroBrane LLC
 -- Integration with LuaInspect
 ---------------------------------------------------------
 
@@ -27,8 +27,10 @@ function M.warnings_from_string(src, file)
   local ast, err, linenum, colnum = LA.ast_from_string(src, file)
   if not ast and err then return nil, err, linenum, colnum end
 
+  LI.uninspect(ast)
   if ide.config.staticanalyzer.infervalue then
     local tokenlist = LA.ast_to_tokenlist(ast, src)
+    LI.clear_cache()
     LI.inspect(ast, tokenlist, src)
     LI.mark_related_keywords(ast, tokenlist, src)
   else
@@ -43,7 +45,7 @@ function M.warnings_from_string(src, file)
     LI.eval_comments, LI.infer_values = ec, iv
   end
 
-  local globinit = {}
+  local globinit = {arg = true} -- skip `arg` global variable
   local spec = GetSpec(wx.wxFileName(file):GetExt())
   for k in pairs(spec and GetApi(spec.apitype or "none").ac.childs or {}) do
     globinit[k] = true
@@ -58,12 +60,15 @@ local function cleanError(err)
 end
 
 function AnalyzeFile(file)
-  local warn, err, line, pos = M.warnings_from_string(FileRead(file), file)
+  local src, err = FileRead(file)
+  if not src and err then return nil, TR("Can't open file '%s': %s"):format(file, err) end
+
+  local warn, err, line, pos = M.warnings_from_string(src, file)
   return warn, cleanError(err), line, pos
 end
 
-function AnalyzeString(src)
-  local warn, err, line, pos = M.warnings_from_string(src, "<string>")
+function AnalyzeString(src, file)
+  local warn, err, line, pos = M.warnings_from_string(src, file or "<string>")
   return warn, cleanError(err), line, pos
 end
 
@@ -203,10 +208,10 @@ if compilepos then
   menu:Insert(compilepos+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
 end
 
-local debugger = ide.debugger
-
 local function analyzeProgram(editor)
-  ClearOutput()
+  -- save all files (if requested) for "infervalue" analysis to keep the changes on disk
+  if ide.config.editor.saveallonrun and ide.config.staticanalyzer.infervalue then SaveAll(true) end
+  if ide:GetLaunchedProcess() == nil and not ide:GetDebugger():IsConnected() then ClearOutput() end
   DisplayOutput("Analyzing the source code")
   frame:Update()
 
@@ -235,7 +240,4 @@ frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
     end
   end)
 frame:Connect(ID_ANALYZE, wx.wxEVT_UPDATE_UI,
-  function (event)
-    local editor = GetEditor()
-    event:Enable((debugger.server == nil and debugger.pid == nil) and (editor ~= nil))
-  end)
+  function (event) event:Enable(GetEditor() ~= nil) end)

@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- Original authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- Integration with MobDebug
@@ -20,6 +20,7 @@ debugger.stackCtrl = nil -- the stack ctrl that shows stack information
 debugger.toggleview = {
   bottomnotebook = true, -- output/console is "on" by default
   stackpanel = false, watchpanel = false, toolbar = false }
+debugger.needrefresh = {} -- track components that may need a refresh
 debugger.hostname = ide.config.debugger.hostname or (function()
   local hostname = socket.dns.gethostname()
   return hostname and socket.dns.toip(hostname) and hostname or "localhost"
@@ -65,8 +66,9 @@ local function updateWatchesSync(onlyitem)
   local watchCtrl = debugger.watchCtrl
   local pane = ide.frame.uimgr:GetPane("watchpanel")
   local shown = watchCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and watchCtrl:IsShown())
-  if shown and debugger.server and not debugger.running
-  and not debugger.scratchpad and not (debugger.options or {}).noeval then
+  local canupdate = (debugger.server and not debugger.running and not debugger.scratchpad
+    and not (debugger.options or {}).noeval)
+  if shown and canupdate then
     local bgcl = watchCtrl:GetBackgroundColour()
     local hicl = wx.wxColour(math.floor(bgcl:Red()*.9),
       math.floor(bgcl:Green()*.9), math.floor(bgcl:Blue()*.9))
@@ -114,6 +116,8 @@ local function updateWatchesSync(onlyitem)
       if onlyitem then break end
       item = watchCtrl:GetNextSibling(item)
     end
+  elseif not shown and canupdate then
+    debugger.needrefresh.watches = true
   end
 end
 
@@ -124,8 +128,8 @@ local function updateStackSync()
   local stackCtrl = debugger.stackCtrl
   local pane = ide.frame.uimgr:GetPane("stackpanel")
   local shown = stackCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and stackCtrl:IsShown())
-  if shown and debugger.server and not debugger.running
-  and not debugger.scratchpad then
+  local canupdate = debugger.server and not debugger.running and not debugger.scratchpad
+  if shown and canupdate then
     local stack, _, err = debugger.stack()
     if not stack or #stack == 0 then
       stackCtrl:DeleteAll()
@@ -196,6 +200,8 @@ local function updateStackSync()
     stackCtrl:EnsureVisible(stackCtrl:GetFirstChild(root))
     stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     stackCtrl:Thaw()
+  elseif not shown and canupdate then
+    debugger.needrefresh.stack = true
   end
 end
 
@@ -214,6 +220,15 @@ local function updateWatches(item)
   if debugger.running then debugger.update() end
   if debugger.server and not debugger.running then
     copas.addthread(function() updateWatchesSync(item) end)
+  end
+end
+
+local function updateStack()
+  -- check if the debugger is running and may be waiting for a response.
+  -- allow that request to finish, otherwise this function does nothing.
+  if debugger.running then debugger.update() end
+  if debugger.server and not debugger.running then
+    copas.addthread(function() updateStackSync() end)
   end
 end
 
@@ -747,11 +762,8 @@ end
 
 debugger.handle = function(command, server, options)
   local verbose = ide.config.debugger.verbose
-  local osexit, gprint
-  osexit, os.exit = os.exit, function () end
-  gprint, _G.print = _G.print, function (...)
-    if verbose then DisplayOutputLn(...) end
-  end
+  local gprint = _G.print
+  _G.print = function (...) if verbose then DisplayOutputLn(...) end end
 
   nameOutputTab(TR("Output (running)"))
   debugger.running = true
@@ -762,7 +774,6 @@ debugger.handle = function(command, server, options)
   -- only set suspended if the debugging hasn't been terminated
   if debugger.server then nameOutputTab(TR("Output (suspended)")) end
 
-  os.exit = osexit
   _G.print = gprint
   return file, line, err
 end
@@ -878,6 +889,7 @@ do
     -- if there is any pending activation
     if debugger.activate then
       local file, line, content = unpack(debugger.activate)
+      debugger.activate = nil
       if content then
         local editor = NewFile()
         editor:SetText(content)
@@ -894,7 +906,6 @@ do
           activateDocument(file, line)
         end
       end
-      debugger.activate = nil
     end
   end
 end
@@ -959,7 +970,14 @@ end
 debugger.over = function() debugger.exec("over") end
 debugger.out = function() debugger.exec("out") end
 debugger.run = function() debugger.exec("run") end
-debugger.detach = function() debugger.exec("done") end
+debugger.detach = function()
+  if debugger.running then
+    debugger.handleDirect("done")
+    debugger.server = nil
+  else
+    debugger.exec("done")
+  end
+end
 debugger.evaluate = function(expression) return debugger.handle('eval ' .. expression) end
 debugger.execute = function(expression) return debugger.handle('exec ' .. expression) end
 debugger.stack = function() return debugger.handle('stack') end
@@ -1066,6 +1084,13 @@ local function debuggerCreateStackWindow()
         if num > stackmaxnum then break end
       end
       return true
+    end)
+
+  stackCtrl:Connect(wx.wxEVT_SET_FOCUS, function(event)
+      if debugger.needrefresh.stack then
+        updateStack()
+        debugger.needrefresh.stack = false
+      end
     end)
 
   -- register navigation callback
@@ -1228,6 +1253,14 @@ local function debuggerCreateWatchWindow()
       names[value] = nil
     end)
 
+  watchCtrl:Connect(wx.wxEVT_SET_FOCUS, function(event)
+      if debugger.needrefresh.watches then
+        updateWatches()
+        debugger.needrefresh.watches = false
+      end
+    end)
+
+
   local item
   -- wx.wxEVT_CONTEXT_MENU is only triggered over tree items on OSX,
   -- but it needs to be also triggered below any item to add a watch,
@@ -1237,12 +1270,14 @@ local function debuggerCreateWatchWindow()
       -- store the item to be used in edit/delete actions
       item = watchCtrl:HitTest(watchCtrl:ScreenToClient(wx.wxGetMousePosition()))
       local editlabel = watchCtrl:IsWatch(item) and TR("&Edit Watch") or TR("&Edit Value")
-      watchCtrl:PopupMenu(wx.wxMenu {
+      local menu = wx.wxMenu {
         { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
         { ID_EDITWATCH, editlabel..KSC(ID_EDITWATCH) },
         { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) },
         { ID_COPYWATCHVALUE, TR("&Copy Value")..KSC(ID_COPYWATCHVALUE) },
-      })
+      }
+      PackageEventHandle("onMenuWatch", menu, watchCtrl, event)
+      watchCtrl:PopupMenu(menu)
       item = nil
     end)
 

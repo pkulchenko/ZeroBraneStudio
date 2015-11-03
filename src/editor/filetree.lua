@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
@@ -263,9 +263,10 @@ local function treeSetConnectorsAndIcons(tree)
 
   local empty = ""
   local function renameItem(itemsrc, target)
-    local isdir = tree:IsDirectory(itemsrc)
-    local isnew = tree:GetItemText(itemsrc) == empty
-    local source = tree:GetItemFullName(itemsrc)
+    local cache = type(itemsrc) == 'table' and itemsrc or nil
+    local isdir = not cache and tree:IsDirectory(itemsrc) or cache and cache.isdir or false
+    local isnew = not cache and tree:GetItemText(itemsrc) == empty or cache and cache.isnew or false
+    local source = cache and cache.fullname or tree:GetItemFullName(itemsrc)
     local fn = wx.wxFileName(target)
 
     -- check if the target is the same as the source;
@@ -287,9 +288,9 @@ local function treeSetConnectorsAndIcons(tree)
     end
 
     -- check if existing file/dir is going to be overwritten
-    if (wx.wxFileExists(target) or wx.wxDirExists(target))
-    and not wx.wxFileName(source):SameAs(fn)
-    and not ApproveFileOverwrite() then return false end
+    local overwrite = ((wx.wxFileExists(target) or wx.wxDirExists(target))
+      and not wx.wxFileName(source):SameAs(fn))
+    if overwrite and not ApproveFileOverwrite() then return false end
 
     if not fn:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then
       ReportError(TR("Unable to create directory '%s'."):format(target))
@@ -311,7 +312,7 @@ local function treeSetConnectorsAndIcons(tree)
       end
     end
 
-    refreshAncestors(tree:GetItemParent(itemsrc))
+    refreshAncestors(cache and cache.parent or tree:GetItemParent(itemsrc))
     -- load file(s) into the same editor (if any); will also refresh the tree
     if #docs > 0 then
       for _, doc in ipairs(docs) do
@@ -321,8 +322,12 @@ local function treeSetConnectorsAndIcons(tree)
         -- /foo/baz/bar/file.lua, so change /foo/bar to /foo/baz/bar
         local path = (not iscaseinsensitive and fullpath:gsub(q(source), target)
           or fullpath:lower():gsub(q(source:lower()), target))
-        LoadFile(path, doc.editor)
-        if not isdir then PackageEventHandle("onEditorSave", doc.editor) end
+        local editor = LoadFile(path)
+        -- check if the file was loaded into another editor;
+        -- this is possible is "foo" is renamed to "bar" and both are opened;
+        -- if this happens, then "bar" is refreshed and "foo" can be closed.
+        if doc.editor:GetId() ~= editor:GetId() then ClosePage(doc.index) end
+        if not isdir and editor then PackageEventHandle("onEditorSave", editor) end
       end
     else -- refresh the tree and select the new item
       local itemdst = tree:FindItem(target)
@@ -333,6 +338,13 @@ local function treeSetConnectorsAndIcons(tree)
         tree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
       end
     end
+
+    -- refresh the target if it's open and has been overwritten
+    if overwrite and not isdir then
+      local doc = ide:FindDocument(target)
+      if doc then LoadFile(doc:GetFilePath(), doc:GetEditor()) end
+    end
+
     return true
   end
   local function deleteItem(item_id)
@@ -359,7 +371,10 @@ local function treeSetConnectorsAndIcons(tree)
     else
       local doc = ide:FindDocument(source)
       if doc then ClosePage(doc.index) end
-      wx.wxRemoveFile(source)
+      if not wx.wxRemoveFile(source) then
+        ReportError(TR("Unable to delete file '%s': %s")
+          :format(source, wx.wxSysErrorMsg()))
+      end
     end
     refreshAncestors(tree:GetItemParent(item_id))
     return true
@@ -580,7 +595,21 @@ local function treeSetConnectorsAndIcons(tree)
 
       PackageEventHandle("onMenuFiletree", menu, tree, event)
 
+      -- stopping/restarting garbage collection is generally not needed,
+      -- but on Linux not stopping is causing crashes (wxwidgets 2.9.5 and 3.1.0)
+      -- when symbol indexing is done while popup menu is open (with gc methods in the trace).
+      -- this only happens when EVT_IDLE is called when popup menu is open.
+      collectgarbage("stop")
+
+      -- stopping UI updates is generally not needed as well,
+      -- but it's causing a crash on OSX (wxwidgets 2.9.5 and 3.1.0)
+      -- when symbol indexing is done while popup menu is open, so it's disabled
+      local interval = wx.wxUpdateUIEvent.GetUpdateInterval()
+      wx.wxUpdateUIEvent.SetUpdateInterval(-1) -- don't update
+
       tree:PopupMenu(menu)
+      wx.wxUpdateUIEvent.SetUpdateInterval(interval)
+      collectgarbage("restart")
     end)
 
   tree:Connect(wx.wxEVT_RIGHT_DOWN,
@@ -637,19 +666,36 @@ local function treeSetConnectorsAndIcons(tree)
       local label = event:GetLabel():gsub("^%s+$","") -- clean all spaces
 
       -- edited the root element; set the new project directory if needed
+      local cancelled = event:IsEditCancelled()
       if tree:IsRoot(itemsrc) then
-        if not event:IsEditCancelled() and wx.wxDirExists(label) then
+        if not cancelled and wx.wxDirExists(label) then
           ProjectUpdateProjectDir(label)
         end
         return
       end
 
       if not parent or not parent:IsOk() then return end
-      local sourcedir = tree:GetItemFullName(parent)
-      local target = MergeFullPath(sourcedir, label)
-      if event:IsEditCancelled() or label == empty
-      or target and not renameItem(itemsrc, target)
-      then refreshAncestors(parent) end
+      local target = MergeFullPath(tree:GetItemFullName(parent), label)
+      if cancelled or label == empty then refreshAncestors(parent)
+      elseif target then
+        -- normally, none of this caching would be needed as `renameItem`
+        -- would be called to check if the item can be renamed;
+        -- however, as it may open a dialog box, on Linux it's causing a crash
+        -- (caused by the same END_LABEL_EDIT even triggered one more time),
+        -- so to protect from that, `renameItem` is called from IDLE event.
+        -- Unfortunately, by that time, the filetree item (`itemsrc`) may
+        -- already have incorrect state (as it's removed from the tree),
+        -- so its properties need to be cached to be used from IDLE event.
+        local cache = {
+          isdir = tree:IsDirectory(itemsrc),
+          isnew = tree:GetItemText(itemsrc) == empty,
+          fullname = tree:GetItemFullName(itemsrc),
+          parent = parent,
+        }
+        ide:DoWhenIdle(function()
+            if not renameItem(cache, target) then refreshAncestors(parent) end
+          end)
+      end
     end)
 
   local itemsrc

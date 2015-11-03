@@ -1,4 +1,4 @@
--- Copyright 2013-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2013-15 Paul Kulchenko, ZeroBrane LLC
 ---------------------------------------------------------
 
 local ide = ide
@@ -66,18 +66,18 @@ function PackageRegister(file, ...)
 end
 
 function ide:GetRootPath(path)
-  return MergeFullPath(GetPathWithSep(ide.editorFilename), path or '')
+  return MergeFullPath(GetPathWithSep(self.editorFilename), path or '')
 end
 function ide:GetPackagePath(packname)
   return MergeFullPath(
-    ide.oshome and MergeFullPath(ide.oshome, '.'..ide:GetAppName()..'/') or ide:GetRootPath(),
+    self.oshome and MergeFullPath(self.oshome, '.'..self:GetAppName()..'/') or self:GetRootPath(),
     MergeFullPath('packages', packname or '')
   )
 end
 function ide:GetApp() return self.editorApp end
-function ide:GetAppName() return ide.appname end
+function ide:GetAppName() return self.appname end
 function ide:GetEditor(index) return GetEditor(index) end
-function ide:GetEditorWithFocus(ed) return GetEditorWithFocus(ed) end
+function ide:GetEditorWithFocus(...) return GetEditorWithFocus(...) end
 function ide:GetEditorWithLastFocus()
   -- make sure ide.infocus is still a valid component and not "some" userdata
   return (self:IsValidCtrl(self.infocus)
@@ -94,7 +94,7 @@ function ide:GetDocument(ed) return self.openDocuments[ed:GetId()] end
 function ide:GetDocuments() return self.openDocuments end
 function ide:GetKnownExtensions(ext)
   local knownexts, extmatch = {}, ext and ext:lower()
-  for _, spec in pairs(ide.specs) do
+  for _, spec in pairs(self.specs) do
     for _, ext in ipairs(spec.exts or {}) do
       if not extmatch or extmatch == ext:lower() then
         table.insert(knownexts, ext)
@@ -104,12 +104,14 @@ function ide:GetKnownExtensions(ext)
   return knownexts
 end
 
+function ide:DoWhenIdle(func) table.insert(self.onidle, func) end
+
 function ide:FindTopMenu(item)
-  local index = ide:GetMenuBar():FindMenu((TR)(item))
-  return ide:GetMenuBar():GetMenu(index), index
+  local index = self:GetMenuBar():FindMenu((TR)(item))
+  return self:GetMenuBar():GetMenu(index), index
 end
 function ide:FindMenuItem(itemid, menu)
-  local item, imenu = ide:GetMenuBar():FindItem(itemid, menu)
+  local item, imenu = self:GetMenuBar():FindItem(itemid, menu)
   if menu and not item then item = menu:FindItem(itemid) end
   if not item then return end
   menu = menu or imenu
@@ -124,7 +126,7 @@ end
 
 function ide:FindDocument(path)
   local fileName = wx.wxFileName(path)
-  for _, doc in pairs(ide.openDocuments) do
+  for _, doc in pairs(self:GetDocuments()) do
     if doc.filePath and fileName:SameAs(wx.wxFileName(doc.filePath)) then
       return doc
     end
@@ -139,7 +141,7 @@ function ide:FindDocumentsByPartialPath(path)
   local lpattern = pattern:lower()
 
   local docs = {}
-  for _, doc in pairs(ide.openDocuments) do
+  for _, doc in pairs(self:GetDocuments()) do
     if doc.filePath
     and (doc.filePath:find(pattern)
          or iscaseinsensitive and doc.filePath:lower():find(lpattern)) then
@@ -155,18 +157,39 @@ function ide:GetOutput() return self.frame.bottomnotebook.errorlog end
 function ide:GetConsole() return self.frame.bottomnotebook.shellbox end
 function ide:GetEditorNotebook() return self.frame.notebook end
 function ide:GetOutputNotebook() return self.frame.bottomnotebook end
+function ide:GetOutline() return self.outline end
 function ide:GetProjectNotebook() return self.frame.projnotebook end
 function ide:GetProject() return FileTreeGetDir() end
 function ide:GetProjectStartFile()
   local projectdir = FileTreeGetDir()
-  local startfile = ide.filetree.settings.startfile[projectdir]
+  local startfile = self.filetree.settings.startfile[projectdir]
   return MergeFullPath(projectdir, startfile), startfile
 end
 function ide:GetLaunchedProcess() return self.debugger and self.debugger.pid end
-function ide:GetProjectTree() return ide.filetree.projtreeCtrl end
-function ide:GetOutlineTree() return ide.outline.outlineCtrl end
+function ide:GetProjectTree() return self.filetree.projtreeCtrl end
+function ide:GetOutlineTree() return self.outline.outlineCtrl end
 function ide:GetWatch() return self.debugger and self.debugger.watchCtrl end
 function ide:GetStack() return self.debugger and self.debugger.stackCtrl end
+
+local statusreset
+function ide:SetStatusFor(text, interval, field)
+  field = field or 0
+  interval = interval or 2
+  local statusbar = self:GetStatusBar()
+  if not ide.timers.status then
+    ide.timers.status = wx.wxTimer(statusbar)
+    statusbar:Connect(wx.wxEVT_TIMER, function(event) if statusreset then statusreset() end end)
+  end
+  statusreset = function()
+    if statusbar:GetStatusText(field) == text then statusbar:SetStatusText("", field) end
+  end
+  ide.timers.status:Start(interval*1000, wx.wxTIMER_ONE_SHOT)
+  statusbar:SetStatusText(text, field)
+end
+function ide:SetStatus(text, field) self:GetStatusBar():SetStatusText(text, field or 0) end
+function ide:GetStatus(field) return self:GetStatusBar():GetStatusText(field or 0) end
+function ide:PushStatus(text, field) self:GetStatusBar():PushStatusText(text, field or 0) end
+function ide:PopStatus(field) self:GetStatusBar():PopStatusText(field or 0) end
 function ide:Yield() wx.wxYield() end
 function ide:CreateBareEditor() return CreateEditor(true) end
 function ide:CreateStyledTextCtrl(...)
@@ -291,10 +314,10 @@ function ide:GetSetting(path, setting)
 end
 
 function ide:RemoveMenuItem(id, menu)
-  local _, menu, pos = ide:FindMenuItem(id, menu)
+  local _, menu, pos = self:FindMenuItem(id, menu)
   if menu then
-    ide:GetMainFrame():Disconnect(id, wx.wxID_ANY, wx.wxEVT_COMMAND_MENU_SELECTED)
-    ide:GetMainFrame():Disconnect(id, wx.wxID_ANY, wx.wxEVT_UPDATE_UI)
+    self:GetMainFrame():Disconnect(id, wx.wxID_ANY, wx.wxEVT_COMMAND_MENU_SELECTED)
+    self:GetMainFrame():Disconnect(id, wx.wxID_ANY, wx.wxEVT_UPDATE_UI)
     menu:Disconnect(id, wx.wxID_ANY, wx.wxEVT_COMMAND_MENU_SELECTED)
     menu:Disconnect(id, wx.wxID_ANY, wx.wxEVT_UPDATE_UI)
     menu:Remove(id)
@@ -311,7 +334,7 @@ function ide:RemoveMenuItem(id, menu)
 end
 
 function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
-  local proc = wx.wxProcess(ide:GetOutput())
+  local proc = wx.wxProcess(self:GetOutput())
   proc:Redirect()
 
   local cwd
@@ -372,7 +395,7 @@ end
 
 local icons = {} -- icon cache to avoid reloading the same icons
 function ide:GetBitmap(id, client, size)
-  local im = ide.config.imagemap
+  local im = self.config.imagemap
   local width = size:GetWidth()
   local key = width.."/"..id
   local keyclient = key.."-"..client
@@ -386,35 +409,35 @@ function ide:GetBitmap(id, client, size)
     keyclient = key.."-"..client
   end
 
-  local fileClient = ide:GetAppName() .. "/res/" .. keyclient .. ".png"
-  local fileKey = ide:GetAppName() .. "/res/" .. key .. ".png"
+  local fileClient = self:GetAppName() .. "/res/" .. keyclient .. ".png"
+  local fileKey = self:GetAppName() .. "/res/" .. key .. ".png"
   local isImage = type(mapped) == 'userdata' and mapped:GetClassInfo():GetClassName() == 'wxImage'
   local file
   if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else return wx.wxArtProvider.GetBitmap(id, client, size) end
-  local icon = icons[file] or iconFilter(wx.wxBitmap(file), ide.config.imagetint)
+  local icon = icons[file] or iconFilter(wx.wxBitmap(file), self.config.imagetint)
   icons[file] = icon
   return icon, file
 end
 
 function ide:AddPackage(name, package)
-  ide.packages[name] = setmetatable(package, ide.proto.Plugin)
-  ide.packages[name].fname = name
-  return ide.packages[name]
+  self.packages[name] = setmetatable(package, self.proto.Plugin)
+  self.packages[name].fname = name
+  return self.packages[name]
 end
-function ide:RemovePackage(name) ide.packages[name] = nil end
+function ide:RemovePackage(name) self.packages[name] = nil end
 
 function ide:AddWatch(watch, value)
-  local mgr = ide.frame.uimgr
+  local mgr = self.frame.uimgr
   local pane = mgr:GetPane("watchpanel")
   if (pane:IsOk() and not pane:IsShown()) then
     pane:Show()
     mgr:Update()
   end
 
-  local watchCtrl = ide.debugger.watchCtrl
+  local watchCtrl = self.debugger.watchCtrl
   if not watchCtrl then return end
 
   local root = watchCtrl:GetRootItem()
@@ -436,7 +459,7 @@ function ide:AddWatch(watch, value)
 end
 
 function ide:AddInterpreter(name, interpreter)
-  self.interpreters[name] = setmetatable(interpreter, ide.proto.Interpreter)
+  self.interpreters[name] = setmetatable(interpreter, self.proto.Interpreter)
   ProjectUpdateInterpreters()
 end
 function ide:RemoveInterpreter(name)
@@ -463,18 +486,38 @@ function ide:AddMarker(...) return StylesAddMarker(...) end
 function ide:GetMarker(marker) return StylesGetMarker(marker) end
 function ide:RemoveMarker(marker) StylesRemoveMarker(marker) end
 
+local indicators = {}
+function ide:AddIndicator(indic, num)
+  num = num or indicators[indic]
+  if not num then -- new indicator; find the smallest available number
+    local nums = {}
+    for _, indicator in pairs(indicators) do
+      if indicator >= wxstc.wxSTC_INDIC_CONTAINER then
+        nums[indicator-wxstc.wxSTC_INDIC_CONTAINER+1] = true
+      end
+    end
+    num = #nums + wxstc.wxSTC_INDIC_CONTAINER
+    if num > wxstc.wxSTC_INDIC_MAX then return end
+  end
+  indicators[indic] = num
+  return num
+end
+function ide:GetIndicator(indic) return indicators[indic] end
+function ide:GetIndicators() return indicators end
+function ide:RemoveIndicator(indic) indicators[indic] = nil end
+
 -- this provides a simple stack for saving/restoring current configuration
 local configcache = {}
 function ide:AddConfig(name, files)
   if not name or configcache[name] then return end -- don't overwrite existing slots
-  configcache[name] = require('mobdebug').dump(ide.config, {nocode = true})
+  configcache[name] = require('mobdebug').dump(self.config, {nocode = true})
   for _, file in pairs(files) do LoadLuaConfig(MergeFullPath(name, file)) end
   ReApplySpecAndStyles() -- apply current config to the UI
 end
 function ide:RemoveConfig(name)
   if not name or not configcache[name] then return end
   local ok, res = LoadSafe(configcache[name])
-  if ok then ide.config = res
+  if ok then self.config = res
   else
     DisplayOutputLn(("Error while restoring configuration: '%s'."):format(res))
   end
@@ -485,7 +528,7 @@ end
 local panels = {}
 function ide:AddPanel(ctrl, panel, name, conf)
   local width, height = 360, 200
-  local notebook = wxaui.wxAuiNotebook(ide.frame, wx.wxID_ANY,
+  local notebook = wxaui.wxAuiNotebook(self.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
@@ -495,7 +538,7 @@ function ide:AddPanel(ctrl, panel, name, conf)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
     function(event) event:Veto() end)
 
-  local mgr = ide.frame.uimgr
+  local mgr = self.frame.uimgr
   mgr:AddPane(notebook, wxaui.wxAuiPaneInfo():
               Name(panel):Float():CaptionVisible(false):PaneBorder(false):
               MinSize(width/2,height/2):
@@ -514,7 +557,7 @@ function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate)
   return notebook
 end
 function ide:IsPanelDocked(panel)
-  local layout = ide:GetSetting("/view", "uimgrlayout")
+  local layout = self:GetSetting("/view", "uimgrlayout")
   return layout and not layout:find(panel)
 end
 
@@ -522,9 +565,21 @@ function ide:IsValidCtrl(ctrl)
   return ctrl and pcall(function() ctrl:GetId() end)
 end
 
+function ide:IsValidProperty(ctrl, prop)
+  return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end)
+end
+
+function ide:IsWindowShown(win)
+  while win do
+    if not win:IsShown() then return false end
+    win = win:GetParent()
+  end
+  return true
+end
+
 function ide:RestorePanelByLabel(name)
   if not panels[name] then return end
-  return ide:AddPanel(unpack(panels[name]))
+  return self:AddPanel(unpack(panels[name]))
 end
 
 function ide:AddTool(name, command, updateui)

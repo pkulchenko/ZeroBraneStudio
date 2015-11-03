@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 --          Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -25,17 +25,6 @@ ID_NEWFILE          = NewID()
 ID_NEWDIRECTORY     = NewID()
 ID_RENAMEFILE       = NewID()
 ID_DELETEFILE       = NewID()
-ID_HIDEEXTENSION    = NewID()
-ID_SETSTARTFILE     = NewID()
-ID_UNSETSTARTFILE   = NewID()
-ID_SHOWEXTENSION    = NewID()
-ID_SHOWEXTENSIONALL = NewID()
-ID_MAPDIRECTORY     = NewID()
-ID_UNMAPDIRECTORY   = NewID()
-ID_OPENEXTENSION    = NewID()
-ID_COPYFULLPATH     = NewID()
-ID_SHOWLOCATION     = NewID()
-ID_REFRESH          = NewID()
 ID_SAVE             = linux and NewID() or wx.wxID_SAVE
 ID_SAVEAS           = linux and NewID() or wx.wxID_SAVEAS
 ID_SAVEALL          = NewID()
@@ -46,6 +35,8 @@ ID_RECENTFILESNEXT  = NewID()
 ID_RECENTPROJECTS   = NewID()
 ID_RECENTPROJECTSCLEAR = NewID()
 ID_RECENTPROJECTSPREV = NewID()
+ID_PRINT            = NewID()
+ID_PAGESETUP        = NewID()
 ID_EXIT             = linux and NewID() or wx.wxID_EXIT
 -- Edit menu
 ID_CUT              = linux and NewID() or wx.wxID_CUT
@@ -118,6 +109,7 @@ ID_RUNTO            = NewID()
 ID_BREAK            = NewID()
 ID_TRACE            = NewID()
 ID_CLEAROUTPUT      = NewID()
+ID_CLEARCONSOLE     = NewID()
 ID_COMMANDLINEPARAMETERS = NewID()
 ID_INTERPRETER      = NewID()
 ID_PROJECTDIR       = NewID()
@@ -143,6 +135,26 @@ ID_REPLACEALLSELECTIONS = NewID()
 ID_QUICKADDWATCH    = NewID()
 ID_QUICKEVAL        = NewID()
 ID_ADDTOSCRATCHPAD  = NewID()
+-- filetree menu
+ID_HIDEEXTENSION    = NewID()
+ID_SETSTARTFILE     = NewID()
+ID_UNSETSTARTFILE   = NewID()
+ID_SHOWEXTENSION    = NewID()
+ID_SHOWEXTENSIONALL = NewID()
+ID_MAPDIRECTORY     = NewID()
+ID_UNMAPDIRECTORY   = NewID()
+ID_OPENEXTENSION    = NewID()
+ID_COPYFULLPATH     = NewID()
+ID_SHOWLOCATION     = NewID()
+ID_REFRESH          = NewID()
+ID_SYMBOLDIRREFRESH = NewID()
+ID_SYMBOLDIRINDEX   = NewID()
+ID_SYMBOLDIRDISABLE = NewID()
+ID_SYMBOLDIRENABLE  = NewID()
+-- outline menu
+ID_OUTLINESORT      = NewID()
+-- console menu
+ID_SELECTCONSOLECOMMAND = NewID()
 -- search toolbar
 ID_FINDALL          = NewID()
 ID_FINDREPLACENEXT  = NewID()

@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -6,7 +6,6 @@
 local editorID = 100 -- window id to create editor pages with, incremented for new editors
 
 local openDocuments = ide.openDocuments
-local statusBar = ide.frame.statusBar
 local notebook = ide.frame.notebook
 local edcfg = ide.config.editor
 local styles = ide.config.styles
@@ -14,7 +13,7 @@ local unpack = table.unpack or unpack
 local q = EscapeMagic
 
 local margin = { LINENUMBER = 0, MARKER = 1, FOLD = 2 }
-local linenummask = "99999"
+local linenumlen = 4 + 0.5
 local foldtypes = {
   [0] = { wxstc.wxSTC_MARKNUM_FOLDEROPEN, wxstc.wxSTC_MARKNUM_FOLDER,
     wxstc.wxSTC_MARKNUM_FOLDERSUB, wxstc.wxSTC_MARKNUM_FOLDERTAIL, wxstc.wxSTC_MARKNUM_FOLDEREND,
@@ -57,7 +56,7 @@ local function updateStatusText(editor)
   if ide.frame then
     for n in ipairs(texts) do
       if (texts[n] ~= statusTextTable[n]) then
-        statusBar:SetStatusText(texts[n], n+1)
+        ide:SetStatus(texts[n], n)
         statusTextTable[n] = texts[n]
       end
     end
@@ -168,7 +167,6 @@ end
 function SetEditorSelection(selection)
   local editor = GetEditor(selection)
   updateStatusText(editor) -- update even if nil
-  statusBar:SetStatusText("",1)
   ide.frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
 
   if editor then
@@ -236,17 +234,10 @@ function EditorAutoComplete(editor)
   -- know now which string is to be completed
   local userList = CreateAutoCompList(editor, lt, pos)
 
-  -- remove any suggestions that match the word the cursor is on
-  -- for example, if typing 'foo' in front of 'bar', 'foobar' is not offered
+  -- don't show if what's typed so far matches one of the options
   local right = linetx:sub(localpos+1,#linetx):match("^([%a_]+[%w_]*)")
-  if userList and right then
-    -- remove all spaces that may be left if "foo" removed from "foo foo"
-    userList = (userList:gsub("%f[%w_]"..lt..right.."%f[%W]","")
-      :gsub("^ +",""):gsub(" +$",""):gsub("  +"," "))
-  end
-
-  -- don't show the list if it only suggests what's already typed
-  if userList and #userList > 0 and not lt:find(userList.."$") then
+  local left = lt:match("[%w_]*$") -- extract one word on the left (without separators)
+  if userList and #userList > 0 and not userList:find("%f[%w_]"..left..(right or "").."%f[^%w_]") then
     editor:UserListShow(1, userList)
   elseif editor:AutoCompActive() then
     editor:AutoCompCancel()
@@ -412,8 +403,13 @@ function EditorIsModified(editor)
 end
 
 -- Indicator handling for functions and local/global variables
--- indicator.MASKED is handled separately, so don't include in MAX
-local indicator = {FNCALL = 0, LOCAL = 1, GLOBAL = 2, MASKING = 3, MASKED = 4, MAX = 3}
+local indicator = {
+  FNCALL = ide:GetIndicator("core.fncall"),
+  LOCAL = ide:GetIndicator("core.varlocal"),
+  GLOBAL = ide:GetIndicator("core.varglobal"),
+  MASKING = ide:GetIndicator("core.varmasking"),
+  MASKED = ide:GetIndicator("core.varmasked"),
+}
 
 function IndicateFunctionsOnly(editor, lines, linee)
   local sindic = styles.indicator
@@ -573,7 +569,9 @@ function IndicateAll(editor, lines)
   end
 
   local cleared = {}
-  for indic = 0, indicator.MAX do cleared[indic] = pos end
+  for _, indic in ipairs {indicator.FNCALL, indicator.LOCAL, indicator.GLOBAL, indicator.MASKING} do
+    cleared[indic] = pos
+  end
 
   local function IndicateOne(indic, pos, length)
     editor:SetIndicatorCurrent(indic)
@@ -634,11 +632,11 @@ function IndicateAll(editor, lines)
   -- don't clear "masked" indicators as those can be set out of order (so
   -- last updated fragment is not always the last in terms of its position);
   -- these indicators should be up-to-date to the end of the code fragment.
-  -- also don't clear "funccall" indicators as those can be set based on
-  -- IndicateFunctionsOnly processing, which is dealt with separately
   local funconly = ide.config.editor.showfncall and editor.spec.isfncall
-  for indic = funconly and indicator.LOCAL or indicator.FNCALL, indicator.MAX do
-    IndicateOne(indic, pos, 0)
+  for _, indic in ipairs {indicator.FNCALL, indicator.LOCAL, indicator.GLOBAL, indicator.MASKING} do
+    -- don't clear "funccall" indicators as those can be set based on
+    -- IndicateFunctionsOnly processing, which is dealt with separately
+    if indic ~= indicator.FNCALL or not funconly then IndicateOne(indic, pos, 0) end
   end
 
   local needmore = delayed[editor] ~= nil
@@ -661,6 +659,7 @@ function CreateEditor(bare)
   editor.matchon = false
   editor.assignscache = false
   editor.bom = false
+  editor.updated = 0
   editor.jumpstack = {}
   editor.ctrlcache = {}
   editor.tokenlist = {}
@@ -693,11 +692,11 @@ function CreateEditor(bare)
   editor:SetTabWidth(tonumber(edcfg.tabwidth) or 2)
   editor:SetIndent(tonumber(edcfg.tabwidth) or 2)
   editor:SetUseTabs(edcfg.usetabs and true or false)
-  editor:SetIndentationGuides(edcfg.indentguide and true or false)
+  editor:SetIndentationGuides(tonumber(edcfg.indentguide) or (edcfg.indentguide and true or false))
   editor:SetViewWhiteSpace(edcfg.whitespace and true or false)
 
   if (edcfg.usewrap) then
-    editor:SetWrapMode(wxstc.wxSTC_WRAP_WORD)
+    editor:SetWrapMode(edcfg.wrapmode)
     editor:SetWrapStartIndent(0)
     if ide.wxver >= "2.9.5" then
       if edcfg.wrapflags then
@@ -728,7 +727,7 @@ function CreateEditor(bare)
   editor:SetMarginType(margin.LINENUMBER, wxstc.wxSTC_MARGIN_NUMBER)
   editor:SetMarginMask(margin.LINENUMBER, 0)
   editor:SetMarginWidth(margin.LINENUMBER,
-    editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, linenummask))
+    math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")))
 
   editor:SetMarginWidth(margin.MARKER, 18)
   editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
@@ -840,6 +839,10 @@ function CreateEditor(bare)
         editor.assignscache = false
       end
       local evtype = event:GetModificationType()
+      if bit.band(evtype, wxstc.wxSTC_MOD_CHANGEMARKER) == 0 then
+        -- this event is being called on OSX too frequently, so skip these notifications
+        editor.updated = TimeGet()
+      end
       local pos = event:GetPosition()
       local firstLine = editor:LineFromPosition(pos)
       local inserted = bit.band(evtype, wxstc.wxSTC_MOD_INSERTTEXT) ~= 0
@@ -848,7 +851,13 @@ function CreateEditor(bare)
         SetAutoRecoveryMark()
 
         local linesChanged = inserted and event:GetLinesAdded() or 0
-        table.insert(editor.ev, {pos, linesChanged})
+        -- collate events if they are for the same line
+        local events = #editor.ev
+        if events == 0 or editor.ev[events][1] ~= firstLine then
+          editor.ev[events+1] = {firstLine, linesChanged}
+        elseif events > 0 and editor.ev[events][1] == firstLine then
+          editor.ev[events][2] = math.max(editor.ev[events][2], linesChanged)
+        end
         DynamicWordsAdd(editor, nil, firstLine, linesChanged)
       end
 
@@ -1002,16 +1011,38 @@ function CreateEditor(bare)
 
   editor:Connect(wx.wxEVT_KILL_FOCUS,
     function (event)
-      if editor:AutoCompActive() then editor:AutoCompCancel() end
+      -- on OSX clicking on scrollbar in the popup is causing the editor to lose focus,
+      -- which causes canceling of auto-complete, which later cause crash because
+      -- the window is destroyed in wxwidgets after already being closed. Skip on OSX.
+      if ide.osname ~= 'Macintosh' and editor:AutoCompActive() then editor:AutoCompCancel() end
       PackageEventHandle("onEditorFocusLost", editor)
       event:Skip()
     end)
+
+  local eol = {
+    [wxstc.wxSTC_EOL_CRLF] = "\r\n",
+    [wxstc.wxSTC_EOL_LF] = "\n",
+    [wxstc.wxSTC_EOL_CR] = "\r",
+  }
+  local function addOneLine(editor, adj)
+    local pos = editor:GetLineEndPosition(editor:LineFromPosition(editor:GetCurrentPos())+(adj or 0))
+    local added = eol[editor:GetEOLMode()] or "\n"
+    editor:InsertText(pos, added)
+    editor:SetCurrentPos(pos+#added)
+
+    local ev = wxstc.wxStyledTextEvent(wxstc.wxEVT_STC_CHARADDED)
+    ev:SetKey(string.byte("\n"))
+    editor:AddPendingEvent(ev)
+  end
 
   editor:Connect(wxstc.wxEVT_STC_USERLISTSELECTION,
     function (event)
       if PackageEventHandle("onEditorUserlistSelection", editor, event) == false then
         return
       end
+
+      -- if used Shift-Enter, then skip auto complete and just do Enter
+      if wx.wxGetKeyState(wx.WXK_SHIFT) then return addOneLine(editor) end
 
       if ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
         local text = event:GetText()
@@ -1027,14 +1058,14 @@ function CreateEditor(bare)
         editor:BeginUndoAction()
         for s = #positions, 1, -1 do
           local pos = positions[s]
-          local start_pos = editor:WordStartPosition(pos, true)
-          editor:SetSelection(start_pos, pos)
+          local startpos = editor:WordStartPosition(pos, true)
+          editor:SetSelection(startpos, pos)
           editor:ReplaceSelection(text)
           -- if this is the main position, save new cursor position to restore
           if pos == mainpos then mainpos = editor:GetCurrentPos()
           elseif pos < mainpos then
             -- adjust main position as earlier changes may affect it
-            mainpos = mainpos + #text - (pos - start_pos)
+            mainpos = mainpos + #text - (pos - startpos)
           end
         end
         editor:EndUndoAction()
@@ -1042,8 +1073,9 @@ function CreateEditor(bare)
         editor:GotoPos(mainpos)
       else
         local pos = editor:GetCurrentPos()
-        local start_pos = editor:WordStartPosition(pos, true)
-        editor:SetSelection(start_pos, pos)
+        local startpos = editor:WordStartPosition(pos, true)
+        local endpos = editor:WordEndPosition(pos, true)
+        editor:SetSelection(startpos, ide.config.acandtip.droprest and endpos or pos)
         editor:ReplaceSelection(event:GetText())
       end
     end)
@@ -1085,6 +1117,14 @@ function CreateEditor(bare)
           editor:Refresh()
         end
       end
+
+      -- adjust line number margin, but only if it's already shown
+      local linecount = #tostring(editor:GetLineCount()) + 0.5
+      local mwidth = editor:GetMarginWidth(margin.LINENUMBER)
+      if mwidth > 0 then
+        local width = math.max(linecount, linenumlen) * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")
+        if mwidth ~= width then editor:SetMarginWidth(margin.LINENUMBER, math.floor(width)) end
+      end
     end)
 
   local alreadyProcessed = 0
@@ -1113,11 +1153,13 @@ function CreateEditor(bare)
       updateBraceMatch(editor)
       local minupdated
       for _,iv in ipairs(editor.ev) do
-        local line = editor:LineFromPosition(iv[1])
+        local line = iv[1]
         if not minupdated or line < minupdated then minupdated = line end
-        local ok, res = pcall(IndicateAll, editor, line)
-        if not ok then DisplayOutputLn("Internal error: ",res,line,line+iv[2]) end
         IndicateFunctionsOnly(editor,line,line+iv[2])
+      end
+      if minupdated then
+        local ok, res = pcall(IndicateAll, editor, minupdated)
+        if not ok then DisplayOutputLn("Internal error: ",res,minupdated) end
       end
       local firstvisible = editor:DocLineFromVisible(editor:GetFirstVisibleLine())
       local lastline = math.min(editor:GetLineCount(),
@@ -1191,7 +1233,6 @@ function CreateEditor(bare)
           event:Skip()
         elseif ide.findReplace:IsShown() then
           ide.findReplace:Hide()
-          editor:SetFocus()
         elseif ide:GetMainFrame():IsFullScreen() then
           ShowFullScreen(false)
         end
@@ -1261,6 +1302,9 @@ function CreateEditor(bare)
           or (keycode == wx.WXK_INSERT and mod == wx.wxMOD_CONTROL) then
         ide.frame:AddPendingEvent(wx.wxCommandEvent(
           wx.wxEVT_COMMAND_MENU_SELECTED, keycode == wx.WXK_INSERT and ID_COPY or ID_CUT))
+      elseif (keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER)
+      and (mod == wx.wxMOD_CONTROL or mod == (wx.wxMOD_CONTROL + wx.wxMOD_SHIFT)) then
+        addOneLine(editor, mod == (wx.wxMOD_CONTROL + wx.wxMOD_SHIFT) and -1 or 0)
       elseif ide.osname == "Unix" and ide.wxver >= "2.9.5"
       and mod == wx.wxMOD_CONTROL and editor.ctrlcache[keycode] then
         ide.frame:AddPendingEvent(wx.wxCommandEvent(
@@ -1312,8 +1356,6 @@ function CreateEditor(bare)
 
   editor:Connect(wxstc.wxEVT_STC_ZOOM,
     function(event)
-      editor:SetMarginWidth(margin.LINENUMBER,
-        editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, linenummask))
       -- if Shift+Zoom is used, then zoom all editors, not just the current one
       if wx.wxGetKeyState(wx.WXK_SHIFT) then
         local zoom = editor:GetZoom()
@@ -1355,6 +1397,7 @@ function CreateEditor(bare)
         { ID_QUICKADDWATCH, TR("Add Watch Expression") },
         { ID_QUICKEVAL, TR("Evaluate In Console") },
         { ID_ADDTOSCRATCHPAD, TR("Add To Scratchpad") },
+        { ID_RUNTO, TR("Run To Cursor") },
       }
 
       menu:Enable(ID_GOTODEFINITION, instances and instances[0])
@@ -1379,6 +1422,13 @@ function CreateEditor(bare)
 
       editor:PopupMenu(menu)
       editor:SetMouseDwellTime(dwelltime) -- restore dwelling
+    end)
+
+  editor:Connect(ID_RUNTO, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function()
+      if pos ~= wxstc.wxSTC_INVALID_POSITION then
+        ide:GetDebugger().runto(editor, editor:LineFromPosition(pos))
+      end
     end)
 
   editor:Connect(ID_GOTODEFINITION, wx.wxEVT_COMMAND_MENU_SELECTED,

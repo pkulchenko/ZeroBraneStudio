@@ -61,54 +61,69 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
     end
   end
 
-  -- if not opened yet, try open now
-  local file_text = FileRead(filePath)
-  if file_text then
-    if GetConfigIOFilter("input") then
-      file_text = GetConfigIOFilter("input")(filePath,file_text)
-    end
-  elseif file_must_exist then
-    return nil
-  end
+  local filesize = FileSize(filePath)
+  if not filesize and file_must_exist then return nil end
 
   local current = editor and editor:GetCurrentPos()
   editor = editor or findUnusedEditor() or CreateEditor()
-
   editor:Freeze()
   editor:SetupKeywords(GetFileExt(filePath))
   editor:MarkerDeleteAll(-1)
-
-  -- remove BOM from UTF-8 encoded files; store BOM to add back when saving
+  if filesize then editor:Allocate(filesize) end
+  editor:SetText("")
   editor.bom = string.char(0xEF,0xBB,0xBF)
-  if file_text and editor:GetCodePage() == wxstc.wxSTC_CP_UTF8
-  and file_text:find("^"..editor.bom) then
-    file_text = file_text:gsub("^"..editor.bom, "")
-  else
-    -- set to 'false' as checks for nil on wxlua objects may fail at run-time
-    editor.bom = false
-  end
-  editor:SetText(file_text or "")
 
-  -- check the editor as it can be empty if the file has malformed UTF8;
-  -- skip binary files with unknown extensions as they may have any sequences;
-  -- can't show them anyway.
-  if file_text and #file_text > 0 and #(editor:GetText()) == 0
-  and (editor.spec ~= ide.specs.none or not IsBinary(file_text)) then
-    local replacement, invalid = "\022"
-    file_text, invalid = FixUTF8(file_text, replacement)
-    if #invalid > 0 then
-      editor:AppendText(file_text)
-      local lastline = nil
-      for _, n in ipairs(invalid) do
-        local line = editor:LineFromPosition(n)
-        if line ~= lastline then
-          DisplayOutputLn(("%s:%d: %s")
-            :format(filePath, line+1, TR("Replaced an invalid UTF8 character with %s."):format(replacement)))
-          lastline = line
+  local inputfilter = GetConfigIOFilter("input")
+  local file_text
+  ide:PushStatus("")
+  FileRead(filePath, 1024*1024, function(s)
+      if not file_text then
+        -- remove BOM from UTF-8 encoded files; store BOM to add back when saving
+        if s and editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and s:find("^"..editor.bom) then
+          s = s:gsub("^"..editor.bom, "")
+        else
+          -- set to 'false' as checks for nil on wxlua objects may fail at run-time
+          editor.bom = false
+        end
+        file_text = s
+      end
+      if inputfilter then s = inputfilter(filePath, s) end
+      local expected = editor:GetLength() + #s
+      editor:AppendText(s)
+      -- if the length is not as expected, then either it's a binary file or invalid UTF8
+      if editor:GetLength() ~= expected then
+        -- skip binary files with unknown extensions as they may have any sequences
+        if editor.spec == ide.specs.none and IsBinary(s) then
+          DisplayOutputLn(("%s: %s"):format(filePath,
+              TR("Binary file is shown as read-only as it is only partially loaded.")))
+          file_text = ''
+          editor:SetReadOnly(true)
+          return false
+        end
+
+        -- handle invalid UTF8 characters
+        -- fix: doesn't handle characters split by callback buffer
+        local replacement, invalid = "\022"
+        s, invalid = FixUTF8(s, replacement)
+        if #invalid > 0 then
+          editor:AppendText(s)
+          local lastline = nil
+          for _, n in ipairs(invalid) do
+            local line = editor:LineFromPosition(n)
+            if line ~= lastline then
+              DisplayOutputLn(("%s:%d: %s"):format(filePath, line+1,
+                  TR("Replaced an invalid UTF8 character with %s."):format(replacement)))
+              lastline = line
+            end
+          end
         end
       end
-    end
-  end
+      if filesize and filesize > 0 then
+        ide:PopStatus()
+        ide:PushStatus(TR("%s%% loaded..."):format(math.floor(100*editor:GetLength()/filesize)))
+      end
+    end)
+  ide:PopStatus()
 
   editor:Colourise(0, -1)
   editor:ResetTokenList() -- reset list of tokens if this is a reused editor
@@ -132,7 +147,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
       DisplayOutputLn(("%s: %s")
         :format(filePath, TR("Mixed end-of-line encodings detected.")..' '..
           TR("Use '%s' to show line endings and '%s' to convert them.")
-        :format("GetEditor():SetViewEOL(1)", "GetEditor():ConvertEOLs(GetEditor():GetEOLMode())")))
+        :format("ide:GetEditor():SetViewEOL(1)", "ide:GetEditor():ConvertEOLs(ide:GetEditor():GetEOLMode())")))
     elseif foundcrlf then
       editor:SetEOLMode(wxstc.wxSTC_EOL_CRLF)
     elseif foundlf then
@@ -241,10 +256,12 @@ function OpenFile(event)
     (path and GetPathWithSep(path) or FileTreeGetDir() or ""),
     "",
     getExtsString(),
-    wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST)
+    wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST + wx.wxFD_MULTIPLE)
   if fileDialog:ShowModal() == wx.wxID_OK then
-    if not LoadFile(fileDialog:GetPath(), nil, true) then
-      ReportError(TR("Unable to load file '%s'."):format(fileDialog:GetPath()))
+    for _, path in ipairs(fileDialog:GetPaths()) do
+      if not LoadFile(path, nil, true) then
+        ReportError(TR("Unable to load file '%s'."):format(path))
+      end
     end
   end
   fileDialog:Destroy()
@@ -270,8 +287,8 @@ function SaveFile(editor, filePath)
       end
     end
 
-    local st = (editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and editor.bom or "")
-      .. editor:GetText()
+    local st = ((editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and editor.bom or "")
+      .. editor:GetText())
     if GetConfigIOFilter("output") then
       st = GetConfigIOFilter("output")(filePath,st)
     end
@@ -430,6 +447,11 @@ end
 function ClosePage(selection)
   local editor = GetEditor(selection)
   local id = editor:GetId()
+
+  if PackageEventHandle("onEditorPreClose", editor) == false then
+    return false
+  end
+
   if SaveModifiedDialog(editor, true) ~= wx.wxID_CANCEL then
     DynamicWordsRemoveAll(editor)
     local debugger = ide.debugger
@@ -449,7 +471,9 @@ function ClosePage(selection)
 
     -- disable full screen if the last tab is closed
     if not (notebook:GetSelection() >= 0) then ShowFullScreen(false) end
+    return true
   end
+  return false
 end
 
 function CloseAllPagesExcept(selection)
@@ -555,6 +579,7 @@ function CompileProgram(editor, params)
         :format(compileOk/compileTotal*100, compileOk, compileTotal))
     end
   else
+    ActivateOutput()
     DisplayOutputLn(TR("Compilation error").." "..TR("on line %d"):format(line)..":")
     DisplayOutputLn((err:gsub("\n$", "")))
     -- check for escapes invalid in LuaJIT/Lua 5.2 that are allowed in Lua 5.1
@@ -773,8 +798,7 @@ local function saveAutoRecovery(force)
     ide.settings:Flush()
   end
   ide.session.lastsaved = now
-  ide.frame.statusBar:SetStatusText(
-    TR("Saved auto-recover at %s."):format(os.date("%H:%M:%S")), 1)
+  ide:SetStatus(TR("Saved auto-recover at %s."):format(os.date("%H:%M:%S")))
 end
 
 local function fastWrap(func, ...)
@@ -831,8 +855,9 @@ function StoreRestoreProjectTabs(curdir, newdir)
     fastWrap(SetOpenFiles, files, {index = #files + notebook:GetPageCount()})
   end
 
-  if params and params.interpreter then
-    ProjectSetInterpreter(params.interpreter) -- set the interpreter
+  -- either interpreter is chosen for the project or the default value is set
+  if (params and params.interpreter) or (not params and ide.config.interpreter) then
+    ProjectSetInterpreter(params and params.interpreter or ide.config.interpreter)
   end
 
   if ide.osname ~= 'Macintosh' then notebook:Thaw() end
@@ -920,7 +945,9 @@ ide.editorApp:Connect(wx.wxEVT_SET_FOCUS, function(event)
     local class = win:GetClassInfo():GetClassName()
     -- don't set focus on the main frame or toolbar
     if ide.infocus and (class == 'wxAuiToolBar' or class == 'wxFrame') then
-      pcall(function() ide.infocus:SetFocus() end)
+      -- check if the window is shown before returning focus to it,
+      -- as it may lead to a recursion in event handlers on OSX (wxwidgets 2.9.5).
+      pcall(function() if ide:IsWindowShown(ide.infocus) then ide.infocus:SetFocus() end end)
       return
     end
 
@@ -964,14 +991,12 @@ ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
         -- restore focus to the last element that received it;
         -- wrap into pcall in case the element has disappeared
         -- while the application was out of focus
-        pcall(function() ide.infocus:SetFocus() end)
+        pcall(function() if ide:IsWindowShown(ide.infocus) then ide.infocus:SetFocus() end end)
       end
 
       local active = event:GetActive()
       -- save auto-recovery record when making the app inactive
       if not active then saveAutoRecovery(true) end
-      -- also collect all the garbage
-      if not active then collectgarbage() end
 
       -- disable UI refresh when app is inactive, but only when not running
       wx.wxUpdateUIEvent.SetUpdateInterval(
@@ -999,3 +1024,28 @@ function PaneFloatToggle(window)
   end
   uimgr:Update()
 end
+
+local cma, cman = 0, 1
+frame:Connect(wx.wxEVT_IDLE,
+  function(event)
+    local debugger = ide.debugger
+    if (debugger.update) then debugger.update() end
+    if (debugger.scratchpad) then DebuggerRefreshScratchpad() end
+    if IndicateIfNeeded() then event:RequestMore(true) end
+    PackageEventHandleOnce("onIdleOnce", event)
+    PackageEventHandle("onIdle", event)
+
+    -- process onidle events if any
+    if #ide.onidle > 0 then table.remove(ide.onidle)() end
+    if #ide.onidle > 0 then event:RequestMore(true) end -- request more if anything left
+
+    if ide.config.showmemoryusage then
+      local mem = collectgarbage("count")
+      local alpha = math.max(tonumber(ide.config.showmemoryusage) or 0, 1/cman)
+      cman = cman + 1
+      cma = alpha * mem + (1-alpha) * cma
+      ide:SetStatus(("cur: %sKb; avg: %sKb"):format(math.floor(mem), math.floor(cma)))
+    end
+
+    event:Skip() -- let other EVT_IDLE handlers to work on the event
+  end)

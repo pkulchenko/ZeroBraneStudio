@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = 0.62,
+  _VERSION = 0.628,
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -37,6 +37,7 @@ local setmetatable = setmetatable
 local tonumber = tonumber
 local unpack = table.unpack or unpack
 local rawget = rawget
+local gsub, sub, find = string.gsub, string.sub, string.find
 
 -- if strict.lua is used, then need to avoid referencing some global
 -- variables, as they can be undefined;
@@ -61,6 +62,7 @@ local corocreate = ngx and coroutine._create or coroutine.create
 local cororesume = ngx and coroutine._resume or coroutine.resume
 local coroyield = ngx and coroutine._yield or coroutine.yield
 local corostatus = ngx and coroutine._status or coroutine.status
+local corowrap = coroutine.wrap
 
 if not setfenv then -- Lua 5.2+
   -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
@@ -124,34 +126,36 @@ local debugee = function ()
   for _ = 1, 10 do a = a + 1 end
   error(deferror)
 end
-local function q(s) return s:gsub('([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+local function q(s) return string.gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
 
 local serpent = (function() ---- include Serpent module for serialization
-local n, v = "serpent", 0.28 -- (C) 2012-15 Paul Kulchenko; MIT License
+local n, v = "serpent", 0.285 -- (C) 2012-15 Paul Kulchenko; MIT License
 local c, d = "Paul Kulchenko", "Lua serializer and pretty printer"
 local snum = {[tostring(1/0)]='1/0 --[[math.huge]]',[tostring(-1/0)]='-1/0 --[[-math.huge]]',[tostring(0/0)]='0/0'}
 local badtype = {thread = true, userdata = true, cdata = true}
+local getmetatable = debug and debug.getmetatable or getmetatable
 local keyword, globals, G = {}, {}, (_G or _ENV)
 for _,k in ipairs({'and', 'break', 'do', 'else', 'elseif', 'end', 'false',
   'for', 'function', 'goto', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat',
   'return', 'then', 'true', 'until', 'while'}) do keyword[k] = true end
 for k,v in pairs(G) do globals[v] = k end -- build func to name mapping
 for _,g in ipairs({'coroutine', 'debug', 'io', 'math', 'string', 'table', 'os'}) do
-  for k,v in pairs(G[g] or {}) do globals[v] = g..'.'..k end end
+  for k,v in pairs(type(G[g]) == 'table' and G[g] or {}) do globals[v] = g..'.'..k end end
 
 local function s(t, opts)
   local name, indent, fatal, maxnum = opts.name, opts.indent, opts.fatal, opts.maxnum
   local sparse, custom, huge = opts.sparse, opts.custom, not opts.nohuge
   local space, maxl = (opts.compact and '' or ' '), (opts.maxlevel or math.huge)
   local iname, comm = '_'..(name or ''), opts.comment and (tonumber(opts.comment) or math.huge)
+  local numformat = opts.numformat or "%.17g"
   local seen, sref, syms, symn = {}, {'local '..iname..'={}'}, {}, 0
   local function gensym(val) return '_'..(tostring(tostring(val)):gsub("[^%w]",""):gsub("(%d%w+)",
     -- tostring(val) is needed because __tostring may return a non-string value
     function(s) if not syms[s] then symn = symn+1; syms[s] = symn end return tostring(syms[s]) end)) end
-  local function safestr(s) return type(s) == "number" and tostring(huge and snum[tostring(s)] or s)
+  local function safestr(s) return type(s) == "number" and tostring(huge and snum[tostring(s)] or numformat:format(s))
     or type(s) ~= "string" and tostring(s) -- escape NEWLINE/010 and EOF/026
     or ("%q"):format(s):gsub("\010","n"):gsub("\026","\\026") end
-  local function comment(s,l) return comm and (l or 0) < comm and ' --[['..tostring(s)..']]' or '' end
+  local function comment(s,l) return comm and (l or 0) < comm and ' --[['..select(2, pcall(tostring, s))..']]' or '' end
   local function globerr(s,l) return globals[s] and globals[s]..comment(s,l) or not fatal
     and safestr(select(2, pcall(tostring, s))) or error("Can't serialize "..tostring(s)) end
   local function safename(path, name) -- generates foo.bar, foo[3], or foo['b a r']
@@ -175,7 +179,9 @@ local function s(t, opts)
     if seen[t] then -- already seen this element
       sref[#sref+1] = spath..space..'='..space..seen[t]
       return tag..'nil'..comment('ref', level) end
-    if type(mt) == 'table' and (mt.__serialize or mt.__tostring) then -- knows how to serialize itself
+    -- protect from those cases where __tostring may fail
+    if type(mt) == 'table' and pcall(function() return mt.__tostring and mt.__tostring(t) end)
+    and (mt.__serialize or mt.__tostring) then -- knows how to serialize itself
       seen[t] = insref or spath
       if mt.__serialize then t = mt.__serialize(t) else t = tostring(t) end
       ttype = type(t) end -- new value falls through to be serialized
@@ -195,6 +201,7 @@ local function s(t, opts)
         local value, ktype, plainindex = t[key], type(key), n <= maxn and not sparse
         if opts.valignore and opts.valignore[value] -- skip ignored values; do nothing
         or opts.keyallow and not opts.keyallow[key]
+        or opts.keyignore and opts.keyignore[key]
         or opts.valtypeignore and opts.valtypeignore[type(value)] -- skipping ignored value types
         or sparse and value == nil then -- skipping nils; do nothing
         elseif ktype == 'table' or ktype == 'function' or badtype[ktype] then
@@ -573,26 +580,26 @@ local function debug_hook(event, line)
       -- Unfortunately, there is no reliable/quick way to figure out
       -- what is the filename and what is the source code.
       -- The following will work if the supplied filename uses Unix path.
-      if file:find("^@") then
-        file = file:gsub("^@", ""):gsub("\\", "/")
+      if find(file, "^@") then
+        file = gsub(gsub(file, "^@", ""), "\\", "/")
         -- need this conversion to be applied to relative and absolute
         -- file names as you may write "require 'Foo'" to
         -- load "foo.lua" (on a case insensitive file system) and breakpoints
         -- set on foo.lua will not work if not converted to the same case.
         if iscasepreserving then file = string.lower(file) end
-        if file:find("%./") == 1 then file = file:sub(3)
-        else file = file:gsub("^"..q(basedir), "") end
+        if find(file, "%./") == 1 then file = sub(file, 3)
+        else file = gsub(file, "^"..q(basedir), "") end
         -- some file systems allow newlines in file names; remove these.
-        file = file:gsub("\n", ' ')
+        file = gsub(file, "\n", ' ')
       else
         -- this is either a file name coming from loadstring("chunk", "file"),
         -- or the actual source code that needs to be serialized (as it may
         -- include newlines); assume it's a file name if it's all on one line.
-        if file:find("[\r\n]") then
+        if find(file, "[\r\n]") then
           file = mobdebug.line(file)
         else
           if iscasepreserving then file = string.lower(file) end
-          file = file:gsub("\\", "/"):gsub(file:find("^%./") and "^%./" or "^"..q(basedir), "")
+          file = gsub(gsub(file, "\\", "/"), find(file, "^%./") and "^%./" or "^"..q(basedir), "")
         end
       end
 
@@ -648,7 +655,7 @@ local function debug_hook(event, line)
     -- need to recheck once more as resume after 'stack' command may
     -- return something else (for example, 'exit'), which needs to be handled
     if status and res and res ~= 'stack' then
-      if not abort and res == "exit" then os.exit(1, true); return end
+      if not abort and res == "exit" then mobdebug.onexit(1, true); return end
       if not abort and res == "done" then mobdebug.done(); return end
       abort = res
       -- only abort if safe; if not, there is another (earlier) check inside
@@ -916,7 +923,6 @@ local function debugger_loop(sev, svars, sfile, sline)
     elseif command == "SUSPEND" then
       -- do nothing; it already fulfilled its role
     elseif command == "DONE" then
-      server:send("200 OK\n")
       coroyield("done")
       return -- done with all the debugging
     elseif command == "STACK" then
@@ -945,7 +951,7 @@ local function debugger_loop(sev, svars, sfile, sline)
       if stream and mode and stream == "stdout" then
         -- assign "print" in the global environment
         local default = mode == 'd'
-        genv.print = default and iobase.print or coroutine.wrap(function()
+        genv.print = default and iobase.print or corowrap(function()
           -- wrapping into coroutine.wrap protects this function from
           -- being stepped through in the debugger.
           -- don't use vararg (...) as it adds a reference for its values,
@@ -1081,7 +1087,7 @@ local function controller(controller_host, controller_port, scratchpad)
       else
         if status then -- normal execution is done
           break
-        elseif err and not tostring(err):find(deferror) then
+        elseif err and not string.find(tostring(err), deferror) then
           -- report the error back
           -- err is not necessarily a string, so convert to string to report
 	   local function report(trace, err)
@@ -1180,8 +1186,7 @@ local function handle(params, client, options)
       local breakpoint = client:receive()
       if not breakpoint then
         print("Program finished")
-        os.exit(0, true)
-        return -- use return here for those cases where os.exit() is not wanted
+        return
       end
       local _, _, status = string.find(breakpoint, "^(%d+)")
       if status == "200" then
@@ -1210,24 +1215,17 @@ local function handle(params, client, options)
         if size then
           local msg = client:receive(tonumber(size))
           print("Error in remote application: " .. msg)
-          os.exit(1, true)
-          return nil, nil, msg -- use return here for those cases where os.exit() is not wanted
+          return nil, nil, msg
         end
       else
         print("Unknown error")
-        os.exit(1, true)
-        -- use return here for those cases where os.exit() is not wanted
         return nil, nil, "Debugger error: unexpected response '" .. breakpoint .. "'"
       end
       if done then break end
     end
   elseif command == "done" then
     client:send(string.upper(command) .. "\n")
-    if client:receive() ~= "200 OK" then
-      print("Unknown error")
-      os.exit(1, true)
-      return nil, nil, "Debugger error: unexpected response after DONE"
-    end
+    -- no response is expected
   elseif command == "setb" or command == "asetb" then
     _, _, _, file, line = string.find(params, "^([a-z]+)%s+(.-)%s+(%d+)%s*$")
     if file and line then
@@ -1514,7 +1512,9 @@ local function handle(params, client, options)
     print("exit                  -- exits debugger and the application")
   else
     local _, _, spaces = string.find(params, "^(%s*)$")
-    if not spaces then
+    if spaces then
+      return nil, nil, "Empty command"
+    else
       print("Invalid command")
       return nil, nil, "Invalid command"
     end
@@ -1553,9 +1553,11 @@ local function listen(host, port)
 
   while true do
     io.write("> ")
-    local line = io.read("*line")
-    handle(line, client)
+    local file, line, err = handle(io.read("*line"), client)
+    if not file and not err then break end -- completed debugging
   end
+
+  client:close()
 end
 
 local cocreate
@@ -1607,10 +1609,7 @@ mobdebug.coro = coro
 mobdebug.done = done
 mobdebug.pause = function() step_into = true end
 mobdebug.yield = nil -- callback
+mobdebug.onexit = os and os.exit or done
 mobdebug.basedir = function(b) if b then basedir = b end return basedir end
-
--- this is needed to make "require 'modebug'" to work when mobdebug
--- module is loaded manually
-package.loaded.mobdebug = mobdebug
 
 return mobdebug

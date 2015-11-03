@@ -1,4 +1,4 @@
--- Copyright 2013-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2013-15 Paul Kulchenko, ZeroBrane LLC
 ---------------------------------------------------------
 
 local q = EscapeMagic
@@ -25,7 +25,8 @@ ide.proto.Document = {__index = {
     return ide:GetEditorNotebook():GetPageText(self.index):gsub("^"..q(modpref), "")
   end,
   SetActive = function(self) SetEditorSelection(self.index) end,
-  Save = function(self) return SaveFile(self.editor, self.filePath) end
+  Save = function(self) return SaveFile(self.editor, self.filePath) end,
+  Close = function(self) return ClosePage(self.index) end,
 }}
 
 ide.proto.Plugin = {__index = {
@@ -33,7 +34,7 @@ ide.proto.Plugin = {__index = {
   GetFileName = function(self) return self.fname end,
   GetConfig = function(self) return ide.config[self.fname] or {} end,
   GetSettings = function(self) return SettingsRestorePackage(self.fname) end,
-  SetSettings = function(self, settings) SettingsSavePackage(self.fname, settings) end,
+  SetSettings = function(self, settings, opts) SettingsSavePackage(self.fname, settings, opts) end,
 }}
 
 ide.proto.Interpreter = {__index = {

@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -35,7 +35,7 @@ local projecthistorymenu = wx.wxMenu({
     { ID_RECENTPROJECTSCLEAR, TR("Clear Items")..KSC(ID_RECENTPROJECTSCLEAR), TR("Clear items from this list") },
 })
 local projecthistory = wx.wxMenuItem(fileMenu, ID_RECENTPROJECTS,
-  TR("Recent &Projects")..KSC(ID_RECENTPROJECTS), TR("Project history"), wx.wxITEM_NORMAL, projecthistorymenu)
+  TR("Recent Projects")..KSC(ID_RECENTPROJECTS), TR("Project history"), wx.wxITEM_NORMAL, projecthistorymenu)
 fileMenu:Insert(9,projecthistory)
 
 do -- recent file history

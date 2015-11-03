@@ -24,7 +24,7 @@ BUILD_FLAGS="-O2 -arch x86_64 -dynamiclib -undefined dynamic_lookup $MACOSX_FLAG
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
-WXWIDGETS_URL="http://svn.wxwidgets.org/svn/wx/wxWidgets/trunk"
+WXWIDGETS_URL="https://github.com/wxWidgets/wxWidgets.git"
 
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
@@ -120,7 +120,7 @@ LUA_BASENAME="lua-5.1.5"
 if [ $BUILD_52 ]; then
   LUAV="52"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.2.2"
+  LUA_BASENAME="lua-5.2.4"
 fi
 
 LUA_FILENAME="$LUA_BASENAME.tar.gz"
@@ -129,20 +129,20 @@ LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 if [ $BUILD_53 ]; then
   LUAV="53"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.3.0"
+  LUA_BASENAME="lua-5.3.1"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 fi
 
 if [ $BUILD_JIT ]; then
-  LUA_BASENAME="LuaJIT-2.0.2"
+  LUA_BASENAME="LuaJIT-2.0.4"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://luajit.org/download/$LUA_FILENAME"
 fi
 
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
-  svn co "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to checkout wxWidgets"; exit 1; }
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
   MINSDK=""
   if [ -d $MACOSX_SDK_PATH ]; then

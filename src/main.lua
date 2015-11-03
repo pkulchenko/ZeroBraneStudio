@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
@@ -34,6 +34,8 @@ package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.
 
 require("wx")
 require("bit")
+require("mobdebug")
+if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
 
 dofile "src/util.lua"
 
@@ -49,15 +51,17 @@ ide = {
       app = nil,
     },
     editor = {
+      autoactivate = false,
       foldcompact = true,
       checkeol = true,
       saveallonrun = false,
       caretline = true,
-      showfncall = true,
+      showfncall = false,
       autotabs = false,
       usetabs  = false,
       tabwidth = 2,
       usewrap = true,
+      wrapmode = wxstc.wxSTC_WRAP_WORD,
       calltipdelay = 500,
       smartindent = true,
       fold = true,
@@ -88,7 +92,10 @@ ide = {
       mousemove = true,
     },
     outline = {
+      jumptocurrentfunction = true,
       showanonymous = '~',
+      showcurrentfunction = true,
+      showcompact = false,
       showflat = false,
       showmethodindicator = false,
       showonefile = false,
@@ -96,6 +103,9 @@ ide = {
     },
     commandbar = {
       prefilter = 250, -- number of records after which to apply filtering
+      maxitems = 30, -- max number of items to show
+      width = 0.35, -- <1 -- size in proportion to the app frame width; >1 -- size in pixels
+      showallsymbols = true,
     },
     staticanalyzer = {
       infervalue = false, -- off by default as it's a slower mode
@@ -104,11 +114,17 @@ ide = {
       autocomplete = true,
       contextlinesbefore = 2,
       contextlinesafter = 2,
-      showaseditor = true,
+      showaseditor = false,
       zoom = 0,
       autohide = false,
     },
-
+    print = {
+      magnification = -3,
+      wrapmode = wxstc.wxSTC_WRAP_WORD,
+      colourmode = wxstc.wxSTC_PRINT_BLACKONWHITE,
+      header = "%S\t%D\t%p/%P",
+      footer = nil,
+    },
     toolbar = {
       icons = {},
       iconmap = {},
@@ -131,6 +147,7 @@ ide = {
       nodynwords = true,
       ignorecase = false,
       symbols = true,
+      droprest = true,
       strategy = 2,
       width = 60,
       maxlength = 450,
@@ -146,17 +163,17 @@ ide = {
 
     activateoutput = true, -- activate output/console on Run/Debug/Compile
     unhidewindow = false, -- to unhide a gui window
-    allowinteractivescript = true, -- allow interaction in the output window
     projectautoopen = true,
     autorecoverinactivity = 10, -- seconds
     outlineinactivity = 0.250, -- seconds
+    symbolindexinactivity = 2, -- seconds
     filehistorylength = 20,
     projecthistorylength = 20,
     bordersize = 2,
     savebak = false,
     singleinstance = false,
     singleinstanceport = 0xe493,
-    interpreter = "luadeb",
+    showmemoryusage = false,
     hidpi = false, -- HiDPI/Retina display support
     hotexit = false,
     -- file exclusion lists
@@ -174,6 +191,7 @@ ide = {
   packages = {},
   apis = {},
   timers = {},
+  onidle = {},
 
   proto = {}, -- prototypes for various classes
 
@@ -384,15 +402,14 @@ local function loadPackages(filter)
   end
 
   -- check dependencies and assign file names to each package
+  local report = DisplayOutputLn or print
   local unload = {}
   for fname, package in pairs(ide.packages) do
     if type(package.dependencies) == 'table'
     and package.dependencies.osname
     and not package.dependencies.osname:find(ide.osname, 1, true) then
-      (DisplayOutputLn or print)(
-        ("Package '%s' not loaded: requires %s platform, but you are running %s.")
-          :format(fname, package.dependencies.osname, ide.osname)
-      )
+      report(("Package '%s' not loaded: requires %s platform, but you are running %s.")
+        :format(fname, package.dependencies.osname, ide.osname))
       table.insert(unload, fname)
     end
 
@@ -401,10 +418,8 @@ local function loadPackages(filter)
       or -1
     local isversion = tonumber(ide.VERSION)
     if isversion and needsversion > isversion then
-      (DisplayOutputLn or print)(
-        ("Package '%s' not loaded: requires version %s, but you are running version %s.")
-          :format(fname, needsversion, ide.VERSION)
-      )
+      report(("Package '%s' not loaded: requires version %s, but you are running version %s.")
+        :format(fname, needsversion, ide.VERSION))
       table.insert(unload, fname)
     end
     package.fname = fname
@@ -467,15 +482,31 @@ end
 
 -- set ide.config environment
 setmetatable(ide.config, {__index = {os = os, wxstc = wxstc, wx = wx, ID = ID}})
-ide.config.load = { interpreters = loadInterpreters, specs = loadSpecs,
-  tools = loadTools }
+ide.config.load = {interpreters = loadInterpreters, specs = loadSpecs, tools = loadTools}
 do
+  ide.configs = {
+    system = MergeFullPath("cfg", "user.lua"),
+    user = ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/user.lua"),
+  }
+
   local num = 0
   ide.config.package = function(p)
     if p then
       num = num + 1
       local name = 'config'..num..'package'
       ide.packages[name] = setmetatable(p, ide.proto.Plugin)
+    end
+  end
+
+  local includes = {}
+  ide.config.include = function(c)
+    if c then
+      for _, config in ipairs({ide.configs.system, ide.configs.user}) do
+        local p = config and MergeFullPath(config.."/../", c)
+        includes[p] = (includes[p] or 0) + 1
+        if includes[p] > 1 or LoadLuaConfig(p) then return end
+      end
+      print(("Can't find configuration file '%s' to process."):format(c))
     end
   end
 end
@@ -508,11 +539,6 @@ loadSpecs()
 loadTools()
 
 do
-  ide.configs = {
-    system = MergeFullPath("cfg", "user.lua"),
-    user = ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/user.lua"),
-  }
-
   -- process configs
   LoadLuaConfig(ide.configs.system)
   LoadLuaConfig(ide.configs.user)
@@ -546,12 +572,12 @@ loadPackages()
 -- Load App
 
 for _, file in ipairs({
-    "markup", "settings", "singleinstance", "iofilters", "package",
+    "settings", "singleinstance", "iofilters", "package", "markup",
     "gui", "filetree", "output", "debugger", "outline", "commandbar",
     "editor", "findreplace", "commands", "autocomplete", "shellbox",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",
-    "inspect" }) do
+    "print", "inspect" }) do
   dofile("src/editor/"..file..".lua")
 end
 
@@ -620,7 +646,8 @@ local function remapkey(event)
   local keycode = event:GetKeyCode()
   local mod = event:GetModifiers()
   for id, obj in pairs(remap) do
-    if obj:FindFocus():GetId() == obj:GetId() then
+    local focus = obj:FindFocus()
+    if focus and focus:GetId() == obj:GetId() then
       local ae = wx.wxAcceleratorEntry(); ae:FromString(KSC(id))
       if ae:GetFlags() == mod and ae:GetKeyCode() == keycode then
         rerouteMenuCommand(obj, id)

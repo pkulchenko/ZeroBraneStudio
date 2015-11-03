@@ -68,7 +68,36 @@ ok(not editor:GetText():find(search), "Replace All with Wrap Around replaces eve
 local expected = replace..replace.."\n"..replace..replace.."\n"..replace..replace
 is(editor:GetText(), expected, "Replace All without Wrap Around result is as expected.")
 
+-- check that the replacement only happens in the matched text in preview
+editor:SetText("1: 123")
+findReplace:SetFind("1")
+findReplace:SetReplace("9")
+findReplace:Replace(true, editor)
+ok(editor:GetText():find("923") ~= nil, "Replace in preview replaces matched text.")
+ok(editor:GetText():find("^1:") ~= nil, "Replace in preview doesn't replace line numbers.")
+
+editor:SetText("")
+editor:AppendText([[
+t/1-findreplace.lua
+99999: some text
+]])
+editor.searchpreview = true
+editor.replace = true
+local FILE_MARKER = ide:GetMarker("searchmatchfile")
+editor:MarkerAdd(0, FILE_MARKER)
+ide:GetDocument(editor):Save()
+is(editor:GetText():match("Updated %d"), "Updated 0", "Replace fails on invalid line numbers.")
+
+
+findReplace:SetFind("something")
+findReplace:Show() -- set focus on the find
+if ide.osname == 'Windows' then
+  ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_CUT))
+  ok(findReplace:GetFind() == nil, "`Cut` command cuts content of the `Find` control in the search panel.")
+end
+
 -- cleanup
-findReplace.panel:Hide()
+findReplace:Hide()
 while editor:CanUndo() do editor:Undo() end
+ide:GetDocument(editor):SetModified(false)
 ClosePage()

@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -18,8 +18,24 @@ local layoutlabel = {
 -- ----------------------------------------------------------------------------
 -- Initialize the wxConfig for loading/saving the preferences
 
-local settings = wx.wxFileConfig(GetIDEString("settingsapp"),
-  GetIDEString("settingsvendor"), ide.config.ini or "")
+local ini = ide.config.ini
+-- if ini path is relative and includes a directory name, make it relative to the IDE location
+ini = ini and (not wx.wxIsAbsolutePath(ini) and wx.wxFileName(ini):GetDirCount() > 0
+  and MergeFullPath(GetPathWithSep(ide.editorFilename), ini) or ini)
+-- check that the ini file doesn't point to a directory
+if ini and (wx.wxFileName(ini):IsDir() or wx.wxIsAbsolutePath(ini) and wx.wxDirExists(ini)) then
+  print(("Can't use 'ini' configuration setting '%s' that points to a directory instead of a file; ignored.")
+    :format(ini))
+  ini = nil
+end
+-- check that the directory is writable
+if ini and wx.wxIsAbsolutePath(ini) and not wx.wxFileName(ini):IsDirWritable() then
+  print(("Can't use 'ini' configuration setting '%s' that points to a non-writable directory; ignored.")
+    :format(ini))
+  ini = nil
+end
+
+local settings = wx.wxFileConfig(GetIDEString("settingsapp"), GetIDEString("settingsvendor"), ini or "")
 ide.settings = settings
 
 local function settingsReadSafe(settings,what,default)
@@ -238,13 +254,18 @@ function SettingsRestorePackage(package)
   local path = settings:GetPath()
   settings:SetPath(packagename)
   local outtab = {}
+  local report = DisplayOutputLn or print
   local ismore, key, index = settings:GetFirstEntry("", 0)
   while (ismore) do
     local couldread, value = settings:Read(key, "")
     if couldread then
       local ok, res = LoadSafe("return "..value)
       if ok then outtab[key] = res
-      else outtab[key] = nil end
+      else
+        outtab[key] = nil
+        report(("Couldn't load and ignored '%s' settings for package '%s': %s")
+          :format(key, package, res))
+      end
     end
     ismore, key, index = settings:GetNextEntry(index)
   end
@@ -252,16 +273,41 @@ function SettingsRestorePackage(package)
   return outtab
 end
 
-function SettingsSavePackage(package, values)
+local function plaindump(val, opts, done)
+  local keyignore = opts and opts.keyignore or {}
+  local final = done == nil
+  opts, done = opts or {}, done or {}
+  local t = type(val)
+  if t == "table" then
+    done[#done+1] = '{'
+    done[#done+1] = ''
+    for key, value in pairs (val) do
+      if not keyignore[key] then
+        done[#done+1] = '['
+        plaindump(key, opts, done)
+        done[#done+1] = ']='
+        plaindump(value, opts, done)
+        done[#done+1] = ","
+      end
+    end
+    done[#done] = '}'
+  elseif t == "string" then
+    done[#done+1] = ("%q"):format(val):gsub("\010","n"):gsub("\026","\\026")
+  elseif t == "number" then
+    done[#done+1] = ("%.17g"):format(val)
+  else
+    done[#done+1] = tostring(val)
+  end
+  return final and table.concat(done, '')
+end
+
+function SettingsSavePackage(package, values, opts)
   local packagename = "/package/"..package
   local path = settings:GetPath()
-  local mdb = require('mobdebug')
 
   settings:DeleteGroup(packagename)
   settings:SetPath(packagename)
-  for k,v in pairs(values or {}) do
-    settings:Write(k, mdb.line(v, {comment = false, nocode = true}))
-  end
+  for k,v in pairs(values or {}) do settings:Write(k, plaindump(v, opts)) end
   settings:SetPath(path)
 end
 
@@ -400,7 +446,7 @@ function SettingsRestoreView()
   local uimgr = frame.uimgr
   
   local layoutcur = uimgr:SavePerspective()
-  local layout = settingsReadSafe(settings,layoutlabel.UIMANAGER,layoutcur)
+  local layout = settingsReadSafe(settings,layoutlabel.UIMANAGER,"")
   if (layout ~= layoutcur) then
     -- save the current toolbar besth and re-apply after perspective is loaded
     -- bestw and besth has two separate issues:
@@ -410,13 +456,15 @@ function SettingsRestoreView()
     -- (2) besth may be wrong after icon size changes.
     local toolbar = frame.uimgr:GetPane("toolbar")
     local besth = toolbar:IsOk() and tonumber(uimgr:SavePaneInfo(toolbar):match("besth=([^;]+)"))
-    uimgr:LoadPerspective(layout, false)
-    if toolbar:IsOk() then -- fix bestw and besth values
-      toolbar:BestSize(wx.wxSystemSettings.GetMetric(wx.wxSYS_SCREEN_X), besth or -1)
-    end
+
+    -- reload the perspective if the saved one is not empty as it's different from the default
+    if #layout > 0 then uimgr:LoadPerspective(layout, false) end
+
+    local screenw = frame:GetClientSize():GetWidth()
+    if toolbar:IsOk() and screenw > 0 then toolbar:BestSize(screenw, besth or -1) end
 
     -- check if debugging panes are not mentioned and float them
-    for _, name in pairs({"stackpanel", "watchpanel", "searchpanel"}) do
+    for _, name in pairs({"stackpanel", "watchpanel"}) do
       local pane = frame.uimgr:GetPane(name)
       if pane:IsOk() and not layout:find(name) then pane:Float() end
     end
@@ -520,8 +568,9 @@ function SettingsRestoreEditorSettings()
   local path = settings:GetPath()
   settings:SetPath(listname)
 
-  ide.config.interpreter = settingsReadSafe(settings,"interpreter",ide.config.interpreter)
-  ProjectSetInterpreter(ide.config.interpreter)
+  local interpreter = settingsReadSafe(settings, "interpreter",
+    ide.config.interpreter or ide.config.default.interpreter)
+  ProjectSetInterpreter(interpreter)
 
   settings:SetPath(path)
 end

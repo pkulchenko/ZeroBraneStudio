@@ -118,6 +118,7 @@ function findReplace:SetStatus(msg)
 end
 
 function findReplace:SetFind(text)
+  if not self.panel then self:createPanel() end
   local ctrl = self.findCtrl
   if text and ctrl then
     if ctrl:GetValue() ~= text then ctrl:ChangeValue(text) end
@@ -131,8 +132,10 @@ function findReplace:GetFind(...) return self:HasText() end
 function findReplace:GetFlags() return self.settings.flags end
 
 function findReplace:SetReplace(text)
-  if text and self.replaceCtrl then
-    self.replaceCtrl:ChangeValue(text)
+  if not self.panel then self:createPanel() end
+  local ctrl = self.replaceCtrl
+  if text and ctrl then
+    if ctrl:GetValue() ~= text then ctrl:ChangeValue(text) end
     return text
   end
   return
@@ -251,10 +254,11 @@ function findReplace:FindAll(inFileRegister)
   return found
 end
 
+local indicator = {
+  SEARCHMATCH = ide:GetIndicator("core.searchmatch"),
+}
+
 -- returns true if replacements were done
-
-local indicator = {SEARCHMATCH = 5}
-
 function findReplace:Replace(fReplaceAll, resultsEditor)
   if not self.panel then self:createPanel() end
 
@@ -284,15 +288,22 @@ function findReplace:Replace(fReplaceAll, resultsEditor)
         editor:BeginUndoAction()
         while posFind ~= NOTFOUND do
           local length = editor:GetLength()
-          -- if no replace-in-files or the match doesn't start with %d:
-          if not resultsEditor
-          or editor:GetLine(editor:LineFromPosition(posFind)):find("^%s*%d:") then
+          -- if replace-in-files (resultsEditor) is being done,
+          -- then check that the match starts with %d+:
+          local match = true
+          if resultsEditor then
+            local line = editor:LineFromPosition(posFind)
+            local _, _, prefix = editor:GetLine(line):find("^(%s*%d+: )")
+            match = prefix and posFind >= editor:PositionFromLine(line)+#prefix
+          end
+          if match then
             local replaced = self:GetFlags().RegularExpr
               and editor:ReplaceTargetRE(replaceText)
               or editor:ReplaceTarget(replaceText)
 
             -- mark replaced text
             if resultsEditor then editor:IndicatorFillRange(posFind, replaced) end
+            occurrences = occurrences + 1
           end
 
           editor:SetTargetStart(editor:GetTargetEnd())
@@ -301,7 +312,6 @@ function findReplace:Replace(fReplaceAll, resultsEditor)
           endTarget = endTarget + (editor:GetLength() - length)
           editor:SetTargetEnd(endTarget)
           posFind = editor:SearchInTarget(findText)
-          occurrences = occurrences + 1
         end
         editor:EndUndoAction()
         replaced = true
@@ -487,10 +497,11 @@ function findReplace:RunInFiles(replace)
   -- open new tab if the current one is not valid
   -- or if multiple tabs are requested, but when searching for different text
   if not valid or (flags.MultiResults and reseditor.searchpreview ~= findText) then
+    -- enable folds in the preview even if disabled in the editor
+    local fold = ide.config.editor.fold
+    ide.config.editor.fold = true
     if showaseditor then
       reseditor = NewFile(resultsText)
-      -- set file path to avoid treating results as unsaved document
-      ide:GetDocument(reseditor).filePath = resultsText
     else
       reseditor = ide:CreateBareEditor()
       reseditor:SetupKeywords("")
@@ -524,14 +535,14 @@ function findReplace:RunInFiles(replace)
     end
     reseditor:SetWrapMode(wxstc.wxSTC_WRAP_NONE)
     reseditor:SetIndentationGuides(false)
+    if tonumber(ide.config.search.zoom) then
+      reseditor:SetZoom(tonumber(ide.config.search.zoom))
+    end
     for m = 0, ide.MAXMARGIN do -- hide all margins except folding
       if reseditor:GetMarginWidth(m) > 0
       and reseditor:GetMarginMask(m) ~= wxstc.wxSTC_MASK_FOLDERS then
         reseditor:SetMarginWidth(m, 0)
       end
-    end
-    if tonumber(ide.config.search.zoom) then
-      reseditor:SetZoom(tonumber(ide.config.search.zoom))
     end
     reseditor:MarkerDefine(ide:GetMarker("searchmatchfile"))
     reseditor:Connect(wx.wxEVT_LEFT_DCLICK, function(event)
@@ -576,6 +587,7 @@ function findReplace:RunInFiles(replace)
         event:Skip()
       end)
 
+    ide.config.editor.fold = fold
     self.reseditor = reseditor
   else
     if showaseditor then
@@ -586,11 +598,19 @@ function findReplace:RunInFiles(replace)
     end
   end
   reseditor.replace = replace -- keep track of the current status
+  reseditor:ShowLines(0, reseditor:GetLineCount()-1)
   reseditor:SetReadOnly(false)
   reseditor:SetText('')
   do -- update the preview name
     local nb = showaseditor and ide:GetEditorNotebook() or nb
     nb:SetPageText(nb:GetPageIndex(reseditor), previewText .. findText)
+  end
+  if not showaseditor and nb then -- show the bottom notebook if hidden
+    local uimgr = ide:GetUIManager()
+    if not uimgr:GetPane(nb):IsShown() then
+      uimgr:GetPane(nb):Show(true)
+      uimgr:Update()
+    end
   end
 
   self:SetStatus(TR("Searching for '%s'."):format(findText))
@@ -602,7 +622,7 @@ function findReplace:RunInFiles(replace)
   or not showaseditor then ctrl:SetFocus() end
 
   local startdir, mask = self:GetScope()
-  local completed = self:ProcInFiles(startdir, mask or "*.*", flags.SubDirs)
+  local completed = self:ProcInFiles(startdir, mask or "*", flags.SubDirs)
 
   -- reseditor may already be closed, so check if it's valid first
   if ide:IsValidCtrl(reseditor) then
@@ -633,6 +653,7 @@ function findReplace:RunInFiles(replace)
   self:SetStatus(not completed and TR("Cancelled by the user.")
     or TR("Found %d instance.", self.occurrences):format(self.occurrences))
   if completed and ide.config.search.autohide then self:Hide() end
+  self.oveditor:Destroy()
   self.oveditor = nil
   self.toolbar:UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
 end
@@ -813,6 +834,7 @@ function findReplace:createPanel()
   local replaceCtrl = wx.wxTextCtrl(ctrl, wx.wxID_ANY, replaceHintText,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wx.wxTE_PROCESS_ENTER + wx.wxTE_PROCESS_TAB + wx.wxBORDER_STATIC)
+  self.ac = {[findCtrl:GetId()] = {}, [replaceCtrl:GetId()] = {}, [scope:GetId()] = {}}
 
   local findSizer = wx.wxBoxSizer(wx.wxHORIZONTAL)
   findSizer:Add(findCtrl, 1, wx.wxLEFT + wx.wxRIGHT + wx.wxALIGN_LEFT + wx.wxEXPAND + wx.wxFIXED_MINSIZE, 1)
@@ -862,10 +884,12 @@ function findReplace:createPanel()
     if not ide.config.search.autocomplete then return end
 
     local obj = event:GetEventObject():DynamicCast('wxTextCtrl')
-    local ok, keycode, needac = pcall(
-      function() return obj.lastkeycode, obj.needautocomplete end)
-    obj.needautocomplete = false
-    if not ok or not needac or not keycode then return end
+    local ac = self.ac[obj:GetId()]
+    if not ac then return end
+
+    local keycode, needac = ac.lastkeycode, ac.needautocomplete
+    if needac then ac.needautocomplete = false end
+    if not needac or not keycode then return end
 
     -- if the last key was Delete or Backspace, don't autocomplete
     if keycode == wx.WXK_DELETE or keycode == wx.WXK_BACK then return end
@@ -894,7 +918,7 @@ function findReplace:createPanel()
     end
     -- don't search when used with "infiles", but still trigger autocomplete
     if self.infiles or self:Find() then
-      event:GetEventObject():DynamicCast('wxTextCtrl').needautocomplete = true
+      self.ac[event:GetEventObject():DynamicCast('wxTextCtrl'):GetId()].needautocomplete = true
     end
   end
 
@@ -937,7 +961,7 @@ function findReplace:createPanel()
   local taborder = {findCtrl, replaceCtrl, scope}
   local function charHandle(event)
     local keycode = event:GetKeyCode()
-    event:GetEventObject().lastkeycode = keycode
+    self.ac[event:GetEventObject():DynamicCast('wxTextCtrl'):GetId()].lastkeycode = keycode
     if keycode == wx.WXK_ESCAPE then
       self:Hide(event:ShiftDown())
     elseif keycode == wx.WXK_TAB then
@@ -964,7 +988,7 @@ function findReplace:createPanel()
     function(event)
       event:Skip()
       local ed = self:GetEditor()
-      if ed then
+      if ed and ed ~= self.oveditor then
         self.backfocus = {
           editor = ed,
           position = (ed:GetSelectionStart() == ed:GetSelectionEnd()
@@ -983,7 +1007,7 @@ function findReplace:createPanel()
     end)
   replaceCtrl:Connect(wx.wxEVT_COMMAND_TEXT_ENTER, findReplaceNext)
   replaceCtrl:Connect(wx.wxEVT_COMMAND_TEXT_UPDATED, function(event)
-      event:GetEventObject():DynamicCast('wxTextCtrl').needautocomplete = true
+      self.ac[event:GetEventObject():DynamicCast('wxTextCtrl'):GetId()].needautocomplete = true
     end)
   replaceCtrl:Connect(wx.wxEVT_CHAR, charHandle)
 
@@ -1087,20 +1111,23 @@ function findReplace:IsShown()
 end
 
 function findReplace:Hide(restorepos)
-  local mgr = ide:GetUIManager()
-  mgr:GetPane(searchpanel):Hide()
-  mgr:Update()
-
-  if self:IsPreview(self.reseditor) then
-    self.reseditor:SetFocus()
-  elseif self.backfocus then
+  local ctrl = self.panel:FindFocus()
+  if not ctrl or ctrl:GetParent():GetId() ~= self.panel:GetId() then
+    -- if focus outside of the search panel, do nothing
+  elseif self.backfocus and ide:IsValidCtrl(self.backfocus.editor) then
     local editor = self.backfocus.editor
     -- restore original position for Shift-Esc or failed search
     if restorepos or self.foundString == false then
       editor:GotoPos(self.backfocus.position)
     end
     editor:SetFocus()
+  elseif self:IsPreview(self.reseditor) then -- there is a preview, go there
+    self.reseditor:SetFocus()
   end
+
+  local mgr = ide:GetUIManager()
+  mgr:GetPane(searchpanel):Hide()
+  mgr:Update()
 end
 
 local package = ide:AddPackage('core.findreplace', {
@@ -1146,6 +1173,10 @@ local package = ide:AddPackage('core.findreplace', {
                 lnum = tonumber(lnum)
                 if lmark == ':' then -- if the change line, then apply the change
                   local pos = oveditor:PositionFromLine(lnum-1)
+                  if pos == NOTFOUND then
+                    mismatch = lnum
+                    break
+                  end
                   oveditor:SetTargetStart(pos)
                   oveditor:SetTargetEnd(pos+#getRawLine(oveditor, lnum-1))
                   oveditor:ReplaceTarget(ltext)
@@ -1171,6 +1202,7 @@ local package = ide:AddPackage('core.findreplace', {
               :format(fname, mismatch and "mismatch on line "..mismatch or err))
           end
         end
+        oveditor:Destroy() -- destroy the editor to release its memory
         if report then editor:AppendText("\n"..report) end
         editor:AppendText(("\n\nUpdated %d %s in %d %s.")
           :format(

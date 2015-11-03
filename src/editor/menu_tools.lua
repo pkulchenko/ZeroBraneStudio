@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
@@ -47,7 +47,7 @@ do
     local exec = tool.exec
     if (exec and cnt < maxcnt and exec.name and exec.fn and exec.description) then
       local id = name2id(tool.fname)
-      table.insert(toolArgs,{id, exec.name, exec.description})
+      table.insert(toolArgs,{id, TR(exec.name) .. KSC(id), exec.description})
       -- flag it
       tool._execid = id
       cnt = cnt + 1

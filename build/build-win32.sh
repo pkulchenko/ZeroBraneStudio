@@ -14,7 +14,7 @@ BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
-WXWIDGETS_URL="http://svn.wxwidgets.org/svn/wx/wxWidgets/trunk"
+WXWIDGETS_URL="https://github.com/wxWidgets/wxWidgets.git"
 
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
@@ -23,11 +23,11 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-OPENSSL_BASENAME="openssl-1.0.1e"
+OPENSSL_BASENAME="openssl-1.0.2a"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
 OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
 
-LUASEC_BASENAME="luasec-0.4.1"
+LUASEC_BASENAME="luasec-0.5"
 LUASEC_FILENAME="$LUASEC_BASENAME.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
@@ -132,13 +132,15 @@ fi
 mkdir -p "$INSTALL_DIR" || { echo "Error: cannot create directory $INSTALL_DIR"; exit 1; }
 
 LUAV="51"
+LUAD="5.1"
 LUAS=""
 LUA_BASENAME="lua-5.1.5"
 
 if [ $BUILD_52 ]; then
   LUAV="52"
+  LUAD="5.2"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.2.2"
+  LUA_BASENAME="lua-5.2.4"
 fi
 
 LUA_FILENAME="$LUA_BASENAME.tar.gz"
@@ -146,22 +148,22 @@ LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 
 if [ $BUILD_53 ]; then
   LUAV="53"
+  LUAD="5.3"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.3.0"
+  LUA_BASENAME="lua-5.3.1"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 fi
 
 if [ $BUILD_JIT ]; then
-  LUA_BASENAME="LuaJIT-2.0.2"
+  LUA_BASENAME="LuaJIT-2.0.4"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://luajit.org/download/$LUA_FILENAME"
 fi
 
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
-  svn co "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to checkout wxWidgets"; exit 1; }
-  svn revert -R "$WXWIDGETS_BASENAME"
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat28 \
@@ -186,6 +188,16 @@ if [ $BUILD_LUA ]; then
     # move luajit to lua as it's expected by luasocket and other components
     cp "$INSTALL_DIR"/include/luajit*/* "$INSTALL_DIR/include/"
   else
+    # need to patch Lua io to support large (>2GB) files on Windows:
+    # http://lua-users.org/lists/lua-l/2015-05/msg00370.html
+    cat <<EOF >>src/luaconf.h
+#if defined(liolib_c) && defined(__MINGW32__)
+#include <sys/types.h>
+#define l_fseek(f,o,w) fseeko64(f,o,w)
+#define l_ftell(f) ftello64(f)
+#define l_seeknum off64_t
+#endif
+EOF
     make mingw || { echo "Error: failed to build Lua"; exit 1; }
     make install INSTALL_TOP="$INSTALL_DIR"
   fi
@@ -238,17 +250,17 @@ if [ $BUILD_LUASOCKET ]; then
   wget --no-check-certificate -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
   unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
-  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dll" src/mime.c -llua$LUAV \
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"{mime,socket}
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/mime/core.dll" src/mime.c -llua$LUAV \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  gcc $BUILD_FLAGS -DLUASOCKET_INET_PTON -D_WIN32_WINNT=0x0501 -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dll" \
+  gcc $BUILD_FLAGS -DLUASOCKET_INET_PTON -D_WIN32_WINNT=0x0501 -o "$INSTALL_DIR/lib/lua/$LUAD/socket/core.dll" \
     src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,wsocket.c} -lwsock32 -lws2_32 -llua$LUAV \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
-  cp src/{ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAV/socket"
-  cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
-  [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dll" ] || { echo "Error: mime/core.dll isn't found"; exit 1; }
-  [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dll" ] || { echo "Error: socket/core.dll isn't found"; exit 1; }
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAD/socket"
+  cp src/{ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAD/socket"
+  cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAD"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/mime/core.dll" ] || { echo "Error: mime/core.dll isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/socket/core.dll" ] || { echo "Error: socket/core.dll isn't found"; exit 1; }
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
@@ -271,11 +283,13 @@ if [ $BUILD_LUASEC ]; then
   # the folder in the archive is "luasec-luasec-....", so need to fix
   mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/5.1/ssl.dll" \
-    src/{timeout.c,buffer.c,io.c,context.c,ssl.c,wsocket.c} -lssl -lcrypto -lws2_32 -lgdi32 -llua51 \
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/ssl.dll" \
+    src/luasocket/{timeout.c,buffer.c,io.c,wsocket.c} src/{context.c,x509.c,ssl.c} -Isrc -lssl -lcrypto -lws2_32 -lgdi32 -llua$LUAV \
     || { echo "Error: failed to build LuaSec"; exit 1; }
-  cp src/{ssl.lua,https.lua} "$INSTALL_DIR/share/lua/5.1"
-  [ -f "$INSTALL_DIR/lib/lua/5.1/ssl.dll" ] || { echo "Error: luasec.dll isn't found"; exit 1; }
+  cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAD"
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  cp src/https.lua "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/ssl.dll" ] || { echo "Error: luasec.dll isn't found"; exit 1; }
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi
@@ -284,9 +298,9 @@ fi
 if [ $BUILD_WINAPI ]; then
   git clone "$WINAPI_URL" "$WINAPI_BASENAME"
   cd "$WINAPI_BASENAME"
-  gcc $BUILD_FLAGS -DPSAPI_VERSION=1 -o "$INSTALL_DIR/lib/lua/5.1/winapi.dll" winapi.c wutils.c -lpsapi -lmpr -llua51 \
+  gcc $BUILD_FLAGS -DPSAPI_VERSION=1 -o "$INSTALL_DIR/lib/lua/$LUAD/winapi.dll" winapi.c wutils.c -lpsapi -lmpr -llua$LUAV \
     || { echo "Error: failed to build winapi"; exit 1; }
-  [ -f "$INSTALL_DIR/lib/lua/5.1/winapi.dll" ] || { echo "Error: winapi.dll isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/winapi.dll" ] || { echo "Error: winapi.dll isn't found"; exit 1; }
   cd ..
   rm -rf "$WINAPI_BASENAME"
 fi
@@ -304,13 +318,13 @@ mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1;
 
 [ $BUILD_LUA ] && cp "$INSTALL_DIR/bin/lua$LUAS.exe" "$INSTALL_DIR/lib/lua$LUAV.dll" "$BIN_DIR"
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/bin/libwx.dll" "$BIN_DIR/wx.dll"
-[ $BUILD_WINAPI ] && cp "$INSTALL_DIR/lib/lua/5.1/winapi.dll" "$BIN_DIR"
-[ $BUILD_LUASEC ] && cp "$INSTALL_DIR/lib/lua/5.1/ssl.dll" "$BIN_DIR"
+[ $BUILD_WINAPI ] && cp "$INSTALL_DIR/lib/lua/$LUAD/winapi.dll" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LUASEC ] && cp "$INSTALL_DIR/lib/lua/$LUAD/ssl.dll" "$BIN_DIR/clibs$LUAS"
 
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
-  cp "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dll" "$BIN_DIR/clibs$LUAS/mime"
-  cp "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dll" "$BIN_DIR/clibs$LUAS/socket"
+  cp "$INSTALL_DIR/lib/lua/$LUAD/mime/core.dll" "$BIN_DIR/clibs$LUAS/mime"
+  cp "$INSTALL_DIR/lib/lua/$LUAD/socket/core.dll" "$BIN_DIR/clibs$LUAS/socket"
 fi
 
 # To build lua5.1.dll proxy:

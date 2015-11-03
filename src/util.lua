@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- David Manura
@@ -148,6 +148,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   local optsort = (opts or {}).sort ~= false
   local optpath = (opts or {}).path ~= false
   local optskipbinary = (opts or {}).skipbinary
+  local optondirectory = (opts or {}).ondirectory
 
   local function spec2list(spec, list)
     -- return empty list if no spec is provided
@@ -221,14 +222,15 @@ function FileSysGetRecursive(path, recursive, spec, opts)
     local found, file = dir:GetFirst("*", wx.wxDIR_DIRS)
     while found do
       local fname = wx.wxFileName(path, file):GetFullPath()
-      if optfolder and ismatch(fname..sep, nil, exmasks) then
+      if optfolder and ismatch(fname..sep, inmasks, exmasks) then
         report((optpath and fname or fname:gsub(pathpatt, ""))..sep)
       end
 
+      if recursive and ismatch(fname..sep, nil, exmasks)
+      and (not optondirectory or optondirectory(fname) ~= false)
       -- check if this name already appears in the path earlier;
       -- Skip the processing if it does as it could lead to infinite
       -- recursion with circular references created by symlinks.
-      if recursive and ismatch(fname..sep, nil, exmasks)
       and select(2, fname:gsub(EscapeMagic(file..sep),'')) <= 2 then
         table.insert(queue, fname)
       end
@@ -292,12 +294,23 @@ function FileWrite(file, content)
   local file = wx.wxFile(file, wx.wxFile.write)
   if not file:IsOpened() then return nil, wx.wxSysErrorMsg() end
 
-  file:Write(content, #content)
+  local ok = file:Write(content, #content) == #content
   file:Close()
-  return true
+  return ok, not ok and wx.wxSysErrorMsg() or nil
 end
 
-function FileRead(fname, length)
+function FileSize(fname)
+  if not wx.wxFileExists(fname) then return end
+  local size = wx.wxFileSize(fname)
+  -- size can be returned as 0 for symlinks, so check with wxFile:Length();
+  -- can't use wxFile:Length() as it's reported incorrectly for some non-seekable files
+  -- (see https://github.com/pkulchenko/ZeroBraneStudio/issues/458);
+  -- the combination of wxFileSize and wxFile:Length() should do the right thing.
+  if size == 0 then size = wx.wxFile(fname, wx.wxFile.read):Length() end
+  return size
+end
+
+function FileRead(fname, length, callback)
   -- on OSX "Open" dialog allows to open applications, which are folders
   if wx.wxDirExists(fname) then return nil, "Can't read directory as file." end
 
@@ -305,7 +318,21 @@ function FileRead(fname, length)
   local file = wx.wxFile(fname, wx.wxFile.read)
   if not file:IsOpened() then return nil, wx.wxSysErrorMsg() end
 
-  local _, content = file:Read(length or wx.wxFileSize(fname))
+  if type(callback) == 'function' then
+    length = length or 8192
+    local pos = 0
+    while true do
+      local len, content = file:Read(length)
+      local res, msg = callback(content) -- may return `false` to signal to stop
+      if res == false then return false, msg or "Unknown error" end
+      if len < length then break end
+      pos = pos + len
+      file:Seek(pos)
+    end
+    return true, wx.wxSysErrorMsg()
+  end
+
+  local _, content = file:Read(length or FileSize(fname))
   file:Close()
   return content, wx.wxSysErrorMsg()
 end
@@ -342,15 +369,15 @@ end
 function FixUTF8(s, repl)
   local p, len, invalid = 1, #s, {}
   while p <= len do
-    if     p == s:find("[%z\1-\127]", p) then p = p + 1
-    elseif p == s:find("[\194-\223][\128-\191]", p) then p = p + 2
-    elseif p == s:find(       "\224[\160-\191][\128-\191]", p)
-        or p == s:find("[\225-\236][\128-\191][\128-\191]", p)
-        or p == s:find(       "\237[\128-\159][\128-\191]", p)
-        or p == s:find("[\238-\239][\128-\191][\128-\191]", p) then p = p + 3
-    elseif p == s:find(       "\240[\144-\191][\128-\191][\128-\191]", p)
-        or p == s:find("[\241-\243][\128-\191][\128-\191][\128-\191]", p)
-        or p == s:find(       "\244[\128-\143][\128-\191][\128-\191]", p) then p = p + 4
+    if     s:find("^[%z\1-\127]", p) then p = p + 1
+    elseif s:find("^[\194-\223][\128-\191]", p) then p = p + 2
+    elseif s:find(       "^\224[\160-\191][\128-\191]", p)
+        or s:find("^[\225-\236][\128-\191][\128-\191]", p)
+        or s:find(       "^\237[\128-\159][\128-\191]", p)
+        or s:find("^[\238-\239][\128-\191][\128-\191]", p) then p = p + 3
+    elseif s:find(       "^\240[\144-\191][\128-\191][\128-\191]", p)
+        or s:find("^[\241-\243][\128-\191][\128-\191][\128-\191]", p)
+        or s:find(       "^\244[\128-\143][\128-\191][\128-\191]", p) then p = p + 4
     else
       local repl = type(repl) == 'function' and repl(s:sub(p,p)) or repl
       s = s:sub(1, p-1)..repl..s:sub(p+1)
@@ -403,11 +430,11 @@ function TR(msg, count)
   -- if there is count and no corresponding message, then
   -- get the message from the (default) english language,
   -- otherwise the message is not going to be pluralized properly
-  if count and not message then
+  if count and (not message or type(message) == 'table' and not next(message)) then
     message, counter = messages.en[msg], messages.en[0]
   end
   return count and counter and message and type(message) == 'table'
-    and message[counter(count)] or message or msg
+    and message[counter(count)] or (type(message) == 'string' and message or msg)
 end
 
 -- wxwidgets 2.9.x may report the last folder twice (depending on how the
@@ -490,6 +517,7 @@ function LoadLuaConfig(filename,isstring)
       report(("Error while processing configuration %s: '%s'."):format(msg, err))
     end
   end
+  return true
 end
 
 function LoadSafe(data)

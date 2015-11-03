@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -114,6 +114,11 @@ local markername = "commandbar.background"
 local mac = ide.osname == 'Macintosh'
 local win = ide.osname == 'Windows'
 local special = {SYMBOL = '@', LINE = ':', METHOD = ';'}
+local tabsep = "\0"
+local function name2index(name)
+  local p = name:find(tabsep)
+  return p and tonumber(name:sub(p + #tabsep)) or nil
+end
 local function navigateTo(default, selected)
   local styles = ide.config.styles
   local marker = ide:AddMarker(markername,
@@ -121,6 +126,7 @@ local function navigateTo(default, selected)
 
   local nb = ide:GetEditorNotebook()
   local selection = nb:GetSelection()
+  local maxitems = ide.config.commandbar.maxitems
   local files, preview, origline, functions, methods
 
   local function markLine(ed, toline)
@@ -142,19 +148,31 @@ local function navigateTo(default, selected)
       local ed = ide:GetEditor()
       if ed and origline then
         ed:MarkerDeleteAll(marker)
-        ed:EnsureVisibleEnforcePolicy(origline-1)
+        -- only restore original line if Escape was used (enter == false)
+        if enter == false then ed:EnsureVisibleEnforcePolicy(origline-1) end
       end
 
       local pindex = preview and nb:GetPageIndex(preview)
       if enter then
         local fline, sline, tabindex = unpack(t or {})
-        local ed = ide:GetEditor()
 
         -- jump to symbol; tabindex has the position of the symbol
-        if text and text:find(special.SYMBOL) and tabindex then
-          ed:GotoPos(tabindex-1)
-          ed:EnsureVisibleEnforcePolicy(ed:LineFromPosition(tabindex-1))
-          ed:SetFocus() -- in case the focus is on some other panel
+        if text and text:find(special.SYMBOL) then
+          if sline and tabindex then
+            local index = name2index(sline)
+            local editor = index and nb:GetPage(index):DynamicCast("wxStyledTextCtrl")
+            if not editor then
+              local doc = ide:FindDocument(sline)
+              -- reload the file (including the preview to refresh its symbols in the outline)
+              editor = LoadFile(sline, (not doc or doc:GetTabIndex() == pindex) and preview or nil)
+            end
+            if editor then
+              if pindex and pindex ~= ide:GetDocument(editor):GetTabIndex() then ClosePage(pindex) end
+              editor:SetFocus() -- in case the focus is on some other panel
+              editor:GotoPos(tabindex-1)
+              editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(tabindex-1))
+            end
+          end
         -- insert selected method
         elseif text and text:find('^%s*'..special.METHOD) then
           if ed then -- clean up text and insert at the current location
@@ -188,11 +206,16 @@ local function navigateTo(default, selected)
           -- 3. otherwise use "text"
           local file = (wx.wxGetKeyState(wx.WXK_CONTROL) and text) or sline or text
           local fullPath = MergeFullPath(ide:GetProject(), file)
-          if not LoadFile(fullPath, preview or nil)
-          and not ProjectUpdateProjectDir(fullPath) then
+          local doc = ide:FindDocument(fullPath)
+          -- if the document is already opened (not in the preview)
+          -- or can't be opened as a file or folder, then close the preview
+          if doc and doc.index ~= pindex
+          or not LoadFile(fullPath, preview or nil) and not ProjectUpdateProjectDir(fullPath) then
             if pindex then ClosePage(pindex) end
           end
         end
+      elseif enter == nil then -- changed focus
+        -- do nothing; keep everything as is
       else
         -- close preview
         if pindex then ClosePage(pindex) end
@@ -219,24 +242,45 @@ local function navigateTo(default, selected)
       -- reset cached methods if no method search
       if text and not text:find(special.METHOD) then methods = nil end
 
-      if ed and text and text:find(special.SYMBOL) then
+      if text and text:find(special.SYMBOL) then
+        local file, symbol = text:match('^(.*)'..special.SYMBOL..'(.*)')
         if not functions then
-          local funcs, nums = OutlineFunctions(ed), {}
+          local nums, paths = {}, {}
           functions = {pos = {}, src = {}}
-          for _, func in ipairs(funcs) do
-            table.insert(functions, func.name)
-            nums[func.name] = (nums[func.name] or 0) + 1
-            local num = nums[func.name]
-            local line = ed:LineFromPosition(func.pos-1)
-            functions.src[func.name..num] = ed:GetLine(line):gsub("^%s+","")
-            functions.pos[func.name..num] = func.pos
+
+          local function populateSymbols(path, symbols)
+            for _, func in ipairs(symbols) do
+              table.insert(functions, func.name)
+              nums[func.name] = (nums[func.name] or 0) + 1
+              local num = nums[func.name]
+              functions.src[func.name..num] = path
+              functions.pos[func.name..num] = func.pos
+            end
+          end
+
+          local currentonly = #file > 0 and ed
+          local outline = ide:GetOutline()
+          for _, doc in pairs(currentonly and {ide:GetDocument(ed)} or ide:GetDocuments()) do
+            local path, editor = doc:GetFilePath(), doc:GetEditor()
+            if path then paths[path] = true end
+            populateSymbols(path or doc:GetFileName()..tabsep..doc:GetTabIndex(), outline:GetEditorSymbols(editor))
+          end
+
+          -- now add all other files in the project
+          if not currentonly and ide.config.commandbar.showallsymbols then
+            local n = 0
+            outline:RefreshSymbols(projdir, function(path)
+                local symbols = outline:GetFileSymbols(path)
+                if not paths[path] and symbols then populateSymbols(path, symbols) end
+                if not symbols then n = n + 1 end
+              end)
+            if n > 0 then ide:SetStatusFor(TR("Queued %d files to index."):format(n)) end
           end
         end
-        local symbol = text:match(special.SYMBOL..'(.*)')
         local nums = {}
         if #symbol > 0 then
           local topscore
-          for _, item in ipairs(CommandBarScoreItems(functions, symbol, 100)) do
+          for _, item in ipairs(CommandBarScoreItems(functions, symbol, maxitems)) do
             local func, score = unpack(item)
             topscore = topscore or score
             nums[func] = (nums[func] or 0) + 1
@@ -248,6 +292,7 @@ local function navigateTo(default, selected)
           end
         else
           for n, name in ipairs(functions) do
+            if n > maxitems then break end
             nums[name] = (nums[name] or 0) + 1
             local num = nums[name]
             lines[n] = {name, functions.src[name..num], functions.pos[name..num]}
@@ -273,7 +318,7 @@ local function navigateTo(default, selected)
         local method = text:match(special.METHOD..'(.*)')
         if #method > 0 then
           local topscore
-          for _, item in ipairs(CommandBarScoreItems(methods, method, 100)) do
+          for _, item in ipairs(CommandBarScoreItems(methods, method, maxitems)) do
             local method, score = unpack(item)
             topscore = topscore or score
             if score > topscore / 4 and score > 1 then
@@ -281,7 +326,7 @@ local function navigateTo(default, selected)
             end
           end
         end
-      elseif text and text:find(special.LINE..'(%d+)%s*$') then
+      elseif text and text:find(special.LINE..'(%d*)%s*$') then
         local toline = tonumber(text:match(special.LINE..'(%d+)'))
         if toline and ed then markLine(ed, toline) end
       elseif text and #text > 0 and projdir and #projdir > 0 then
@@ -289,7 +334,7 @@ local function navigateTo(default, selected)
         files = files or FileSysGetRecursive(projdir, true, "*",
           {sort = false, path = false, folder = false, skipbinary = true})
         local topscore
-        for _, item in ipairs(CommandBarScoreItems(files, text, 100)) do
+        for _, item in ipairs(CommandBarScoreItems(files, text, maxitems)) do
           local file, score = unpack(item)
           topscore = topscore or score
           if score > topscore / 4 and score > 1 then
@@ -316,10 +361,9 @@ local function navigateTo(default, selected)
     end,
     onSelection = function(t, text)
       local _, file, tabindex = unpack(t)
+      local pos
       if text and text:find(special.SYMBOL) then
-        local ed = ide:GetEditor()
-        if ed then markLine(ed, ed:LineFromPosition(tabindex-1)+1) end
-        return
+        pos, tabindex = tabindex, name2index(file)
       elseif text and text:find(special.METHOD) then
         return
       end
@@ -354,6 +398,11 @@ local function navigateTo(default, selected)
         end
       end
       nb:SetEvtHandlerEnabled(true)
+
+      if text and text:find(special.SYMBOL) then
+        local ed = ide:GetEditor()
+        if ed then markLine(ed, ed:LineFromPosition(pos-1)+1) end
+      end
     end,
   })
 end

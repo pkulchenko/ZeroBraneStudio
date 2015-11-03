@@ -1,4 +1,4 @@
--- Copyright 2011-14 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -46,20 +46,36 @@ menuBar:Append(editMenu, TR("&Edit"))
 
 editMenu:Check(ID_AUTOCOMPLETEENABLE, ide.config.autocomplete)
 
+local function getCtrlWithFocus(edType)
+  local ctrl = ide:GetMainFrame():FindFocus()
+  return ctrl and ctrl:GetClassInfo():GetClassName() == edType and ctrl:DynamicCast(edType) or nil
+end
+
 local function onUpdateUIEditorInFocus(event)
   event:Enable(GetEditorWithFocus(GetEditor()) ~= nil)
 end
 
 local function onUpdateUIEditMenu(event)
+  local menu_id = event:GetId()
   local editor = GetEditorWithFocus()
-  if editor == nil then event:Enable(false); return end
+  if editor == nil then
+    local editor = getCtrlWithFocus("wxTextCtrl")
+    event:Enable(editor and (
+        menu_id == ID_PASTE and editor:CanPaste() or
+        menu_id == ID_UNDO and editor:CanUndo() or
+        menu_id == ID_REDO and editor:CanRedo() or
+        menu_id == ID_CUT and editor:CanCut() or
+        menu_id == ID_COPY and editor:CanCopy() or
+        menu_id == ID_SELECTALL and true
+      ) or false)
+    return
+  end
 
   local alwaysOn = {
     [ID_SELECTALL] = true,
     -- allow Cut and Copy commands as these work on a line if no selection
     [ID_COPY] = true, [ID_CUT] = true,
   }
-  local menu_id = event:GetId()
   local enable =
     -- pasting is allowed when the document is not read-only and the selection
     -- (if any) has no protected text; since pasting handles protected text,
@@ -72,14 +88,26 @@ local function onUpdateUIEditMenu(event)
 end
 
 local function onEditMenu(event)
+  local menu_id = event:GetId()
   local editor = GetEditorWithFocus()
-  if editor == nil then event:Skip(); return end
+  if editor == nil then
+    local editor = getCtrlWithFocus("wxTextCtrl")
+    if not editor or not (
+      menu_id == ID_PASTE and editor:Paste() or
+      menu_id == ID_UNDO and editor:Undo() or
+      menu_id == ID_REDO and editor:Redo() or
+      menu_id == ID_CUT and editor:Cut() or
+      menu_id == ID_COPY and editor:Copy() or
+      menu_id == ID_SELECTALL and editor:SetSelection(-1, -1) or
+      true
+    ) then event:Skip() end
+    return
+  end
 
   if PackageEventHandle("onEditorAction", editor, event) == false then
     return
   end
 
-  local menu_id = event:GetId()
   local copytext
   if (menu_id == ID_CUT or menu_id == ID_COPY)
   and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
@@ -133,13 +161,13 @@ frame:Connect(ID_COMMENT, wx.wxEVT_UPDATE_UI,
   function(event)
     local editor = GetEditorWithFocus(GetEditor())
     event:Enable(editor ~= nil
-      and pcall(function() return editor.spec end) and editor.spec
+      and ide:IsValidProperty(editor, 'spec') and editor.spec
       and editor.spec.linecomment and true or false)
   end)
 
 local function generateConfigMessage(type)
   return ([==[--[[--
-  Use this file to specify %s preferences.
+  Use this file to specify **%s** preferences.
   Review [examples](+%s) or check [online documentation](%s) for details.
 --]]--
 ]==])
@@ -150,14 +178,14 @@ end
 frame:Connect(ID_PREFERENCESSYSTEM, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local editor = LoadFile(ide.configs.system)
-    if editor and #editor:GetText() == 0 then
+    if editor and editor:GetLength() == 0 then
       editor:AddText(generateConfigMessage("System")) end
   end)
 
 frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local editor = LoadFile(ide.configs.user)
-    if editor and #editor:GetText() == 0 then
+    if editor and editor:GetLength() == 0 then
       editor:AddText(generateConfigMessage("User")) end
   end)
 frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_UPDATE_UI,
@@ -218,14 +246,13 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     -- go last to first as selection positions we captured may be affected
     -- by text changes
     for line = eline, sline, -1 do
-      local pos = sel and (sline == eline or rect)
-        and ssel-editor:PositionFromLine(sline)+1 or 1
+      local pos = sel and (sline == eline or rect) and ssel-editor:PositionFromLine(sline)+1 or 1
       local text = editor:GetLine(line)
+      local validline = (line == sline or line < eline or esel-editor:PositionFromLine(line) > 0)
       local _, cpos = text:find("^%s*"..qlc, pos)
-      if not comment and cpos then
+      if not comment and cpos and validline then
         editor:DeleteRange(cpos-#lc+editor:PositionFromLine(line), #lc)
-      elseif comment and text:find("%S")
-      and (line == sline or line < eline or esel-editor:PositionFromLine(line) > 0) then
+      elseif comment and text:find("%S") and validline then
         editor:SetTargetStart(pos+editor:PositionFromLine(line)-1)
         editor:SetTargetEnd(editor:GetTargetStart())
         editor:ReplaceTarget(lc)
