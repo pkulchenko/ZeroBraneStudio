@@ -1090,7 +1090,13 @@ local function controller(controller_host, controller_port, scratchpad)
         elseif err and not string.find(tostring(err), deferror) then
           -- report the error back
           -- err is not necessarily a string, so convert to string to report
-          report(debug.traceback(coro_debugee), tostring(err))
+	   local function report(trace, err)
+	      local msg = err .. "\n" .. trace
+	      server:send("401 Error in Execution " .. #msg .. "\n")
+	      server:send(msg)
+	      return err
+	   end
+	   report(debug.traceback(coro_debugee), tostring(err))
           if exitonerror then break end
           -- check if the debugging is done (coro_debugger is nil)
           if not coro_debugger then break end

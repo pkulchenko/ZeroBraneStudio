@@ -1,28 +1,8 @@
 # Project Description
 
-[ZeroBrane Studio](http://studio.zerobrane.com/) is a lightweight cross-platform Lua IDE with code completion,
-syntax highlighting, remote debugger, code analyzer, live coding,
-and debugging support for several Lua engines
-([Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
-[Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
-[Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
-[LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
-[LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
-[Moai](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio),
-[Gideros](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide),
-[Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
-[Marmalade Quick](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio),
-[Cocos2d-x](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio),
-[GSL-shell](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio),
-[Adobe Lightroom](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide),
-[OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
-[Lapis](http://notebook.kulchenko.com/zerobrane/lapis-debugging-with-zerobrane-studio),
-[Moonscript](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio),
-and others). It originated from the [Estrela Editor](http://www.luxinia.de/index.php/Estrela/).
+ZBS-torch is a fork of ZeroBrane Studio to get it to work with Torch-7
 
-![ZeroBrane Studio debugger screenshot](http://studio.zerobrane.com/images/debugging.png)
-
-## Features
+For an overview of ZeroBrane Studio, see [README-zbs](https://github.com/soumith/zbs-torch/blob/master/README-zbs.md)
 
 * Written in Lua, so easily customizable.
 * Small, portable, and cross-platform (Windows, Mac OSX, and Linux).
@@ -52,63 +32,66 @@ GSL-shell, and other engines.
   - translations (`cfg/i18n/`): [translations](http://studio.zerobrane.com/doc-translation) of the menus and messages to other languages;
   - tools (`tools/`): additional tools.
 
-## Documentation
-
-* A [short and simple overview](http://studio.zerobrane.com/doc-getting-started) for those who are new to this development environment.
-* A list of [frequently asked questions](http://studio.zerobrane.com/doc-faq) about the IDE.
-* [Tutorials and demos](http://studio.zerobrane.com/tutorials) that cover debugging and live coding for different environments.
-* [Tips and tricks](http://studio.zerobrane.com/doc-tips-and-tricks).
-
 ## Installation
+=======
+* Get Torch 
 
-ZeroBrane Studio can be installed into and run from any folder.
-No compilation is needed, although the scripts to compile required libraries for Windows, OSX, and Linux platforms are available in the `build/` folder.
+* Install mobdebug with luarocks with
+
+```bash
+$ luarocks install mobdebug
+```
+
+```bash
+$ git clone https://github.com/soumith/zbs-torch.git
+$ cd zbs-torch
+$ ./zbstudio.sh
+```
 
 ## Usage
 
+To debug a torch file,
+
+* Start zbs from the zbs-torch directory with the command
+
+```bash
+$ ./zbstudio.sh
 ```
-Open file(s):
-  zbstudio [option] [<project directory>] <filename> [<filename>...]
-  non-options are treated as a project directory to set or a file to open
+* Start the debugger server from "Project->Start Debugger Server"
 
-Set project directory:
-  zbstudio <project directory> [<filename>...]
-  (0.39+) a directory passed as a parameter will be set as the project directory
+* Change the interpreter to Torch-7 "Project->Lua Interpreter->Torch-7" 
 
-Override default configuration:
-  zbstudio -cfg "<luacode overriding config>" [<filename>]
-  e.g.: zbstudio -cfg "editor.fontsize=12" somefile.lua
+* Add the following line to the top of the file you are debugging
 
-Load custom configuration:
-  zbstudio -cfg path/file.lua [<filename>]
-  e.g.: zbstudio -cfg cfg/estrela.lua
+```lua
+require('mobdebug').start()
+```
+For Example, this file
+```lua
+require 'image'
+print('Wheres Waldo?')
+a=image.rotate(image.lena(), 1.0)
+image.display(a)
+print('OK Bye')
+```
+becomes
+```lua
+require('mobdebug').start()
+require 'image'
+print('Wheres Waldo?')
+a=image.rotate(image.lena(), 1.0)
+image.display(a)
+print('OK Bye')
 ```
 
-If you are loading a file, you can also request the cursor to be set on a particular line or at a particular position by using `filename:<line>` and `filename:p<pos>` syntax (0.71+).
+* Run the file from the menu "Project->Run"
+* You should see the debugger stop at the first line of the file, then you can set breakpoints, continue, step etc.
 
-## Contributing
-
-See [CONTRIBUTING](CONTRIBUTING.md).
-
-## Author
+## Original Author
 
 ### ZeroBrane Studio and MobDebug
 
   **ZeroBrane LLC:** Paul Kulchenko (paul@kulchenko.com)
-
-### Estrela Editor
-
-  **Luxinia Dev:** Christoph Kubisch (crazybutcher@luxinia.de)
-
-## Where is Estrela?
-
-The Estrela project has been merged into ZeroBrane Studio.
-To keep your history of files and projects copy the contents of the `EstrelaEditor.ini`
-in your HOME directory to `ZeroBraneStudio.ini`.
-If you have used Estrela for graphics shader authoring or luxinia, create/modify
-the `cfg/user.lua` and add `include "estrela.lua"` (1.20+) to load all tools
-and specifications by default again.
-  
 ## License
 
 See [LICENSE](LICENSE).
