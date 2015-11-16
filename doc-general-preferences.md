@@ -46,7 +46,7 @@ Use `'c'` for 'copying' (appears in the application output and the Output panel)
 `'r'` for 'redirecting' (only appears in the Output panel),
 or `'d'` for 'default' (only appears in the application output).
 This is mostly useful for remote debugging to specify how the output should be redirected.
-- `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (1.0+).
+- (removed in 1.21+) `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (1.0+).
 - `debugger.runonstart = false`: execute script immediately after starting debugging (when set to `true`) or stop on the first Lua statement (when set to `false`).
 - `debugger.verbose = false`: enable verbose output.
 
