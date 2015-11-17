@@ -56,6 +56,8 @@ To **jump to the position in the source code referred to in the Stack window**, 
 
 To **search or replace using regular expressions**, you can enable a checkbox `Regular Expression`.
 These regular expressions do not accept Lua character classes that start with `%` (like `%s`, `%d`, and others), but accept `.` (as any character), char-sets (`[]` and `[^]`), modifiers `+` and `*`, and characters `^` and `$` to match beginning and end of the string.
+Regular expressions only match within a single line (not over multiple lines).
+See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_GETTAG) for details on what special characters are accepted.
 
 ## Search and replacement with regular expressions and captures.
 
