@@ -68,6 +68,9 @@ For example, you set the project directory pointing to `scripts` folder (with `c
 the IDE will be looking for `scripts/myfile.lua` instead of `scripts/common/myfile.lua` and the file will not be activated and the breakpoints won't work.
 You may also be using inconsistent path separators in the file names; for example, `common/myfile.lua` in one case and `common\myfile.lua` in another.
 - If you are loading files using `luaL_loadbuffer`, make sure that the chunk name specified (the last parameter) matches the file location.
+- If you set/remove breakpoints while the application is running, these changes may not have any effect if only a small number of Lua commands get executed.
+To limit the negative impact of socket checks for pending messages, the debugger in the application only checks for incoming requests every 200 messages (by default), so if your tests include fewer messages, then `pause`/`break` commands and toggling breakpoints without suspending the application may not work.
+To make the debugger to check more frequently, you can update `checkcount` field (`require('mobdebug').checkcount = 1`) before or after debugging is started.
 - If breakpoints are still not working, you may want to enable verbose debugging (`debugger.verbose=true`) as this will provide additional information about paths reported by the interpreter and used by the IDE.
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
