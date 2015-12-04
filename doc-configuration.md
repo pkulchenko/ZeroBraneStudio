@@ -32,3 +32,16 @@ For example, on Windows the command `zbstudio.exe -cfg myconfig.lua` will apply 
 
 Individual commands can also be specified as configuration parameters; for example, `zbstudio.exe -cfg "language='ru'"` will set Russian as the user interface language in the IDE.
 The format of the arguments passed using the command line is exactly the same as specified in the configuration files. If you need to set several values you can separate them with a semicolon: `zbstudio.exe -cfg "language='ru'; editor.fontsize = 12"`.
+
+## Configuration file commands
+
+The configuration files allow for several special commands:
+
+- `include "file.lua"`: includes another (configuration) file using relative or absolute name.
+The relative name is checked against the directory (1) of the current configuration file, (2) of the **per-user** configuration file, and (3) of the **system-wide** configuration file (in that order).
+As soon as the file is found, it's processed and the search is stopped.
+- `package {}`, `package "path/"`, and `package "file.lua"`: loads and processes the file as the package in the IDE.
+The first syntax (`package {}`) allows to include the package code in the config file, where the table passed is the package code.
+The other two load all files from a folder as packages or one particular package.
+Path and file names may be relative or absolute. The relative name is checked against `.` (current directory), `packages/`, and `../packages/` directories (in this order and all relative to the directory of the current configuration file).
+As soon as the file is found, it's processed and the search is stopped.
