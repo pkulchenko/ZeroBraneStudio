@@ -45,3 +45,11 @@ The first syntax (`package {}`) allows to include the package code in the config
 The other two load all files from a folder as packages or one particular package.
 Path and file names may be relative or absolute. The relative name is checked against `.` (current directory), `packages/`, and `../packages/` directories (in this order and all relative to the directory of the current configuration file).
 As soon as the file is found, it's processed and the search is stopped.
+
+## Configuration variables
+
+There are some rare cases in which you may need to access or change some values that are not configuration settings in the IDE.
+For example, you may need access the spec configuration (`ide.specs.lua`) or call lua functions from an inline package (`package { onRegister = function() table.insert(something, 'else') end }`).
+Before version 1.21, `local G = ...` was used to provide access to the global environment from the config file.
+Starting from version 1.21, this is no longer needed, as the global environment is already available, so those methods can be used directly (as can be seen in `cfg/user-sample.lua`).
+The access and the processing is the same for all config files.
