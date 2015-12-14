@@ -30,6 +30,8 @@ if it only contains the file name (for example, `file.ini`), then the file is cr
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
+- `showhiddenfiles = false`: display hidden files (those that have "hidden" attribute set on Windows or those that start with `.` on Linux) in the project tree (1.21+);
+set to `true` to display both files and directories or to `wx.wxDIR_FILES` to display only files and to `wx.wxDIR_DIRS` to display only directories.
 - `showmemoryusage = nil`: display memory usage stats in the Status bar (1.11+).
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 - `symbolindexinactivity = 2`: trigger indexing of project files for symbol search after N seconds of inactivity (1.11+).
