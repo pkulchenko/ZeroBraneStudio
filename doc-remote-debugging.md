@@ -37,7 +37,7 @@ and reference proper location depending on your Linux architecture (replace `x86
 
     export ZBS=/opt/zbstudio
     export LUA_PATH="./?.lua;$ZBS/lualibs/?/?.lua;$ZBS/lualibs/?.lua"
-    export LUA_CPATH="$ZBS/bin/linux/x86/?.dll;$ZBS/bin/linux/x86/clibs/?.dll"
+    export LUA_CPATH="$ZBS/bin/linux/x86/?.so;$ZBS/bin/linux/x86/clibs/?.so"
     ./myapplication
 
 ## Configure path for debugging
