@@ -34,8 +34,10 @@ title: Documentation
 - [Cocos2d-x debugging](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio)
 - [Wireshark debugging](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio)
 - [GSL-shell debugging](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio)
+- [Redis Lua debugging](http://notebook.kulchenko.com/zerobrane/redis-lua-debugging-with-zerobrane-studio)
 - [Adobe Lightroom plugin debugging](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide)
 - [OpenResty and Nginx Lua script debugging](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio)
+- [Mashape Kong plugin debugging](http://notebook.kulchenko.com/zerobrane/debugging-mashape-kong-plugins-with-zerobrane-studio)
 - [Vera (home automation) device debugging](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio)
 
 ## Live coding
