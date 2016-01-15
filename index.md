@@ -26,11 +26,13 @@ For those interested in **game and mobile development**, the IDE supports debugg
 [Marmalade Quick](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 and [Cocos2d-x](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio).
-It also supports general Lua debugging for
+It also supports **general Lua debugging** for
+[OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
+[Redis](http://notebook.kulchenko.com/zerobrane/redis-lua-debugging-with-zerobrane-studio)
+[Torch7](http://notebook.kulchenko.com/zerobrane/torch-debugging-with-zerobrane-studio),
 [Wireshark](http://notebook.kulchenko.com/zerobrane/debugging-wireshark-lua-scripts-with-zerobrane-studio),
 [GSL-shell](http://notebook.kulchenko.com/zerobrane/gsl-shell-debugging-with-zerobrane-studio),
 [Adobe Lightroom](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide),
-[OpenResty](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
 [Lapis](http://notebook.kulchenko.com/zerobrane/lapis-debugging-with-zerobrane-studio),
 [Moonscript](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio),
 [home automation](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio),
