@@ -10,7 +10,7 @@ ide.config.toolbar.icons = {
   ID.RUN, ID.STARTDEBUG, ID.RUNNOW, ID.STOPDEBUG, ID.DETACHDEBUG, ID.BREAK,
     ID.STEP, ID.STEPOVER, ID.STEPOUT, ID.RUNTO,
   ID.SEPARATOR,
-  ID.TOGGLEBREAKPOINT, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, ID.VIEWWATCHWINDOW,
+  ID.BREAKPOINTTOGGLE, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, ID.VIEWWATCHWINDOW,
   [ID.FINDINFILES] = false,
 }
 
@@ -34,7 +34,7 @@ ide.config.toolbar.iconmap = {
   [ID.STEP] = {"DEBUG-STEP-INTO", TR("Step into")},
   [ID.STEPOVER] = {"DEBUG-STEP-OVER", TR("Step over")},
   [ID.STEPOUT] = {"DEBUG-STEP-OUT", TR("Step out of the current function")},
-  [ID.TOGGLEBREAKPOINT] = {"DEBUG-BREAKPOINT-TOGGLE", TR("Toggle breakpoint")},
+  [ID.BREAKPOINTTOGGLE] = {"DEBUG-BREAKPOINT-TOGGLE", TR("Toggle breakpoint")},
   [ID.BOOKMARKTOGGLE] = {"BOOKMARK-TOGGLE", TR("Toggle bookmark")},
   [ID.VIEWCALLSTACK] = {"DEBUG-CALLSTACK", TR("View the stack window")},
   [ID.VIEWWATCHWINDOW] = {"DEBUG-WATCH", TR("View the watch window")},
@@ -45,6 +45,7 @@ ide.config.toolbar.iconmap = {
   [ID.FINDSETDIR] = {"FIND-OPT-SETDIR", TR("Set search directory")},
   [ID.FINDOPTDIRECTION] = {"FIND-OPT-DOWN", TR("Search direction")},
   [ID.FINDOPTWRAPWROUND] = {"FIND-OPT-WRAP-AROUND", TR("Wrap around")},
+  [ID.FINDOPTSELECTION] = {"FIND-OPT-SELECTION", TR("Search in selection")},
   [ID.FINDOPTWORD] = {"FIND-OPT-WORD", TR("Match whole word")},
   [ID.FINDOPTCASE] = {"FIND-OPT-CASE-SENSITIVE", TR("Match case")},
   [ID.FINDOPTREGEX] = {"FIND-OPT-REGEX", TR("Regular expression")},

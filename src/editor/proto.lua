@@ -12,6 +12,7 @@ ide.proto.Document = {__index = {
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self) return self.index end,
   IsModified = function(self) return self.isModified end,
+  IsNew = function(self) return self.filePath == nil end,
   SetModified = function(self, modified)
     self.isModified = modified
     self:SetTabText()
@@ -27,11 +28,14 @@ ide.proto.Document = {__index = {
   SetActive = function(self) SetEditorSelection(self.index) end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
   Close = function(self) return ClosePage(self.index) end,
+  CloseAll = function(self) return CloseAllPagesExcept(-1) end,
+  CloseAllExcept = function(self) return CloseAllPagesExcept(self.index) end,
 }}
 
 ide.proto.Plugin = {__index = {
   GetName = function(self) return self.name end,
   GetFileName = function(self) return self.fname end,
+  GetFilePath = function(self) return MergeFullPath(GetPathWithSep(ide.editorFilename), self.fpath) end,
   GetConfig = function(self) return ide.config[self.fname] or {} end,
   GetSettings = function(self) return SettingsRestorePackage(self.fname) end,
   SetSettings = function(self, settings, opts) SettingsSavePackage(self.fname, settings, opts) end,
@@ -40,6 +44,7 @@ ide.proto.Plugin = {__index = {
 ide.proto.Interpreter = {__index = {
   GetName = function(self) return self.name end,
   GetFileName = function(self) return self.fname end,
+  GetExePath = function(self, ...) return self:fexepath(...) end,
   GetAPI = function(self) return self.api end,
   fprojdir = function(self,wfilename)
     return wfilename:GetPath(wx.wxPATH_GET_VOLUME)

@@ -6,31 +6,38 @@ local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
 local unpack = table.unpack or unpack
 local q = EscapeMagic
 
-function PackageEventHandle(event, ...)
+local function eventHandle(handlers, event, ...)
   local success
-  for _, package in pairs(ide.packages) do
-    if type(package[event]) == 'function' then
-      local ok, res = pcall(package[event], package, ...)
-      if ok then
-        if res == false then success = false end
-      else
-        DisplayOutputLn(TR("%s event failed: %s"):format(event, res))
-      end
+  for package, handler in pairs(handlers) do
+    local ok, res = pcall(handler, package, ...)
+    if ok then
+      if res == false then success = false end
+    else
+      DisplayOutputLn(TR("%s event failed: %s"):format(event, res))
     end
   end
   return success
 end
 
+local function getEventHandlers(packages, event)
+  local handlers = {}
+  for _, package in pairs(packages) do
+    if package[event] then handlers[package] = package[event] end
+  end
+  return handlers
+end
+
+function PackageEventHandle(event, ...)
+  return eventHandle(getEventHandlers(ide.packages, event), event, ...)
+end
+
 function PackageEventHandleOnce(event, ...)
-  local success = PackageEventHandle(event, ...)
+  -- copy packages as the event that is handled only once needs to be removed
+  local handlers = getEventHandlers(ide.packages, event)
   -- remove all handlers as they need to be called only once
   -- this allows them to be re-installed if needed
-  for _, package in pairs(ide.packages) do
-    if type(package[event]) == 'function' then
-      package[event] = nil
-    end
-  end
-  return success
+  for _, package in pairs(ide.packages) do package[event] = nil end
+  return eventHandle(handlers, event, ...)
 end
 
 local function PackageEventHandleOne(file, event, ...)
@@ -77,7 +84,7 @@ end
 function ide:GetApp() return self.editorApp end
 function ide:GetAppName() return self.appname end
 function ide:GetEditor(index) return GetEditor(index) end
-function ide:GetEditorWithFocus(ed) return GetEditorWithFocus(ed) end
+function ide:GetEditorWithFocus(...) return GetEditorWithFocus(...) end
 function ide:GetEditorWithLastFocus()
   -- make sure ide.infocus is still a valid component and not "some" userdata
   return (self:IsValidCtrl(self.infocus)
@@ -90,7 +97,7 @@ function ide:GetToolBar() return self.frame.toolBar end
 function ide:GetDebugger() return self.debugger end
 function ide:GetMainFrame() return self.frame end
 function ide:GetUIManager() return self.frame.uimgr end
-function ide:GetDocument(ed) return self.openDocuments[ed:GetId()] end
+function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
 function ide:GetDocuments() return self.openDocuments end
 function ide:GetKnownExtensions(ext)
   local knownexts, extmatch = {}, ext and ext:lower()
@@ -101,6 +108,7 @@ function ide:GetKnownExtensions(ext)
       end
     end
   end
+  table.sort(knownexts)
   return knownexts
 end
 
@@ -122,6 +130,18 @@ function ide:FindMenuItem(itemid, menu)
     end
   end
   return
+end
+function ide:AttachMenu(...)
+  -- AttachMenu([targetmenu,] id, submenu)
+  -- `targetmenu` is only needed for menus not attached to the main menubar
+  local menu, id, submenu = ...
+  if select('#', ...) == 2 then menu, id, submenu = nil, ... end
+  local item, menu, pos = self:FindMenuItem(id, menu)
+  if not item then return end
+
+  local menuitem = wx.wxMenuItem(menu, id, item:GetItemLabel(), item:GetHelp(), wx.wxITEM_NORMAL, submenu)
+  menu:Destroy(item)
+  return menu:Insert(pos, menuitem), pos
 end
 
 function ide:FindDocument(path)
@@ -192,8 +212,62 @@ function ide:PushStatus(text, field) self:GetStatusBar():PushStatusText(text, fi
 function ide:PopStatus(field) self:GetStatusBar():PopStatusText(field or 0) end
 function ide:Yield() wx.wxYield() end
 function ide:CreateBareEditor() return CreateEditor(true) end
+
+local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
+  "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
+local useraw = nil
+
 function ide:CreateStyledTextCtrl(...)
   local editor = wxstc.wxStyledTextCtrl(...)
+  if not editor then return end
+
+  if useraw == nil then
+    useraw = true
+    for _, m in ipairs(rawMethods) do
+      if not pcall(function() return editor[m:gsub("Dyn", "Raw")] end) then useraw = false; break end
+    end
+  end
+
+  -- map all `GetTextDyn` to `GetText` or `GetTextRaw` if `*Raw` methods are present
+  editor.useraw = useraw
+  for _, m in ipairs(rawMethods) do
+    -- some `*Raw` methods return `nil` instead of `""` as their "normal" calls do
+    -- (for example, `GetLineRaw` and `GetTextRangeRaw` for parameters outside of text)
+    local def = m:find("^Get") and "" or nil
+    editor[m] = function(...) return editor[m:gsub("Dyn", useraw and "Raw" or "")](...) or def end
+  end
+
+  local suffix = "\1\0"
+  function editor:CopyDyn()
+    if not self.useraw then return self:Copy() end
+    -- check if selected fragment is a valid UTF-8 sequence
+    local text = self:GetSelectedTextRaw()
+    if text == "" or wx.wxString.FromUTF8(text) ~= "" then return self:Copy() end
+    local tdo = wx.wxTextDataObject()
+    -- append suffix as wxwidgets (3.1+ on Windows) truncate last char for odd-length strings
+    local workaround = ide.osname == "Windows" and (#text % 2 > 0) and suffix or ""
+    tdo:SetData(wx.wxDataFormat(wx.wxDF_TEXT), text..workaround)
+    local clip = wx.wxClipboard.Get()
+    clip:Open()
+    clip:SetData(tdo)
+    clip:Close()
+  end
+
+  function editor:PasteDyn()
+    if not self.useraw then return self:Paste() end
+    local tdo = wx.wxTextDataObject()
+    local clip = wx.wxClipboard.Get()
+    clip:Open()
+    clip:GetData(tdo)
+    clip:Close()
+    local ok, text = tdo:GetDataHere(wx.wxDataFormat(wx.wxDF_TEXT))
+    -- check if the fragment being pasted is a valid UTF-8 sequence
+    if not ok or text == "" or wx.wxString.FromUTF8(text) ~= "" then return self:Paste() end
+    if ide.osname == "Windows" then text = text:gsub(suffix.."+$","") end
+    self:AddTextRaw(text)
+    self:GotoPos(self:GetCurrentPos())
+  end
+
   function editor:GotoPosEnforcePolicy(pos)
     self:GotoPos(pos)
     self:EnsureVisibleEnforcePolicy(self:LineFromPosition(pos))
@@ -271,7 +345,7 @@ function ide:CreateStyledTextCtrl(...)
     -- skip the rest if line wrapping is on
     if editor:GetWrapMode() ~= wxstc.wxSTC_WRAP_NONE then return end
     local xwidth = self:GetClientSize():GetWidth() - getMarginWidth(self)
-    local xoffset = self:GetTextExtent(self:GetLine(line):sub(1, pos-self:PositionFromLine(line)+1))
+    local xoffset = self:GetTextExtent(self:GetLineDyn(line):sub(1, pos-self:PositionFromLine(line)+1))
     self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
   end
 
@@ -290,6 +364,33 @@ function ide:CreateStyledTextCtrl(...)
     end
   end
 
+  function editor:MarkerGetAll(mask, from, to)
+    mask = mask or 2^24-1
+    local markers = {}
+    local line = editor:MarkerNext(from or 0, mask)
+    while line > -1 do
+      table.insert(markers, {line, editor:MarkerGet(line)})
+      if to and line > to then break end
+      line = editor:MarkerNext(line + 1, mask)
+    end
+    return markers
+  end
+
+  editor:Connect(wx.wxEVT_KEY_DOWN,
+    function (event)
+      local keycode = event:GetKeyCode()
+      local mod = event:GetModifiers()
+      if (keycode == wx.WXK_DELETE and mod == wx.wxMOD_SHIFT)
+      or (keycode == wx.WXK_INSERT and mod == wx.wxMOD_CONTROL)
+      or (keycode == wx.WXK_INSERT and mod == wx.wxMOD_SHIFT) then
+        local id = keycode == wx.WXK_DELETE and ID.CUT or mod == wx.wxMOD_SHIFT and ID.PASTE or ID.COPY
+        ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, id))
+      elseif keycode == wx.WXK_CAPITAL and mod == wx.wxMOD_CONTROL then
+        -- ignore Ctrl+CapsLock
+      else
+        event:Skip()
+      end
+    end)
   return editor
 end
 
@@ -503,20 +604,42 @@ function ide:AddIndicator(indic, num)
   return num
 end
 function ide:GetIndicator(indic) return indicators[indic] end
+function ide:GetIndicators() return indicators end
 function ide:RemoveIndicator(indic) indicators[indic] = nil end
 
 -- this provides a simple stack for saving/restoring current configuration
 local configcache = {}
 function ide:AddConfig(name, files)
   if not name or configcache[name] then return end -- don't overwrite existing slots
-  configcache[name] = require('mobdebug').dump(self.config, {nocode = true})
+  if type(files) ~= "table" then files = {files} end -- allow to pass one value
+  configcache[name] = {
+    config = require('mobdebug').dump(self.config, {nocode = true}),
+    configmeta = getmetatable(self.config),
+    packages = {},
+  }
+  -- build a list of existing packages
+  local packages = {}
+  for package in pairs(self.packages) do packages[package] = true end
+  -- load config file(s)
   for _, file in pairs(files) do LoadLuaConfig(MergeFullPath(name, file)) end
+  -- register newly added packages (if any)
+  for package in pairs(self.packages) do
+    if not packages[package] then -- this is a newly added package
+      PackageEventHandleOne(package, "onRegister")
+      configcache[name].packages[package] = true
+    end
+  end
   ReApplySpecAndStyles() -- apply current config to the UI
 end
 function ide:RemoveConfig(name)
   if not name or not configcache[name] then return end
-  local ok, res = LoadSafe(configcache[name])
-  if ok then self.config = res
+  -- unregister cached packages
+  for package in pairs(configcache[name].packages) do PackageUnRegister(package) end
+  -- load original config
+  local ok, res = LoadSafe(configcache[name].config)
+  if ok then
+    self.config = res
+    if configcache[name].configmeta then setmetatable(self.config, configcache[name].configmeta) end
   else
     DisplayOutputLn(("Error while restoring configuration: '%s'."):format(res))
   end
@@ -550,6 +673,17 @@ function ide:AddPanel(ctrl, panel, name, conf)
   return mgr:GetPane(panel), notebook
 end
 
+function ide:RemovePanel(panel)
+  local mgr = self.frame.uimgr
+  local pane = mgr:GetPane(panel)
+  if pane:IsOk() then
+    local win = pane.window
+    mgr:DetachPane(win)
+    win:Destroy()
+    mgr:Update()
+  end
+end
+
 function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate)
   notebook:AddPage(ctrl, name, activate ~= false)
   panels[name] = {ctrl, panel, name, conf}
@@ -562,6 +696,10 @@ end
 
 function ide:IsValidCtrl(ctrl)
   return ctrl and pcall(function() ctrl:GetId() end)
+end
+
+function ide:IsValidProperty(ctrl, prop)
+  return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end)
 end
 
 function ide:IsWindowShown(win)

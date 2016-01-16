@@ -42,6 +42,7 @@ dofile "src/util.lua"
 -----------
 -- IDE
 --
+local pendingOutput = {}
 ide = {
   MODPREF = "* ",
   MAXMARGIN = 4,
@@ -61,6 +62,7 @@ ide = {
       usetabs  = false,
       tabwidth = 2,
       usewrap = true,
+      wrapmode = wxstc.wxSTC_WRAP_WORD,
       calltipdelay = 500,
       smartindent = true,
       fold = true,
@@ -74,7 +76,6 @@ ide = {
       port = nil,
       runonstart = nil,
       redirect = nil,
-      requestattention = true,
       maxdatalength = 400,
       maxdatanum = 400,
       maxdatalevel = 3,
@@ -94,6 +95,7 @@ ide = {
       jumptocurrentfunction = true,
       showanonymous = '~',
       showcurrentfunction = true,
+      showcompact = false,
       showflat = false,
       showmethodindicator = false,
       showonefile = false,
@@ -116,7 +118,13 @@ ide = {
       zoom = 0,
       autohide = false,
     },
-
+    print = {
+      magnification = -3,
+      wrapmode = wxstc.wxSTC_WRAP_WORD,
+      colourmode = wxstc.wxSTC_PRINT_BLACKONWHITE,
+      header = "%S\t%D\t%p/%P",
+      footer = nil,
+    },
     toolbar = {
       icons = {},
       iconmap = {},
@@ -155,10 +163,10 @@ ide = {
 
     activateoutput = true, -- activate output/console on Run/Debug/Compile
     unhidewindow = false, -- to unhide a gui window
-    allowinteractivescript = true, -- allow interaction in the output window
     projectautoopen = true,
     autorecoverinactivity = 10, -- seconds
     outlineinactivity = 0.250, -- seconds
+    markersinactivity = 0.500, -- seconds
     symbolindexinactivity = 2, -- seconds
     filehistorylength = 20,
     projecthistorylength = 20,
@@ -167,6 +175,7 @@ ide = {
     singleinstance = false,
     singleinstanceport = 0xe493,
     showmemoryusage = false,
+    showhiddenfiles = false,
     hidpi = false, -- HiDPI/Retina display support
     hotexit = false,
     -- file exclusion lists
@@ -229,6 +238,17 @@ ide = {
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
 
   test = {}, -- local functions used for testing
+
+  Print = function(self, ...)
+    if DisplayOutputLn then
+      -- flush any pending output
+      while #pendingOutput > 0 do DisplayOutputLn(unpack(table.remove(pendingOutput, 1))) end
+      -- print without parameters can be used for flushing, so skip the printing
+      if select('#', ...) > 0 then DisplayOutputLn(...) end
+      return
+    end
+    pendingOutput[#pendingOutput + 1] = {...}
+  end,
 }
 
 -- add wx.wxMOD_RAW_CONTROL as it's missing in wxlua 2.8.12.3;
@@ -315,6 +335,12 @@ local function setLuaPaths(mainpath, osname)
   wx.wxSetEnv("LUA_CPATH",
     (os.getenv("LUA_CPATH") or ';') .. ';' .. ide.osclibs
     .. (luadev_cpath and (';' .. luadev_cpath) or ''))
+
+  -- on some OSX versions, PATH is sanitized to not include even /usr/local/bin; add it
+  if osname == "Macintosh" then
+    local ok, path = wx.wxGetEnv("PATH")
+    if ok then wx.wxSetEnv("PATH", (#path > 0 and path..":" or "").."/usr/local/bin") end
+  end
 end
 
 ide.test.setLuaPaths = setLuaPaths
@@ -372,6 +398,7 @@ local function loadToTab(filter, folder, tab, recursive, proto)
       LoadLuaFileExt(tab, file, proto)
     end
   end
+  return tab
 end
 
 local function loadInterpreters(filter)
@@ -385,25 +412,16 @@ local function loadTools(filter)
 end
 
 -- load packages
-local function loadPackages(filter)
-  loadToTab(filter, "packages", ide.packages, false, ide.proto.Plugin)
-  if ide.oshome then
-    local userpackages = MergeFullPath(ide.oshome, "."..ide.appname.."/packages")
-    if wx.wxDirExists(userpackages) then
-      loadToTab(filter, userpackages, ide.packages, false, ide.proto.Plugin)
-    end
-  end
-
+local function processPackages(packages)
   -- check dependencies and assign file names to each package
-  local report = DisplayOutputLn or print
-  local unload = {}
-  for fname, package in pairs(ide.packages) do
+  local skip = {}
+  for fname, package in pairs(packages) do
     if type(package.dependencies) == 'table'
     and package.dependencies.osname
     and not package.dependencies.osname:find(ide.osname, 1, true) then
-      report(("Package '%s' not loaded: requires %s platform, but you are running %s.")
+      ide:Print(("Package '%s' not loaded: requires %s platform, but you are running %s.")
         :format(fname, package.dependencies.osname, ide.osname))
-      table.insert(unload, fname)
+      skip[fname] = true
     end
 
     local needsversion = tonumber(package.dependencies)
@@ -411,15 +429,16 @@ local function loadPackages(filter)
       or -1
     local isversion = tonumber(ide.VERSION)
     if isversion and needsversion > isversion then
-      report(("Package '%s' not loaded: requires version %s, but you are running version %s.")
+      ide:Print(("Package '%s' not loaded: requires version %s, but you are running version %s.")
         :format(fname, needsversion, ide.VERSION))
-      table.insert(unload, fname)
+      skip[fname] = true
     end
     package.fname = fname
   end
 
-  -- remove packages that need to be unloaded
-  for _, fname in ipairs(unload) do ide.packages[fname] = nil end
+  for fname, package in pairs(packages) do
+    if not skip[fname] then ide.packages[fname] = package end
+  end
 end
 
 function UpdateSpecs()
@@ -454,18 +473,6 @@ local function loadSpecs(filter)
   UpdateSpecs()
 end
 
--- temporarily replace print() to capture reported error messages to show
--- them later in the Output window after everything is loaded.
-local resumePrint do
-  local errors = {}
-  local origprint = print
-  print = function(...) errors[#errors+1] = {...} end
-  resumePrint = function()
-    print = origprint
-    for _, e in ipairs(errors) do DisplayOutputLn(unpack(e)) end
-  end
-end
-
 function GetIDEString(keyword, default)
   return app.stringtable[keyword] or default or keyword
 end
@@ -474,34 +481,64 @@ end
 -- process config
 
 -- set ide.config environment
-setmetatable(ide.config, {__index = {os = os, wxstc = wxstc, wx = wx, ID = ID}})
-ide.config.load = {interpreters = loadInterpreters, specs = loadSpecs, tools = loadTools}
 do
   ide.configs = {
     system = MergeFullPath("cfg", "user.lua"),
     user = ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/user.lua"),
   }
+  ide.configqueue = {}
 
   local num = 0
-  ide.config.package = function(p)
-    if p then
-      num = num + 1
-      local name = 'config'..num..'package'
-      ide.packages[name] = setmetatable(p, ide.proto.Plugin)
+  local package = setmetatable({}, {
+      __index = function(_,k) return package[k] end,
+      __newindex = function(_,k,v) package[k] = v end,
+      __call = function(_,p)
+        -- package can be defined inline, like "package {...}"
+        if type(p) == 'table' then
+          num = num + 1
+          local name = 'config'..num..'package'
+          ide.packages[name] = setmetatable(p, ide.proto.Plugin)
+        -- package can be included as "package 'file.lua'" or "package 'folder/'"
+        elseif type(p) == 'string' then
+          local config = ide.configqueue[#ide.configqueue]
+          local pkg
+          for _, packagepath in ipairs({'.', 'packages/', '../packages/'}) do
+            local p = config and MergeFullPath(config.."/../"..packagepath, p)
+            pkg = wx.wxDirExists(p) and loadToTab(nil, p, {}, false, ide.proto.Plugin)
+              or wx.wxFileExists(p) and LoadLuaFileExt({}, p, ide.proto.Plugin)
+              or wx.wxFileExists(p..".lua") and LoadLuaFileExt({}, p..".lua", ide.proto.Plugin)
+            if pkg then
+              processPackages(pkg)
+              break
+            end
+          end
+          if not pkg then ide:Print(("Can't find '%s' to load package from."):format(p)) end
+        else
+          ide:Print(("Can't load package based on parameter of type '%s'."):format(type(p)))
+        end
+      end,
+    })
+
+  local includes = {}
+  local include = function(c)
+    if c then
+      for _, config in ipairs({ide.configqueue[#ide.configqueue], ide.configs.user, ide.configs.system}) do
+        local p = config and MergeFullPath(config.."/../", c)
+        includes[p] = (includes[p] or 0) + 1
+        if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
+        includes[p] = includes[p] - 1
+      end
+      ide:Print(("Can't find configuration file '%s' to process."):format(c))
     end
   end
 
-  local includes = {}
-  ide.config.include = function(c)
-    if c then
-      for _, config in ipairs({ide.configs.system, ide.configs.user}) do
-        local p = config and MergeFullPath(config.."/../", c)
-        includes[p] = (includes[p] or 0) + 1
-        if includes[p] > 1 or LoadLuaConfig(p) then return end
-      end
-      print(("Can't find configuration file '%s' to process."):format(c))
-    end
-  end
+  setmetatable(ide.config, {
+    __index = setmetatable({
+        load = {interpreters = loadInterpreters, specs = loadSpecs, tools = loadTools},
+        package = package,
+        include = include,
+    }, {__index = _G or _ENV})
+  })
 end
 
 LoadLuaConfig(ide.appname.."/config.lua")
@@ -517,7 +554,7 @@ if ide.osname == 'Windows' and ide.wxver >= "2.9.5" then
   local new = wx.wxFileName(wx.wxStandardPaths.Get():GetUserConfigDir(), ini)
   if old:FileExists() and not new:FileExists() then
     FileCopy(old:GetFullPath(), new:GetFullPath())
-    print(("Migrated configuration file from '%s' to '%s'.")
+    ide:Print(("Migrated configuration file from '%s' to '%s'.")
       :format(old:GetFullPath(), new:GetFullPath()))
   end
 end
@@ -543,7 +580,7 @@ do
   -- check and apply default styles in case a user resets styles in the config
   for _, styles in ipairs({"styles", "stylesoutshell"}) do
     if not ide.config[styles] then
-      print(("Ignored incorrect value of '%s' setting in the configuration file")
+      ide:Print(("Ignored incorrect value of '%s' setting in the configuration file")
         :format(styles))
       ide.config[styles] = StylesGetDefault()
     end
@@ -559,7 +596,13 @@ do
   end
 end
 
-loadPackages()
+processPackages(loadToTab(nil, "packages", {}, false, ide.proto.Plugin))
+if ide.oshome then
+  local userpackages = MergeFullPath(ide.oshome, "."..ide.appname.."/packages")
+  if wx.wxDirExists(userpackages) then
+    processPackages(loadToTab(nil, userpackages, {}, false, ide.proto.Plugin))
+  end
+end
 
 ---------------
 -- Load App
@@ -567,10 +610,10 @@ loadPackages()
 for _, file in ipairs({
     "settings", "singleinstance", "iofilters", "package", "markup",
     "gui", "filetree", "output", "debugger", "outline", "commandbar",
-    "editor", "findreplace", "commands", "autocomplete", "shellbox",
+    "editor", "findreplace", "commands", "autocomplete", "shellbox", "markers",
     "menu_file", "menu_edit", "menu_search",
     "menu_view", "menu_project", "menu_tools", "menu_help",
-    "inspect" }) do
+    "print", "inspect" }) do
   dofile("src/editor/"..file..".lua")
 end
 
@@ -581,16 +624,16 @@ PackageEventHandle("onRegister")
 ProjectUpdateInterpreters()
 
 -- load rest of settings
-SettingsRestoreEditorSettings()
 SettingsRestoreFramePosition(ide.frame, "MainFrame")
+SettingsRestoreView()
 SettingsRestoreFileHistory(SetFileHistory)
+SettingsRestoreEditorSettings()
 SettingsRestoreProjectSession(FileTreeSetProjects)
 SettingsRestoreFileSession(function(tabs, params)
   if params and params.recovery
   then return SetOpenTabs(params)
   else return SetOpenFiles(tabs, params) end
 end)
-SettingsRestoreView()
 
 -- ---------------------------------------------------------------------------
 -- Load the filenames
@@ -700,7 +743,7 @@ ide.frame:SetAcceleratorTable(wx.wxAcceleratorTable(at))
 -- as special items unless SetMenuBar is done after menus are populated.
 ide.frame:SetMenuBar(ide.frame.menuBar)
 
-resumePrint()
+ide:Print() -- flush pending output (if any)
 
 PackageEventHandle("onAppLoad")
 

@@ -32,6 +32,7 @@ local events = {
   onEditorKeyDown =    function(self, editor, event) end, -- return false
   onEditorCharAdded =  function(self, editor, event) end, -- return false
   onEditorUserlistSelection = function(self, editor, event) end, -- return false
+  onEditorMarkerUpdate = function(self, editor, marker, line, value) end,
   onEditorUpdateUI =   function(self, editor, event) end,
   onEditorPainted =    function(self, editor, event) end,
   onEditorCallTip =    function(self, editor, tip, value, eval) end, -- return false
@@ -41,6 +42,7 @@ local events = {
   onMenuEditor =       function(self, menu, editor, event) end,
   onMenuEditorTab =    function(self, menu, notebook, event, index) end,
   onMenuOutput =       function(self, menu, editor, event) end,
+  onMenuConsole =      function(self, menu, editor, event) end,
   onMenuFiletree =     function(self, menu, tree, event) end,
   onMenuOutline =      function(self, menu, tree, event) end,
   onMenuWatch =        function(self, menu, tree, event) end,
@@ -55,11 +57,13 @@ local events = {
   onAppFocusSet =      function(self, app) end,
   onAppLoad =          function(self, app) end,
   onAppClose =         function(self, app) end,
+  onAppDone =          function(self, app) end, -- the last event right before exiting
 }
 
 --[[ Uncomment this to see event names printed in the Output window
+  local skipEvents = {onIdle = true, onEditorPainted = true, onEditorUpdateUI = true}
   for k in pairs(events) do
-    if k:find("^on") then
+    if not skipEvents[k] then
       P[k] = k:find("^onEditor")
         and function(self, ed)
           -- document can be empty for newly added documents
@@ -113,11 +117,11 @@ local events = {
   end
 
   P.onEditorPreSave = function(self, editor, filepath)
-    if filepath:find("%.txt$") then
+    if filepath and filepath:find("%.txt$") then
       DisplayOutputLn(self:GetFileName(), "onEditorPreSave", "Aborted saving a .txt file")
       return false
     else
-      DisplayOutputLn(self:GetFileName(), "onEditorPreSave", filepath)
+      DisplayOutputLn(self:GetFileName(), "onEditorPreSave", filepath or "New file")
     end
   end
 

@@ -14,7 +14,7 @@ BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
-WXWIDGETS_URL="http://svn.wxwidgets.org/svn/wx/wxWidgets/trunk"
+WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
 
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
@@ -23,13 +23,17 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-OPENSSL_BASENAME="openssl-1.0.2a"
+OPENSSL_BASENAME="openssl-1.0.2d"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
 OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
 
 LUASEC_BASENAME="luasec-0.5"
 LUASEC_FILENAME="$LUASEC_BASENAME.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
+
+LFS_BASENAME="v_1_6_3"
+LFS_FILENAME="$LFS_BASENAME.tar.gz"
+LFS_URL="https://github.com/keplerproject/luafilesystem/archive/$LFS_FILENAME"
 
 WINAPI_BASENAME="winapi"
 WINAPI_URL="https://github.com/stevedonovan/winapi.git"
@@ -74,6 +78,9 @@ for ARG in "$@"; do
     ;;
   winapi)
     BUILD_WINAPI=true
+    ;;
+  lfs)
+    BUILD_LFS=true
     ;;
   zbstudio)
     BUILD_ZBSTUDIO=true
@@ -163,8 +170,7 @@ fi
 
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
-  svn co "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to checkout wxWidgets"; exit 1; }
-  svn revert -R "$WXWIDGETS_BASENAME"
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat28 \
@@ -227,8 +233,9 @@ if [ $BUILD_WXLUA ]; then
   # (temporary) fix for compilation issue in wxlua in Windows using mingw (r184)
   sed -i 's/defined(__MINGW32__) || defined(__GNUWIN32__)/0/' modules/wxbind/src/wxcore_bind.cpp
 
-  # (temporary) fix for compilation issue in wxlua using wxwidgets 3.1+ (r238)
-  sed -i 's/{ "wxSTC_COFFEESCRIPT_HASHQUOTEDSTRING", wxSTC_COFFEESCRIPT_HASHQUOTEDSTRING },/\/\/ removed by ZBS build process/' modules/wxbind/src/wxstc_bind.cpp
+  # remove "Unable to call an unknown method..." error as it leads to a leak
+  # see http://sourceforge.net/p/wxlua/mailman/message/34629522/ for details
+  sed -i '/Unable to call an unknown method/{N;s/.*/    \/\/ removed by ZBS build process/}' modules/wxlua/wxlbind.cpp
 
   [ -f "$INSTALL_DIR/lib/libwxscintilla-3.0.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.0.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.0.a"
   [ -f "$INSTALL_DIR/lib/libwxscintilla-3.1.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.1.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.1.a"
@@ -264,6 +271,20 @@ if [ $BUILD_LUASOCKET ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAD/socket/core.dll" ] || { echo "Error: socket/core.dll isn't found"; exit 1; }
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
+fi
+
+# build lfs
+if [ $BUILD_LFS ]; then
+  wget --no-check-certificate -c "$LFS_URL" -O "$LFS_FILENAME" || { echo "Error: failed to download lfs"; exit 1; }
+  tar -xzf "$LFS_FILENAME"
+  mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
+  cd "$LFS_BASENAME/src"
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lfs.dll" lfs.c -llua$LUAV \
+    || { echo "Error: failed to build lfs"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lfs.dll" ] || { echo "Error: lfs.dll isn't found"; exit 1; }
+  cd ../..
+  rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
 
 # build LuaSec
@@ -321,6 +342,7 @@ mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1;
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/bin/libwx.dll" "$BIN_DIR/wx.dll"
 [ $BUILD_WINAPI ] && cp "$INSTALL_DIR/lib/lua/$LUAD/winapi.dll" "$BIN_DIR/clibs$LUAS"
 [ $BUILD_LUASEC ] && cp "$INSTALL_DIR/lib/lua/$LUAD/ssl.dll" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LFS ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lfs.dll" "$BIN_DIR/clibs$LUAS"
 
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}

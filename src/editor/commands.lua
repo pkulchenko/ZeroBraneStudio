@@ -70,7 +70,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   editor:SetupKeywords(GetFileExt(filePath))
   editor:MarkerDeleteAll(-1)
   if filesize then editor:Allocate(filesize) end
-  editor:SetText("")
+  editor:SetTextDyn("")
   editor.bom = string.char(0xEF,0xBB,0xBF)
 
   local inputfilter = GetConfigIOFilter("input")
@@ -89,11 +89,12 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
       end
       if inputfilter then s = inputfilter(filePath, s) end
       local expected = editor:GetLength() + #s
-      editor:AppendText(s)
+      editor:AppendTextDyn(s)
       -- if the length is not as expected, then either it's a binary file or invalid UTF8
       if editor:GetLength() ~= expected then
         -- skip binary files with unknown extensions as they may have any sequences
-        if editor.spec == ide.specs.none and IsBinary(s) then
+        -- when using Raw methods, this can only happen for binary files (that include \0 chars)
+        if editor.useraw or editor.spec == ide.specs.none and IsBinary(s) then
           DisplayOutputLn(("%s: %s"):format(filePath,
               TR("Binary file is shown as read-only as it is only partially loaded.")))
           file_text = ''
@@ -106,7 +107,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
         local replacement, invalid = "\022"
         s, invalid = FixUTF8(s, replacement)
         if #invalid > 0 then
-          editor:AppendText(s)
+          editor:AppendTextDyn(s)
           local lastline = nil
           for _, n in ipairs(invalid) do
             local line = editor:LineFromPosition(n)
@@ -184,13 +185,9 @@ function ReLoadFile(filePath, editor, ...)
   if not editor then return LoadFile(filePath, editor, ...) end
 
   -- save all markers
-  local maskany = 2^24-1
-  local markers = {}
-  local line = editor:MarkerNext(0, maskany)
-  while line > -1 do
-    table.insert(markers, {line, editor:MarkerGet(line), editor:GetLine(line)})
-    line = editor:MarkerNext(line + 1, maskany)
-  end
+  local markers = editor:MarkerGetAll()
+  -- add the current line content to retrieved markers to compare later if needed
+  for _, marker in ipairs(markers) do marker[3] = editor:GetLineDyn(marker[1]) end
   local lines = editor:GetLineCount()
 
   -- load file into the same editor
@@ -198,6 +195,9 @@ function ReLoadFile(filePath, editor, ...)
   if not editor then return end
 
   if #markers > 0 then -- restore all markers
+    -- delete all markers as they may be restored by a different mechanism,
+    -- which may be limited to only restoring some markers
+    editor:MarkerDeleteAll(-1)
     local samelinecount = lines == editor:GetLineCount()
     for _, marker in ipairs(markers) do
       local line, mask, text = unpack(marker)
@@ -207,13 +207,14 @@ function ReLoadFile(filePath, editor, ...)
       else
         -- find matching line in the surrounding area and restore marker there
         for _, l in ipairs({line, line-1, line-2, line+1, line+2}) do
-          if text == editor:GetLine(l) then
+          if text == editor:GetLineDyn(l) then
             editor:MarkerAddSet(l, mask)
             break
           end
         end
       end
     end
+    PackageEventHandle("onEditorMarkerUpdate", editor)
   end
 
   return editor
@@ -238,8 +239,8 @@ function ActivateFile(filename)
   return opened
 end
 
-local function getExtsString()
-  local exts = ide:GetKnownExtensions()
+local function getExtsString(ed)
+  local exts = ed and ed.spec and ed.spec.exts or {}
   local knownexts = #exts > 0 and "*."..table.concat(exts, ";*.") or nil
   return (knownexts and TR("Known Files").." ("..knownexts..")|"..knownexts.."|" or "")
   .. TR("All files").." (*)|*"
@@ -255,11 +256,13 @@ function OpenFile(event)
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Open file"),
     (path and GetPathWithSep(path) or FileTreeGetDir() or ""),
     "",
-    getExtsString(),
-    wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST)
+    getExtsString(editor),
+    wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST + wx.wxFD_MULTIPLE)
   if fileDialog:ShowModal() == wx.wxID_OK then
-    if not LoadFile(fileDialog:GetPath(), nil, true) then
-      ReportError(TR("Unable to load file '%s'."):format(fileDialog:GetPath()))
+    for _, path in ipairs(fileDialog:GetPaths()) do
+      if not LoadFile(path, nil, true) then
+        ReportError(TR("Unable to load file '%s'."):format(path))
+      end
     end
   end
   fileDialog:Destroy()
@@ -286,7 +289,7 @@ function SaveFile(editor, filePath)
     end
 
     local st = ((editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and editor.bom or "")
-      .. editor:GetText())
+      .. editor:GetTextDyn())
     if GetConfigIOFilter("output") then
       st = GetConfigIOFilter("output")(filePath,st)
     end
@@ -342,7 +345,7 @@ function SaveFileAs(editor)
     fn:GetPath(wx.wxPATH_GET_VOLUME),
     fn:GetFullName(),
     -- specify the current extension plus all other extensions based on specs
-    (ext and #ext > 0 and "*."..ext.."|*."..ext.."|" or "")..getExtsString(),
+    (ext and #ext > 0 and "*."..ext.."|*."..ext.."|" or "")..getExtsString(editor),
     wx.wxFD_SAVE)
 
   if fileDialog:ShowModal() == wx.wxID_OK then
@@ -564,7 +567,7 @@ function CompileProgram(editor, params)
   }
   local doc = ide:GetDocument(editor)
   local filePath = doc:GetFilePath() or doc:GetFileName()
-  local func, err = loadstring(StripShebang(editor:GetText()), '@'..filePath)
+  local func, err = loadstring(StripShebang(editor:GetTextDyn()), '@'..filePath)
   local line = not func and tonumber(err:match(":(%d+)%s*:")) or nil
 
   if not params.keepoutput then ClearOutput() end
@@ -582,7 +585,7 @@ function CompileProgram(editor, params)
     DisplayOutputLn((err:gsub("\n$", "")))
     -- check for escapes invalid in LuaJIT/Lua 5.2 that are allowed in Lua 5.1
     if err:find('invalid escape sequence') then
-      local s = editor:GetLine(line-1)
+      local s = editor:GetLineDyn(line-1)
       local cleaned = s
         :gsub('\\[abfnrtv\\"\']', '  ')
         :gsub('(\\x[0-9a-fA-F][0-9a-fA-F])', function(s) return string.rep(' ', #s) end)
@@ -706,7 +709,7 @@ end
 
 function SetOpenTabs(params)
   local recovery, nametab = LoadSafe("return "..params.recovery)
-  if not recovery then
+  if not recovery or not nametab then
     DisplayOutputLn(TR("Can't process auto-recovery record; invalid format: %s."):format(nametab))
     return
   end
@@ -723,7 +726,7 @@ function SetOpenTabs(params)
         or findUnusedEditor() or NewFile(doc.filename))
       local opendoc = ide:GetDocument(editor)
       if doc.content then
-        editor:SetText(doc.content)
+        editor:SetTextDyn(doc.content)
         if doc.filepath and opendoc.modTime and doc.modified < opendoc.modTime:GetTicks() then
           DisplayOutputLn(TR("File '%s' has more recent timestamp than restored '%s'; please review before saving.")
             :format(doc.filepath, opendoc:GetTabText()))
@@ -746,7 +749,7 @@ local function getOpenTabs()
       filepath = document:GetFilePath(),
       tabname = document:GetTabText(),
       modified = document:GetModTime() and document:GetModTime():GetTicks(), -- get number of seconds
-      content = document:IsModified() and editor:GetText() or nil,
+      content = document:IsModified() and editor:GetTextDyn() or nil,
       id = document:GetTabIndex(),
       cursorpos = editor:GetCurrentPos()})
   end
@@ -808,9 +811,9 @@ local function fastWrap(func, ...)
   SetEditorSelection = SES
 end
 
-function StoreRestoreProjectTabs(curdir, newdir)
+function StoreRestoreProjectTabs(curdir, newdir, intfname)
   local win = ide.osname == 'Windows'
-  local interpreter = ide.interpreter.fname
+  local interpreter = intfname or ide.interpreter.fname
   local current, closing, restore = notebook:GetSelection(), 0, false
 
   if ide.osname ~= 'Macintosh' then notebook:Freeze() end
@@ -920,6 +923,8 @@ local function closeWindow(event)
   for _, timer in pairs(ide.timers) do timer:Stop() end
 
   event:Skip()
+
+  PackageEventHandle("onAppDone")
 end
 frame:Connect(wx.wxEVT_CLOSE_WINDOW, closeWindow)
 

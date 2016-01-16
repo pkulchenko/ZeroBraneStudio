@@ -112,9 +112,9 @@ local function onEditMenu(event)
   if (menu_id == ID_CUT or menu_id == ID_COPY)
   and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
     local main = editor:GetMainSelection()
-    copytext = editor:GetTextRange(editor:GetSelectionNStart(main), editor:GetSelectionNEnd(main))
+    copytext = editor:GetTextRangeDyn(editor:GetSelectionNStart(main), editor:GetSelectionNEnd(main))
     for s = 0, editor:GetSelections()-1 do
-      if copytext ~= editor:GetTextRange(editor:GetSelectionNStart(s), editor:GetSelectionNEnd(s)) then
+      if copytext ~= editor:GetTextRangeDyn(editor:GetSelectionNStart(s), editor:GetSelectionNEnd(s)) then
         copytext = nil
         break
       end
@@ -123,7 +123,7 @@ local function onEditMenu(event)
 
   local spos, epos = editor:GetSelectionStart(), editor:GetSelectionEnd()
   if menu_id == ID_CUT then
-    if spos == epos then editor:LineCopy() else editor:Copy() end
+    if spos == epos then editor:LineCopy() else editor:CopyDyn() end
     if spos == epos then
       local line = editor:LineFromPosition(spos)
       spos, epos = editor:PositionFromLine(line), editor:PositionFromLine(line+1)
@@ -132,11 +132,11 @@ local function onEditMenu(event)
     end
     if spos ~= epos then editor:ClearAny() end
   elseif menu_id == ID_COPY then
-    if spos == epos then editor:LineCopy() else editor:Copy() end
+    if spos == epos then editor:LineCopy() else editor:CopyDyn() end
   elseif menu_id == ID_PASTE then
     -- first clear the text in case there is any hidden markup
     if spos ~= epos then editor:ClearAny() end
-    editor:Paste()
+    editor:PasteDyn()
   elseif menu_id == ID_SELECTALL then editor:SelectAll()
   elseif menu_id == ID_UNDO then editor:Undo()
   elseif menu_id == ID_REDO then editor:Redo()
@@ -161,7 +161,7 @@ frame:Connect(ID_COMMENT, wx.wxEVT_UPDATE_UI,
   function(event)
     local editor = GetEditorWithFocus(GetEditor())
     event:Enable(editor ~= nil
-      and pcall(function() return editor.spec end) and editor.spec
+      and ide:IsValidProperty(editor, "spec") and editor.spec
       and editor.spec.linecomment and true or false)
   end)
 
@@ -179,14 +179,14 @@ frame:Connect(ID_PREFERENCESSYSTEM, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local editor = LoadFile(ide.configs.system)
     if editor and editor:GetLength() == 0 then
-      editor:AddText(generateConfigMessage("System")) end
+      editor:AddTextDyn(generateConfigMessage("System")) end
   end)
 
 frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local editor = LoadFile(ide.configs.user)
     if editor and editor:GetLength() == 0 then
-      editor:AddText(generateConfigMessage("User")) end
+      editor:AddTextDyn(generateConfigMessage("User")) end
   end)
 frame:Connect(ID_PREFERENCESUSER, wx.wxEVT_UPDATE_UI,
   function (event) event:Enable(ide.configs.user ~= nil) end)
@@ -232,7 +232,7 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     for line = sline, eline do
       local pos = sel and (sline == eline or rect)
         and ssel-editor:PositionFromLine(sline)+1 or 1
-      local text = editor:GetLine(line)
+      local text = editor:GetLineDyn(line)
       local _, cpos = text:find("^%s*"..qlc, pos)
       if not cpos and text:find("%S")
       -- ignore last line when the end of selection is at the first position
@@ -247,7 +247,7 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     -- by text changes
     for line = eline, sline, -1 do
       local pos = sel and (sline == eline or rect) and ssel-editor:PositionFromLine(sline)+1 or 1
-      local text = editor:GetLine(line)
+      local text = editor:GetLineDyn(line)
       local validline = (line == sline or line < eline or esel-editor:PositionFromLine(line) > 0)
       local _, cpos = text:find("^%s*"..qlc, pos)
       if not comment and cpos and validline then
@@ -269,15 +269,15 @@ local function processSelection(editor, func)
     editor:SelectAll()
     text = editor:GetSelectedText()
   end
-  local wholeline = text:find('\n$')
+  local wholeline = text:find("\n$")
   local buf = {}
-  for line in string.gmatch(text..(wholeline and '' or '\n'), "(.-\r?\n)") do
+  for line in string.gmatch(text..(wholeline and "" or "\n"), "(.-\r?\n)") do
     table.insert(buf, line)
   end
   if #buf > 0 then
     if func then func(buf) end
     -- add new line at the end if it was there
-    local newtext = table.concat(buf, ''):gsub('(\r?\n)$', wholeline and '%1' or '')
+    local newtext = table.concat(buf, ""):gsub("(\r?\n)$", wholeline and "%1" or "")
     -- straightforward editor:ReplaceSelection() doesn't work reliably as
     -- it sometimes doubles the context when the entire file is selected.
     -- this seems like Scintilla issue, so use ReplaceTarget instead.
@@ -285,8 +285,24 @@ local function processSelection(editor, func)
     -- ReplaceSelection should handle (after wxwidgets 3.x upgrade), this
     -- will need to be revisited when ReplaceSelection is updated.
     if newtext ~= text then
-      editor:TargetFromSelection()
-      editor:ReplaceTarget(newtext)
+      editor:BeginUndoAction()
+      -- if there is at least one marker, then use a different mechanism to preserve them
+      -- simply saving markers, replacing text, and reapplying markers doesn't work as
+      -- they get reset after `undo/redo` operations.
+      local ssel, esel = editor:GetSelectionStart(), editor:GetSelectionEnd()
+      local sline = editor:LineFromPosition(ssel)
+      local eline = editor:LineFromPosition(esel)
+      if #editor:MarkerGetAll(nil, sline, eline) > 0 then
+        for line = #buf, 1, -1 do
+          editor:SetTargetStart(line == 1 and ssel or editor:PositionFromLine(sline+line-1))
+          editor:SetTargetEnd(line == eline-sline+1 and esel or editor:GetLineEndPosition(sline+line-1))
+          editor:ReplaceTarget((buf[line]:gsub("\r?\n$", "")))
+        end
+      else
+        editor:TargetFromSelection()
+        editor:ReplaceTarget(newtext)
+      end
+      editor:EndUndoAction()
     end
   end
   editor:GotoPosEnforcePolicy(math.min(
@@ -302,12 +318,12 @@ local function reIndent(editor, buf)
 
   local edline = editor:LineFromPosition(editor:GetSelectionStart())
   local indent = 0
-  local text = ''
+  local text = ""
   -- find the last non-empty line in the previous block (if any)
   for n = edline-1, 1, -1 do
     indent = editor:GetLineIndentation(n)
-    text = editor:GetLine(n)
-    if text:match('[^\r\n]') then break end
+    text = editor:GetLineDyn(n)
+    if text:match("[^\r\n]") then break end
   end
 
   local ut = editor:GetUseTabs()
@@ -344,7 +360,7 @@ local function reIndent(editor, buf)
   for line = 1, #buf do
     if not isstatic[line] then
       buf[line] = buf[line]:gsub("^[ \t]*",
-        not buf[line]:match('%S') and ''
+        not buf[line]:match("%S") and ""
         or ut and ("\t"):rep(indents[line] / tw) or (" "):rep(indents[line]))
     end
   end
@@ -365,39 +381,10 @@ frame:Connect(ID_FOLD, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) GetEditorWithFocus():FoldSome() end)
 
 local BOOKMARK_MARKER = StylesGetMarker("bookmark")
-local BOOKMARK_MARKER_VALUE = 2^BOOKMARK_MARKER
 
-local function bookmarkToggle()
-  local editor = GetEditor()
-  local line = editor:GetCurrentLine()
-  local markers = editor:MarkerGet(line)
-  if bit.band(markers, BOOKMARK_MARKER_VALUE) > 0 then
-    editor:MarkerDelete(line, BOOKMARK_MARKER)
-  else
-    editor:MarkerAdd(line, BOOKMARK_MARKER)
-  end
-end
-
-local function bookmarkNext()
-  local editor = GetEditor()
-  local line = editor:MarkerNext(editor:GetCurrentLine()+1, BOOKMARK_MARKER_VALUE)
-  if line == -1 then line = editor:MarkerNext(0, BOOKMARK_MARKER_VALUE) end
-  if line ~= -1 then
-    editor:GotoLine(line)
-    editor:EnsureVisibleEnforcePolicy(line)
-  end
-end
-
-local function bookmarkPrev()
-  local editor = GetEditor()
-  local line = editor:MarkerPrevious(editor:GetCurrentLine()-1, BOOKMARK_MARKER_VALUE)
-  if line == -1 then line = editor:MarkerPrevious(editor:GetLineCount(), BOOKMARK_MARKER_VALUE) end
-  if line ~= -1 then
-    editor:GotoLine(line)
-    editor:EnsureVisibleEnforcePolicy(line)
-  end
-end
-
-frame:Connect(ID_BOOKMARKTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED, bookmarkToggle)
-frame:Connect(ID_BOOKMARKNEXT, wx.wxEVT_COMMAND_MENU_SELECTED, bookmarkNext)
-frame:Connect(ID_BOOKMARKPREV, wx.wxEVT_COMMAND_MENU_SELECTED, bookmarkPrev)
+frame:Connect(ID_BOOKMARKTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function() GetEditor():BookmarkToggle() end)
+frame:Connect(ID_BOOKMARKNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function() GetEditor():MarkerGotoNext(BOOKMARK_MARKER) end)
+frame:Connect(ID_BOOKMARKPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function() GetEditor():MarkerGotoPrev(BOOKMARK_MARKER) end)

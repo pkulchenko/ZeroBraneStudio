@@ -50,16 +50,14 @@ function SettingsRestoreFramePosition(window, windowName)
   local path = settings:GetPath()
   settings:SetPath("/"..windowName)
 
-  local s = -1
-  s = tonumber(select(2,settings:Read("s", -1)))
+  local s = tonumber(select(2,settings:Read("s", -1)))
   local x = tonumber(select(2,settings:Read("x", 0)))
   local y = tonumber(select(2,settings:Read("y", 0)))
-  local w = tonumber(select(2,settings:Read("w", 1000)))
+  local w = tonumber(select(2,settings:Read("w", 1100)))
   local h = tonumber(select(2,settings:Read("h", 700)))
 
   if (s ~= -1) and (s ~= 1) and (s ~= 2) then
-    local clientX, clientY, clientWidth, clientHeight
-    clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
+    local clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
 
     if x < clientX then x = clientX end
     if y < clientY then y = clientY end
@@ -254,7 +252,6 @@ function SettingsRestorePackage(package)
   local path = settings:GetPath()
   settings:SetPath(packagename)
   local outtab = {}
-  local report = DisplayOutputLn or print
   local ismore, key, index = settings:GetFirstEntry("", 0)
   while (ismore) do
     local couldread, value = settings:Read(key, "")
@@ -263,7 +260,7 @@ function SettingsRestorePackage(package)
       if ok then outtab[key] = res
       else
         outtab[key] = nil
-        report(("Couldn't load and ignored '%s' settings for package '%s': %s")
+        ide:Print(("Couldn't load and ignored '%s' settings for package '%s': %s")
           :format(key, package, res))
       end
     end
@@ -446,7 +443,7 @@ function SettingsRestoreView()
   local uimgr = frame.uimgr
   
   local layoutcur = uimgr:SavePerspective()
-  local layout = settingsReadSafe(settings,layoutlabel.UIMANAGER,layoutcur)
+  local layout = settingsReadSafe(settings,layoutlabel.UIMANAGER,"")
   if (layout ~= layoutcur) then
     -- save the current toolbar besth and re-apply after perspective is loaded
     -- bestw and besth has two separate issues:
@@ -456,13 +453,15 @@ function SettingsRestoreView()
     -- (2) besth may be wrong after icon size changes.
     local toolbar = frame.uimgr:GetPane("toolbar")
     local besth = toolbar:IsOk() and tonumber(uimgr:SavePaneInfo(toolbar):match("besth=([^;]+)"))
-    uimgr:LoadPerspective(layout, false)
-    if toolbar:IsOk() then -- fix bestw and besth values
-      toolbar:BestSize(wx.wxSystemSettings.GetMetric(wx.wxSYS_SCREEN_X), besth or -1)
-    end
+
+    -- reload the perspective if the saved one is not empty as it's different from the default
+    if #layout > 0 then uimgr:LoadPerspective(layout, false) end
+
+    local screenw = frame:GetClientSize():GetWidth()
+    if toolbar:IsOk() and screenw > 0 then toolbar:BestSize(screenw, besth or -1) end
 
     -- check if debugging panes are not mentioned and float them
-    for _, name in pairs({"stackpanel", "watchpanel", "searchpanel"}) do
+    for _, name in pairs({"stackpanel", "watchpanel"}) do
       local pane = frame.uimgr:GetPane(name)
       if pane:IsOk() and not layout:find(name) then pane:Float() end
     end
@@ -579,16 +578,16 @@ function SettingsSaveEditorSettings()
   settings:DeleteGroup(listname)
   settings:SetPath(listname)
 
-  settings:Write("interpreter", ide.interpreter and ide.interpreter.fname or "_undefined_")
+  settings:Write("interpreter", ide.interpreter and ide.interpreter.fname or ide.config.default.interpreter)
 
   settings:SetPath(path)
 end
 
 function SettingsSaveAll()
-  SettingsSaveProjectSession(FileTreeGetProjects())
   SettingsSaveFileSession(GetOpenFiles())
-  SettingsSaveView()
-  SettingsSaveFileHistory(GetFileHistory())
-  SettingsSaveFramePosition(ide.frame, "MainFrame")
   SettingsSaveEditorSettings()
+  SettingsSaveProjectSession(FileTreeGetProjects())
+  SettingsSaveFileHistory(GetFileHistory())
+  SettingsSaveView()
+  SettingsSaveFramePosition(ide.frame, "MainFrame")
 end

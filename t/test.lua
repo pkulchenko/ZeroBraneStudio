@@ -3,19 +3,7 @@ local G = ... -- this now points to the global environment in the script
 local env = {}
 G.setmetatable(env, {__index = G})
 
-local ide = G.ide
-local postinit = ide.app.postinit
-ide.app.postinit = function()
-  if postinit then postinit() end
-
-  -- load test module in the environment for tests
-  local function testwell(report)
-    local tw = require "testwell"
-    if report then tw.report() end
-  end
-  setfenv(testwell, env)
-  testwell()
-
+local function runtests()
   -- add a test function to detect loops
   function limit (limit, func)
     debug.sethook(function() error("exceeded") end, "", limit)
@@ -49,6 +37,9 @@ ide.app.postinit = function()
   end
   table.sort(files)
 
+  -- load test module in the environment for tests
+  local tw = require "testwell"
+
   for _,file in ipairs(files) do
     local testfn, err = loadfile(file)
     if not testfn then
@@ -62,7 +53,22 @@ ide.app.postinit = function()
     end
   end
 
-  testwell(true)
+  tw.report()
 end
 
-G.setfenv(ide.app.postinit, env)
+package {
+  onAppLoad = function()
+    local start = G.TimeGet()
+    G.setfenv(runtests, env)
+    G.print = function(s, ...)
+      G.DisplayOutput(s, ...)
+      G.DisplayOutputLn(s:match("ok %d") and (" -- %.3fs"):format(G.TimeGet()-start) or "")
+    end
+    runtests()
+  end,
+  onIdleOnce = function() G.ide:GetOutput():GotoLine(G.ide:GetOutput():GetLineCount()-1) end,
+  onAppDone = function()
+    local ini = G.ide.config.ini
+    if ini then G.FileRemove(ini) end
+  end,
+}

@@ -14,6 +14,7 @@ local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 local ERROR_MARKER = StylesGetMarker("error")
 local OUTPUT_MARKER = StylesGetMarker("output")
 local MESSAGE_MARKER = StylesGetMarker("message")
+local ANY_MARKER_VALUE = 2^25-1 -- marker numbers 0 to 24 have no pre-defined function
 
 out:SetFont(ide.font.oNormal)
 out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
@@ -46,14 +47,15 @@ end
 
 local function getPromptText()
   local prompt = getPromptLine()
-  return out:GetTextRange(out:PositionFromLine(prompt), out:GetLength())
+  return out:GetTextRangeDyn(out:PositionFromLine(prompt), out:GetLength())
 end
 
 local function setPromptText(text)
   local length = out:GetLength()
-  out:SetTargetStart(length - string.len(getPromptText()))
-  out:SetTargetEnd(length)
-  out:ReplaceTarget(text)
+  out:SetSelectionStart(length - string.len(getPromptText()))
+  out:SetSelectionEnd(length)
+  out:ClearAny()
+  out:AddTextDyn(text)
   -- refresh the output window to force recalculation of wrapped lines;
   -- otherwise a wrapped part of the last line may not be visible.
   out:Update(); out:Refresh()
@@ -72,9 +74,7 @@ local function caretOnPromptLine(disallowLeftmost, line)
     or currentLine == promptLine and positionInLine(promptLine) > boundary)
 end
 
-local function chomp(line)
-  return line:gsub("%s+$", "")
-end
+local function chomp(line) return (line:gsub("%s+$", "")) end
 
 local function getInput(line)
   local nextMarker = line
@@ -83,8 +83,21 @@ local function getInput(line)
   repeat -- check until we find at least some marker
     nextMarker = nextMarker+1
   until out:MarkerGet(nextMarker) > 0 or nextMarker > count-1
-  return chomp(out:GetTextRange(out:PositionFromLine(line),
-                                out:PositionFromLine(nextMarker)))
+  return chomp(out:GetTextRangeDyn(
+    out:PositionFromLine(line), out:PositionFromLine(nextMarker)))
+end
+
+function ConsoleSelectCommand(point)
+  local cpos = out:ScreenToClient(point or wx.wxGetMousePosition())
+  local position = out:PositionFromPoint(cpos)
+  if position == wxstc.wxSTC_INVALID_POSITION then return end
+
+  local promptline = out:MarkerPrevious(out:LineFromPosition(position), PROMPT_MARKER_VALUE)
+  if promptline == wxstc.wxSTC_INVALID_POSITION then return end
+  local nextline = out:MarkerNext(promptline+1, ANY_MARKER_VALUE)
+  local epos = nextline ~= wxstc.wxSTC_INVALID_POSITION and out:PositionFromLine(nextline) or out:GetLength()
+  out:SetSelection(out:PositionFromLine(promptline), epos)
+  return true
 end
 
 local currentHistory
@@ -166,7 +179,7 @@ local function shellPrint(marker, ...)
   local promptLine = isPrompt and getPromptLine() or nil
   local insertLineAt = isPrompt and getPromptLine() or out:GetLineCount()-1
   local insertAt = isPrompt and out:PositionFromLine(getPromptLine()) or out:GetLength()
-  out:InsertText(insertAt, FixUTF8(text, function (s) return '\\'..string.byte(s) end))
+  out:InsertTextDyn(insertAt, out.useraw and text or FixUTF8(text, function (s) return '\\'..string.byte(s) end))
   local linesAdded = out:GetLineCount() - lines
 
   if marker then
@@ -478,8 +491,7 @@ out:Connect(wx.wxEVT_KEY_DOWN,
         local promptText = getPromptText()
         if #promptText == 0 then return end -- nothing to execute, exit
         if promptText == 'clear' then
-          out:ClearAll()
-          displayShellIntro()
+          out:Erase()
         else
           DisplayShellDirect('\n')
           executeShellCode(promptText)
@@ -555,3 +567,8 @@ if ide.config.outputshell.nomousezoom then
 end
 
 displayShellIntro()
+
+function out:Erase()
+  self:ClearAll()
+  displayShellIntro()
+end

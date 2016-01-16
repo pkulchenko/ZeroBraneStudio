@@ -76,6 +76,15 @@ findReplace:Replace(true, editor)
 ok(editor:GetText():find("923") ~= nil, "Replace in preview replaces matched text.")
 ok(editor:GetText():find("^1:") ~= nil, "Replace in preview doesn't replace line numbers.")
 
+editor:SetText("pos pos pos pos")
+findReplace:SetFind("pos")
+findReplace:SetReplace("POS")
+findReplace.backfocus = { spos = 3, epos = 11 }
+findReplace.inselection = true
+findReplace:Replace(true)
+findReplace.inselection = false
+is(editor:GetText(), "pos POS POS pos", "Replace in selection only replaces inside selection.")
+
 editor:SetText("")
 editor:AppendText([[
 t/1-findreplace.lua
@@ -91,11 +100,12 @@ is(editor:GetText():match("Updated %d"), "Updated 0", "Replace fails on invalid 
 
 findReplace:SetFind("something")
 findReplace:Show() -- set focus on the find
-ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_CUT))
-ok(findReplace:GetFind() == nil, "`Cut` command cuts content of the `Find` control in the search panel.")
+if ide.osname == 'Windows' then
+  ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_CUT))
+  ok(findReplace:GetFind() == nil, "`Cut` command cuts content of the `Find` control in the search panel.")
+end
 
 -- cleanup
 findReplace:Hide()
-while editor:CanUndo() do editor:Undo() end
 ide:GetDocument(editor):SetModified(false)
 ClosePage()

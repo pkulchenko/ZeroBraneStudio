@@ -81,7 +81,7 @@ local function outlineRefresh(editor, force)
     elseif op == 'Function' then
       local depth = token.context['function'] or 1
       local name, pos = token.name, token.fpos
-      text = text or editor:GetText()
+      text = text or editor:GetTextDyn()
       local _, _, rname, params = text:find('([^%(]*)(%b())', pos)
       if name and rname:find(token.name, 1, true) ~= 1 then
         name = rname:gsub("%s+$","")
@@ -207,7 +207,8 @@ local function outlineRefresh(editor, force)
   if outcfg.sort then -- resort items for all parents that have been modified
     for item in pairs(resort) do ctrl:SortChildren(item) end
   end
-  ctrl:ExpandAllChildren(fileitem)
+  if outcfg.showcompact then ctrl:Expand(fileitem) else ctrl:ExpandAllChildren(fileitem) end
+
   -- scroll to the fileitem, but only if it's not a root item (as it's hidden)
   if fileitem:GetValue() ~= ctrl:GetRootItem():GetValue() then
     ctrl:ScrollTo(fileitem)
@@ -237,7 +238,7 @@ local function indexFromQueue()
     if content then
       local editor = ide:CreateBareEditor()
       editor:SetupKeywords(GetFileExt(fname))
-      editor:SetText(content)
+      editor:SetTextDyn(content)
       editor:Colourise(0, -1)
       editor:ResetTokenList()
       while IndicateAll(editor) do end
@@ -256,7 +257,7 @@ local function indexFromQueue()
   return
 end
 
-local function outlineCreateOutlineWindow()
+local function createOutlineWindow()
   local REFRESH, REINDEX = 1, 2
   local width, height = 360, 200
   local ctrl = wx.wxTreeCtrl(ide.frame, wx.wxID_ANY,
@@ -303,8 +304,6 @@ local function outlineCreateOutlineWindow()
   end
 
   local function activateByPosition(event)
-    -- only toggle if this is a folder and the click is on the item line
-    -- (exclude the label as it's used for renaming and dragging)
     local mask = (wx.wxTREE_HITTEST_ONITEMINDENT + wx.wxTREE_HITTEST_ONITEMLABEL
       + wx.wxTREE_HITTEST_ONITEMICON + wx.wxTREE_HITTEST_ONITEMRIGHT)
     local item_id, flags = ctrl:HitTest(event:GetPosition())
@@ -376,7 +375,7 @@ local function eachNode(eachFunc, root, recursive)
   end
 end
 
-outlineCreateOutlineWindow()
+createOutlineWindow()
 
 local pathsep = GetPathSeparator()
 local function isInSubDir(name, path)
@@ -488,10 +487,20 @@ local package = ide:AddPackage('core.outline', {
         end)
 
       if fileitem and not ctrl:IsBold(fileitem) then
-        ctrl:SetItemBold(fileitem, true)
-        ctrl:ExpandAllChildren(fileitem)
-        ctrl:ScrollTo(fileitem)
-        ctrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+        -- run the following changes on idle as doing them inline is causing a strange
+        -- issue on OSX when clicking on a tab may skip several tabs (#546);
+        -- this is somehow caused by `ExpandAllChildren` triggered from `SetFocus` inside
+        -- `PAGE_CHANGED` handler for the notebook.
+        ide:DoWhenIdle(function()
+            ctrl:SetItemBold(fileitem, true)
+            if (ide.config.outline or {}).showcompact then
+              ctrl:Expand(fileitem)
+            else
+              ctrl:ExpandAllChildren(fileitem)
+            end
+            ctrl:ScrollTo(fileitem)
+            ctrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+          end)
       end
     end,
 

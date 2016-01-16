@@ -179,7 +179,7 @@ local function updateStackSync()
         local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
         local text = ("%s = %s%s"):
           format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
+                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
         stackCtrl:SetItemValueIfExpandable(item, value)
       end
@@ -189,7 +189,7 @@ local function updateStackSync()
         local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
         local text = ("%s = %s%s"):
           format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 simpleType[type(value)] and "" or ("  --[["..comment.."]]"))
+                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
         stackCtrl:SetItemValueIfExpandable(item, value)
       end
@@ -312,12 +312,12 @@ local function activateDocument(file, line, activatehow)
     -- when checking for the content remove all newlines as they may be
     -- reported differently from the original by the Lua engine.
     if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath))
-    or content and content:gsub("[\n\r]","") == editor:GetText():gsub("[\n\r]","") then
+    or content and content:gsub("[\n\r]","") == editor:GetTextDyn():gsub("[\n\r]","") then
       ClearAllCurrentLineMarkers()
       if line then
         if line == 0 then -- special case; find the first executable line
           line = math.huge
-          local func = loadstring(editor:GetText())
+          local func = loadstring(editor:GetTextDyn())
           if func then -- .activelines == {[3] = true, [4] = true, ...}
             for l in pairs(debug.getinfo(func, "L").activelines) do
               if l < line then line = l end
@@ -335,6 +335,9 @@ local function activateDocument(file, line, activatehow)
         end
         editor:MarkerAdd(line, CURRENT_LINE_MARKER)
         editor:Refresh() -- needed for background markers that don't get refreshed (wx2.9.5)
+
+        -- expand fold if the activated line is in a folded fragment
+        if not editor:GetLineVisible(line) then editor:ToggleFold(editor:GetFoldParent(line)) end
 
         -- found and marked what we are looking for;
         -- don't need to activate with CHECKONLY (this assumes line is given)
@@ -746,8 +749,9 @@ debugger.listen = function(start)
         end
       end
 
+      -- request attention if the debugging is stopped
+      if not debugger.running then RequestAttention() end
       -- refresh toolbar and menus in case the main app is not active
-      if ide.config.debugger.requestattention then RequestAttention() end
       ide:GetMainFrame():UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
       ide:GetToolBar():UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
     end)
@@ -863,7 +867,12 @@ debugger.handleDirect = function(command)
 end
 
 debugger.loadfile = function(file)
-  return debugger.handle("load " .. file)
+  local f, l, err = debugger.handle("load " .. file)
+  if not f and wx.wxFileExists(file) and err and err:find("Cannot open file") then
+    local content = FileRead(file)
+    if content then return debugger.loadstring(file, content) end
+  end
+  return f, l, err
 end
 debugger.loadstring = function(file, string)
   return debugger.handle("loadstring '" .. file .. "' " .. string)
@@ -892,7 +901,7 @@ do
       debugger.activate = nil
       if content then
         local editor = NewFile()
-        editor:SetText(content)
+        editor:SetTextDyn(content)
         if not ide.config.debugger.allowediting
         and not (debugger.options or {}).allowediting then
           editor:SetReadOnly(true)
@@ -911,7 +920,7 @@ do
 end
 
 local function isemptyline(editor, line)
-  local text = editor:GetLine(line-1)
+  local text = editor:GetLineDyn(line-1)
   return not text:find("%S")
   or (text:find("^%s*%-%-") ~= nil and text:find("^%s*%-%-%[=*%[") == nil)
 end
@@ -1406,10 +1415,12 @@ local function debuggerMakeFileName(editor)
   or ide.config.default.fullname
 end
 
-function DebuggerToggleBreakpoint(editor, line)
+function DebuggerToggleBreakpoint(editor, line, value)
+  local isset = bit.band(editor:MarkerGet(line), BREAKPOINT_MARKER_VALUE) > 0
+  if value ~= nil and isset == value then return end
   local filePath = debugger.editormap and debugger.editormap[editor]
     or debuggerMakeFileName(editor)
-  if bit.band(editor:MarkerGet(line), BREAKPOINT_MARKER_VALUE) > 0 then
+  if isset then
     -- if there is pending "run-to-cursor" call at this location, remove it
     local ed, ln = unpack(debugger.runtocursor or {})
     local same = ed and ln and ed:GetId() == editor:GetId() and ln == line
@@ -1423,6 +1434,7 @@ function DebuggerToggleBreakpoint(editor, line)
     editor:MarkerAdd(line, BREAKPOINT_MARKER)
     if debugger.server then debugger.breakpoint(filePath, line+1, true) end
   end
+  PackageEventHandle("onEditorMarkerUpdate", editor, BREAKPOINT_MARKER, line+1, not isset)
 end
 
 -- scratchpad functions
@@ -1437,7 +1449,7 @@ function DebuggerRefreshScratchpad()
     and not CompileProgram(scratchpadEditor, { jumponerror = false, reportstats = false })
     then return end
 
-    local code = StripShebang(scratchpadEditor:GetText())
+    local code = StripShebang(scratchpadEditor:GetTextDyn())
     if debugger.scratchpad.running then
       -- break the current execution first
       -- don't try too frequently to avoid overwhelming the debugger
@@ -1563,7 +1575,7 @@ function DebuggerScratchpadOn(editor)
     end
 
     -- find start position and length of the number
-    local text = scratchpadEditor:GetText()
+    local text = scratchpadEditor:GetTextDyn()
 
     local nstart = pos
     while nstart >= 0
@@ -1576,14 +1588,15 @@ function DebuggerScratchpadOn(editor)
       do nend = nend + 1 end
 
     -- check if there is minus sign right before the number and include it
-    if nstart >= 0 and scratchpadEditor:GetTextRange(nstart,nstart+1) == '-' then 
+    if nstart >= 0 and scratchpadEditor:GetTextRangeDyn(nstart,nstart+1) == '-' then 
       nstart = nstart - 1
     end
     scratchpad.start = nstart + 1
     scratchpad.length = nend - nstart - 1
-    scratchpad.origin = scratchpadEditor:GetTextRange(nstart+1,nend)
+    scratchpad.origin = scratchpadEditor:GetTextRangeDyn(nstart+1,nend)
     if tonumber(scratchpad.origin) then
       scratchpad.point = point
+      scratchpadEditor:BeginUndoAction()
       scratchpadEditor:CaptureMouse()
     end
   end)
@@ -1591,6 +1604,7 @@ function DebuggerScratchpadOn(editor)
   scratchpadEditor:Connect(wx.wxEVT_LEFT_UP, function(event)
     if debugger.scratchpad and debugger.scratchpad.point then
       debugger.scratchpad.point = nil
+      scratchpadEditor:EndUndoAction()
       scratchpadEditor:ReleaseMouse()
       wx.wxSetCursor(wx.wxNullCursor) -- restore cursor
     else event:Skip() end
