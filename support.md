@@ -23,7 +23,7 @@ title: Support
 <div class="separator">&nbsp;</div>
 
 ## What do I get?
-You get packages for three platforms:
+You get access to packages for three platforms:
 **Windows** XP or later (zip or self-extracting archive), **Mac OS X** 10.6.8+ (dmg file), or **Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
 
 ## How much do I pay?
@@ -31,6 +31,8 @@ This is completely up to you. How much do you value being able to find
 an issue with your code in 5 minutes instead of 15? Get your mobile 
 application out faster? Have fun helping your kids or friends learn
 programming using Lua and examples included with the IDE?
+
+Your payment will help support future development of the IDE.
 
 ZeroBrane LLC is not a tax-exempt non-profit organization, so your payment is **not tax deductible**.
 
