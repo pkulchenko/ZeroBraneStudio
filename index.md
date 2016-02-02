@@ -21,11 +21,12 @@ materials** for those learning Lua or getting familiar with programming.
 
 For those interested in **game and mobile development**, the IDE supports debugging for
 [LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
+[Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 [Moai](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide),
 [Marmalade Quick](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio),
-[Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
-and [Cocos2d-x](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio).
+[Cocos2d-x](http://notebook.kulchenko.com/zerobrane/cocos2d-x-simulator-and-on-device-debugging-with-zerobrane-studio),
+and other engines.
 It also supports **general Lua debugging** for
 [OpenResty/Nginx](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio),
 [Redis](http://notebook.kulchenko.com/zerobrane/redis-lua-debugging-with-zerobrane-studio),
@@ -49,5 +50,5 @@ and [more](documentation#debugging).
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 GSL-Shell and other Lua engines;
-* **Integrated debugger** (with support for local and remote debugging);
+* **Integrated debugger** (with support for local and remote debugging, including cross-platform and on-device debugging);
 * **Fuzzy search** for files, symbols, and library functions, **function outline**, and **[more](features)**.
