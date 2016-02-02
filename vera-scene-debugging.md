@@ -42,13 +42,13 @@ specifying the IP address of the computer that runs ZeroBrane Studio:
 You can call the scene whatever you want, but we will use `ZBSTest`.
 If you already have created a scene called `ZBSTest`, then replace the Luup code from before with the code here:
 
-{% highlight lua %}
+```lua
 local sunset = luup.sunset()
 require('mobdebug').start() --<-- no IP address
 luup.log(luup.version, sunset)
 print(luup.version, os.clock(), 1)
 require('mobdebug').done()
-{% endhighlight %}
+```
 
 - Start debugging in the IDE by selecting `Project | Start Debugging`.
 You can run any simple code as the only reason for the step is to "register"

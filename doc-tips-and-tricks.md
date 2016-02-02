@@ -150,12 +150,12 @@ access the context menu (right click on the mouse while pointing to the value to
 
 To change the format of numeric values, add the following fragment to the [configuration](doc-configuration) file or execute it in the Local Console (in which case it will only be active for the current session):
 
-{% highlight lua %}
+```lua
 debugger.init = [[
   local mdb = require('mobdebug')
   mdb.origline, mdb.line = mdb.line, function(v) return mdb.origline(v, {numformat = "0x%x"}) end
 ]]
-{% endhighlight %}
+```
 
 This will affect all the numbers shown in the Watch, Stack, tooltips, and Remote Console windows.
 To switch back either remove the configuration setting or reset `debugger.init` back to an empty value.

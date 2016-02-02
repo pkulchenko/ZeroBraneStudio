@@ -97,7 +97,7 @@ The debugger provides two methods that allow you to temporarily turn the debuggi
 For example, let's say you have a `bodyCollision` function where you check for collisions and you want to break when a body collision is detected.
 You can turn the debugging off (`require("mobdebug").off()`) right after starting debugging (using `require("mobdebug").start()`) and then turn it on and off around the section you are interested in:
 
-{% highlight lua %}
+```lua
 function bodyCollision(event)
   local target = event.target
   if event.phase == "began" then
@@ -106,7 +106,7 @@ function bodyCollision(event)
     require("mobdebug").off() --<-- turn the debugger off
   end
 end
-{% endhighlight %}
+```
 
 If you set a breakpoint somewhere between `on()` and `off()` calls, it will fire as expected.
 The rest of the application will be running with a "normal" speed in this case (you can see the difference if you remove all `off()` calls).

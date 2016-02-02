@@ -35,7 +35,7 @@ specifying the IP address of the computer that runs ZeroBrane Studio:
 save it in a file. In this example I am using device 4 and a
 particular serviceId, but you can use whatever device and service you have.
 
-{% highlight lua %}
+```lua
 function room_request (lul_request, lul_parameters, lul_outputformat)
   require('mobdebug').start() --<-- start debugging
   local lul_html =
@@ -45,7 +45,7 @@ function room_request (lul_request, lul_parameters, lul_outputformat)
   return lul_html, "text/html"
 end
 luup.register_handler("room_request", "room")
-{% endhighlight %}
+```
 
 - Start debugging in the IDE by selecting `Project | Start Debugging`
 and then run the script using `Project | Continue`.

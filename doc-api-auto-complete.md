@@ -11,7 +11,7 @@ By providing a description for `io.open`, users may not only see `open` suggeste
 
 API definitions are stored in the form of Lua files that return a table of the following structure:
 
-{% highlight lua %}
+```lua
 {
   foo = {
     type = "lib",
@@ -36,7 +36,7 @@ API definitions are stored in the form of Lua files that return a table of the f
     --...
   },
 }
-{% endhighlight %}
+```
 
 This structure defines a value `baz`, a library `foo`, and a function in that library `foo.bar()` that returns a value with type `mytype`.
 
@@ -68,20 +68,20 @@ The entire inheritance chain will be looked at during the analysis.
 API definitions can be referenced by name in interpreter files as part of the `api` table.
 For example, `interpreters/luadeb.lua` file references `wxwidgets` and `baselib` API definitions, which can be found in files `api/lua/wxwidgets.lua` and `api/lua/baselib.lua`.
 
-{% highlight lua %}
+```lua
 return {
   name = "Lua",
   description = "Lua interpreter with debugger",
   api = {"wxwidgets","baselib"},
   ...
-{% endhighlight %}
+```
 
 Make sure to use exactly the same name when you reference files with API definitions even on case-insensitive systems.
 If you name the file `api/lua/BaseLib.lua`, but reference it as `'baselib'`, the link won't work.
 
 ## Example
 
-{% highlight lua %}
+```lua
 return {
   -- I/O library
   io = {
@@ -125,15 +125,15 @@ The mode string can also have a 'b' at the end, which is needed in some systems 
     },
   },
 }
-{% endhighlight %}
+```
 
 This generates the following description for `io.open`: `(file|nil [, string]) io.open (filename: string [, mode: string])`.
 
 When `io.open` is used in an expression, its return value gets the value of `valuetype` `f` (in this particular case), which allows auto-complete to suggest values, functions, and methods defined for that class:
 
-{% highlight lua %}
+```lua
 local foo = io.open("myfile")
 foo:
-{% endhighlight %}
+```
 
 After typing `foo:`, the user will get `close` as an option. Since it is described as `method`, rather than `function`, it will not be suggested after typing `foo.`.

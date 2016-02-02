@@ -8,7 +8,7 @@ If you use it with ZeroBrane Studio, you can copy it into a new editor
 window and will be able to run it and can click on links to read
 corresponding sections in the manual.
 
-{% highlight lua %}
+```lua
 
 -- This is a one-line comment that ends at the end of the line
 --[[ This a multi-line (long) [comment](http://www.lua.org/manual/5.1/manual.html#2.1)
@@ -191,4 +191,4 @@ math.random(M, N) -- returns an integer value in the range [M, N]
 math.randomseed(os.time()) -- "seeds" pseudo-random generator
 -- using the same seed will produce the same sequence
 
-{% endhighlight %}
+```

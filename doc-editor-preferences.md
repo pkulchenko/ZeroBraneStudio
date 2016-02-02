@@ -56,10 +56,10 @@ For example, `Ctrl-D` will duplicate the current line.
 The editor provides [default commands](doc-editor-keyboard-shortcuts) that can be modified to map to the key combinations you prefer.
 To modify the key mapping, you can add the following line to the configuration file:
 
-{% highlight lua %}
+```lua
 editor.keymap[#editor.keymap+1] =
   {('E'):byte(), wxstc.wxSTC_SCMOD_CTRL, wxstc.wxSTC_CMD_LINEEND}
-{% endhighlight %}
+```
 
 This will bind `Ctrl-E` combination to remove the line content from the current position to the end of the line.
 The description takes four parameters:

@@ -35,14 +35,14 @@ specifying the IP address of the computer that runs ZeroBrane Studio:
 save it in a file. In this example I am using device 4 and a
 particular serviceId, but you can use whatever device and service you have.
 
-{% highlight lua %}
+```lua
 function var_watch(lul_device, lul_service, lul_variable, lul_value_old, lul_value_new)
   require('mobdebug').start() --<-- start debugging
   print(lul_device, lul_service, lul_variable, lul_value_old, lul_value_new)
   require('mobdebug').done() --<-- stop debugging
 end
 luup.variable_watch("var_watch", "urn:schemas-zerobrane-com:serviceId:SimplyVirtual1", nil, 4)
-{% endhighlight %}
+```
 
 - Start debugging in the IDE by selecting `Project | Start Debugging`
 and then run the script using `Project | Continue`.

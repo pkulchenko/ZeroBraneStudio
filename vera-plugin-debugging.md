@@ -24,7 +24,7 @@ To **create a virtual device**, follow these steps:
 - Open a new editor tab in the IDE, add the following code and
 save it in a file named `D_SimplyVirtual.xml` (this is our device description).
 
-{% highlight xml %}
+```xml
 <?xml version="1.0"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0">
   <specVersion>
@@ -41,12 +41,12 @@ save it in a file named `D_SimplyVirtual.xml` (this is our device description).
     </implementationList>
   </device>
 </root>
-{% endhighlight %}
+```
 
 - Open another tab, add the following code and
 save it in a file named `I_SimplyVirtual.xml` (this is our implementation description).
 
-{% highlight xml %}
+```xml
 <?xml version="1.0"?>
 <implementation>
   <functions>
@@ -59,7 +59,7 @@ save it in a file named `I_SimplyVirtual.xml` (this is our implementation descri
   </functions>
   <startup>simply_virtual_startup</startup>
 </implementation>
-{% endhighlight %}
+```
 
 - Start a debugging session on a Lua script (not an .xml file!) and upload `D_SimplyVirtual.xml`
 and `I_SimplyVirtual.xml` files to the Vera device by using right click in the
@@ -86,14 +86,14 @@ Now if you **restart the luup engine** from the Vera UI (by selecting the `Reloa
 or from the IDE (by selecting `Restart Luup engine` from the context menu in the editor)
 you will see a new tab opened in the IDE with the content of your "startup" function:
 
-{% highlight lua %}
+```lua
 function simply_virtual_startup(lul_device)
   require('mobdebug').start('IDE-ip-address') -- address of computer running IDE
   luup.log("Simply virtual #" .. lul_device)
   require('mobdebug').done()
   return true -- http://wiki.micasaverde.com/index.php/Luup_Declarations#.3Cstartup.3E
 end
-{% endhighlight %}
+```
 
 You should now see the debugging suspended at the `luup.log` line. You can
 then step through the code (and will see the values printed to the

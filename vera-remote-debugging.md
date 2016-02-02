@@ -30,13 +30,13 @@ You will do this as follows (using `device-IP-address` as the address in this ex
  
 - Copy the following code into a new Automation scene on the Vera under the Luup tab.  You can call the scene whatever you want, but for this example, we will use `ZBSTest`.
 
-{% highlight lua %}
+```lua
 local sunset = luup.sunset()
 require('mobdebug').start('device-IP-address')
 luup.log(luup.version, sunset)
 print(luup.version, os.clock(), 1)
 require('mobdebug').done()
-{% endhighlight %}
+```
 
 - Run the scene.
 
@@ -56,13 +56,13 @@ Instead, you will **start the debugging session** in the IDE before running the 
 You can call the scene whatever you want, but we will use `ZBSTest`.
 If you already have created a scene called `ZBSTest`, then replace the Luup code from before with the code here:
 
-{% highlight lua %}
+```lua
 local sunset = luup.sunset()
 require('mobdebug').start() --<-- no IP address
 luup.log(luup.version, sunset)
 print(luup.version, os.clock(), 1)
 require('mobdebug').done()
-{% endhighlight %}
+```
 
 - Start debugging in the IDE by selecting `Project | Start Debugging`.
 You can run any simple code as the only reason for the step is to "register"

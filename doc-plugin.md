@@ -19,7 +19,7 @@ A **plugin is a Lua file** that returns a table with several fields -- `name`, `
 
 For example, the following plugin has only one event handler (`onRegister`) that is called when the plugin is registered:
 
-{% highlight lua %}
+```lua
 return {
   name = "Sample plugin",
   description = "Sample plugin with one event handler.",
@@ -28,7 +28,7 @@ return {
 
   onRegister = function(self) DisplayOutputLn("Sample plugin registered") end,
 }
-{% endhighlight %}
+```
 
 The plugin may also return `nil` instead of the table, which will skip the registeration.
 This is useful when some environmental conditions are not satisfied (for example, a program that the plugin integrates with is not installed).
@@ -54,7 +54,7 @@ This may be useful when a plugin stores some information entered by the user (li
 The plugin API provides `GetSettings` and `SetSettings` methods that retrieve and save a table with all plugin data elements.
 For example, the following fragment will increment and save `loaded` value to keep track of how many times the plugin has been loaded:
 
-{% highlight lua %}
+```lua
 return {
   ...
 
@@ -64,7 +64,7 @@ return {
     self:SetSettings(settings)
   end,
 }
-{% endhighlight %}
+```
 
 ## Event handlers
 
@@ -79,7 +79,7 @@ Registering a specification as part of a plugin allows you to provide custom syn
 This is done using `AddSpec(name, specification)` and `RemoveSpec(name)` methods.
 For example, the following code will register a specification that is linked to `.xml` extension:
 
-{% highlight lua %}
+```lua
 local spec = {
   exts = {"xml"},
   lexer = wxstc.wxSTC_LEX_XML,
@@ -113,7 +113,7 @@ return {
     ide:RemoveSpec("sample")
   end,
 }
-{% endhighlight %}
+```
 
 The name of the specification is not critical, but to avoid conflicts with other plugins you may want to include the name of your plugin in your specification name (`sample` in the example above).
 This registering of the specification will have the same effect as putting this specification code a file in `spec/` folder, but will only be used when the plugin is activated.
@@ -124,7 +124,7 @@ This registering of the specification will have the same effect as putting this 
 This is done using `AddAPI(group, name, api)` and `RemoveAPI(group, name)` methods.
 For example, to add `sample.val1` and `sample.val2` methods, you may use the following:
 
-{% highlight lua %}
+```lua
 local api = {
  sample = {
   childs = {
@@ -156,13 +156,13 @@ return {
     ide:RemoveAPI("lua", "sample")
   end,
 }
-{% endhighlight %}
+```
 
 See the [custom API definitions](doc-api-auto-complete) section for details and examples on how to describe complex definitions.
 
 ## Registering an interpreter
 
-{% highlight lua %}
+```lua
 local interpreter = {
   name = "Sample",
   description = "Lua sample interpreter",
@@ -190,7 +190,7 @@ return {
     ide:RemoveInterpreter("sample")
   end,
 }
-{% endhighlight %}
+```
 
 ## Registering a console alias
 
@@ -198,7 +198,7 @@ A console alias allows adding commands to the local console in the IDE.
 This is done using `AddConsoleAlias(name, commands)` and `RemoveConsoleAlias(name)` methods.
 For example, to add `install` and `uninstall` commands to the console, you may do the following:
 
-{% highlight lua %}
+```lua
 local commands = {
   install = function(m) DisplayOutputLn("Installed "..m) end,
   uninstall = function(m) DisplayOutputLn("Uninstalled "..m) end,
@@ -220,7 +220,7 @@ return {
     ide:RemoveConsoleAlias("sample")
   end,
 }
-{% endhighlight %}
+```
 
 When this plugin is activated, the user can then run `sample.install()` and `sample.uninstall()` commands in the local console.
 
@@ -248,7 +248,7 @@ If you uncomment its code, it will show a message in the Output window for every
 
 ## Example: Adding an event handler for typed characters
 
-{% highlight lua %}
+```lua
 local pairs = {
   ['('] = ')', ['['] = ']', ['{'] = '}', ['"'] = '"', ["'"] = "'"}
 local closing = [[)}]'"]]
@@ -273,11 +273,11 @@ return {
     end
   end,
 }
-{% endhighlight %}
+```
 
 ## Example: Modifying main and popup menus
 
-{% highlight lua %}
+```lua
 local G = ...
 local id = G.ID("popupmenu.popupshow")
 local iditem = G.ID("popupmenu.popupitem")
@@ -311,7 +311,7 @@ return {
       function(event) DisplayOutputLn("Selected popup item") end)
   end
 }
-{% endhighlight %}
+```
 
 ## Example: Adding a menu item and a toolbar button that run `make`
 
@@ -325,7 +325,7 @@ not available in earlier versions.
 If you need to include a **path to the filename in the current editor tab**,
 something like the following may work:
 
-{% highlight lua %}
+```lua
 ide:GetMainFrame():Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     local ed = ide:GetEditor()
@@ -336,4 +336,4 @@ ide:GetMainFrame():Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
       ide:ExecuteCommand('make', ide:GetProject(), function(s) DisplayOutput(s) end)
     end
   end)
-{% endhighlight %}
+```
