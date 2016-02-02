@@ -189,7 +189,7 @@ You can **remove** the [configuration file](doc-general-preferences#session-conf
 
 ## Why can't I delete text that includes formatted comments?
 
-Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting), which uses styles with hidden characters.
+(This restriction has been removed in v1.20) Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting), which uses styles with hidden characters.
 Those characters can't be deleted with some of the delete operations (line 'cut' or 'delete selection') and need to be deleted using `Delete` or `Backspace`.
 
 ## I'm getting a message about mixed end-of-line sequences. How do I make them visible?
