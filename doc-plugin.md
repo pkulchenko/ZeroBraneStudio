@@ -10,12 +10,12 @@ specification files (`spec/`) to describe syntax and keywords,
 apis (`api/`) to provide code completion and tooltips, and
 interpreters (`interpreters/`): to implement components for setting debugging and run-time project environment.
 
-In addition to these options, it also provides plugin API to extend its functionality in a more fine graned way.
+In addition to these options, it also provides **plugin API to extend its functionality** in a more fine graned way.
 For example, one can write a plugin to add a menu item to turn line wrapping `on` or `off` from the IDE or a plugin to map a shortcut to a character not present on the keyboard.
 
 ## Plugin structure
 
-A plugin is a Lua file that returns a table with several fields -- `name`, `description`, `author`, `version` -- and various [event handlers](#event-handler).
+A **plugin is a Lua file** that returns a table with several fields -- `name`, `description`, `author`, `version` -- and various [event handlers](#event-handler).
 
 For example, the following plugin has only one event handler (`onRegister`) that is called when the plugin is registered:
 

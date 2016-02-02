@@ -9,7 +9,7 @@ for Lua 5.1, [Lua 5.2](doc-lua52-debugging), [Lua 5.3](doc-lua53-debugging),
 
 It is **simple and instantly usable** for beginners (as tested with middle and
 high school students with no programming experience), yet
-**[feature-rich](features) and extensible** for experienced developers.
+**[feature-rich](features)** and **[extensible](doc-plugin)** for experienced developers.
 Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **completely customizable with Lua**.
 Unlike&nbsp;TextMate and Sublime Text, it includes a **remote debugger** and a **full IDE feature set**.
 Unlike&nbsp;Decoda, it runs on Windows, Mac OSX, and Linux and supports **on-device debugging**.
