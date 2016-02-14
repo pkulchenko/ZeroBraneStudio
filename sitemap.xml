@@ -2,7 +2,7 @@
 layout: sitemap
 ---
 {% for page in site.pages %}{% if page.url != '/sitemap.xml' and page.url != '/download.html' and page.url != '/vera-download.html' %}<url>
-  <loc>http://studio.zerobrane.com{% if page.url == '/index.html' %}/{% else %}{{ page.url | remove: '.html' }}{% endif %}</loc>
+  <loc>https://studio.zerobrane.com{% if page.url == '/index.html' %}/{% else %}{{ page.url | remove: '.html' }}{% endif %}</loc>
   <lastmod>{{ site.time | date: "%Y-%m-%dT09:00:00-08:00" }}</lastmod>
   <changefreq>daily</changefreq>
   <priority>1.0</priority>
