@@ -208,15 +208,6 @@ Before v0.90, the list of functions was available through the dropdown in the to
 Starting from v0.90, the list of functions is available through a separate tab located next to the project tab.
 The content of the Outline can be [configured in various ways](doc-general-preferences#outline).
 
-## What does the bluish line under or around some names mean?
-
-It identifies **function calls**; thit indicator is disabled by default starting from v0.70.
-Depending on your current style it may also be shown as a solid line or a rounded box around a function name.
-You can [enable/disable it](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L98),
-[change its type](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L104),
-or [change its color](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L101).
-(Note that before v0.38 you'd need to set/modify `styles.fncall` instead of `styles.indicator.fncall`.)
-
 ## Why am I getting `mach-o, but wrong architecture` error on OSX?
 
 You may be trying to load a 64bit module using Lua executable that is included with the IDE.
