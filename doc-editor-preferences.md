@@ -33,6 +33,7 @@ Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw
 set to `false` or `nil` to disable;
 set to `wxstc.wxSTC_IV_LOOKFORWARD` to show indentation guides beyond the actual indentation up to the level of the next non-empty line
 and to `wxstc.wxSTC_IV_LOOKBOTH` to show indentation guides beyond the actual indentation up to the level of the next non-empty line or previous non-empty line whichever is the greater (1.11+).
+- `editor.linenumber = true`: show line numbers (1.31+).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (0.39+).
 - `editor.showfncall = false`: mark function calls;
