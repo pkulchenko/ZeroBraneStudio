@@ -5,6 +5,11 @@ local q = EscapeMagic
 local modpref = ide.MODPREF
 
 ide.proto.Document = {__index = {
+  UpdateTitle = function(self)
+    if PackageEventHandle("onEditorUpdateTabText", self) == false then 
+      self:SetTabText(self.fileName)
+    end
+  end,
   GetFileName = function(self) return self.fileName end,
   GetFilePath = function(self) return self.filePath end,
   GetFileExt = function(self) return GetFileExt(self.fileName) end,

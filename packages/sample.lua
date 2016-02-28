@@ -57,6 +57,7 @@ local events = {
   onAppLoad =          function(self, app) end,
   onAppClose =         function(self, app) end,
   onAppShutdown =      function(self, app) end, -- the last event right before exiting
+  onEditorUpdateTabText = function(self, doc) end,
 }
 
 --[[ Uncomment this to see event names printed in the Output window
