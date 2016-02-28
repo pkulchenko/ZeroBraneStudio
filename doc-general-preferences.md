@@ -179,14 +179,13 @@ When using an older version (before 0.95), reference them in the **global enviro
 
 Images loaded as toolbar and other icons can be **tinted**; this allows for easy changes to the style of the IDE without any modifications to the images themselves.
 
-- `imagetint = nil`: set the color (as `{0-255, 0-255, 0-255}` for red, green, and blue values) to tint images with (1.10+);
-    - `imagetint={ 0, 71, 171}` -- cobalt
-    - `imagetint={196, 30, 58}` -- cardinal
-    - `imagetint={168, 81, 11}` -- amber
-    - `imagetint={81, 168, 11}` -- swamp
-    - `imagetint={81, 11, 168}` -- pink
-    - `imagetint={168, 11, 81}` -- red
-    - `imagetint={11, 168, 81}` -- verdigris
+- `imagetint = nil`: set the color (as `{0-255, 0-255, 0-255}` for red, green, and blue values) to tint images with (1.10+); for example,
+    - `imagetint={ 0, 71, 171}`: <span style="color: rgb(0,71,171)">cobalt color</span>
+    - `imagetint={196, 30, 58}`: <span style="color: rgb(196,30,58)">cardinal color</span>
+    - `imagetint={168, 81, 11}`: <span style="color: rgb(168,81,11)">amber color</span>
+    - `imagetint={81, 168, 11}`: <span style="color: rgb(81,168,11)">swamp color</span>
+    - `imagetint={81, 11, 168}`: <span style="color: rgb(81,11,168)">pink color</span>
+    - `imagetint={11, 168, 81}`: <span style="color: rgb(11,168,81)">verdigris color</span>
 
 ## Formats
 
