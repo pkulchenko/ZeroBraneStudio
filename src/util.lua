@@ -643,3 +643,34 @@ function MergeSettings(localSettings, savedSettings)
     end
   end
 end
+
+-- this is a wrapper function for adding menu items with icons
+function CreateIconMenuItem(menu, id, text, help, bmp)
+  local m = wx.wxMenuItem(menu, id, text, help or '')
+  if type(bmp) == 'string' and bmp:sub(1,5) == 'wxART' then
+    -- art icon id
+    local bmpData = wx.wxArtProvider.GetBitmap(bmp, wx.wxART_TOOLBAR)
+    if bmpData then
+      m:SetBitmap(bmpData)
+      bmpData:delete()
+    end
+  elseif type(bmp) == 'string' then
+    -- a filename
+    if not wx.wxFileName(bmp):FileExists() then
+      -- if not existing, check in some predefined folder
+      bmp = ide:GetAppName() .. "/res/16/" .. bmp .. ".png"
+      if not wx.wxFileName(bmp):FileExists() then
+        -- still not existing, then no icon
+        bmp = nil
+      end
+    end
+    if bmp then
+      local bmpData = wx.wxBitmap(bmp)
+      if bmpData then
+        m:SetBitmap(bmpData)
+        bmpData:delete()
+      end
+    end
+  end
+  return m
+end
