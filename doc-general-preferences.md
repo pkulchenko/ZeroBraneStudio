@@ -185,6 +185,7 @@ Images loaded as toolbar and other icons can be **tinted**; this allows for easy
     - `imagetint={168, 81, 11}`: <span style="color: rgb(168,81,11)">amber color</span>
     - `imagetint={81, 168, 11}`: <span style="color: rgb(81,168,11)">swamp color</span>
     - `imagetint={81, 11, 168}`: <span style="color: rgb(81,11,168)">pink color</span>
+    - `imagetint={168, 11, 81}`: <span style="color: rgb(168,11,81)">red color</span>
     - `imagetint={11, 168, 81}`: <span style="color: rgb(11,168,81)">verdigris color</span>
 
 ## Formats
