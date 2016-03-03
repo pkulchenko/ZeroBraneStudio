@@ -188,6 +188,8 @@ Images loaded as toolbar and other icons can be **tinted**; this allows for easy
     - `imagetint={168, 11, 81}`: <span style="color: rgb(168,11,81)">red color</span>
     - `imagetint={11, 168, 81}`: <span style="color: rgb(11,168,81)">verdigris color</span>
 
+Markers are also tinted (when images are tinted); this can be disabled by setting `markertint` to `false` (1.31+).
+
 ## Formats
 
 - `format.menurecentprojects = "%f | %i"`: format of the `Recent Project` menu and the toolbar dropdown.
