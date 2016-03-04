@@ -14,34 +14,33 @@ local uimgr = frame.uimgr
 ------------------------
 -- Interpreters and Menu
 
-local debugTab = {
-  { ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file") },
-  { ID_RUNNOW, TR("Run As Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"), wx.wxITEM_CHECK },
-  { ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file") },
-  { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
-  { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
-  { },
-  { ID_STOPDEBUG, TR("S&top Debugging")..KSC(ID_STOPDEBUG), TR("Stop the currently running process") },
-  { ID_DETACHDEBUG, TR("Detach &Process")..KSC(ID_DETACHDEBUG), TR("Stop debugging and continue running the process") },
-  { ID_STEP, TR("Step &Into")..KSC(ID_STEP), TR("Step into") },
-  { ID_STEPOVER, TR("Step &Over")..KSC(ID_STEPOVER), TR("Step over") },
-  { ID_STEPOUT, TR("Step O&ut")..KSC(ID_STEPOUT), TR("Step out of the current function") },
-  { ID_RUNTO, TR("Run To Cursor")..KSC(ID_RUNTO), TR("Run to cursor") },
-  { ID_TRACE, TR("Tr&ace")..KSC(ID_TRACE), TR("Trace execution showing each executed line") },
-  { ID_BREAK, TR("&Break")..KSC(ID_BREAK), TR("Break execution at the next executed line of code") },
-  { },
-  { ID_BREAKPOINT, TR("Breakpoint")..KSC(ID_BREAKPOINT) },
-  { },
-  { ID_CLEAROUTPUT, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUT), TR("Clear the output window before compiling or debugging"), wx.wxITEM_CHECK },
-  { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS), TR("Provide command line parameters") },
-}
-
 local targetDirMenu = wx.wxMenu{
   {ID_PROJECTDIRCHOOSE, TR("Choose...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
   {ID_PROJECTDIRFROMFILE, TR("Set From Current File")..KSC(ID_PROJECTDIRFROMFILE), TR("Set project directory from current file")},
 }
 local targetMenu = wx.wxMenu({})
-local debugMenu = wx.wxMenu(debugTab)
+local debugMenu = wx.wxMenu({})
+
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_RUN, TR("&Run")..KSC(ID_RUN), TR("Execute the current project/file"), "RUN"))
+debugMenu:AppendCheckItem(ID_RUNNOW, TR("Run As Scratchpad")..KSC(ID_RUNNOW), TR("Execute the current project/file and keep updating the code to see immediate results"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_COMPILE, TR("&Compile")..KSC(ID_COMPILE), TR("Compile the current file")))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging"), "DEBUG-START"))
+debugMenu:AppendCheckItem(ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"))
+debugMenu:AppendSeparator()
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_STOPDEBUG, TR("S&top Debugging")..KSC(ID_STOPDEBUG), TR("Stop the currently running process"), "DEBUG-STOP"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_DETACHDEBUG, TR("Detach &Process")..KSC(ID_DETACHDEBUG), TR("Stop debugging and continue running the process"), "DEBUG-DETACH"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_STEP, TR("Step &Into")..KSC(ID_STEP), TR("Step into"), "DEBUG-STEP-INTO"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_STEPOVER, TR("Step &Over")..KSC(ID_STEPOVER), TR("Step over"), "DEBUG-STEP-OVER"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_STEPOUT, TR("Step O&ut")..KSC(ID_STEPOUT), TR("Step out of the current function"), "DEBUG-STEP-OUT"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_RUNTO, TR("Run To Cursor")..KSC(ID_RUNTO), TR("Run to cursor"), "DEBUG-RUN-TO"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_TRACE, TR("Tr&ace")..KSC(ID_TRACE), TR("Trace execution showing each executed line")))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_BREAK, TR("&Break")..KSC(ID_BREAK), TR("Break execution at the next executed line of code"), "DEBUG-BREAK"))
+debugMenu:AppendSeparator()
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_BREAKPOINT, TR("Breakpoint")..KSC(ID_BREAKPOINT), "DEBUG-BREAKPOINT-TOGGLE"))
+debugMenu:AppendSeparator()
+debugMenu:AppendCheckItem(ID_CLEAROUTPUT, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUT), TR("Clear the output window before compiling or debugging"))
+debugMenu:Append(CreateIconMenuItem(debugMenu, ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS), TR("Provide command line parameters")))
+
 local debugMenuRun = {
   start=TR("Start &Debugging")..KSC(ID_STARTDEBUG), continue=TR("Co&ntinue")..KSC(ID_STARTDEBUG)}
 local debugMenuStop = {
