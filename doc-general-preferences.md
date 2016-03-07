@@ -22,8 +22,8 @@ The values shown are the default values.
 The changes in files and all unsaved buffers should be restored during the next launch.
 This session information is saved in the [.ini file](#session-configuration).
 - `ini = nil`: provide an alternative location for the [.ini file](#session-configuration).
-If the filename is absolute, it's used as the new location;
-(1.11+) if it's relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
+If the filename is absolute, it is used as the new location;
+(1.11+) if it is relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
 - `interpreter = nil`: set the default interpreter used for new projects (1.11+).
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
