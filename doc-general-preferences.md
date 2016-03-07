@@ -27,6 +27,8 @@ If the filename is absolute, it's used as the new location;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
 - `interpreter = nil`: set the default interpreter used for new projects (1.11+).
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
+- `menuicon = true`: show icons in the menu (1.31+).
+On Linux may not show even when set to `true`, as it is also controlled by `gtk-menu-images` setting.
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
