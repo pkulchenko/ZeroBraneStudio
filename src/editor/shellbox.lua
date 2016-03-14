@@ -146,7 +146,7 @@ local function getNextHistoryMatch(promptText)
   assert(false, "getNextHistoryMatch coudn't find a proper match")
 end
 
-local function shellPrint(marker, ...)
+local function shellPrint(isPrint, marker, ...) -- TODO: Not correct spacing on OSX.
   local cnt = select('#',...)
   if cnt == 0 then return end -- return if nothing to print
 
@@ -155,7 +155,7 @@ local function shellPrint(marker, ...)
   local text = ''
   for i=1,cnt do
     local x = select(i,...)
-    text = text .. tostring(x)..(i < cnt and "\t" or "")
+    text = text .. tostring(x)..(isPrint and (i < cnt and "\t" or "") or "")
   end
 
   -- split the text into smaller chunks as one large line
@@ -173,7 +173,9 @@ local function shellPrint(marker, ...)
   end
 
   -- add "\n" if it is missing
-  text = text:gsub("\n+$", "") .. "\n"
+  if isPrint then
+    text = text:gsub("\n+$", "") .. "\n"
+  end
 
   local lines = out:GetLineCount()
   local promptLine = isPrompt and getPromptLine() or nil
@@ -196,16 +198,19 @@ local function shellPrint(marker, ...)
 end
 
 DisplayShell = function (...)
-  shellPrint(OUTPUT_MARKER, ...)
+  shellPrint(true, OUTPUT_MARKER, ...)
+end
+DisplayShellWrite = function (...)
+  shellPrint(false, OUTPUT_MARKER, ...)
 end
 DisplayShellErr = function (...)
-  shellPrint(ERROR_MARKER, ...)
+  shellPrint(true, ERROR_MARKER, ...)
 end
 DisplayShellMsg = function (...)
-  shellPrint(MESSAGE_MARKER, ...)
+  shellPrint(true, MESSAGE_MARKER, ...)
 end
 DisplayShellDirect = function (...)
-  shellPrint(nil, ...)
+  shellPrint(true, nil, ...)
 end
 DisplayShellPrompt = function (...)
   -- don't print anything; just mark the line with a prompt mark
@@ -289,6 +294,7 @@ local function createenv ()
       wx.wxEVT_COMMAND_MENU_SELECTED, ID_EXIT))
   end }
   env.os = setmetatable(os, {__index = _G.os})
+  env.io.write = DisplayShellWrite -- TODO: Doing as for os does not work.
   env.print = DisplayShell
   env.dofile = dofile
   env.loadfile = loadfile
