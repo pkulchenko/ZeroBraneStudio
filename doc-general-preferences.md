@@ -42,6 +42,9 @@ set to `true` to display both files and directories or to `wx.wxDIR_FILES` to di
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname to use for debugging.
+- `debugger.init = nil`: specify code to run (as a **string**) at the beginning of the debugger session.
+This may be used to provide some initialization to be applied before the debugging starts.
+For example, `debugger.init = [[some initialization code]]`.
 - `debugger.maxdatalength = 400`: set limit (in bytes) for the data shown in the Stack and Watch results.
 - `debugger.maxdatanum = 400`: limit the number of elements for tables shown in the Stack and Watch results.
 - `debugger.maxdatalevel = 3`: limit the number of nested levels for tables shown in the Stack and Watch results.
