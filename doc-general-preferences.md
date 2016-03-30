@@ -13,7 +13,7 @@ The values shown are the default values.
 ## General
 
 - `activateoutput = true`: activate Output or Console window on new content added.
--  (**removed** in 1.21+)`allowinteractivescript = true`: allow interaction in the output window.
+-  (**removed** in 1.30) `allowinteractivescript = true`: allow interaction in the output window.
 - `autoanalyzer = true`: enable autoanalyzer that adds scope aware indicators to variables (up to v0.50 it was spelled as `autoanalizer`).
 - `autorecoverinactivity = 10`: trigger saving autorecovery after N seconds of inactivity; set to `nil` to disable autorecovery.
 - `bordersize = 2`: set the size of the border (sash) between windows and panels (0.91+).
@@ -50,7 +50,7 @@ Use `'c'` for 'copying' (appears in the application output and the Output panel)
 `'r'` for 'redirecting' (only appears in the Output panel),
 or `'d'` for 'default' (only appears in the application output).
 This is mostly useful for remote debugging to specify how the output should be redirected.
-- (**removed** in 1.21+) `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (1.0+).
+- (**removed** in 1.30) `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (1.0+).
 - `debugger.runonstart = false`: execute script immediately after starting debugging (when set to `true`) or stop on the first Lua statement (when set to `false`).
 - `debugger.verbose = false`: enable verbose output.
 
