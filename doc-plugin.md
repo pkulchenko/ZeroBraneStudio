@@ -158,7 +158,8 @@ return {
 }
 ```
 
-See the [custom API definitions](doc-api-auto-complete) section for details and examples on how to describe complex definitions.
+See the [custom API definitions](doc-api-auto-complete) section for details and examples on how to describe complex definitions
+and the section on [registering API definitions](doc-api-auto-complete#how-to-reference-api-definitions) to **make added definitions recognized** by the IDE.
 
 ## Registering an interpreter
 

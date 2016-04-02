@@ -79,6 +79,9 @@ return {
 Make sure to use exactly the same name when you reference files with API definitions even on case-insensitive systems.
 If you name the file `api/lua/BaseLib.lua`, but reference it as `'baselib'`, the link won't work.
 
+Another options to reference API definitions that doesn't require modification of interpreters is to use the [`api` configuration option](doc-general-preferences#custom-apis).
+For example, if you added `myapi` API and want to load it when `corona` interpreter is selected, you can specify `api={corona={'myapi'}}` to achieve that.
+
 ## Example
 
 ```lua
