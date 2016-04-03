@@ -217,6 +217,17 @@ To avoid this issue you need to configure the IDE to use your own 64bit Lua exec
 
 Note that you can still use the IDE to debug your applications as the luasocket library required for debugging is compiled as universal binary and can be loaded into both 32bit and 64bit applications.
 
+## How do I select a main file to use with `Run` or `Debug` commands?
+
+By default the execution of the project starts with the file in the current editor tab (at least with the default Lua interpreters).
+If you want to start the execution from a different file, you may set it by
+(1) selecting the file in the [Project panel](doc-getting-started#project-directory),
+(2) right-click with the mouse to open the popup menu, and
+(3) using `Set As Start File`.
+
+This will set the selected file as the start file; the file will have a different icon to help distinguish it from other files.
+You can later change it to a different file or unset by selecting `Unset .... As Start File` from the same menu.
+
 ## How do I show Corona SDK Console window on Windows?
 
 (0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration). See [all Corona-specific preferences](doc-corona-preferences) for details.
