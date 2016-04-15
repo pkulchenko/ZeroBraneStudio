@@ -5,10 +5,10 @@ title: Documentation
 
 ## Getting started
 
-- A **[short and simple overview](doc-getting-started)** for those who are new to this development environment.
-- **[Tutorials and demos](tutorials)** that cover debugging and live coding for different environments.
-- A list of **[frequently asked questions](doc-faq)** about the IDE.
-- **[Lua quick start guide](doc-lua-quick-start-guide)**.
+- A **[short and simple overview](doc-getting-started)** for those who are new to this development environment
+- **[Tutorials and demos](tutorials)** that cover debugging and live coding for different environments
+- A list of **[frequently asked questions](doc-faq)** about the IDE
+- **[Lua quick start guide](doc-lua-quick-start-guide)**
 - **[Tips and tricks](doc-tips-and-tricks)**, **[Screenshots](screenshots)**, and **[Testimonials](testimonials)**
 
 ## Preferences
