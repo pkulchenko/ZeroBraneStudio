@@ -9,6 +9,7 @@ title: Documentation
 - **[Tutorials and demos](tutorials)** that cover debugging and live coding for different environments
 - A list of **[frequently asked questions](doc-faq)** about the IDE
 - **[Lua quick start guide](doc-lua-quick-start-guide)**
+- **[Installation](doc-installation) instructions**
 - **[Tips and tricks](doc-tips-and-tricks)**, **[Screenshots](screenshots)**, and **[Testimonials](testimonials)**
 
 ## Preferences
