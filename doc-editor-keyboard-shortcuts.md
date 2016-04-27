@@ -6,6 +6,8 @@ title: Editor Keyboard Shortcuts
 The editor used in ZeroBrane Studio is based on the [Scintilla editing component](http://www.scintilla.org/) and provides access to most of its functionality.
 These commands can be modified using [editor key mapping](doc-general-preferences#editor-key-mapping) settings.
 
+Other shortcuts used in the application can be modified as described in the [key mapping](doc-general-preferences#key-mapping) section.
+
 **Text editing** commands with no menu equivalents:
 
 - `Tab`: Indent line or current selection
