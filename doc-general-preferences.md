@@ -26,6 +26,9 @@ If the filename is absolute, it is used as the new location;
 (1.11+) if it is relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
 - `interpreter = nil`: set the default interpreter used for new projects (1.11+).
+Use a string value with the name of the interpreter to set the interpreter.
+The name of the interpreter is either its file name (without an extension) or a name used in `ide:AddInterpreter()` call.
+For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
 - `menuicon = true`: show icons in the menu (1.31+).
 On Linux may not show even when set to `true`, as it is also controlled by `gtk-menu-images` setting.
@@ -34,7 +37,8 @@ On Linux may not show even when set to `true`, as it is also controlled by `gtk-
 - `savebak = false`: create backup on file save.
 - `showhiddenfiles = false`: display hidden files (those that have "hidden" attribute set on Windows or those that start with `.` on Linux) in the project tree (1.21+);
 set to `true` to display both files and directories or to `wx.wxDIR_FILES` to display only files and to `wx.wxDIR_DIRS` to display only directories.
-- `showmemoryusage = nil`: display memory usage stats in the Status bar (1.11+).
+- `showmemoryusage = nil`: display memory usage stats in the Status bar (1.11+);
+set to `true` to display the stats.
 - `singleinstance = true`: enable check that prevents starting multiple instances of the IDE.
 - `symbolindexinactivity = 2`: trigger indexing of project files for symbol search after N seconds of inactivity (1.11+).
 
