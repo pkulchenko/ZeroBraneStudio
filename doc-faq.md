@@ -80,6 +80,9 @@ As an alternative, you can specify a filename as the second parameter to `loadst
 
 You can then open that file in the IDE or configure it to [auto-open](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) it for you.
 
+There is one caveat with debugging of fragments loaded with `loadstring`: one-line code fragments will be interpreted as filenames.
+To make them recognized as the code fragment, just add a new line or make it more than one line long.
+
 ## Is debugging of Lua 5.2 applications supported?
 
 Yes; see [Lua 5.2 debugging](doc-lua52-debugging) section for details.
