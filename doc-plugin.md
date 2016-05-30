@@ -240,6 +240,15 @@ for example, `SCI_GETTEXT` maps to `editor:GetText()`); although there are few e
 The menu object is a wrapper around [wxMenu](http://docs.wxwidgets.org/trunk/classwx_menu.html) object and supports all its methods.
 For example, `menu:AppendSeparator()` will add a separator at the end of the current menu and `menu:Append(id, "Popup Menu Item")` will append a new item with id `id` to the menu.
 
+## Plugin guidelines
+
+Plugin authors should only used public API, which includes the following groups of functions:
+- [Event handlers](#event-handlers)
+- [Methods for internal objects](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/proto.lua), like Documents, Interpreter, Debugger, and others
+- [Methods for the IDE object](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/package.lua)
+- [Editor API](#editor-api)
+- [Menu API](#menu-api)
+
 ## Example: Basic plugin with all event handlers
 
 [A sample plugin](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/packages/sample.lua)
