@@ -243,6 +243,7 @@ For example, `menu:AppendSeparator()` will add a separator at the end of the cur
 ## Plugin guidelines
 
 Plugin authors should only used public API, which includes the following groups of functions:
+
 - [Event handlers](#event-handlers)
 - [Methods for internal objects](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/proto.lua), like Documents, Interpreter, Debugger, and others
 - [Methods for the IDE object](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/package.lua)
