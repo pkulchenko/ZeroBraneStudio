@@ -263,8 +263,8 @@ You can use this setting to specify an alternative interpreter you want to use (
 Note that the **full executable name** is expected, not a directory name. The values shown are example values for a Windows system, not default values.
 
 - `path.lua = 'd:/lua/lua'`: specify path to the default Lua interpreter.
-- `path.lua52 = 'd:/lua/lua52'`: specify path to the Lua 5.2 interpreter (used when `Lua52` interpreter is selected).
-- `path.lua53 = 'd:/lua/lua53'`: specify path to the Lua 5.3 interpreter (used when `Lua53` interpreter is selected).
+- `path.lua52 = 'd:/lua/lua52'`: specify path to the Lua 5.2 interpreter (used when `Lua 5.2` interpreter is selected).
+- `path.lua53 = 'd:/lua/lua53'`: specify path to the Lua 5.3 interpreter (used when `Lua 5.3` interpreter is selected).
 - `path.love2d = 'd:/lua/love/love'`: specify path to LÖVE/love2d executable.
 - `path.moai = 'd:/lua/moai/moai'`: specify path to Moai executable.
 - `path.gideros = 'd:/Program Files/Gideros/GiderosPlayer.exe'`: specify path to Gideros executable.
