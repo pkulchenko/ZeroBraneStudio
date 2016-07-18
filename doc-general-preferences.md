@@ -32,6 +32,7 @@ For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
 - `menuicon = true`: show icons in the menu (1.31+).
 On Linux may not show even when set to `true`, as it is also controlled by `gtk-menu-images` setting.
+- `outlineinactivity = 0.250`: trigger Outline update after N seconds of inactivity (1.0+); set to `nil` to disable Outline handling.
 - `projectautoopen = true`: auto-open windows on project switch.
 - `projecthistorylength = 20`: set history length for projects.
 - `savebak = false`: create backup on file save.
@@ -95,6 +96,7 @@ set to `false` to disable.
 
 ## Outline
 
+- `outlineinactivity = 0.250`: trigger Outline update after N seconds of inactivity (1.0+); set to `nil` to disable Outline handling.
 - `outline.jumptocurrentfunction = true`: scroll the Outline window to the current function under the cursor (1.11+);
 this setting requires `outline.showcurrentfunction` to be enabled.
 - `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
