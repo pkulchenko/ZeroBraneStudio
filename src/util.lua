@@ -267,25 +267,23 @@ function FileSysGetRecursive(path, recursive, spec, opts)
 end
 
 local normalflags = wx.wxPATH_NORM_ABSOLUTE + wx.wxPATH_NORM_DOTS + wx.wxPATH_NORM_TILDE
-function GetFullPathIfExists(p, f)
-  if not p or not f then return end
-  local file = wx.wxFileName(f)
-  -- Normalize call is needed to make the case of p = '/abc/def' and
-  -- f = 'xyz/main.lua' work correctly. Normalize() returns true if done.
-  return (file:Normalize(normalflags, p)
-    and file:FileExists()
-    and file:GetFullPath()
-    or nil)
-end
-
 function MergeFullPath(p, f)
   if not p or not f then return end
   local file = wx.wxFileName(f)
   -- Normalize call is needed to make the case of p = '/abc/def' and
   -- f = 'xyz/main.lua' work correctly. Normalize() returns true if done.
+  -- Normalization with PATH_NORM_DOTS removes leading dots, which need to be added back.
+  -- This allows things like `-cfg ../myconfig.lua` to work.
+  local rel, rest = p:match("^(%.[/\\.]*[/\\])(.*)")
+  if rel and rest then p = rest end
   return (file:Normalize(normalflags, p)
-    and file:GetFullPath()
+    and (rel or ""):gsub("[/\\]", GetPathSeparator())..file:GetFullPath()
     or nil)
+end
+
+function GetFullPathIfExists(p, f)
+  local path = MergeFullPath(p, f)
+  return path and wx.wxFileExists(path) and path or nil
 end
 
 function FileWrite(file, content)
@@ -523,7 +521,7 @@ function LoadLuaConfig(filename,isstring)
     ide:Print(("Error while loading configuration %s: '%s'."):format(msg, err))
   else
     setfenv(cfgfn,ide.config)
-    table.insert(ide.configqueue, filename)
+    table.insert(ide.configqueue, (wx.wxFileName().SplitPath(filename)))
     local _, err = pcall(function()cfgfn(assert(_G or _ENV))end)
     table.remove(ide.configqueue)
     if err then
@@ -643,3 +641,33 @@ function MergeSettings(localSettings, savedSettings)
     end
   end
 end
+
+local function plaindump(val, opts, done)
+  local keyignore = opts and opts.keyignore or {}
+  local final = done == nil
+  opts, done = opts or {}, done or {}
+  local t = type(val)
+  if t == "table" then
+    done[#done+1] = '{'
+    done[#done+1] = ''
+    for key, value in pairs (val) do
+      if not keyignore[key] then
+        done[#done+1] = '['
+        plaindump(key, opts, done)
+        done[#done+1] = ']='
+        plaindump(value, opts, done)
+        done[#done+1] = ","
+      end
+    end
+    done[#done] = '}'
+  elseif t == "string" then
+    done[#done+1] = ("%q"):format(val):gsub("\010","n"):gsub("\026","\\026")
+  elseif t == "number" then
+    done[#done+1] = ("%.17g"):format(val)
+  else
+    done[#done+1] = tostring(val)
+  end
+  return final and table.concat(done, '')
+end
+
+DumpPlain = plaindump

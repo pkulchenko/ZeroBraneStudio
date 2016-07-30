@@ -52,8 +52,8 @@ function CommandBarShow(params)
   local textcolor = wx.wxColour(unpack(style.text.fg or styledef.text.fg))
   local backcolor = wx.wxColour(unpack(style.text.bg or styledef.text.bg))
   local selcolor = wx.wxColour(unpack(style.caretlinebg.bg or styledef.caretlinebg.bg))
-  local pancolor = ide:GetUIManager():GetArtProvider():GetColor(wxaui.wxAUI_DOCKART_SASH_COLOUR)
-  local borcolor = ide:GetUIManager():GetArtProvider():GetColor(wxaui.wxAUI_DOCKART_BORDER_COLOUR)
+  local pancolor = ide:GetUIManager():GetArtProvider():GetColour(wxaui.wxAUI_DOCKART_SASH_COLOUR)
+  local borcolor = ide:GetUIManager():GetArtProvider():GetColour(wxaui.wxAUI_DOCKART_BORDER_COLOUR)
 
   search:SetBackgroundColour(backcolor)
   search:SetForegroundColour(textcolor)
@@ -226,7 +226,9 @@ function CommandBarShow(params)
     onExit(math.floor(y / row_height)+1)
   end
 
+  local takeNearestEdit = false
   local function onIdle(event)
+    if takeNearestEdit then onExit() end
     if linewas == linenow then return end
     linewas = linenow
     if linenow == 0 then return end
@@ -261,7 +263,10 @@ function CommandBarShow(params)
   search:Connect(wx.wxEVT_KEY_DOWN, onKeyDown)
   search:Connect(wx.wxEVT_COMMAND_TEXT_UPDATED, onTextUpdated)
   search:Connect(wx.wxEVT_COMMAND_TEXT_ENTER, function() onExit(linenow) end)
-  search:Connect(wx.wxEVT_KILL_FOCUS, function() onExit() end)
+  -- this could be done with calling `onExit`, but on OSX KILL_FOCUS is called before
+  -- mouse LEFT_DOWN, which closes the panel before the results are taken;
+  -- to avoid this, `onExit` call is delayed and handled in IDLE event
+  search:Connect(wx.wxEVT_KILL_FOCUS, function() takeNearestEdit = true end)
 
   frame:Show(true)
   frame:Update()
@@ -304,7 +309,8 @@ local function score(p, v)
 
   local key = p..'\2'..v
   if not cache[key] then
-    local score = weights.onegram * overlap(p, v, 1)
+    -- ignore all whitespaces in the pattern for one-gram comparison
+    local score = weights.onegram * overlap(p:gsub("%s+",""), v, 1)
     if score > 0 then -- don't bother with those that can't even score 1grams
       p = ' '..(p:gsub(sep, ' '))
       v = ' '..(v:gsub(sep, ' '))
@@ -317,7 +323,7 @@ local function score(p, v)
 end
 
 function CommandBarScoreItems(t, pattern, limit)
-  local r, plen = {}, #pattern
+  local r, plen = {}, #(pattern:gsub("%s+",""))
   local maxp = 0
   local num = 0
   local prefilter = ide.config.commandbar and ide.config.commandbar.prefilter

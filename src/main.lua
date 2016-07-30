@@ -46,6 +46,7 @@ local pendingOutput = {}
 ide = {
   MODPREF = "* ",
   MAXMARGIN = 4,
+  ANYMARKERMASK = 2^24-1,
   config = {
     path = {
       projectdir = "",
@@ -57,6 +58,7 @@ ide = {
       checkeol = true,
       saveallonrun = false,
       caretline = true,
+      commentlinetoggle = false,
       showfncall = false,
       autotabs = false,
       usetabs  = false,
@@ -69,6 +71,7 @@ ide = {
       autoreload = true,
       indentguide = true,
       backspaceunindent = true,
+      linenumber = true,
     },
     debugger = {
       verbose = false,
@@ -79,6 +82,7 @@ ide = {
       maxdatalength = 400,
       maxdatanum = 400,
       maxdatalevel = 3,
+      refuseonconflict = true,
     },
     default = {
       name = 'untitled',
@@ -143,6 +147,7 @@ ide = {
     autocomplete = true,
     autoanalyzer = true,
     acandtip = {
+      startat = 2,
       shorttip = true,
       nodynwords = true,
       ignorecase = false,
@@ -170,7 +175,8 @@ ide = {
     symbolindexinactivity = 2, -- seconds
     filehistorylength = 20,
     projecthistorylength = 20,
-    bordersize = 2,
+    commandlinehistorylength = 10,
+    bordersize = 3,
     savebak = false,
     singleinstance = false,
     singleinstanceport = 0xe493,
@@ -178,6 +184,9 @@ ide = {
     showhiddenfiles = false,
     hidpi = false, -- HiDPI/Retina display support
     hotexit = false,
+    imagetint = nil,
+    markertint = true,
+    menuicon = true,
     -- file exclusion lists
     excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"},
     binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"},
@@ -237,6 +246,7 @@ ide = {
     and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH'))),
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
 
+  startedat = TimeGet(),
   test = {}, -- local functions used for testing
 
   Print = function(self, ...)
@@ -258,11 +268,15 @@ if not wx.wxMOD_CONTROL then wx.wxMOD_CONTROL = 0x02 end
 if not wx.wxMOD_RAW_CONTROL then
   wx.wxMOD_RAW_CONTROL = ide.osname == 'Macintosh' and 0x10 or wx.wxMOD_CONTROL
 end
+if not wx.WXK_RAW_CONTROL then
+  wx.WXK_RAW_CONTROL = ide.osname == 'Macintosh' and 396 or wx.WXK_CONTROL
+end
 -- ArchLinux running 2.8.12.2 doesn't have wx.wxMOD_SHIFT defined
 if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
 -- wxDIR_NO_FOLLOW is missing in wxlua 2.8.12 as well
 if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
 if not wxaui.wxAUI_TB_PLAIN_BACKGROUND then wxaui.wxAUI_TB_PLAIN_BACKGROUND = 2^8 end
+if not wx.wxNOT_FOUND then wx.wxNOT_FOUND = -1 end
 
 if not setfenv then -- Lua 5.2
   -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
@@ -284,7 +298,7 @@ end
 
 dofile "src/version.lua"
 
-for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar"}) do
+for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar", "package"}) do
   dofile("src/editor/"..file..".lua")
 end
 
@@ -362,8 +376,11 @@ do
   local exepath = wx.wxStandardPaths.Get():GetExecutablePath()
   if ide.osname == "Windows" and exepath:find("%.exe$") then
     fullPath = exepath
-  elseif not wx.wxIsAbsolutePath(fullPath) then
-    fullPath = wx.wxGetCwd().."/"..fullPath
+  -- path handling only works correctly on UTF8-valid strings, so check for that.
+  -- This may be caused by the launcher on Windows using ANSI methods for command line
+  -- processing. Keep the path as is for UTF-8 invalid strings as it's still good enough
+  elseif not wx.wxIsAbsolutePath(fullPath) and wx.wxString().FromUTF8(fullPath) == fullPath then
+    fullPath = MergeFullPath(wx.wxGetCwd(), fullPath)
   end
 
   ide.editorFilename = fullPath
@@ -498,12 +515,15 @@ do
           num = num + 1
           local name = 'config'..num..'package'
           ide.packages[name] = setmetatable(p, ide.proto.Plugin)
+          return ide.packages[name] -- this returns the package object, so it can be referenced
         -- package can be included as "package 'file.lua'" or "package 'folder/'"
         elseif type(p) == 'string' then
           local config = ide.configqueue[#ide.configqueue]
           local pkg
-          for _, packagepath in ipairs({'.', 'packages/', '../packages/'}) do
-            local p = config and MergeFullPath(config.."/../"..packagepath, p)
+          for _, packagepath in ipairs({
+              '.', 'packages/', '../packages/',
+              ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/packages")}) do
+            local p = MergeFullPath(config and MergeFullPath(config, packagepath) or packagepath, p)
             pkg = wx.wxDirExists(p) and loadToTab(nil, p, {}, false, ide.proto.Plugin)
               or wx.wxFileExists(p) and LoadLuaFileExt({}, p, ide.proto.Plugin)
               or wx.wxFileExists(p..".lua") and LoadLuaFileExt({}, p..".lua", ide.proto.Plugin)
@@ -608,7 +628,7 @@ end
 -- Load App
 
 for _, file in ipairs({
-    "settings", "singleinstance", "iofilters", "package", "markup",
+    "settings", "singleinstance", "iofilters", "markup",
     "gui", "filetree", "output", "debugger", "outline", "commandbar",
     "editor", "findreplace", "commands", "autocomplete", "shellbox", "markers",
     "menu_file", "menu_edit", "menu_search",
@@ -625,7 +645,6 @@ ProjectUpdateInterpreters()
 
 -- load rest of settings
 SettingsRestoreFramePosition(ide.frame, "MainFrame")
-SettingsRestoreView()
 SettingsRestoreFileHistory(SetFileHistory)
 SettingsRestoreEditorSettings()
 SettingsRestoreProjectSession(FileTreeSetProjects)
@@ -634,19 +653,14 @@ SettingsRestoreFileSession(function(tabs, params)
   then return SetOpenTabs(params)
   else return SetOpenFiles(tabs, params) end
 end)
+SettingsRestoreView()
 
 -- ---------------------------------------------------------------------------
 -- Load the filenames
 
 do
   for _, filename in ipairs(filenames) do
-    if filename ~= "--" then
-      if wx.wxDirExists(filename) then
-        ProjectUpdateProjectDir(filename)
-      elseif not ActivateFile(filename) then
-        DisplayOutputLn(("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
-      end
-    end
+    if filename ~= "--" then ide:ActivateFile(filename) end
   end
   if ide:GetEditorNotebook():GetPageCount() == 0 then NewFile() end
 end
@@ -724,19 +738,54 @@ for lid in pairs(remap) do
     -- if the same shortcut is used elsewhere (not one of IDs being checked)
     if shortcut:lower() == ksc:lower() and not remap[gid] then
       local fakeid = NewID()
-      ide.frame:Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED,
-        resolveConflict(lid, gid))
-
-      local ae = wx.wxAcceleratorEntry(); ae:FromString(ksc)
-      table.insert(at, wx.wxAcceleratorEntry(ae:GetFlags(), ae:GetKeyCode(), fakeid))
+      ide.frame:Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, resolveConflict(lid, gid))
+      ide:SetAccelerator(fakeid, ksc)
     end
   end
 end
 
-if ide.osname == 'Macintosh' then
-  table.insert(at, wx.wxAcceleratorEntry(wx.wxACCEL_CTRL, ('M'):byte(), ID_VIEWMINIMIZE))
+if ide.osname == 'Macintosh' then ide:SetAccelerator(ID_VIEWMINIMIZE, "Ctrl-M") end
+
+-- these shortcuts need accelerators handling as they are not present anywhere in the menu
+for _, id in ipairs({ ID_GOTODEFINITION, ID_RENAMEALLINSTANCES,
+    ID_REPLACEALLSELECTIONS, ID_QUICKADDWATCH, ID_QUICKEVAL, ID_ADDTOSCRATCHPAD}) do
+  local ksc = ide.config.keymap[id]
+  if ksc and ksc > "" then
+    local fakeid = NewID()
+    ide.frame:Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+        local editor = ide:GetEditorWithFocus(ide:GetEditor())
+        if editor then rerouteMenuCommand(editor, id) end
+      end)
+    ide:SetAccelerator(fakeid, ksc)
+  end
 end
-ide.frame:SetAcceleratorTable(wx.wxAcceleratorTable(at))
+
+for _, id in ipairs({ ID_NOTEBOOKTABNEXT, ID_NOTEBOOKTABPREV }) do
+  local ksc = ide.config.keymap[id]
+  if ksc and ksc > "" then
+    local nbc = "wxAuiNotebook"
+    ide.frame:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+        local win = ide.frame:FindFocus()
+        if not win then return end
+
+        local notebook = win:GetClassInfo():GetClassName() == nbc and win:DynamicCast(nbc)
+        or win:GetParent():GetClassInfo():GetClassName() == nbc and win:GetParent():DynamicCast(nbc)
+        or nil
+        if not notebook then return end
+
+        local first, last = 0, notebook:GetPageCount()-1
+        local fwd = event:GetId() == ID_NOTEBOOKTABNEXT
+        if fwd and notebook:GetSelection() == last then
+          notebook:SetSelection(first)
+        elseif not fwd and notebook:GetSelection() == first then
+          notebook:SetSelection(last)
+        else
+          notebook:AdvanceSelection(fwd)
+        end
+      end)
+    ide:SetAccelerator(id, ksc)
+  end
+end
 
 -- only set menu bar *after* postinit handler as it may include adding
 -- app-specific menus (Help/About), which are not recognized by MacOS
@@ -746,6 +795,77 @@ ide.frame:SetMenuBar(ide.frame.menuBar)
 ide:Print() -- flush pending output (if any)
 
 PackageEventHandle("onAppLoad")
+
+-- this provides a workaround for Ctrl-(Shift-)Tab not navigating over tabs on OSX
+-- http://trac.wxwidgets.org/ticket/17064
+if ide.osname == 'Macintosh' then
+  local frame = ide.frame
+  local focus
+  ide.timers.ctrltab = ide:AddTimer(frame, function(event)
+      local mouse = wx.wxGetMouseState()
+      -- if anything other that Ctrl (along with Shift) is pressed, then cancel the timer
+      if not ide:IsValidCtrl(focus)
+      or not wx.wxGetKeyState(wx.WXK_RAW_CONTROL)
+      or wx.wxGetKeyState(wx.WXK_ALT) or wx.wxGetKeyState(wx.WXK_CONTROL)
+      or mouse:LeftDown() or mouse:RightDown() or mouse:MiddleDown() then
+        ide.timers.ctrltab:Stop()
+        return
+      end
+      local ctrl = frame:FindFocus()
+      if not ctrl then return end
+      local nb = focus:GetParent():DynamicCast("wxAuiNotebook")
+      -- when moving backward from the very first tab, the focus moves
+      -- to wxAuiTabCtrl on OSX, so need to take that into account
+      if nb:GetId() ~= ctrl:GetParent():GetId()
+      or ctrl:GetClassInfo():GetClassName() == "wxAuiTabCtrl" then
+        local frwd = not wx.wxGetKeyState(wx.WXK_SHIFT)
+        if not frwd and nb:GetSelection() == 0
+        or frwd and nb:GetSelection() == nb:GetPageCount()-1 then
+          nb:AdvanceSelection(frwd)
+          focus = nb:GetPage(nb:GetSelection())
+          focus:SetFocus()
+        end
+        -- don't cancel the timer as the user may be cycling through tabs
+      end
+    end)
+
+  frame:Connect(wx.wxEVT_CHAR_HOOK, function(event)
+      local key = event:GetKeyCode()
+      if key == wx.WXK_RAW_CONTROL then
+        local ctrl = frame:FindFocus()
+        local parent = ctrl and ctrl:GetParent()
+        if parent and parent:GetClassInfo():GetClassName() == "wxAuiNotebook" then
+          local nb = parent:DynamicCast("wxAuiNotebook")
+          focus = nb:GetPage(nb:GetSelection())
+          focus:SetFocus()
+          ide.timers.ctrltab:Start(20) -- check periodically
+        end
+      elseif key == wx.WXK_SHIFT then -- Shift
+        -- timer is started when `Ctrl` is pressed; even when `Shift` is pressed first,
+        -- the Ctrl will still be pressed eventually, which will start the timer
+      else
+        ide.timers.ctrltab:Stop()
+      end
+      event:Skip()
+    end)
+end
+
+-- add Ctrl-Tab and Ctrl-Shift-Tab processing on Linux as there is a similar issue
+-- to the one on OSX: http://trac.wxwidgets.org/ticket/17064,
+-- but at least on Linux the handling of Tab from CHAR_HOOK works.
+if ide.osname == 'Unix' then
+  ide.frame:Connect(wx.wxEVT_CHAR_HOOK, function(event)
+      local key = event:GetKeyCode()
+      if key == wx.WXK_TAB and wx.wxGetKeyState(wx.WXK_CONTROL)
+      and not wx.wxGetKeyState(wx.WXK_ALT) then
+        ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED,
+            wx.wxGetKeyState(wx.WXK_SHIFT) and ID.NOTEBOOKTABPREV or ID.NOTEBOOKTABNEXT
+        ))
+      else
+        event:Skip()
+      end
+    end)
+end
 
 -- The status bar content is drawn incorrectly if it is shown
 -- after being initially hidden.
@@ -762,6 +882,11 @@ if statusbarfix then ide.frame:GetStatusBar():Show(false) end
 if ide.osname == 'Macintosh' then
   local editor = GetEditor()
   if editor then editor:SetFocus() end
+end
+
+-- enable full screen view if supported (for example, on OSX)
+if ide:IsValidProperty(ide:GetMainFrame(), "EnableFullScreenView") then
+  ide:GetMainFrame():EnableFullScreenView()
 end
 
 wx.wxGetApp():MainLoop()

@@ -47,7 +47,6 @@ ide.findReplace = {
   -- GetEditor() which editor to use
 }
 local findReplace = ide.findReplace
-local NOTFOUND = -1
 local replaceHintText = '<replace with>'
 local sep = ';'
 
@@ -196,7 +195,7 @@ function findReplace:Find(reverse)
     setSearchFlags(editor)
     setTarget(editor, {Down = fDown, StartPos = bf.spos, EndPos = bf.epos})
     local posFind = editor:SearchInTarget(findText)
-    if (posFind == NOTFOUND) and self:GetFlags().Wrap then
+    if (posFind == wx.wxNOT_FOUND) and self:GetFlags().Wrap then
       editor:SetTargetStart(iff(fDown, bf.spos or 0, bf.epos or editor:GetLength()))
       editor:SetTargetEnd(iff(fDown, bf.epos or editor:GetLength(), bf.spos or 0))
       posFind = editor:SearchInTarget(findText)
@@ -205,15 +204,15 @@ function findReplace:Find(reverse)
         or TR("Reached end of text and wrapped around.")
       )
     end
-    if posFind == NOTFOUND then
+    if posFind == wx.wxNOT_FOUND then
       self.foundString = false
       msg = TR("Text not found.")
     else
       self.foundString = true
       local start = editor:GetTargetStart()
       local finish = editor:GetTargetEnd()
-      editor:ShowPosEnforcePolicy(finish)
       editor:SetSelection(start, finish)
+      editor:ShowRange(finish, start)
     end
   end
   self:SetStatus(msg)
@@ -236,7 +235,7 @@ function findReplace:FindAll(inFileRegister)
     setSearchFlags(editor)
     while true do
       local posFind = editor:SearchInTarget(findText)
-      if posFind == NOTFOUND then break end
+      if posFind == wx.wxNOT_FOUND then break end
       inFileRegister(posFind, editor:GetTargetEnd()-posFind)
       editor:SetTargetStart(editor:GetTargetEnd())
       editor:SetTargetEnd(e)
@@ -284,9 +283,9 @@ function findReplace:Replace(fReplaceAll, resultsEditor)
       setSearchFlags(editor)
       local occurrences = 0
       local posFind = editor:SearchInTarget(findText)
-      if posFind ~= NOTFOUND then
+      if posFind ~= wx.wxNOT_FOUND then
         editor:BeginUndoAction()
-        while posFind ~= NOTFOUND do
+        while posFind ~= wx.wxNOT_FOUND do
           local length = editor:GetLength()
           -- if replace-in-files (resultsEditor) is being done,
           -- then check that the match starts with %d+:
@@ -327,7 +326,7 @@ function findReplace:Replace(fReplaceAll, resultsEditor)
       -- move the cursor after successful search
       if editor:GetSelectionStart() ~= editor:GetSelectionEnd()
       -- check that the current selection matches what's being searched for
-      and editor:SearchInTarget(findText) ~= NOTFOUND then
+      and editor:SearchInTarget(findText) ~= wx.wxNOT_FOUND then
         local length = editor:GetLength()
         local start = editor:GetSelectionStart()
         local replaced = self:GetFlags().RegularExpr
@@ -679,7 +678,7 @@ local icons = {
       ID_SEPARATOR, ID_FINDOPTSTATUS,
     },
     infiles = {
-      ID_FINDNEXT, ID_SEPARATOR,
+      ID_FIND, ID_SEPARATOR,
       ID_FINDOPTCONTEXT, ID_FINDOPTMULTIRESULTS, ID_FINDOPTWORD,
       ID_FINDOPTCASE, ID_FINDOPTREGEX, ID_FINDOPTSUBDIR,
       ID_FINDOPTSCOPE, ID_FINDSETDIR,
@@ -694,7 +693,7 @@ local icons = {
       ID_SEPARATOR, ID_FINDOPTSTATUS,
     },
     infiles = {
-      ID_FINDNEXT, ID_FINDREPLACEALL, ID_SEPARATOR,
+      ID_FIND, ID_FINDREPLACEALL, ID_SEPARATOR,
       ID_FINDOPTCONTEXT, ID_FINDOPTMULTIRESULTS, ID_FINDOPTWORD,
       ID_FINDOPTCASE, ID_FINDOPTREGEX, ID_FINDOPTSUBDIR,
       ID_FINDOPTSCOPE, ID_FINDSETDIR,
@@ -771,7 +770,7 @@ function findReplace:createToolbar()
   tb:SetToolDropDown(ID_FINDSETDIR, true)
   tb:Connect(ID_FINDSETDIR, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
       if event:IsDropDownClicked() then
-        local menu = wx.wxMenu()
+        local menu = wx.wxMenu({})
         local pos = tb:GetToolRect(event:GetId()):GetBottomLeft()
         menu:Append(ID_FINDSETDIR, TR("Choose..."))
         menu:Append(ID_FINDSETTOPROJDIR, TR("Set To Project Directory"))
@@ -845,7 +844,7 @@ function findReplace:createPanel()
   local textcolor = wx.wxColour(unpack(style.text.fg or styledef.text.fg))
   local backcolor = wx.wxColour(unpack(style.text.bg or styledef.text.bg))
   local pancolor = tb:GetBackgroundColour()
-  local borcolor = ide:GetUIManager():GetArtProvider():GetColor(wxaui.wxAUI_DOCKART_BORDER_COLOUR)
+  local borcolor = ide:GetUIManager():GetArtProvider():GetColour(wxaui.wxAUI_DOCKART_BORDER_COLOUR)
   local bpen = wx.wxPen(borcolor, 1, wx.wxSOLID)
   local bbrush = wx.wxBrush(pancolor, wx.wxSOLID)
   local tfont = ide:GetProjectTree():GetFont()
@@ -900,7 +899,9 @@ function findReplace:createPanel()
     if findReplace.infiles then
       findReplace:RunInFiles(false)
     else
-      findReplace:Find()
+      local reverse = (wx.wxGetKeyState(wx.WXK_SHIFT)
+          and not wx.wxGetKeyState(wx.WXK_ALT) and not wx.wxGetKeyState(wx.WXK_CONTROL))
+      findReplace:Find(reverse)
     end
   end
 
@@ -1067,10 +1068,12 @@ function findReplace:createPanel()
   scope:Connect(wx.wxEVT_KEY_DOWN, keyHandle)
 
   local function notSearching(event) event:Enable(not self.oveditor) end
+  ctrl:Connect(ID_FIND, wx.wxEVT_UPDATE_UI, notSearching)
   ctrl:Connect(ID_FINDNEXT, wx.wxEVT_UPDATE_UI, notSearching)
   ctrl:Connect(ID_FINDREPLACENEXT, wx.wxEVT_UPDATE_UI, notSearching)
   ctrl:Connect(ID_FINDREPLACEALL, wx.wxEVT_UPDATE_UI, notSearching)
 
+  ctrl:Connect(ID_FIND, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
   ctrl:Connect(ID_FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
   ctrl:Connect(ID_FINDREPLACENEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceNext)
   ctrl:Connect(ID_FINDREPLACEALL, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceAll)
@@ -1117,9 +1120,9 @@ function findReplace:refreshPanel(replace, infiles)
 
   local value = self.scope:GetValue()
   local ed = ide:GetEditor()
-  if ed and (not value or #value == 0) then
-    local doc = ide:GetDocument(ed)
-    local ext = doc:GetFileExt()
+  if not value or #value == 0 then
+    local doc = ed and ide:GetDocument(ed)
+    local ext = doc and doc:GetFileExt() or ""
     local proj = ide:GetProject()
     value = (proj and self:GetScopeMRU(proj..sep) or
       self:SetScope(proj or wx.wxGetCwd(), '*.'..(#ext > 0 and ext or '*')))
@@ -1149,6 +1152,16 @@ function findReplace:refreshPanel(replace, infiles)
   self.foundString = false
   self.findCtrl:SetFocus()
   self.findCtrl:SetSelection(-1, -1) -- select the content
+end
+
+function findReplace:RefreshResults(editor)
+  if not ide:IsValidCtrl(editor) or not editor.searchpreview then return end
+
+  self:Show(false, true) -- always show "Find" when refreshing
+  self:SetFind(editor.searchpreview)
+  editor:SetFocus() -- set the focus on the editor as it may be in an inactive tab
+  self.reseditor = editor:DynamicCast("wxStyledTextCtrl") -- show the results in the same tab
+  self:RunInFiles(false) -- only refresh search results, no replace
 end
 
 function findReplace:Show(replace,infiles)
@@ -1197,7 +1210,7 @@ local package = ide:AddPackage('core.findreplace', {
       if editor.replace and isModified then
         findReplace:SetStatus("")
 
-        local line = NOTFOUND
+        local line = wx.wxNOT_FOUND
         local oveditor = ide:CreateStyledTextCtrl(findReplace.panel, wx.wxID_ANY,
           wx.wxDefaultPosition, wx.wxSize(0,0), wx.wxBORDER_NONE)
         local files, lines = 0, 0
@@ -1205,7 +1218,7 @@ local package = ide:AddPackage('core.findreplace', {
         while true do
           -- for each marker that marks a file (MarkerNext)
           line = editor:MarkerNext(line + 1, FILE_MARKER_VALUE)
-          if line == NOTFOUND then break end
+          if line == wx.wxNOT_FOUND then break end
 
           local fname = getRawLine(editor, line) -- get the file name
           local filetext, err = FileRead(fname)
@@ -1223,7 +1236,7 @@ local package = ide:AddPackage('core.findreplace', {
                 lnum = tonumber(lnum)
                 if lmark == ':' then -- if the change line, then apply the change
                   local pos = oveditor:PositionFromLine(lnum-1)
-                  if pos == NOTFOUND then
+                  if pos == wx.wxNOT_FOUND then
                     mismatch = lnum
                     break
                   end

@@ -20,7 +20,7 @@ local urls = {
   [ID_HELPCOMMUNITY] = "community",
 }
 
-local helpMenu = wx.wxMenu{
+local helpMenu = ide:MakeMenu {
   { ID_ABOUT, TR("&About")..KSC(ID_ABOUT), TR("About %s"):format(GetIDEString("editor")) },
   { ID_HELPPROJECT, TR("&Project Page")..KSC(ID_HELPPROJECT) },
   { ID_HELPDOCUMENTATION, TR("&Documentation")..KSC(ID_HELPDOCUMENTATION) },
@@ -46,7 +46,7 @@ local function displayAbout(event)
 	  <tr>
 		<td>
 		<b>ZeroBrane Studio (%s; MobDebug %s)</b><br>
-		<b>Copyright &copy; 2011-2015 ZeroBrane LLC</b><br>
+		<b>Copyright &copy; 2011-2016 ZeroBrane LLC</b><br>
 		Paul Kulchenko<br>
 		Licensed under the MIT License.
 		</td>

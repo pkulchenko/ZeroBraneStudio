@@ -76,7 +76,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local inputfilter = GetConfigIOFilter("input")
   local file_text
   ide:PushStatus("")
-  FileRead(filePath, 1024*1024, function(s)
+  FileRead(filePath, 1024*1024, function(s) -- callback is only called when the file exists
       if not file_text then
         -- remove BOM from UTF-8 encoded files; store BOM to add back when saving
         if s and editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and s:find("^"..editor.bom) then
@@ -125,6 +125,9 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
       end
     end)
   ide:PopStatus()
+
+  -- empty or non-existing files don't have bom
+  if not file_text then editor.bom = false end
 
   editor:Colourise(0, -1)
   editor:ResetTokenList() -- reset list of tokens if this is a reused editor
@@ -220,25 +223,6 @@ function ReLoadFile(filePath, editor, ...)
   return editor
 end
 
-function ActivateFile(filename)
-  local name, suffix, value = filename:match('(.+):([lLpP]?)(%d+)$')
-  if name and not wx.wxFileExists(filename) then filename = name end
-
-  -- check if non-existing file can be loaded from the project folder;
-  -- this is to handle: "project file" used on the command line
-  if not wx.wxFileExists(filename) and not wx.wxIsAbsolutePath(filename) then
-    filename = GetFullPathIfExists(ide:GetProject(), filename) or filename
-  end
-
-  local opened = LoadFile(filename, nil, true)
-  if opened and value then
-    if suffix:upper() == 'P' then opened:GotoPosDelayed(tonumber(value))
-    else opened:GotoPosDelayed(opened:PositionFromLine(value-1))
-    end
-  end
-  return opened
-end
-
 local function getExtsString(ed)
   local exts = ed and ed.spec and ed.spec.exts or {}
   local knownexts = #exts > 0 and "*."..table.concat(exts, ";*.") or nil
@@ -247,6 +231,7 @@ local function getExtsString(ed)
 end
 
 function ReportError(msg)
+  RequestAttention() -- request attention first in case the app is minimized or in the background
   return wx.wxMessageBox(msg, TR("Error"), wx.wxICON_ERROR + wx.wxOK + wx.wxCENTRE, ide.frame)
 end
 
@@ -455,17 +440,17 @@ function ClosePage(selection)
 
   if SaveModifiedDialog(editor, true) ~= wx.wxID_CANCEL then
     DynamicWordsRemoveAll(editor)
-    local debugger = ide.debugger
+    local debugger = ide:GetDebugger()
     -- check if the window with the scratchpad running is being closed
     if debugger and debugger.scratchpad and debugger.scratchpad.editors
     and debugger.scratchpad.editors[editor] then
-      DebuggerScratchpadOff()
+      debugger:ScratchpadOff()
     end
     -- check if the debugger is running and is using the current window;
     -- abort the debugger if the current marker is in the window being closed
-    if debugger and debugger.server and
+    if debugger and debugger:IsConnected() and
       (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
-      debugger.terminate()
+      debugger:Stop()
     end
     PackageEventHandle("onEditorClose", editor)
     removePage(ide.openDocuments[id].index)
@@ -676,9 +661,6 @@ function ShowFullScreen(setFullScreen)
     end
     uimgr:Update()
     SetEditorSelection() -- make sure the focus is on the editor
-  elseif beforeFullScreenPerspective then
-    uimgr:LoadPerspective(beforeFullScreenPerspective, true)
-    beforeFullScreenPerspective = nil
   end
 
   -- On OSX, status bar is not hidden when switched to
@@ -692,6 +674,11 @@ function ShowFullScreen(setFullScreen)
 
   -- protect from systems that don't have ShowFullScreen (GTK on linux?)
   pcall(function() frame:ShowFullScreen(setFullScreen) end)
+
+  if not setFullScreen and beforeFullScreenPerspective then
+    uimgr:LoadPerspective(beforeFullScreenPerspective, true)
+    beforeFullScreenPerspective = nil
+  end
 
   if ide.osname == 'Macintosh' and not setFullScreen then
     if statusbarShown then
@@ -766,14 +753,10 @@ function SetAutoRecoveryMark()
   ide.session.lastupdated = os.time()
 end
 
-local function generateRecoveryRecord(opentabs)
-  return require('mobdebug').line(opentabs, {comment = false})
-end
-
 local function saveHotExit()
   local opentabs, params = getOpenTabs()
   if #opentabs > 0 then
-    params.recovery = generateRecoveryRecord(opentabs)
+    params.recovery = DumpPlain(opentabs)
     params.quiet = true
     SettingsSaveFileSession({}, params)
   end
@@ -793,7 +776,7 @@ local function saveAutoRecovery(force)
   -- find all open modified files and save them
   local opentabs, params = getOpenTabs()
   if #opentabs > 0 then
-    params.recovery = generateRecoveryRecord(opentabs)
+    params.recovery = DumpPlain(opentabs)
     SettingsSaveAll()
     SettingsSaveFileSession({}, params)
     ide.settings:Flush()
@@ -896,13 +879,14 @@ local function closeWindow(event)
 
   ShowFullScreen(false)
 
+  if ide:GetProject() then PackageEventHandle("onProjectClose", ide:GetProject()) end
   PackageEventHandle("onAppClose")
 
   -- first need to detach all processes IDE has launched as the current
   -- process is likely to terminate before child processes are terminated,
   -- which may lead to a crash when EVT_END_PROCESS event is called.
   DetachChildProcess()
-  DebuggerShutdown()
+  ide:GetDebugger():Shutdown()
 
   SettingsSaveAll()
   if ide.config.hotexit then saveHotExit() end
@@ -924,11 +908,22 @@ local function closeWindow(event)
 
   event:Skip()
 
-  PackageEventHandle("onAppDone")
+  PackageEventHandle("onAppShutdown")
 end
 frame:Connect(wx.wxEVT_CLOSE_WINDOW, closeWindow)
 
-frame:Connect(wx.wxEVT_TIMER, function() saveAutoRecovery() end)
+local function restoreFocus()
+  -- check if the window is shown before returning focus to it,
+  -- as it may lead to a recursion in event handlers on OSX (wxwidgets 2.9.5).
+  if ide:IsWindowShown(ide.infocus) then
+    ide.infocus:SetFocus()
+    -- if switching to the editor, then also call SetSTCFocus,
+    -- otherwise the cursor is not shown in the editor on OSX.
+    if ide.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl" then
+      ide.infocus:DynamicCast("wxStyledTextCtrl"):SetSTCFocus(true)
+    end
+  end
+end
 
 -- in the presence of wxAuiToolbar, when (1) the app gets focus,
 -- (2) a floating panel is closed or (3) a toolbar dropdown is closed,
@@ -947,10 +942,8 @@ ide.editorApp:Connect(wx.wxEVT_SET_FOCUS, function(event)
   if win then
     local class = win:GetClassInfo():GetClassName()
     -- don't set focus on the main frame or toolbar
-    if ide.infocus and (class == 'wxAuiToolBar' or class == 'wxFrame') then
-      -- check if the window is shown before returning focus to it,
-      -- as it may lead to a recursion in event handlers on OSX (wxwidgets 2.9.5).
-      pcall(function() if ide:IsWindowShown(ide.infocus) then ide.infocus:SetFocus() end end)
+    if ide.infocus and (class == "wxAuiToolBar" or class == "wxFrame") then
+      pcall(restoreFocus)
       return
     end
 
@@ -963,14 +956,15 @@ ide.editorApp:Connect(wx.wxEVT_SET_FOCUS, function(event)
     local parent = win:GetParent()
     while parent do
       local class = parent:GetClassInfo():GetClassName()
-      if (class == 'wxFrame' or class:find('^wx.*Dialog$'))
+      if (class == "wxFrame" or class:find("^wx.*Dialog$"))
       and parent:GetId() ~= frameid then
         mainwin = false; break
       end
       parent = parent:GetParent()
     end
     if mainwin then
-      if ide.infocus and ide.infocus ~= win and ide.osname == 'Macintosh' then
+      if ide.osname == "Macintosh"
+      and ide:IsValidCtrl(ide.infocus) and ide.infocus:DynamicCast("wxWindow") ~= win then
         -- kill focus on the control that had the focus as wxwidgets on OSX
         -- doesn't do it: http://trac.wxwidgets.org/ticket/14142;
         -- wrap into pcall in case the window is already deleted
@@ -990,14 +984,12 @@ wx.wxUpdateUIEvent.SetUpdateInterval(updateInterval)
 ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
   function(event)
     if not ide.exitingProgram then
-      if ide.osname == 'Macintosh' and ide.infocus and event:GetActive() then
-        -- restore focus to the last element that received it;
-        -- wrap into pcall in case the element has disappeared
-        -- while the application was out of focus
-        pcall(function() if ide:IsWindowShown(ide.infocus) then ide.infocus:SetFocus() end end)
-      end
-
       local active = event:GetActive()
+      -- restore focus to the last element that received it;
+      -- wrap into pcall in case the element has disappeared
+      -- while the application was out of focus
+      if ide.osname == "Macintosh" and active and ide.infocus then pcall(restoreFocus) end
+
       -- save auto-recovery record when making the app inactive
       if not active then saveAutoRecovery(true) end
 
@@ -1011,7 +1003,7 @@ ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
   end)
 
 if ide.config.autorecoverinactivity then
-  ide.timers.session = wx.wxTimer(frame)
+  ide.timers.session = ide:AddTimer(frame, function() saveAutoRecovery() end)
   -- check at least 5s to be never more than 5s off
   ide.timers.session:Start(math.min(5, ide.config.autorecoverinactivity)*1000)
 end
@@ -1031,15 +1023,18 @@ end
 local cma, cman = 0, 1
 frame:Connect(wx.wxEVT_IDLE,
   function(event)
-    local debugger = ide.debugger
-    if (debugger.update) then debugger.update() end
-    if (debugger.scratchpad) then DebuggerRefreshScratchpad() end
+    ide:GetDebugger():Update()
+    -- there is a chance that the current debugger can change after `Update` call
+    -- (as the debugger may be suspended during initial socket connection),
+    -- so retrieve the current debugger again to make sure it's properly set up.
+    local debugger = ide:GetDebugger()
+    if (debugger.scratchpad) then debugger:ScratchpadRefresh() end
     if IndicateIfNeeded() then event:RequestMore(true) end
     PackageEventHandleOnce("onIdleOnce", event)
     PackageEventHandle("onIdle", event)
 
     -- process onidle events if any
-    if #ide.onidle > 0 then table.remove(ide.onidle)() end
+    if #ide.onidle > 0 then table.remove(ide.onidle, 1)() end
     if #ide.onidle > 0 then event:RequestMore(true) end -- request more if anything left
 
     if ide.config.showmemoryusage then

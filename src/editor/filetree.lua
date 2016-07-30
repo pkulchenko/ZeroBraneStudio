@@ -226,7 +226,9 @@ local function treeSetConnectorsAndIcons(tree)
 
     -- refresh the folder
     if (tree:IsDirectory(item_id) or tree:IsDirMapped(item_id)) then
-      if wx.wxDirExists(name) then treeAddDir(tree,item_id,name)
+      if wx.wxDirExists(name) then
+        treeAddDir(tree,item_id,name)
+        tree:Toggle(item_id)
       else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
     else -- open file
       if wx.wxFileExists(name) then LoadFile(name,nil,true)
@@ -240,7 +242,7 @@ local function treeSetConnectorsAndIcons(tree)
     for k, m in ipairs(mapped) do
       if m == dir then table.remove(mapped, k) end
     end
-    filetree.settings.mapped[project] = mapped
+    filetree.settings.mapped[project] = #mapped > 0 and mapped or nil
     refreshAncestors(tree:GetRootItem())
   end
   local function mapDir()
@@ -248,12 +250,17 @@ local function treeSetConnectorsAndIcons(tree)
     local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
       project ~= "" and project or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
     if dirPicker:ShowModal(true) ~= wx.wxID_OK then return end
-    local dir = wx.wxFileName.DirName(FixDir(dirPicker:GetPath())):GetFullPath()
+    local dir = wx.wxFileName.DirName(FixDir(dirPicker:GetPath()))
+    local path = dir:GetFullPath()
+
+    -- don't remap the project directory
+    if dir:SameAs(wx.wxFileName(project)) then return end
+
     local mapped = filetree.settings.mapped[project] or {}
     for _, m in ipairs(mapped) do
-      if m == dir then return end -- already on the list
+      if m == path then return end -- already on the list
     end
-    table.insert(mapped, dir)
+    table.insert(mapped, path)
     filetree.settings.mapped[project] = mapped
     refreshAncestors(tree:GetRootItem())
   end
@@ -457,18 +464,12 @@ local function treeSetConnectorsAndIcons(tree)
       local ft = wx.wxTheMimeTypesManager:GetFileTypeFromExtension(ext)
       if ft then
         local cmd = ft:GetOpenCommand(fname:gsub('"','\\"'))
-        local pid = wx.wxExecute(cmd, wx.wxEXEC_ASYNC)
-        if ide.osname == 'Windows' and pid and pid > 0 then
-          -- some programs on Windows (for example, PhotoViewer) accept
-          -- files with spaces in names ONLY if they are not in quotes.
-          -- wait for the process that failed to open file to finish
-          -- and retry without quotes.
-          wx.wxMilliSleep(250) -- 250ms seems enough; picked empirically.
-          if not wx.wxProcess.Exists(pid) then
-            local cmd = ft:GetOpenCommand(""):gsub('""%s*$', '')..fname
-            wx.wxExecute(cmd, wx.wxEXEC_ASYNC)
-          end
+        -- some programs on Windows, when started by rundll32.exe (for example, PhotoViewer)
+        -- accept files with spaces in names ONLY if they are not in quotes.
+        if ide.osname == "Windows" and cmd:find("rundll32%.exe") then
+          cmd = ft:GetOpenCommand(""):gsub('""%s*$', '')..fname
         end
+        wx.wxExecute(cmd, wx.wxEXEC_ASYNC)
       end
     end)
   tree:Connect(ID_REFRESH, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -525,7 +526,7 @@ local function treeSetConnectorsAndIcons(tree)
       local fname = tree:GetItemText(item_id)
       local ext = GetFileExt(fname)
       local startfile = filetree.settings.startfile[FileTreeGetDir()]
-      local menu = wx.wxMenu {
+      local menu = ide:MakeMenu {
         { ID_NEWFILE, TR("New &File") },
         { ID_NEWDIRECTORY, TR("&New Directory") },
         { },
@@ -561,9 +562,9 @@ local function treeSetConnectorsAndIcons(tree)
       assert(hideextpos, "Can't find HideExtension menu item")
       menu:Insert(hideextpos+1, wx.wxMenuItem(menu, ID_SHOWEXTENSION,
         TR("Show Hidden Files"), TR("Show files previously hidden"),
-        wx.wxITEM_NORMAL, wx.wxMenu(extlist)))
+        wx.wxITEM_NORMAL, ide:MakeMenu(extlist)))
 
-      local projectdirectorymenu = wx.wxMenu {
+      local projectdirectorymenu = ide:MakeMenu {
         { },
         {ID_PROJECTDIRCHOOSE, TR("Choose...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
         {ID_PROJECTDIRFROMDIR, TR("Set To Selected Directory")..KSC(ID_PROJECTDIRFROMDIR), TR("Set project directory to the selected one")},
@@ -618,7 +619,7 @@ local function treeSetConnectorsAndIcons(tree)
   tree:Connect(wx.wxEVT_RIGHT_DOWN,
     function (event)
       local item_id = tree:HitTest(event:GetPosition())
-      if PackageEventHandle("onFiletreeRDown", tree, event, item_id) == false then
+      if PackageEventHandle("onFiletreeRDown", tree, event, item_id and item_id:IsOk() and item_id or nil) == false then
         return
       end
       event:Skip()
@@ -633,11 +634,11 @@ local function treeSetConnectorsAndIcons(tree)
         + wx.wxTREE_HITTEST_ONITEMICON + wx.wxTREE_HITTEST_ONITEMRIGHT)
       local item_id, flags = tree:HitTest(event:GetPosition())
 
-      if PackageEventHandle("onFiletreeLDown", tree, event, item_id) == false then
+      if PackageEventHandle("onFiletreeLDown", tree, event, item_id and item_id:IsOk() and item_id or nil) == false then
         return
       end
 
-      if item_id and bit.band(flags, mask) > 0 then
+      if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
         if tree:IsDirectory(item_id) then
           tree:Toggle(item_id)
           tree:SelectItem(item_id)
@@ -743,6 +744,10 @@ treeSetConnectorsAndIcons(projtree)
 -- proj functions
 -- ---------------
 
+local function appendPathSep(dir)
+  return (dir and #dir > 0 and wx.wxFileName.DirName(dir):GetFullPath() or nil)
+end
+
 function filetree:updateProjectDir(newdir)
   if (not newdir) or not wx.wxDirExists(newdir) then return end
   local dirname = wx.wxFileName.DirName(newdir)
@@ -758,10 +763,10 @@ function filetree:updateProjectDir(newdir)
   local intfname = ide.interpreter and ide.interpreter.fname
 
   if filetree.projdir and #filetree.projdir > 0 then
-    PackageEventHandle("onProjectClose", filetree.projdir)
+    PackageEventHandle("onProjectClose", appendPathSep(filetree.projdir))
   end
 
-  PackageEventHandle("onProjectPreLoad", newdir)
+  PackageEventHandle("onProjectPreLoad", appendPathSep(newdir))
 
   if ide.config.projectautoopen and filetree.projdir then
     StoreRestoreProjectTabs(filetree.projdir, newdir, intfname)
@@ -786,13 +791,10 @@ function filetree:updateProjectDir(newdir)
   -- refresh Recent Projects menu item
   ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID_RECENTPROJECTS))
 
-  PackageEventHandle("onProjectLoad", newdir)
+  PackageEventHandle("onProjectLoad", appendPathSep(newdir))
 end
 
-function FileTreeGetDir()
-  return (filetree.projdir and #filetree.projdir > 0
-    and wx.wxFileName.DirName(filetree.projdir):GetFullPath() or nil)
-end
+function FileTreeGetDir() return appendPathSep(filetree.projdir) end
 
 function FileTreeSetProjects(tab)
   filetree.projdirlist = tab
@@ -801,9 +803,7 @@ function FileTreeSetProjects(tab)
   end
 end
 
-function FileTreeGetProjects()
-  return filetree.projdirlist
-end
+function FileTreeGetProjects() return filetree.projdirlist end
 
 local function getProjectLabels()
   local labels = {}

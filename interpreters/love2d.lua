@@ -26,20 +26,20 @@ return {
         table.insert(paths, p)
       end
       if not love2d then
-        DisplayOutputLn("Can't find love2d executable in any of the following folders: "
+        ide:Print("Can't find love2d executable in any of the following folders: "
           ..table.concat(paths, ", "))
         return
       end
     end
 
     if not GetFullPathIfExists(self:fworkdir(wfilename), 'main.lua') then
-      DisplayOutputLn(("Can't find 'main.lua' file in the current project folder: '%s'.")
+      ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
         :format(self:fworkdir(wfilename)))
       return
     end
 
     if rundebug then
-      DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
+      ide:GetDebugger():SetOptions({runstart = ide.config.debugger.runonstart ~= false})
     end
 
     -- suppress hiding ConsoleWindowClass as this is used by Love console
@@ -47,7 +47,7 @@ return {
     local cwc = uhw and uhw.ConsoleWindowClass
     if uhw then uhw.ConsoleWindowClass = 0 end
 
-    local params = ide.config.arg.any or ide.config.arg.love2d
+    local params = self:GetCommandLineArg()
     local cmd = ('"%s" "%s"%s%s'):format(love2d, self:fworkdir(wfilename),
       params and " "..params or "", rundebug and ' -debug' or '')
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
@@ -55,7 +55,6 @@ return {
       function() if uhw then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
   scratchextloop = true,
   takeparameters = true,
 }

@@ -30,11 +30,8 @@ protocol.client.requestloading = "Could you please load this file for me: %s"
 protocol.server.answerok = "Sure. You may now leave."
 
 if success then -- ok, server was started, we are solo
-  --TODO: if multiple files are to be opened, each file is handled one by one - we could create a single string instead...
-  ide.idletimer = wx.wxTimer(wx.wxGetApp())
-  ide.idletimer:Start(delay,false)
   svr:settimeout(0) -- don't block
-  wx.wxGetApp():Connect(wx.wxEVT_TIMER, function()
+  ide.timers.idle = ide:AddTimer(wx.wxGetApp(), function()
       if ide.exitingProgram then -- if exiting, terminate the timer loop
         wx.wxGetApp():Disconnect(wx.wxEVT_TIMER)
         return
@@ -49,15 +46,12 @@ if success then -- ok, server was started, we are solo
           local filename = msg:match(protocol.client.requestloading:gsub("%%s","(.+)$"))
           if filename then
             RequestAttention()
-            if wx.wxDirExists(filename) then
-              ProjectUpdateProjectDir(filename)
-            elseif not ActivateFile(filename) then
-              DisplayOutputLn(TR("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
-            end
+            ide:ActivateFile(filename)
           end
         end
       end
     end)
+  ide.timers.idle:Start(delay,false)
 else -- something different is running on our port
   local cln = socket.udp()
   cln:setpeername("127.0.0.1",port)
@@ -69,7 +63,7 @@ else -- something different is running on our port
   if msg and msg:match(protocol.server.greeting:gsub("%%s",".+$")) then
     local username = msg:match(protocol.server.greeting:gsub("%%s","(.+)$"))
     if username ~= wx.wxGetUserName() then
-      print(("Another instance is running under user '%s' and can't be activated. This instance will continue running, which may cause interference with the debugger."):format(username))
+      ide:Print(("Another instance is running under user '%s' and can't be activated. This instance will continue running, which may cause interference with the debugger."):format(username))
     else
       local failed = false
       for index = 2, #arg do
@@ -82,17 +76,17 @@ else -- something different is running on our port
           local msg, err = cln:receive()
           if msg ~= protocol.server.answerok then
             failed = true
-            print(err,msg)
+            ide:Print(err,msg)
           end
         end
       end
       if failed then
-        print("The server instance failed to open the files, this instance will continue running.")
+        ide:Print("The server instance failed to open the files, this instance will continue running.")
       else -- done
         os.exit(0)
       end
     end
   else
-    print("The single instance communication has failed; there may be another instance running, which may cause interference with the debugger.")
+    ide:Print("The single instance communication has failed; there may be another instance running, which may cause interference with the debugger.")
   end
 end

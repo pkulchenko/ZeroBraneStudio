@@ -1,9 +1,9 @@
 local ide = ide
 
 --[[
-Accelerator general syntax is any combination of "CTRL", "ALT" and "SHIFT"
-strings (case doesn't matter) separated by either '-' or '+' characters and
-followed by the accelerator itself. The accelerator may be any alphanumeric
+Accelerator general syntax is any combination of "CTRL", "ALT", "RAWCTRL" and
+"SHIFT" strings (case doesn't matter) separated by either '-' or '+' characters
+and followed by the accelerator itself. The accelerator may be any alphanumeric
 character, any function key (from F1 to F12) or one of the special characters
 listed below (again, case doesn't matter):
 
@@ -21,6 +21,10 @@ listed below (again, case doesn't matter):
   SPACE        Space
   TAB          Tab key
   ESC/ESCAPE   Escape key (Windows only)
+
+"CTRL" accelerator is mapped to "Cmd" key on OSX and to "Ctrl" key on other platforms.
+"RAWCTRL" accelerator is mapped to "Ctrl" key on all platforms. For example, to specify
+a combination of "Ctrl" with "PGUP" use "RawCtrl-PgUp".
 --]]
 
 ide.config.keymap = {
@@ -48,6 +52,7 @@ ide.config.keymap = {
   [ID.AUTOCOMPLETEENABLE] = "",
   [ID.COMMENT]          = "Ctrl-U",
   [ID.FOLD]             = "F12",
+  [ID.FOLDLINE]         = "Shift-F12",
   [ID.CLEARDYNAMICWORDS] = "",
   [ID.REINDENT]         = "Ctrl-I",
   [ID.BOOKMARKTOGGLE]   = "Ctrl-F2",
@@ -110,6 +115,9 @@ ide.config.keymap = {
 -- Filetree popup menu items
   [ID.RENAMEFILE]       = "F2",
   [ID.DELETEFILE]       = "Del",
+-- Special global accelerators
+  [ID.NOTEBOOKTABNEXT]  = "RawCtrl-PgDn",
+  [ID.NOTEBOOKTABPREV]  = "RawCtrl-PgUp",
 }
 
 function KSC(id, default)

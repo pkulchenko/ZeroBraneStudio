@@ -23,7 +23,7 @@ return {
         table.insert(paths, p)
       end
       if not busted then
-        DisplayOutputLn("Can't find busted executable in any of the folders in PATH: "
+        ide:Print("Can't find busted executable in any of the folders in PATH: "
           ..table.concat(paths, ", "))
         return
       end
@@ -33,13 +33,13 @@ return {
     local helper
     if rundebug then
       -- start running the application right away
-      DebuggerAttachDefault({runstart = ide.config.debugger.runonstart ~= false})
+      ide:GetDebugger():SetOptions({runstart = ide.config.debugger.runonstart ~= false})
       local tmpfile = wx.wxFileName()
       tmpfile:AssignTempFileName(".")
       helper = tmpfile:GetFullPath()..".lua" -- busted likes .lua files more than .tmp files
       local f = io.open(helper, "w")
       if not f then
-        DisplayOutputLn("Can't open temporary file '"..helper.."' for writing.")
+        ide:Print("Can't open temporary file '"..helper.."' for writing.")
         return 
       end
       f:write("require('mobdebug').start()")
@@ -53,5 +53,4 @@ return {
       function() if helper then wx.wxRemoveFile(helper) end end)
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
 }

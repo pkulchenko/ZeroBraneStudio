@@ -11,7 +11,7 @@ function NewID()
 end
 
 -- some Ubuntu versions (Ubuntu 13.10) ignore labels on stock menu IDs,
--- so don't use stock IDs on Linux
+-- so don't use stock IDs on Linux (http://trac.wxwidgets.org/ticket/15958)
 local linux = ide.osname == 'Unix'
 
 ID_SEPARATOR        = NewID()
@@ -21,6 +21,8 @@ ID_OPEN             = linux and NewID() or wx.wxID_OPEN
 ID_CLOSE            = NewID()
 ID_CLOSEALL         = NewID()
 ID_CLOSEOTHER       = NewID()
+ID_CLOSESEARCHRESULTS = NewID()
+ID_REFRESHSEARCHRESULTS = NewID()
 ID_NEWFILE          = NewID()
 ID_NEWDIRECTORY     = NewID()
 ID_RENAMEFILE       = NewID()
@@ -50,6 +52,7 @@ ID_AUTOCOMPLETE     = NewID()
 ID_AUTOCOMPLETEENABLE = NewID()
 ID_COMMENT          = NewID()
 ID_FOLD             = NewID()
+ID_FOLDLINE         = NewID()
 ID_CLEARDYNAMICWORDS = NewID()
 ID_SOURCE           = NewID()
 ID_REINDENT         = NewID()
@@ -57,6 +60,7 @@ ID_BOOKMARK         = NewID()
 ID_BOOKMARKTOGGLE   = NewID()
 ID_BOOKMARKNEXT     = NewID()
 ID_BOOKMARKPREV     = NewID()
+ID_BOOKMARKCLEAR    = NewID()
 ID_NAVIGATE         = NewID()
 ID_NAVIGATETOFILE   = NewID()
 ID_NAVIGATETOLINE   = NewID()
@@ -98,7 +102,7 @@ ID_BREAKPOINT       = NewID()
 ID_BREAKPOINTTOGGLE = NewID()
 ID_BREAKPOINTNEXT   = NewID()
 ID_BREAKPOINTPREV   = NewID()
-ID_TOGGLEBREAKPOINT = ID_BREAKPOINTTOGGLE -- for compatibility; to remove after v1.30
+ID_BREAKPOINTCLEAR  = NewID()
 ID_COMPILE          = NewID()
 ID_ANALYZE          = NewID()
 ID_RUN              = NewID()
@@ -179,6 +183,9 @@ ID_FINDOPTCONTEXT   = NewID()
 ID_FINDOPTSUBDIR    = NewID()
 ID_FINDOPTMULTIRESULTS = NewID()
 ID_RECENTSCOPECLEAR = NewID()
+-- global shortcuts
+ID_NOTEBOOKTABNEXT  = NewID()
+ID_NOTEBOOKTABPREV  = NewID()
 
 local ids = {}
 function IDgen (name)

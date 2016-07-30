@@ -95,6 +95,14 @@ function ide:GetMenuBar() return self.frame.menuBar end
 function ide:GetStatusBar() return self.frame.statusBar end
 function ide:GetToolBar() return self.frame.toolBar end
 function ide:GetDebugger() return self.debugger end
+function ide:SetDebugger(deb)
+  self.debugger = deb
+  -- if the remote console is already assigned, then assign it based on the new debugger
+  local console = ide:GetConsole()
+  -- `SetDebugger` may be called before console is set, so need to check if it's available
+  if ide:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
+  return deb
+end
 function ide:GetMainFrame() return self.frame end
 function ide:GetUIManager() return self.frame.uimgr end
 function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
@@ -139,9 +147,56 @@ function ide:AttachMenu(...)
   local item, menu, pos = self:FindMenuItem(id, menu)
   if not item then return end
 
-  local menuitem = wx.wxMenuItem(menu, id, item:GetItemLabel(), item:GetHelp(), wx.wxITEM_NORMAL, submenu)
-  menu:Destroy(item)
-  return menu:Insert(pos, menuitem), pos
+  menu:Remove(item)
+  item:SetSubMenu(submenu)
+  return menu:Insert(pos, item), pos
+end
+function ide:CloneMenu(menu)
+  if not menu then return end
+  local newmenu = wx.wxMenu({})
+  local ok, node = pcall(function() return menu:GetMenuItems():GetFirst() end)
+  -- some wxwidgets versions may not have GetFirst, so return an empty menu in this case
+  if not ok then return newmenu end
+  while node do
+    local item = node:GetData():DynamicCast("wxMenuItem")
+    newmenu:Append(item:GetId(), item:GetItemLabel(), item:GetHelp(), item:GetKind())
+    node = node:GetNext()
+  end
+  return newmenu
+end
+function ide:MakeMenu(t)
+  local menu = wx.wxMenu({})
+  local menuicon = self.config.menuicon -- menu items need to have icons
+  local iconmap = self.config.toolbar.iconmap
+  for p = 1, #(t or {}) do
+    if type(t[p]) == "table" then
+      if #t[p] == 0 then -- empty table signals a separator
+        menu:AppendSeparator()
+      else
+        local id, label, help, kind = unpack(t[p])
+        local submenu
+        if type(kind) == "table" then
+          submenu, kind = self:MakeMenu(kind)
+        elseif type(kind) == "userdata" then
+          submenu, kind = kind
+        end
+        if submenu then
+          menu:Append(id, label, submenu, help or "")
+        else
+          local item = wx.wxMenuItem(menu, id, label, help or "", kind or wx.wxITEM_NORMAL)
+          if menuicon and type(iconmap[id]) == "table"
+          -- only add icons to "normal" items (OSX can take them on checkbox items too),
+          -- otherwise this causes asert on Linux (http://trac.wxwidgets.org/ticket/17123)
+          and (ide.osname == "Macintosh" or item:GetKind() == wx.wxITEM_NORMAL) then
+            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR", wx.wxSize(16,16))
+            item:SetBitmap(bitmap)
+          end
+          menu:Append(item)
+        end
+      end
+    end
+  end
+  return menu
 end
 
 function ide:FindDocument(path)
@@ -170,7 +225,8 @@ function ide:FindDocumentsByPartialPath(path)
   end
   return docs
 end
-function ide:GetInterpreter() return self.interpreter end
+function ide:SetInterpreter(name) return ProjectSetInterpreter(name) end
+function ide:GetInterpreter(name) return name == nil and self.interpreter or name and self.interpreters[name] or nil end
 function ide:GetInterpreters() return self.interpreters end
 function ide:GetConfig() return self.config end
 function ide:GetOutput() return self.frame.bottomnotebook.errorlog end
@@ -186,10 +242,17 @@ function ide:GetProjectStartFile()
   return MergeFullPath(projectdir, startfile), startfile
 end
 function ide:GetLaunchedProcess() return self.debugger and self.debugger.pid end
+function ide:SetLaunchedProcess(pid) if self.debugger then self.debugger.pid = pid; return pid end end
 function ide:GetProjectTree() return self.filetree.projtreeCtrl end
 function ide:GetOutlineTree() return self.outline.outlineCtrl end
 function ide:GetWatch() return self.debugger and self.debugger.watchCtrl end
 function ide:GetStack() return self.debugger and self.debugger.stackCtrl end
+
+function ide:GetTextFromUser(message, caption, value)
+  local dlg = wx.wxTextEntryDialog(ide:GetMainFrame(), message, caption, value)
+  local res = dlg:ShowModal()
+  return res == wx.wxID_OK and dlg:GetValue() or nil, res
+end
 
 local statusreset
 function ide:SetStatusFor(text, interval, field)
@@ -197,8 +260,7 @@ function ide:SetStatusFor(text, interval, field)
   interval = interval or 2
   local statusbar = self:GetStatusBar()
   if not ide.timers.status then
-    ide.timers.status = wx.wxTimer(statusbar)
-    statusbar:Connect(wx.wxEVT_TIMER, function(event) if statusreset then statusreset() end end)
+    ide.timers.status = ide:AddTimer(statusbar, function(event) if statusreset then statusreset() end end)
   end
   statusreset = function()
     if statusbar:GetStatusText(field) == text then statusbar:SetStatusText("", field) end
@@ -286,7 +348,6 @@ function ide:CreateStyledTextCtrl(...)
 
   -- circle through "fold all" => "hide base lines" => "unfold all"
   function editor:FoldSome()
-    editor:Colourise(0, -1) -- update doc's folding info
     local foldall = false -- at least on header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
     local lines = editor:GetLineCount()
@@ -349,6 +410,17 @@ function ide:CreateStyledTextCtrl(...)
     self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
   end
 
+  -- wxSTC included with wxlua didn't have ScrollRange defined, so substitute if not present
+  if not ide:IsValidProperty(editor, "ScrollRange") then
+    function editor:ScrollRange(secondary, primary) end
+  end
+
+  -- ScrollRange moves to the correct position, but doesn't unfold folded region
+  function editor:ShowRange(secondary, primary)
+    self:ShowPosEnforcePolicy(primary)
+    self:ScrollRange(secondary, primary)
+  end
+
   function editor:ClearAny()
     local length = self:GetLength()
     local selections = ide.wxver >= "2.9.5" and self:GetSelections() or 1
@@ -365,15 +437,21 @@ function ide:CreateStyledTextCtrl(...)
   end
 
   function editor:MarkerGetAll(mask, from, to)
-    mask = mask or 2^24-1
+    mask = mask or ide.ANYMARKERMASK
     local markers = {}
     local line = editor:MarkerNext(from or 0, mask)
-    while line > -1 do
+    while line ~= wx.wxNOT_FOUND do
       table.insert(markers, {line, editor:MarkerGet(line)})
       if to and line > to then break end
       line = editor:MarkerNext(line + 1, mask)
     end
     return markers
+  end
+
+  function editor:IsLineEmpty(line)
+    local text = self:GetLineDyn(line or editor:GetCurrentLine())
+    local lc = self.spec and self.spec.linecomment
+    return not text:find("%S") or (lc and text:find("^%s*"..q(lc)) ~= nil)
   end
 
   editor:Connect(wx.wxEVT_KEY_DOWN,
@@ -494,6 +572,25 @@ local function iconFilter(bitmap, tint)
   return wx.wxBitmap(img)
 end
 
+function ide:GetTintedColor(color, tint)
+  if type(tint) == 'function' then return tint(color) end
+  if type(tint) ~= 'table' or #tint ~= 3 then return color end
+  if type(color) ~= 'table' then return color end
+
+  local tr, tg, tb = tint[1]/255, tint[2]/255, tint[3]/255
+  local pi = 0.299*tr + 0.587*tg + 0.114*tb -- pixel intensity
+  local perc = (tint[0] or tintdef)/tintdef
+  tr, tg, tb = tr*perc, tg*perc, tb*perc
+
+  local r, g, b = color[1]/255, color[2]/255, color[3]/255
+  local gs = (r + g + b) / 3
+  local weight = 1-4*(gs-0.5)*(gs-0.5)
+  r = math.max(0, math.min(255, math.floor(255 * (gs + (tr-pi) * weight))))
+  g = math.max(0, math.min(255, math.floor(255 * (gs + (tg-pi) * weight))))
+  b = math.max(0, math.min(255, math.floor(255 * (gs + (tb-pi) * weight))))
+  return {r, g, b}
+end
+
 local icons = {} -- icon cache to avoid reloading the same icons
 function ide:GetBitmap(id, client, size)
   local im = self.config.imagemap
@@ -529,6 +626,7 @@ function ide:AddPackage(name, package)
   return self.packages[name]
 end
 function ide:RemovePackage(name) self.packages[name] = nil end
+function ide:GetPackage(name) return self.packages[name] end
 
 function ide:AddWatch(watch, value)
   local mgr = self.frame.uimgr
@@ -616,6 +714,7 @@ function ide:AddConfig(name, files)
     config = require('mobdebug').dump(self.config, {nocode = true}),
     configmeta = getmetatable(self.config),
     packages = {},
+    overrides = {},
   }
   -- build a list of existing packages
   local packages = {}
@@ -631,6 +730,20 @@ function ide:AddConfig(name, files)
   end
   ReApplySpecAndStyles() -- apply current config to the UI
 end
+local function setLongKey(tbl, key, value)
+  local paths = {}
+  for path in key:gmatch("([^%.]+)") do table.insert(paths, path) end
+  while #paths > 0 do
+    local lastkey = table.remove(paths, 1)
+    if #paths > 0 then
+      if tbl[lastkey] == nil then tbl[lastkey] = {} end
+      tbl = tbl[lastkey]
+      if type(tbl) ~= "table" then return end
+    else
+      tbl[lastkey] = value
+    end
+  end
+end
 function ide:RemoveConfig(name)
   if not name or not configcache[name] then return end
   -- unregister cached packages
@@ -639,12 +752,19 @@ function ide:RemoveConfig(name)
   local ok, res = LoadSafe(configcache[name].config)
   if ok then
     self.config = res
+    -- restore overrides
+    for key, value in pairs(configcache[name].overrides) do setLongKey(self.config, key, value) end
     if configcache[name].configmeta then setmetatable(self.config, configcache[name].configmeta) end
   else
     DisplayOutputLn(("Error while restoring configuration: '%s'."):format(res))
   end
   configcache[name] = nil -- clear the slot after use
   ReApplySpecAndStyles() -- apply current config to the UI
+end
+function ide:SetConfig(key, value, name)
+  setLongKey(self.config, key, value) -- set config["foo.bar"] as config.foo.bar
+  if not name or not configcache[name] then return end
+  configcache[name].overrides[key] = value
 end
 
 local panels = {}
@@ -684,14 +804,23 @@ function ide:RemovePanel(panel)
   end
 end
 
+function ide:IsPanelDocked(panel)
+  local layout = self:GetSetting("/view", "uimgrlayout")
+  return layout and not layout:find(panel)
+end
 function ide:AddPanelDocked(notebook, ctrl, panel, name, conf, activate)
   notebook:AddPage(ctrl, name, activate ~= false)
   panels[name] = {ctrl, panel, name, conf}
   return notebook
 end
-function ide:IsPanelDocked(panel)
-  local layout = self:GetSetting("/view", "uimgrlayout")
-  return layout and not layout:find(panel)
+function ide:AddPanelFlex(notebook, ctrl, panel, name, conf)
+  local nb
+  if self:IsPanelDocked(panel) then
+    nb = self:AddPanelDocked(notebook, ctrl, panel, name, conf, false)
+  else
+    self:AddPanel(ctrl, panel, name, conf)
+  end
+  return nb
 end
 
 function ide:IsValidCtrl(ctrl)
@@ -699,7 +828,7 @@ function ide:IsValidCtrl(ctrl)
 end
 
 function ide:IsValidProperty(ctrl, prop)
-  return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end)
+  return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end) and ctrl[prop]
 end
 
 function ide:IsWindowShown(win)
@@ -721,4 +850,74 @@ end
 
 function ide:RemoveTool(name)
   return ToolsRemoveTool(name)
+end
+
+local timers = {}
+local function evhandler(event)
+  local callback = timers[event:GetId()]
+  if callback then callback() end
+end
+function ide:AddTimer(ctrl, callback)
+  table.insert(timers, callback or function() end)
+  ctrl:Connect(wx.wxEVT_TIMER, evhandler)
+  return wx.wxTimer(ctrl, #timers)
+end
+
+local function setAcceleratorTable(accelerators)
+  local at = {}
+  for id, ksc in pairs(accelerators) do
+    local ae = wx.wxAcceleratorEntry(); ae:FromString(ksc)
+    table.insert(at, wx.wxAcceleratorEntry(ae:GetFlags(), ae:GetKeyCode(), id))
+  end
+  ide:GetMainFrame():SetAcceleratorTable(#at > 0 and wx.wxAcceleratorTable(at) or wx.wxNullAcceleratorTable)
+end
+local at = {}
+function ide:SetAccelerator(id, ksc) at[id] = ksc; setAcceleratorTable(at) end
+function ide:GetAccelerator(id) return at[id] end
+function ide:GetAccelerators() return at end
+
+function ide:IsProjectSubDirectory(dir)
+  local projdir = self:GetProject()
+  if not projdir then return end
+  -- normalize and check if directory when cut is the same as the project directory;
+  -- this relies on the project directory ending in a path separator.
+  local path = wx.wxFileName(dir:sub(1, #projdir))
+  path:Normalize()
+  return path:SameAs(wx.wxFileName(projdir))
+end
+
+function ide:SetCommandLineParameters(params)
+  if not params then return end
+  ide:SetConfig("arg.any", #params > 0 and params or nil, ide:GetProject())
+  if #params > 0 then ide:GetPackage("core.project"):AddCmdLine(params) end
+  local interpreter = ide:GetInterpreter()
+  if interpreter then interpreter:UpdateStatus() end
+end
+
+function ide:ActivateFile(filename)
+  if wx.wxDirExists(filename) then
+    ProjectUpdateProjectDir(filename)
+    return true
+  end
+
+  local name, suffix, value = filename:match('(.+):([lLpP]?)(%d+)$')
+  if name and not wx.wxFileExists(filename) then filename = name end
+
+  -- check if non-existing file can be loaded from the project folder;
+  -- this is to handle: "project file" used on the command line
+  if not wx.wxFileExists(filename) and not wx.wxIsAbsolutePath(filename) then
+    filename = GetFullPathIfExists(ide:GetProject(), filename) or filename
+  end
+
+  local opened = LoadFile(filename, nil, true)
+  if opened and value then
+    if suffix:upper() == 'P' then opened:GotoPosDelayed(tonumber(value))
+    else opened:GotoPosDelayed(opened:PositionFromLine(value-1))
+    end
+  end
+
+  if not opened then
+    ide:Print(TR("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
+  end
+  return opened
 end

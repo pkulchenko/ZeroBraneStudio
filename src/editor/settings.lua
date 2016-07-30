@@ -24,13 +24,13 @@ ini = ini and (not wx.wxIsAbsolutePath(ini) and wx.wxFileName(ini):GetDirCount()
   and MergeFullPath(GetPathWithSep(ide.editorFilename), ini) or ini)
 -- check that the ini file doesn't point to a directory
 if ini and (wx.wxFileName(ini):IsDir() or wx.wxIsAbsolutePath(ini) and wx.wxDirExists(ini)) then
-  print(("Can't use 'ini' configuration setting '%s' that points to a directory instead of a file; ignored.")
+  ide:Print(("Can't use 'ini' configuration setting '%s' that points to a directory instead of a file; ignored.")
     :format(ini))
   ini = nil
 end
 -- check that the directory is writable
 if ini and wx.wxIsAbsolutePath(ini) and not wx.wxFileName(ini):IsDirWritable() then
-  print(("Can't use 'ini' configuration setting '%s' that points to a non-writable directory; ignored.")
+  ide:Print(("Can't use 'ini' configuration setting '%s' that points to a non-writable directory; ignored.")
     :format(ini))
   ini = nil
 end
@@ -59,11 +59,22 @@ function SettingsRestoreFramePosition(window, windowName)
   if (s ~= -1) and (s ~= 1) and (s ~= 2) then
     local clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
 
+    -- if left-top corner outside of the left-top side, reset it to the screen side
     if x < clientX then x = clientX end
     if y < clientY then y = clientY end
 
+    -- if the window is too wide for the screen, reset it to the screen size
     if w > clientWidth then w = clientWidth end
     if h > clientHeight then h = clientHeight end
+
+    -- if the right-bottom corner is still outside and there is only one display,
+    -- then reposition left-top corner, keeping the window centered
+    if wx.wxDisplay():GetCount() == 1 then
+      local outx = (x + w) - (clientX + clientWidth)
+      local outy = (y + h) - (clientY + clientHeight)
+      if outx > 0 then x = math.floor(0.5+(x - outx)/2) end
+      if outy > 0 then y = math.floor(0.5+(y - outy)/2) end
+    end
 
     window:SetSize(x, y, w, h)
   elseif s == 1 then
@@ -270,41 +281,13 @@ function SettingsRestorePackage(package)
   return outtab
 end
 
-local function plaindump(val, opts, done)
-  local keyignore = opts and opts.keyignore or {}
-  local final = done == nil
-  opts, done = opts or {}, done or {}
-  local t = type(val)
-  if t == "table" then
-    done[#done+1] = '{'
-    done[#done+1] = ''
-    for key, value in pairs (val) do
-      if not keyignore[key] then
-        done[#done+1] = '['
-        plaindump(key, opts, done)
-        done[#done+1] = ']='
-        plaindump(value, opts, done)
-        done[#done+1] = ","
-      end
-    end
-    done[#done] = '}'
-  elseif t == "string" then
-    done[#done+1] = ("%q"):format(val):gsub("\010","n"):gsub("\026","\\026")
-  elseif t == "number" then
-    done[#done+1] = ("%.17g"):format(val)
-  else
-    done[#done+1] = tostring(val)
-  end
-  return final and table.concat(done, '')
-end
-
 function SettingsSavePackage(package, values, opts)
   local packagename = "/package/"..package
   local path = settings:GetPath()
 
   settings:DeleteGroup(packagename)
   settings:SetPath(packagename)
-  for k,v in pairs(values or {}) do settings:Write(k, plaindump(v, opts)) end
+  for k,v in pairs(values or {}) do settings:Write(k, DumpPlain(v, opts)) end
   settings:SetPath(path)
 end
 

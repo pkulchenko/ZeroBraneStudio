@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = 0.628,
+  _VERSION = "0.6371",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -28,6 +28,7 @@ local mobdebug = {
   connecttimeout = 2, -- connect timeout (s)
 }
 
+local HOOKMASK = "lcr"
 local error = error
 local getfenv = getfenv
 local setfenv = setfenv
@@ -292,14 +293,15 @@ local function stack(start)
     i = 1
     while true do
       local name, value = debug.getlocal(f, -i)
-      if not name then break end
+      -- `not name` should be enough, but LuaJIT 2.0.0 incorrectly reports `(*temporary)` names here
+      if not name or name ~= "(*vararg)" then break end
       locals[name:gsub("%)$"," "..i..")")] = {value, tostring(value)}
       i = i + 1
     end
     -- get upvalues
     i = 1
     local ups = {}
-    while func and true do -- check for func as it may be nil for tail calls
+    while func do -- check for func as it may be nil for tail calls
       local name, value = debug.getupvalue(func, i)
       if not name then break end
       ups[name] = {value, tostring(value)}
@@ -502,6 +504,22 @@ local function handle_breakpoint(peer)
   buf = nil
 end
 
+local function normalize_path(file)
+  local n
+  repeat
+    file, n = file:gsub("/+%.?/+","/") -- remove all `//` and `/./` references
+  until n == 0
+  -- collapse all up-dir references: this will clobber UNC prefix (\\?\)
+  -- and disk on Windows when there are too many up-dir references: `D:\foo\..\..\bar`;
+  -- handle the case of multiple up-dir references: `foo/bar/baz/../../../more`;
+  -- only remove one at a time as otherwise `../../` could be removed;
+  repeat
+    file, n = file:gsub("[^/]+/%.%./", "", 1)
+  until n == 0
+  -- there may still be a leading up-dir reference left (as `/../` or `../`); remove it
+  return (file:gsub("%.%./", "", 1))
+end
+
 local function debug_hook(event, line)
   -- (1) LuaJIT needs special treatment. Because debug_hook is set for
   -- *all* coroutines, and not just the one being debugged as in regular Lua
@@ -579,28 +597,26 @@ local function debug_hook(event, line)
       -- for example when they call loadstring('...', 'filename.lua').
       -- Unfortunately, there is no reliable/quick way to figure out
       -- what is the filename and what is the source code.
-      -- The following will work if the supplied filename uses Unix path.
-      if find(file, "^@") then
+      -- If the name doesn't start with `@`, assume it's a file name if it's all on one line.
+      if find(file, "^@") or not find(file, "[\r\n]") then
         file = gsub(gsub(file, "^@", ""), "\\", "/")
+        -- normalize paths that may include up-dir or same-dir references
+        -- if the path starts from the up-dir or reference,
+        -- prepend `basedir` to generate absolute path to keep breakpoints working.
+        -- ignore qualified relative path (`D:../`) and UNC paths (`\\?\`)
+        if find(file, "^%.%./") then file = basedir..file end
+        if find(file, "/%.%.?/") then file = normalize_path(file) end
         -- need this conversion to be applied to relative and absolute
         -- file names as you may write "require 'Foo'" to
         -- load "foo.lua" (on a case insensitive file system) and breakpoints
         -- set on foo.lua will not work if not converted to the same case.
         if iscasepreserving then file = string.lower(file) end
-        if find(file, "%./") == 1 then file = sub(file, 3)
+        if find(file, "^%./") then file = sub(file, 3)
         else file = gsub(file, "^"..q(basedir), "") end
         -- some file systems allow newlines in file names; remove these.
         file = gsub(file, "\n", ' ')
       else
-        -- this is either a file name coming from loadstring("chunk", "file"),
-        -- or the actual source code that needs to be serialized (as it may
-        -- include newlines); assume it's a file name if it's all on one line.
-        if find(file, "[\r\n]") then
-          file = mobdebug.line(file)
-        else
-          if iscasepreserving then file = string.lower(file) end
-          file = gsub(gsub(file, "\\", "/"), find(file, "^%./") and "^%./" or "^"..q(basedir), "")
-        end
+        file = mobdebug.line(file)
       end
 
       -- set to true if we got here; this only needs to be done once per
@@ -979,6 +995,10 @@ local function debugger_loop(sev, svars, sfile, sline)
   end
 end
 
+local function output(stream, data)
+  if server then return server:send("204 Output "..stream.." "..tostring(#data).."\n"..data) end
+end
+
 local function connect(controller_host, controller_port)
   local sock, err = socket.tcp()
   if not sock then return nil, err end
@@ -1037,7 +1057,7 @@ local function start(controller_host, controller_port)
       end
     end
     coro_debugger = corocreate(debugger_loop)
-    debug.sethook(debug_hook, "lcr")
+    debug.sethook(debug_hook, HOOKMASK)
     seen_hook = nil -- reset in case the last start() call was refused
     step_into = true -- start with step command
     return true
@@ -1077,8 +1097,8 @@ local function controller(controller_host, controller_port, scratchpad)
       if scratchpad then checkcount = mobdebug.checkcount end -- force suspend right away
 
       coro_debugee = corocreate(debugee)
-      debug.sethook(coro_debugee, debug_hook, "lcr")
-      local status, err = cororesume(coro_debugee)
+      debug.sethook(coro_debugee, debug_hook, HOOKMASK)
+      local status, err = cororesume(coro_debugee, unpack(arg or {}))
 
       -- was there an error or is the script done?
       -- 'abort' state is allowed here; ignore it
@@ -1132,10 +1152,10 @@ local function on()
   if main then co = nil end
   if co then
     coroutines[co] = true
-    debug.sethook(co, debug_hook, "lcr")
+    debug.sethook(co, debug_hook, HOOKMASK)
   else
     if jit then coroutines.main = true end
-    debug.sethook(debug_hook, "lcr")
+    debug.sethook(debug_hook, HOOKMASK)
   end
 end
 
@@ -1169,8 +1189,12 @@ end
 
 -- Handles server debugging commands
 local function handle(params, client, options)
-  local _, _, command = string.find(params, "^([a-z]+)")
+  -- when `options.verbose` is not provided, use normal `print`; verbose output can be
+  -- disabled (`options.verbose == false`) or redirected (`options.verbose == function()...end`)
+  local verbose = not options or options.verbose ~= nil and options.verbose
+  local print = verbose and (type(verbose) == "function" and verbose or print) or function() end
   local file, line, watch_idx
+  local _, _, command = string.find(params, "^([a-z]+)")
   if command == "run" or command == "step" or command == "out"
   or command == "over" or command == "exit" then
     client:send(string.upper(command) .. "\n")
@@ -1180,7 +1204,7 @@ local function handle(params, client, options)
       local breakpoint = client:receive()
       if not breakpoint then
         print("Program finished")
-        return
+        return nil, nil, false
       end
       local _, _, status = string.find(breakpoint, "^(%d+)")
       if status == "200" then
@@ -1198,7 +1222,8 @@ local function handle(params, client, options)
       elseif status == "204" then
         local _, _, stream, size = string.find(breakpoint, "^204 Output (%w+) (%d+)$")
         if stream and size then
-          local msg = client:receive(tonumber(size))
+          local size = tonumber(size)
+          local msg = size > 0 and client:receive(size) or ""
           print(msg)
           if outputs[stream] then outputs[stream](msg) end
           -- this was just the output, so go back reading the response
@@ -1379,7 +1404,8 @@ local function handle(params, client, options)
         elseif status == "204" then
           local _, _, stream, size = string.find(params, "^204 Output (%w+) (%d+)$")
           if stream and size then
-            local msg = client:receive(tonumber(size))
+            local size = tonumber(size)
+            local msg = size > 0 and client:receive(size) or ""
             print(msg)
             if outputs[stream] then outputs[stream](msg) end
             -- this was just the output, so go back reading the response
@@ -1449,6 +1475,9 @@ local function handle(params, client, options)
       if status == "200" then
         print("Stream "..stream.." redirected")
         outputs[stream] = type(options) == 'table' and options.handler or nil
+      -- the client knows when she is doing, so install the handler
+      elseif type(options) == 'table' and options.handler then
+        outputs[stream] = options.handler
       else
         print("Unknown error")
         return nil, nil, "Debugger error: can't redirect "..stream
@@ -1548,7 +1577,7 @@ local function listen(host, port)
   while true do
     io.write("> ")
     local file, line, err = handle(io.read("*line"), client)
-    if not file and not err then break end -- completed debugging
+    if not file and err == false then break end -- completed debugging
   end
 
   client:close()
@@ -1603,6 +1632,7 @@ mobdebug.coro = coro
 mobdebug.done = done
 mobdebug.pause = function() step_into = true end
 mobdebug.yield = nil -- callback
+mobdebug.output = output
 mobdebug.onexit = os and os.exit or done
 mobdebug.basedir = function(b) if b then basedir = b end return basedir end
 

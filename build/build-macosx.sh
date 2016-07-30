@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# ZBS binary directory
+# exit if the command line is empty
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 LIBRARY..."
+  exit 0
+fi
+
+# binary directory
 BIN_DIR="$(dirname "$PWD")/bin"
 
 # temporary installation directory for dependencies
@@ -27,19 +33,16 @@ WXWIDGETS_BASENAME="wxWidgets"
 WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
 
 WXLUA_BASENAME="wxlua"
-WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
+WXLUA_URL="https://github.com/pkulchenko/wxlua.git"
 
 LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-# exit if the command line is empty
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 LIBRARY..."
-  exit 0
-fi
+LUASEC_BASENAME="luasec-0.6"
+LUASEC_FILENAME="$LUASEC_BASENAME.zip"
+LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
-WXLUASTRIP="/strip"
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
 
@@ -65,11 +68,13 @@ for ARG in "$@"; do
   wxlua)
     BUILD_WXLUA=true
     ;;
+  luasec)
+    BUILD_LUASEC=true
+    ;;
   luasocket)
     BUILD_LUASOCKET=true
     ;;
   debug)
-    WXLUASTRIP=""
     WXWIDGETSDEBUG="--enable-debug=max"
     WXLUABUILD="Debug"
     ;;
@@ -98,9 +103,9 @@ if [ ! "$(which cmake)" ]; then
   exit 1
 fi
 
-# check for svn
-if [ ! "$(which svn)" ]; then
-  echo "Error: svn isn't found. Please install console SVN client."
+# check for git
+if [ ! "$(which git)" ]; then
+  echo "Error: git isn't found. Please install console GIT client."
   exit 1
 fi
 
@@ -154,6 +159,14 @@ if [ $BUILD_WXWIDGETS ]; then
     --with-zlib=builtin --disable-richtext \
     --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
     --with-osx_cocoa CFLAGS="-Os" CXXFLAGS="-Os"
+
+  PATTERN="defined( __WXMAC__ )\$"
+  if [ "$(grep -c "$PATTERN" src/aui/tabart.cpp)" -ne "1" ]; then
+    echo "Incorrect pattern for a fix in tabart.cpp."
+    exit 1
+  fi
+  sed -i "" "s/$PATTERN/0/" src/aui/tabart.cpp
+
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
   cd ..
@@ -194,8 +207,10 @@ fi
 
 # build wxLua
 if [ $BUILD_WXLUA ]; then
-  svn co "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to checkout wxLua"; exit 1; }
+  git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
+  git checkout wxwidgets311
+
   MINSDK=""
   if [ -d $MACOSX_SDK_PATH ]; then
     MINSDK="CMAKE_OSX_SYSROOT=$MACOSX_SDK_PATH"
@@ -206,18 +221,18 @@ if [ $BUILD_WXLUA ]; then
 
   # remove "Unable to call an unknown method..." error as it leads to a leak
   # see http://sourceforge.net/p/wxlua/mailman/message/34629522/ for details
-  sed -i '/Unable to call an unknown method/{N;s/.*/    \/\/ removed by ZBS build process/}' modules/wxlua/wxlbind.cpp
+  sed -i "" -e '/Unable to call an unknown method/{N' -e 's/.*/    \/\/ removed by ZBS build process/' -e '}' modules/wxlua/wxlbind.cpp
 
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
     -DCMAKE_OSX_ARCHITECTURES=$MACOSX_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_VERSION $MINSDK \
     -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
-    -DwxWidgets_COMPONENTS="stc;html;aui;adv;core;net;base" \
-    -DwxLuaBind_COMPONENTS="stc;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
+    -DwxWidgets_COMPONENTS="stc;gl;html;aui;adv;core;net;base" \
+    -DwxLuaBind_COMPONENTS="stc;gl;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
     -DwxLua_LUA_INCLUDE_DIR="$INSTALL_DIR/include" -DwxLua_LUA_LIBRARY="$INSTALL_DIR/lib/liblua.dylib" .
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
-  (cd modules/luamodule; make install$WXLUASTRIP)
-  if [ $WXLUASTRIP ]; then strip -u -r "$INSTALL_DIR/lib/libwx.dylib"; fi
+  (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/lib/libwx.dylib" ] || { echo "Error: libwx.dylib isn't found"; exit 1; }
+  [ "$WXLUABUILD" != "Debug" ] && strip -u -r "$INSTALL_DIR/lib/libwx.dylib"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
 fi
@@ -245,6 +260,27 @@ if [ $BUILD_LUASOCKET ]; then
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
 
+# build LuaSec
+if [ $BUILD_LUASEC ]; then
+  # build LuaSec
+  wget --no-check-certificate -c "$LUASEC_URL" -O "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
+  unzip "$LUASEC_FILENAME"
+  # the folder in the archive is "luasec-luasec-....", so need to fix
+  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
+  cd "$LUASEC_BASENAME"
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/ssl.dylib" \
+    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
+    -lssl -lcrypto \
+    || { echo "Error: failed to build LuaSec"; exit 1; }
+  cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAD"
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  cp src/https.lua "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/ssl.dylib" ] || { echo "Error: ssl.dylib isn't found"; exit 1; }
+  strip -u -r "$INSTALL_DIR/lib/lua/$LUAD/ssl.dylib"
+  cd ..
+  rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
+fi
+
 # now copy the compiled dependencies to ZBS binary directory
 mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1; }
 
@@ -254,10 +290,17 @@ if [ $BUILD_LUA ]; then
   cp "$INSTALL_DIR/bin/lua$LUAS" "$INSTALL_DIR/lib/liblua$LUAS.dylib" "$BIN_DIR"
 fi
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.dylib" "$BIN_DIR"
+
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
   cp "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$BIN_DIR/clibs$LUAS/mime"
   cp "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" "$BIN_DIR/clibs$LUAS/socket"
+fi
+
+if [ $BUILD_LUASEC ]; then
+  cp "$INSTALL_DIR/lib/lua/$LUAD/ssl.dylib" "$BIN_DIR/clibs$LUAS"
+  cp "$INSTALL_DIR/share/lua/$LUAD/ssl.lua" ../lualibs
+  cp "$INSTALL_DIR/share/lua/$LUAD/ssl/https.lua" ../lualibs/ssl
 fi
 
 echo "*** Build has been successfully completed ***"

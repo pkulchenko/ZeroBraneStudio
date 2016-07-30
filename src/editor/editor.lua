@@ -172,6 +172,10 @@ function SetEditorSelection(selection)
   if editor then
     editor:SetFocus()
     editor:SetSTCFocus(true)
+    -- when the active editor is changed while the focus is away from the application
+    -- (as happens on OSX when the editor is selected from the command bar)
+    -- the focus stays on wxAuiToolBar component, so need to explicitly switch it.
+    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = editor end
 
     local id = editor:GetId()
     FileTreeMarkSelected(openDocuments[id] and openDocuments[id].filePath or '')
@@ -214,7 +218,10 @@ function EditorAutoComplete(editor)
   -- the current position and the previous one have default style (0),
   -- so we need to check two positions back.
   local style = pos >= 2 and bit.band(editor:GetStyleAt(pos-2),31) or 0
-  if editor.spec.iscomment[style] or editor.spec.isstring[style] then return end
+  if editor.spec.iscomment[style]
+  or editor.spec.isstring[style]
+  or (MarkupIsAny and MarkupIsAny(style)) -- markup in comments
+  then return end
 
   -- retrieve the current line and get a string to the current cursor position in the line
   local line = editor:GetCurrentLine()
@@ -320,7 +327,8 @@ end
 
 local function callTipFitAndShow(editor, pos, tip)
   local point = editor:PointFromPosition(pos)
-  local height = editor:TextHeight(pos)
+  local sline = editor:LineFromPosition(pos)
+  local height = editor:TextHeight(sline)
   local maxlines = math.max(1, math.floor(
     math.max(editor:GetSize():GetHeight()-point:GetY()-height, point:GetY())/height-1
   ))
@@ -340,7 +348,7 @@ local function callTipFitAndShow(editor, pos, tip)
   end
   tip = table.concat(lines, '')
 
-  local startpos = editor:PositionFromLine(editor:LineFromPosition(pos))
+  local startpos = editor:PositionFromLine(sline)
   local afterwidth = editor:GetSize():GetWidth()-point:GetX()
   if maxwidth > afterwidth then
     local charwidth = editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, 'A')
@@ -364,9 +372,12 @@ function EditorCallTip(editor, pos, x, y)
   -- full match to avoid calltip about coroutine.status for "status" vars
   local tip = GetTipInfo(editor, funccall or var, false, not funccall)
   local limit = ide.config.acandtip.maxlength
-  if ide.debugger and ide.debugger.server then
+  local debugger = ide:GetDebugger()
+  if debugger and debugger:IsConnected() then
     if var then
-      ide.debugger.quickeval(var, function(val)
+      debugger:EvalAsync(var, function(val, err)
+        -- val == `nil` if there is any error
+        val = val ~= nil and (var.." = "..val) or err
         if #val > limit then val = val:sub(1, limit-3).."..." end
         -- check if the mouse position is specified and the mouse has moved,
         -- then don't show the tooltip as it's already too late for it.
@@ -717,7 +728,7 @@ function CreateEditor(bare)
   editor:SetMarginType(margin.LINENUMBER, wxstc.wxSTC_MARGIN_NUMBER)
   editor:SetMarginMask(margin.LINENUMBER, 0)
   editor:SetMarginWidth(margin.LINENUMBER,
-    math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")))
+    edcfg.linenumber and math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")) or 0)
 
   editor:SetMarginWidth(margin.MARKER, 18)
   editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
@@ -776,8 +787,8 @@ function CreateEditor(bare)
   function editor:MarkerGotoNext(marker)
     local value = 2^marker
     local line = editor:MarkerNext(editor:GetCurrentLine()+1, value)
-    if line == -1 then line = editor:MarkerNext(0, value) end
-    if line == -1 then return end
+    if line == wx.wxNOT_FOUND then line = editor:MarkerNext(0, value) end
+    if line == wx.wxNOT_FOUND then return end
     editor:GotoLine(line)
     editor:EnsureVisibleEnforcePolicy(line)
     return line
@@ -785,29 +796,28 @@ function CreateEditor(bare)
   function editor:MarkerGotoPrev(marker)
     local value = 2^marker
     local line = editor:MarkerPrevious(editor:GetCurrentLine()-1, value)
-    if line == -1 then line = editor:MarkerPrevious(editor:GetLineCount(), value) end
-    if line == -1 then return end
+    if line == wx.wxNOT_FOUND then line = editor:MarkerPrevious(editor:GetLineCount(), value) end
+    if line == wx.wxNOT_FOUND then return end
     editor:GotoLine(line)
     editor:EnsureVisibleEnforcePolicy(line)
     return line
   end
   function editor:MarkerToggle(marker, line, value)
+    if type(marker) == "string" then marker = StylesGetMarker(marker) end
+    assert(marker ~= nil, "Marker update requires known marker type")
     line = line or editor:GetCurrentLine()
     local isset = bit.band(editor:MarkerGet(line), 2^marker) > 0
     if value ~= nil and isset == value then return end
+    if PackageEventHandle("onEditorMarkerUpdate", editor, marker, line+1, not isset) == false then return end
     if isset then
       editor:MarkerDelete(line, marker)
     else
       editor:MarkerAdd(line, marker)
     end
-    PackageEventHandle("onEditorMarkerUpdate", editor, marker, line, not isset)
   end
 
-  function editor:BookmarkToggle(...) return self:MarkerToggle((StylesGetMarker("bookmark")), ...) end
-  function editor:BreakpointToggle(line, ...)
-    line = line or self:GetCurrentLine()
-    return DebuggerToggleBreakpoint(self, line, ...)
-  end
+  function editor:BookmarkToggle(...) return self:MarkerToggle("bookmark", ...) end
+  function editor:BreakpointToggle(...) return self:MarkerToggle("breakpoint", ...) end
 
   function editor:DoWhenIdle(func) table.insert(self.onidle, func) end
 
@@ -847,13 +857,13 @@ function CreateEditor(bare)
       local line = editor:LineFromPosition(event:GetPosition())
       local marginno = event:GetMargin()
       if marginno == margin.MARKER then
-        DebuggerToggleBreakpoint(editor, line)
+        editor:BreakpointToggle(line)
       elseif marginno == margin.FOLD then
         local header = bit.band(editor:GetFoldLevel(line),
           wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
         if wx.wxGetKeyState(wx.WXK_SHIFT) and wx.wxGetKeyState(wx.WXK_CONTROL) then
           editor:FoldSome()
-        elseif header then
+        elseif header or wx.wxGetKeyState(wx.WXK_SHIFT) then
           editor:ToggleFold(line)
         end
       end
@@ -1107,17 +1117,17 @@ function CreateEditor(bare)
       end
     end)
 
-  editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED,
-    function ()
+  local function updateModified()
+    local update = function()
       local doc = ide:GetDocument(editor)
-      if doc then doc:SetModified(false) end
-    end)
-
-  editor:Connect(wxstc.wxEVT_STC_SAVEPOINTLEFT,
-    function ()
-      local doc = ide:GetDocument(editor)
-      if doc then doc:SetModified(true) end
-    end)
+      if doc then doc:SetModified(editor:GetModify()) end
+    end
+    -- delay update on Unix/Linux as it seems to hang the application on ArchLinux;
+    -- execute immediately on other platforms
+    if ide.osname == "Unix" then editor:DoWhenIdle(update) else update() end
+  end
+  editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED, updateModified)
+  editor:Connect(wxstc.wxEVT_STC_SAVEPOINTLEFT, updateModified)
 
   -- "updateStatusText" should be called in UPDATEUI event, but it creates
   -- several performance problems on Windows (using wx2.9.5+) when
@@ -1157,9 +1167,9 @@ function CreateEditor(bare)
   editor.processedUpdateContent = 0
   editor:Connect(wxstc.wxEVT_STC_UPDATEUI,
     function (event)
-      -- some of UPDATEUI events are triggered by blinking cursor, and since
-      -- there are no changes, the rest of the processing can be skipped;
-      -- the reason for `alreadyProcessed` is that it is not possible
+      -- some of UPDATEUI events may be triggered as the result of editor updates
+      -- from subsequent events (like PAINTED, which happens in documentmap plugin).
+      -- the reason for the `processed` check is that it is not possible
       -- to completely skip all of these updates as this causes the issue
       -- of markup styling becoming visible after text deletion by Backspace.
       -- to avoid this, we allow the first update after any updates caused
@@ -1189,13 +1199,11 @@ function CreateEditor(bare)
         local ok, res = pcall(IndicateAll, editor, minupdated)
         if not ok then DisplayOutputLn("Internal error: ",res,minupdated) end
       end
-      local firstvisible = editor:DocLineFromVisible(editor:GetFirstVisibleLine())
-      local lastline = math.min(editor:GetLineCount(),
-        firstvisible + editor:LinesOnScreen())
-      -- lastline - editor:LinesOnScreen() can get negative; fix it
-      local firstline = math.min(math.max(0, lastline - editor:LinesOnScreen()),
-        firstvisible)
-      MarkupStyle(editor,minupdated or firstline,lastline)
+      local firstvisible = editor:GetFirstVisibleLine()
+      local firstline = editor:DocLineFromVisible(firstvisible)
+      local lastline = editor:DocLineFromVisible(firstvisible + editor:LinesOnScreen())
+      -- cap last line at the number of lines in the document
+      MarkupStyle(editor, minupdated or firstline, math.min(editor:GetLineCount(),lastline))
       editor.ev = {}
     end)
 
@@ -1272,16 +1280,6 @@ function CreateEditor(bare)
         if event:ShiftDown() -- mark selection and scroll to caret
         then editor:SetCurrentPos(pos) editor:EnsureCaretVisible()
         else editor:GotoPos(pos) end
-      elseif mod == wx.wxMOD_RAW_CONTROL and keycode == wx.WXK_PAGEUP
-        or mod == (wx.wxMOD_RAW_CONTROL + wx.wxMOD_SHIFT) and keycode == wx.WXK_TAB then
-        if notebook:GetSelection() == first
-        then notebook:SetSelection(last)
-        else notebook:AdvanceSelection(false) end
-      elseif mod == wx.wxMOD_RAW_CONTROL
-        and (keycode == wx.WXK_PAGEDOWN or keycode == wx.WXK_TAB) then
-        if notebook:GetSelection() == last
-        then notebook:SetSelection(first)
-        else notebook:AdvanceSelection(true) end
       elseif (keycode == wx.WXK_DELETE or keycode == wx.WXK_BACK)
         and (mod == wx.wxMOD_NONE) then
         -- Delete and Backspace behave the same way for selected text
@@ -1393,21 +1391,36 @@ function CreateEditor(bare)
       event:Skip()
     end)
 
-  local pos, value, instances
+  if ide.osname == "Windows" then
+    editor:DragAcceptFiles(true)
+    editor:Connect(wx.wxEVT_DROP_FILES,function(evt)
+        local files = evt:GetFiles()
+        if not files or #files == 0 then return end
+        for _, f in ipairs(files) do
+          LoadFile(f,nil,true)
+        end
+      end)
+  end
+
+  local pos
+  local function getPositionValues()
+    local p = pos or editor:GetCurrentPos()
+    local value = p ~= wxstc.wxSTC_INVALID_POSITION and editor:ValueFromPosition(p) or nil
+    local instances = value and indicateFindInstances(editor, value, p+1)
+    return p, value, instances
+  end
   editor:Connect(wx.wxEVT_CONTEXT_MENU,
     function (event)
       local point = editor:ScreenToClient(event:GetPosition())
-      pos = editor:PositionFromPointClose(point.x, point.y)
-      value = pos ~= wxstc.wxSTC_INVALID_POSITION and editor:ValueFromPosition(pos) or nil
-      instances = value and indicateFindInstances(editor, value, pos+1)
+      -- capture the position of the click to use in handlers later
+      pos = editor:PositionFromPoint(point)
 
+      local _, _, instances = getPositionValues()
       local occurrences = (not instances or #instances == 0) and ""
-        or ("  (%d)"):format(#instances+(instances[0] and 1 or 0))
+        or (" (%d)"):format(#instances+(instances[0] and 1 or 0))
       local line = instances and instances[0] and editor:LineFromPosition(instances[0]-1)+1
       local def =  line and " ("..TR("on line %d"):format(line)..")" or ""
-      local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
-
-      local menu = wx.wxMenu {
+      local menu = ide:MakeMenu {
         { ID_UNDO, TR("&Undo") },
         { ID_REDO, TR("&Redo") },
         { },
@@ -1416,27 +1429,15 @@ function CreateEditor(bare)
         { ID_PASTE, TR("&Paste") },
         { ID_SELECTALL, TR("Select &All") },
         { },
-        { ID_GOTODEFINITION, TR("Go To Definition")..def },
-        { ID_RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences },
-        { ID_REPLACEALLSELECTIONS, TR("Replace All Selections") },
+        { ID_GOTODEFINITION, TR("Go To Definition")..def..KSC(ID_GOTODEFINITION) },
+        { ID_RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences..KSC(ID_RENAMEALLINSTANCES) },
+        { ID_REPLACEALLSELECTIONS, TR("Replace All Selections")..KSC(ID_REPLACEALLSELECTIONS) },
         { },
-        { ID_QUICKADDWATCH, TR("Add Watch Expression") },
-        { ID_QUICKEVAL, TR("Evaluate In Console") },
-        { ID_ADDTOSCRATCHPAD, TR("Add To Scratchpad") },
-        { ID_RUNTO, TR("Run To Cursor") },
+        { ID_QUICKADDWATCH, TR("Add Watch Expression")..KSC(ID_QUICKADDWATCH) },
+        { ID_QUICKEVAL, TR("Evaluate In Console")..KSC(ID_QUICKEVAL) },
+        { ID_ADDTOSCRATCHPAD, TR("Add To Scratchpad")..KSC(ID_ADDTOSCRATCHPAD) },
+        { ID_RUNTO, TR("Run To Cursor")..KSC(ID_RUNTO) },
       }
-
-      menu:Enable(ID_GOTODEFINITION, instances and instances[0])
-      menu:Enable(ID_RENAMEALLINSTANCES, instances and (instances[0] or #instances > 0)
-        or editor:GetSelectionStart() ~= editor:GetSelectionEnd())
-      menu:Enable(ID_REPLACEALLSELECTIONS, selections > 1)
-      menu:Enable(ID_QUICKADDWATCH, value ~= nil)
-      menu:Enable(ID_QUICKEVAL, value ~= nil)
-
-      local debugger = ide.debugger
-      menu:Enable(ID_ADDTOSCRATCHPAD, debugger.scratchpad
-        and debugger.scratchpad.editors and not debugger.scratchpad.editors[editor])
-
       -- disable calltips that could open over the menu
       local dwelltime = editor:GetMouseDwellTime()
       editor:SetMouseDwellTime(0) -- disable dwelling
@@ -1448,24 +1449,37 @@ function CreateEditor(bare)
 
       editor:PopupMenu(menu)
       editor:SetMouseDwellTime(dwelltime) -- restore dwelling
+      pos = nil -- reset the position
     end)
 
   editor:Connect(ID_RUNTO, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      if pos ~= wxstc.wxSTC_INVALID_POSITION then
-        ide:GetDebugger().runto(editor, editor:LineFromPosition(pos))
+      local pos = getPositionValues()
+      if pos and pos ~= wxstc.wxSTC_INVALID_POSITION then
+        ide:GetDebugger():RunTo(editor, editor:LineFromPosition(pos)+1)
       end
     end)
 
+  editor:Connect(ID_GOTODEFINITION, wx.wxEVT_UPDATE_UI, function(event)
+      local _, _, instances = getPositionValues()
+      event:Enable(instances and instances[0])
+    end)
   editor:Connect(ID_GOTODEFINITION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event)
+      local _, value, instances = getPositionValues()
       if value and instances[0] then
         navigateToPosition(editor, editor:GetCurrentPos(), instances[0]-1, #value)
       end
     end)
 
+  editor:Connect(ID_RENAMEALLINSTANCES, wx.wxEVT_UPDATE_UI, function(event)
+      local _, _, instances = getPositionValues()
+      event:Enable(instances and (instances[0] or #instances > 0)
+        or editor:GetSelectionStart() ~= editor:GetSelectionEnd())
+    end)
   editor:Connect(ID_RENAMEALLINSTANCES, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event)
+      local pos, value, instances = getPositionValues()
       if value and pos then
         if not (instances and (instances[0] or #instances > 0)) then
           -- if multiple instances (of a variable) are not detected,
@@ -1476,7 +1490,7 @@ function CreateEditor(bare)
             editor:SetTargetStart(pos)
             editor:SetTargetEnd(length)
             pos = editor:SearchInTarget(value)
-            if pos == -1 then break end
+            if pos == wx.wxNOT_FOUND then break end
             table.insert(instances, pos+1)
             pos = pos + #value
           end
@@ -1485,6 +1499,9 @@ function CreateEditor(bare)
       end
     end)
 
+  editor:Connect(ID_REPLACEALLSELECTIONS, wx.wxEVT_UPDATE_UI, function(event)
+      event:Enable((ide.wxver >= "2.9.5" and editor:GetSelections() or 1) > 1)
+    end)
   editor:Connect(ID_REPLACEALLSELECTIONS, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event)
       local main = editor:GetMainSelection()
@@ -1508,14 +1525,31 @@ function CreateEditor(bare)
       editor:SetMainSelection(main)
     end)
 
-  editor:Connect(ID_QUICKADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function(event) ide:AddWatch(value) end)
+  editor:Connect(ID_QUICKADDWATCH, wx.wxEVT_UPDATE_UI, function(event)
+      local _, value = getPositionValues()
+      event:Enable(value ~= nil)
+    end)
+  editor:Connect(ID_QUICKADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+      local _, value = getPositionValues()
+      ide:AddWatch(value)
+    end)
 
-  editor:Connect(ID_QUICKEVAL, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function(event) ShellExecuteCode(value) end)
+  editor:Connect(ID_QUICKEVAL, wx.wxEVT_UPDATE_UI, function(event)
+      local _, value = getPositionValues()
+      event:Enable(value ~= nil)
+    end)
+  editor:Connect(ID_QUICKEVAL, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+      local _, value = getPositionValues()
+      ShellExecuteCode(value)
+    end)
 
+  editor:Connect(ID_ADDTOSCRATCHPAD, wx.wxEVT_UPDATE_UI, function(event)
+      local debugger = ide:GetDebugger()
+      event:Enable(debugger.scratchpad
+        and debugger.scratchpad.editors and not debugger.scratchpad.editors[editor])
+    end)
   editor:Connect(ID_ADDTOSCRATCHPAD, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function(event) DebuggerScratchpadOn(editor) end)
+    function(event) ide:GetDebugger():ScratchpadOn(editor) end)
 
   return editor
 end
@@ -1523,7 +1557,7 @@ end
 -- ----------------------------------------------------------------------------
 -- Add an editor to the notebook
 function AddEditor(editor, name)
-  assert(notebook:GetPageIndex(editor) == -1, "Editor being added is not in the notebook: failed")
+  assert(notebook:GetPageIndex(editor) == wx.wxNOT_FOUND, "Editor being added is not in the notebook: failed")
 
   -- set the document properties
   local id = editor:GetId()

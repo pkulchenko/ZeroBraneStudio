@@ -26,7 +26,7 @@ return {
         table.insert(paths, p)
       end
       if not corona then
-        DisplayOutputLn("Can't find corona executable in any of the folders in PATH: "
+        ide:Print("Can't find corona executable in any of the folders in PATH: "
           ..table.concat(paths, ", "))
         return
       end
@@ -35,14 +35,14 @@ return {
 
     local file = GetFullPathIfExists(self:fworkdir(wfilename), 'main.lua')
     if not file then
-      DisplayOutputLn(("Can't find 'main.lua' file in the current project folder: '%s'.")
+      ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
         :format(self:fworkdir(wfilename)))
       return
     end
 
     if rundebug then
       -- start running the application right away
-      DebuggerAttachDefault({startwith = file, redirect = "r",
+      ide:GetDebugger():SetOptions({startwith = file, redirect = "r",
         runstart = ide.config.debugger.runonstart ~= false})
 
       local function needRefresh(mdbl, mdbc)
@@ -71,7 +71,7 @@ return {
             and ("Copied debugger ('mobdebug.lua') to '%s'."):format(mdbc)
             or ("Failed to copy debugger ('mobdebug.lua') to '%s': %s")
               :format(mdbc, wx.wxSysErrorMsg())
-          DisplayOutputLn(message)
+          ide:Print(message)
           if not copied then return end
         end
       end
@@ -97,6 +97,5 @@ return {
       function() if uhw and cfg.showconsole then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
   scratchextloop = true,
 }

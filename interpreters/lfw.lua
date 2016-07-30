@@ -18,7 +18,7 @@ return {
     exe = exe or exePath()
     local filepath = wfilename:GetFullPath()
     if rundebug then
-      DebuggerAttachDefault({basedir = self:fworkdir(wfilename),
+      ide:GetDebugger():SetOptions({basedir = self:fworkdir(wfilename),
         runstart = ide.config.debugger.runonstart == true})
 
       -- update arg to point to the proper file
@@ -29,7 +29,7 @@ return {
       filepath = tmpfile:GetFullPath()
       local f = io.open(filepath, "w")
       if not f then
-        DisplayOutputLn("Can't open temporary file '"..filepath.."' for writing.")
+        ide:Print("Can't open temporary file '"..filepath.."' for writing.")
         return
       end
       f:write(rundebug)
@@ -45,7 +45,7 @@ return {
         filepath = winapi.short_path(filepath)
       end
     end
-    local params = ide.config.arg.any or ide.config.arg.lua
+    local params = self:GetCommandLineArg("lua")
     local code = ([[-e "io.stdout:setvbuf('no')" "%s"]]):format(filepath)
     local cmd = '"'..exe..'" '..code..(params and " "..params or "")
 
@@ -69,7 +69,6 @@ return {
       and ide.config.path.projectdir or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
   scratchextloop = false,
   unhideanywindow = true,
   takeparameters = true,

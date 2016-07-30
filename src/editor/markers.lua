@@ -33,7 +33,7 @@ end
 local function getMarkers(editor)
   local edmarkers = {}
   local line = editor:MarkerNext(0, maskall)
-  while line > -1 do
+  while line ~= wx.wxNOT_FOUND do
     local markerval = editor:MarkerGet(line)
     for markertype, val in pairs(markertypes) do
       if bit.band(markerval, val) > 0 then
@@ -72,7 +72,7 @@ local function markersRefresh()
       for _, edmarker in ipairs(getMarkers(editor)) do
         local line, markertype = unpack(edmarker)
         local text = ("%d: %s"):format(line+1, FixUTF8(editor:GetLineDyn(line)))
-        ctrl:AppendItem(fileitem, text, image[markertype:upper()])
+        ctrl:AppendItem(fileitem, text:gsub("[\r\n]+$",""), image[markertype:upper()])
       end
 
       -- if no markers added, then remove the file from the markers list
@@ -90,7 +90,27 @@ end
 
 local function item2editor(item_id)
   for editor, cache in pairs(caches) do
-    if cache.fileitem:GetValue() == item_id:GetValue() then return editor end
+    if cache.fileitem and cache.fileitem:GetValue() == item_id:GetValue() then return editor end
+  end
+end
+
+local function clearAllMarkers(mtype)
+  local allmarkers = markers.settings.markers
+  for filepath, markers in pairs(allmarkers) do
+    if ide:IsProjectSubDirectory(filepath) then
+      local doc = ide:FindDocument(filepath)
+      local editor = doc and doc:GetEditor()
+      for m = #markers, 1, -1 do
+        local line, markertype = unpack(markers[m])
+        if markertype == mtype then
+          if editor then
+            editor:MarkerToggle(markertype, line, false)
+          else
+            table.remove(markers, m)
+          end
+        end
+      end
+    end
   end
 end
 
@@ -101,7 +121,7 @@ local function createMarkersWindow()
     wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   markers.markersCtrl = ctrl
-  ide.timers.markers = wx.wxTimer(ctrl)
+  ide.timers.markers = ide:AddTimer(ctrl, function() markersRefresh() end)
 
   ctrl:AddRoot("Markers")
   ctrl:SetImageList(markers.imglist)
@@ -127,6 +147,7 @@ local function createMarkersWindow()
               return -- don't activate the editor when the breakpoint is toggled
             end
             editor:GotoLine(line-1)
+            editor:EnsureVisibleEnforcePolicy(line-1)
           end
           ide:GetDocument(editor):SetActive()
         end
@@ -147,7 +168,6 @@ local function createMarkersWindow()
     return true
   end
 
-  ctrl:Connect(wx.wxEVT_TIMER, function() markersRefresh() end)
   ctrl:Connect(wx.wxEVT_LEFT_DOWN, activateByPosition)
   ctrl:Connect(wx.wxEVT_LEFT_DCLICK, activateByPosition)
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED, function(event)
@@ -159,9 +179,12 @@ local function createMarkersWindow()
       local item_id = event:GetItem()
       local ID_BOOKMARKTOGGLE = ID("markers.bookmarktoggle")
       local ID_BREAKPOINTTOGGLE = ID("markers.breakpointtoggle")
-      local menu = wx.wxMenu {
+      local menu = ide:MakeMenu {
         { ID_BOOKMARKTOGGLE, TR("Toggle Bookmark"), TR("Toggle bookmark") },
         { ID_BREAKPOINTTOGGLE, TR("Toggle Breakpoint"), TR("Toggle breakpoint") },
+        { },
+        { ID_BOOKMARKCLEAR, TR("Clear Bookmarks In Project")..KSC(ID_BOOKMARKCLEAR) },
+        { ID_BREAKPOINTCLEAR, TR("Clear Breakpoints In Project")..KSC(ID_BREAKPOINTCLEAR) },
       }
       local activate = function() ctrl:ActivateItem(item_id, true) end
       menu:Enable(ID_BOOKMARKTOGGLE, ctrl:GetItemImage(item_id) == image.BOOKMARK)
@@ -191,6 +214,23 @@ end
 createMarkersWindow()
 
 local package = ide:AddPackage('core.markers', {
+    onRegister = function(self)
+      local bmmenu = ide:FindMenuItem(ID_BOOKMARK):GetSubMenu()
+      bmmenu:AppendSeparator()
+      bmmenu:Append(ID_BOOKMARKCLEAR, TR("Clear Bookmarks In Project")..KSC(ID_BOOKMARKCLEAR))
+
+      local bpmenu = ide:FindMenuItem(ID_BREAKPOINT):GetSubMenu()
+      bpmenu:AppendSeparator()
+      bpmenu:Append(ID_BREAKPOINTCLEAR, TR("Clear Breakpoints In Project")..KSC(ID_BREAKPOINTCLEAR))
+
+      ide:GetMainFrame():Connect(ID_BOOKMARKCLEAR, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+          clearAllMarkers("bookmark")
+        end)
+      ide:GetMainFrame():Connect(ID_BREAKPOINTCLEAR, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+          clearAllMarkers("breakpoint")
+        end)
+    end,
+
     -- save markers; remove tab from the list
     onEditorClose = function(self, editor)
       local cache = caches[editor]
@@ -210,7 +250,11 @@ local package = ide:AddPackage('core.markers', {
       -- if no marker, then all markers in a file need to be refreshed
       if not caches[editor] then caches[editor] = {} end
       needRefresh(editor)
-      markers:SaveMarkers(editor)
+      -- delay saving markers as other EditorMarkerUpdate handlers may still modify them,
+      -- but check to make sure that the editor is still valid
+      ide:DoWhenIdle(function()
+          if ide:IsValidCtrl(editor) then markers:SaveMarkers(editor) end
+        end)
     end,
 
     onEditorSave = function(self, editor) markers:SaveMarkers(editor) end,
@@ -221,6 +265,7 @@ function markers:SaveSettings() package:SetSettings(self.settings) end
 
 function markers:SaveMarkers(editor, force)
   -- if the file has the name and has not been modified, save the breakpoints
+  -- this also works when the file is saved as the modified flag is already set to `false`
   local doc = ide:GetDocument(editor)
   local filepath = doc:GetFilePath()
   if filepath and (force or not doc:IsModified()) then
@@ -232,14 +277,12 @@ function markers:SaveMarkers(editor, force)
 end
 
 function markers:LoadMarkers(editor)
-  -- if the file has the name and has not been modified, save the breakpoints
   local doc = ide:GetDocument(editor)
   local filepath = doc:GetFilePath()
   if filepath then
     for _, edmarker in ipairs(self.settings.markers[filepath] or {}) do
       local line, markertype = unpack(edmarker)
-      local _ = (markertype == "bookmark" and editor:BookmarkToggle(line, true)
-        or markertype == "breakpoint" and editor:BreakpointToggle(line, true))
+      editor:MarkerToggle(markertype, line, true)
     end
   end
 end

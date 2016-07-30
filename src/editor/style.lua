@@ -91,18 +91,27 @@ function StylesGetDefault()
 end
 
 local markers = {
-  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, wx.wxColour(196, 64, 64), wx.wxColour(220, 64, 64)},
-  bookmark = {1, wxstc.wxSTC_MARK_SHORTARROW, wx.wxColour(16, 96, 128), wx.wxColour(96, 160, 220)},
-  currentline = {2, wxstc.wxSTC_MARK_ARROW, wx.wxColour(16, 128, 16), wx.wxColour(64, 220, 64)},
-  message = {3, wxstc.wxSTC_MARK_CHARACTER+(' '):byte(), wx.wxBLACK, wx.wxColour(220, 220, 220)},
-  output = {4, wxstc.wxSTC_MARK_BACKGROUND, wx.wxBLACK, wx.wxColour(240, 240, 240)},
-  prompt = {5, wxstc.wxSTC_MARK_ARROWS, wx.wxBLACK, wx.wxColour(220, 220, 220)},
-  error = {6, wxstc.wxSTC_MARK_BACKGROUND, wx.wxBLACK, wx.wxColour(255, 220, 220)},
-  searchmatchfile = {7, wxstc.wxSTC_MARK_EMPTY, wx.wxBLACK, wx.wxColour(196, 0, 0)},
+  breakpoint = {0, wxstc.wxSTC_MARK_CIRCLE, {196, 64, 64}, {220, 64, 64}},
+  bookmark = {1, wxstc.wxSTC_MARK_SHORTARROW, {16, 96, 128}, {96, 160, 220}},
+  currentline = {2, wxstc.wxSTC_MARK_ARROW, {16, 128, 16}, {64, 220, 64}},
+  message = {3, wxstc.wxSTC_MARK_CHARACTER+(' '):byte(), {0, 0, 0}, {220, 220, 220}},
+  output = {4, wxstc.wxSTC_MARK_BACKGROUND, {0, 0, 0}, {240, 240, 240}},
+  prompt = {5, wxstc.wxSTC_MARK_ARROWS, {0, 0, 0}, {220, 220, 220}},
+  error = {6, wxstc.wxSTC_MARK_BACKGROUND, {0, 0, 0}, {255, 220, 220}},
+  searchmatchfile = {7, wxstc.wxSTC_MARK_EMPTY, {0, 0, 0}, {196, 0, 0}},
 }
-function StylesGetMarker(marker) return unpack(markers[marker] or {}) end
+
+local function tint(c)
+  return ide.config.markertint and ide:GetTintedColor(c, ide.config.imagetint) or c
+end
+
+function StylesGetMarker(marker)
+  local id, ch, fg, bg = unpack(markers[marker] or {})
+  return id, ch, fg and wx.wxColour(unpack(tint(fg))), bg and wx.wxColour(unpack(tint(bg)))
+end
 function StylesRemoveMarker(marker) markers[marker] = nil end
 function StylesAddMarker(marker, ch, fg, bg)
+  if type(fg) ~= "table" or type(bg) ~= "table" then return end
   local num = (markers[marker] or {})[1]
   if not num then -- new marker; find the smallest available marker number
     local nums = {}
@@ -110,7 +119,7 @@ function StylesAddMarker(marker, ch, fg, bg)
     num = #nums + 1
     if num > 24 then return end -- 24 markers with no pre-defined functions
   end
-  markers[marker] = {num, ch, wx.wxColour(unpack(fg)), wx.wxColour(unpack(bg))}
+  markers[marker] = {num, ch, fg, bg}
   return num
 end
 
@@ -230,8 +239,8 @@ local specialmapping = {
     for m, style in pairs(markers) do
       local id, ch, fg, bg = StylesGetMarker(m)
       if style.ch then ch = style.ch end
-      if style.fg then fg = wx.wxColour(unpack(style.fg)) end
-      if style.bg then bg = wx.wxColour(unpack(style.bg)) end
+      if style.fg then fg = wx.wxColour(unpack(tint(style.fg))) end
+      if style.bg then bg = wx.wxColour(unpack(tint(style.bg))) end
       editor:MarkerDefine(id, ch, fg, bg)
     end
   end,
@@ -367,18 +376,18 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     local varmasked = ide:AddIndicator("core.varmasked")
     local searchmatch = ide:AddIndicator("core.searchmatch")
 
-    editor:IndicatorSetStyle(fncall, indic.fncall and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
-    editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(indic.fncall and indic.fncall.fg or {128, 128, 255})))
-    editor:IndicatorSetStyle(varlocal, indic.varlocal and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
-    editor:IndicatorSetForeground(varlocal, wx.wxColour(unpack(indic.varlocal and indic.varlocal.fg or defaultfg)))
-    editor:IndicatorSetStyle(varglobal, indic.varglobal and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
-    editor:IndicatorSetForeground(varglobal, wx.wxColour(unpack(indic.varglobal and indic.varglobal.fg or defaultfg)))
-    editor:IndicatorSetStyle(varmasking, indic.varmasking and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)
-    editor:IndicatorSetForeground(varmasking, wx.wxColour(unpack(indic.varmasking and indic.varmasking.fg or defaultfg)))
-    editor:IndicatorSetStyle(varmasked, indic.varmasked and indic.varmasked.st or wxstc.wxSTC_INDIC_STRIKE)
-    editor:IndicatorSetForeground(varmasked, wx.wxColour(unpack(indic.varmasked and indic.varmasked.fg or defaultfg)))
-    editor:IndicatorSetStyle(searchmatch, indic.searchmatch and indic.searchmatch.st or wxstc.wxSTC_INDIC_BOX)
-    editor:IndicatorSetForeground(searchmatch, wx.wxColour(unpack(indic.searchmatch and indic.searchmatch.fg or {196, 0, 0})))
+    editor:IndicatorSetStyle(fncall, type(indic.fncall) == type{} and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(type(indic.fncall) == type{} and indic.fncall.fg or {128, 128, 255})))
+    editor:IndicatorSetStyle(varlocal, type(indic.varlocal) == type{} and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
+    editor:IndicatorSetForeground(varlocal, wx.wxColour(unpack(type(indic.varlocal) == type{} and indic.varlocal.fg or defaultfg)))
+    editor:IndicatorSetStyle(varglobal, type(indic.varglobal) == type{} and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
+    editor:IndicatorSetForeground(varglobal, wx.wxColour(unpack(type(indic.varglobal) == type{} and indic.varglobal.fg or defaultfg)))
+    editor:IndicatorSetStyle(varmasking, type(indic.varmasking) == type{} and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)
+    editor:IndicatorSetForeground(varmasking, wx.wxColour(unpack(type(indic.varmasking) == type{} and indic.varmasking.fg or defaultfg)))
+    editor:IndicatorSetStyle(varmasked, type(indic.varmasked) == type{} and indic.varmasked.st or wxstc.wxSTC_INDIC_STRIKE)
+    editor:IndicatorSetForeground(varmasked, wx.wxColour(unpack(type(indic.varmasked) == type{} and indic.varmasked.fg or defaultfg)))
+    editor:IndicatorSetStyle(searchmatch, type(indic.searchmatch) == type{} and indic.searchmatch.st or wxstc.wxSTC_INDIC_BOX)
+    editor:IndicatorSetForeground(searchmatch, wx.wxColour(unpack(type(indic.searchmatch) == type{} and indic.searchmatch.fg or {196, 0, 0})))
   end
 end
 

@@ -47,7 +47,7 @@ do
     local exec = tool.exec
     if (exec and cnt < maxcnt and exec.name and exec.fn and exec.description) then
       local id = name2id(tool.fname)
-      table.insert(toolArgs,{id, TR(exec.name) .. KSC(id), exec.description})
+      table.insert(toolArgs,{id, (TR)(exec.name) .. KSC(id), exec.description})
       -- flag it
       tool._execid = id
       cnt = cnt + 1
@@ -72,7 +72,7 @@ end
 if (cnt > 1) then
 
   -- Build Menu
-  local toolMenu = wx.wxMenu{
+  local toolMenu = ide:MakeMenu {
     unpack(toolArgs)
   }
   menuBar:Append(toolMenu, "&Tools")
@@ -94,7 +94,7 @@ function ToolsAddTool(name, command, updateui)
     local helpMenu, helpindex = ide:FindTopMenu('&Help')
     if not helpMenu then helpindex = ide:GetMenuBar():GetMenuCount() end
 
-    toolMenu = wx.wxMenu{}
+    toolMenu = ide:MakeMenu {}
     menuBar:Insert(helpindex, toolMenu, "&Tools")
   end
   local id = name2id(name)

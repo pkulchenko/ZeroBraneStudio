@@ -13,6 +13,8 @@ ide.proto.Document = {__index = {
   GetTabIndex = function(self) return self.index end,
   IsModified = function(self) return self.isModified end,
   IsNew = function(self) return self.filePath == nil end,
+  SetFilePath = function(self, path) self.filePath = path end,
+  SetModTime = function(self, modtime) self.modTime = modtime end,
   SetModified = function(self, modified)
     self.isModified = modified
     self:SetTabText()
@@ -46,20 +48,33 @@ ide.proto.Interpreter = {__index = {
   GetFileName = function(self) return self.fname end,
   GetExePath = function(self, ...) return self:fexepath(...) end,
   GetAPI = function(self) return self.api end,
+  GetCommandLineArg = function(self, name)
+    return ide.config.arg and (ide.config.arg.any or ide.config.arg[name or self.fname])
+  end,
+  UpdateStatus = function(self)
+    local cla = self.takeparameters and self:GetCommandLineArg()
+    ide:SetStatus(self.name..(cla and #cla > 0 and ": "..cla or ""), 4)
+  end,
   fprojdir = function(self,wfilename)
     return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
-  fworkdir = function (self,wfilename)
+  fworkdir = function(self,wfilename)
     local proj = ide:GetProject()
     return proj and proj:gsub("[\\/]$","") or wfilename:GetPath(wx.wxPATH_GET_VOLUME)
   end,
+  fattachdebug = function(self) ide:GetDebugger():SetOptions() end,
 }}
 
 ide.proto.Debugger = {__index = {
   IsRunning = function(self) return self.running end,
   IsConnected = function(self) return self.server end,
+  IsListening = function(self) return self.listening end,
   GetHostName = function(self) return self.hostname end,
   GetPortNumber = function(self) return self.portnumber end,
+  GetConsole = function(self)
+    local debugger = self
+    return function(...) return debugger:shell(...) end
+  end
 }}
 
 ide.proto.ID = {

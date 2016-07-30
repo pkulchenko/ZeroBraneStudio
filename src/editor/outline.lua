@@ -10,6 +10,7 @@ ide.outline = {
     ignoredirs = {},
   },
   needsaving = false,
+  needrefresh = nil,
   indexqueue = {[0] = {}},
   indexpurged = false, -- flag that the index has been purged from old records; once per session
 }
@@ -266,8 +267,8 @@ local function createOutlineWindow()
     + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   outline.outlineCtrl = ctrl
-  ide.timers.outline = wx.wxTimer(ctrl, REFRESH)
-  ide.timers.symbolindex = wx.wxTimer(ctrl, REINDEX)
+  ide.timers.outline = ide:AddTimer(ctrl, function() outlineRefresh(GetEditor(), false) end)
+  ide.timers.symbolindex = ide:AddTimer(ctrl, function() ide:DoWhenIdle(indexFromQueue) end)
 
   ctrl:AddRoot("Outline")
   ctrl:SetImageList(outline.imglist)
@@ -316,10 +317,6 @@ local function createOutlineWindow()
     return true
   end
 
-  ctrl:Connect(wx.wxEVT_TIMER, function(event)
-      if event:GetId() == REFRESH then outlineRefresh(GetEditor(), false) end
-      if event:GetId() == REINDEX then ide:DoWhenIdle(indexFromQueue) end
-    end)
   ctrl:Connect(wx.wxEVT_LEFT_DOWN, activateByPosition)
   ctrl:Connect(wx.wxEVT_LEFT_DCLICK, activateByPosition)
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED, function(event)
@@ -340,7 +337,7 @@ local function createOutlineWindow()
 
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
     function (event)
-      local menu = wx.wxMenu {
+      local menu = ide:MakeMenu {
         { ID_OUTLINESORT, TR("Sort By Name"), "", wx.wxITEM_CHECK },
       }
       menu:Check(ID_OUTLINESORT, ide.config.outline.sort)
@@ -492,6 +489,9 @@ local package = ide:AddPackage('core.outline', {
         -- this is somehow caused by `ExpandAllChildren` triggered from `SetFocus` inside
         -- `PAGE_CHANGED` handler for the notebook.
         ide:DoWhenIdle(function()
+            -- check if this editor is still in the cache,
+            -- as it may be closed before this handler is executed
+            if not caches[editor] then return end
             ctrl:SetItemBold(fileitem, true)
             if (ide.config.outline or {}).showcompact then
               ctrl:Expand(fileitem)
@@ -507,14 +507,14 @@ local package = ide:AddPackage('core.outline', {
     onMenuFiletree = function(self, menu, tree, event)
       local item_id = event:GetItem()
       local name = tree:GetItemFullName(item_id)
-      local symboldirmenu = wx.wxMenu {
+      local symboldirmenu = ide:MakeMenu {
         {ID_SYMBOLDIRREFRESH, TR("Refresh Index"), TR("Refresh indexed symbols from files in the selected directory")},
         {ID_SYMBOLDIRDISABLE, TR("Disable Indexing For '%s'"):format(name), TR("Ignore and don't index symbols from files in the selected directory")},
       }
       local _, _, projdirpos = ide:FindMenuItem(ID_PROJECTDIR, menu)
       if projdirpos then
         local ignored = isIgnoredInIndex(name)
-        local enabledirmenu = wx.wxMenu()
+        local enabledirmenu = ide:MakeMenu {}
         local paths = {}
         for path in pairs(outline.settings.ignoredirs) do table.insert(paths, path) end
         table.sort(paths)
@@ -549,11 +549,23 @@ local package = ide:AddPackage('core.outline', {
        end
     end,
 
-    onEditorPainted = function(self, editor)
+    onEditorUpdateUI = function(self, editor, event)
+      -- only update when content or selection changes; ignore scrolling events
+      if bit.band(event:GetUpdated(), wxstc.wxSTC_UPDATE_CONTENT + wxstc.wxSTC_UPDATE_SELECTION) > 0 then
+        ide.outline.needrefresh = editor
+      end
+    end,
+
+    onIdle = function(self)
+      local editor = ide.outline.needrefresh
+      if not editor then return end
+
+      ide.outline.needrefresh = nil
+
       local ctrl = ide.outline.outlineCtrl
       if not ide:IsWindowShown(ctrl) then return end
 
-      local cache = caches[editor]
+      local cache = ide:IsValidCtrl(editor) and caches[editor]
       if not cache or not ide.config.outline.showcurrentfunction then return end
 
       local edpos = editor:GetCurrentPos()+1

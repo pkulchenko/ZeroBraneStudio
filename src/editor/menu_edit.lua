@@ -11,7 +11,7 @@ local ide = ide
 local frame = ide.frame
 local menuBar = frame.menuBar
 
-local editMenu = wx.wxMenu {
+local editMenu = ide:MakeMenu {
   { ID_CUT, TR("Cu&t")..KSC(ID_CUT), TR("Cut selected text to clipboard") },
   { ID_COPY, TR("&Copy")..KSC(ID_COPY), TR("Copy selected text to clipboard") },
   { ID_PASTE, TR("&Paste")..KSC(ID_PASTE), TR("Paste text from the clipboard") },
@@ -24,24 +24,24 @@ local editMenu = wx.wxMenu {
   { ID_AUTOCOMPLETE, TR("Complete &Identifier")..KSC(ID_AUTOCOMPLETE), TR("Complete the current identifier") },
   { ID_AUTOCOMPLETEENABLE, TR("Auto Complete Identifiers")..KSC(ID_AUTOCOMPLETEENABLE), TR("Auto complete while typing"), wx.wxITEM_CHECK },
   { },
+  { ID_SOURCE, TR("Source"), "", {
+    { ID_COMMENT, TR("C&omment/Uncomment")..KSC(ID_COMMENT), TR("Comment or uncomment current or selected lines") },
+    { ID_REINDENT, TR("Correct &Indentation")..KSC(ID_REINDENT), TR("Re-indent selected lines") },
+    { ID_FOLD, TR("&Fold/Unfold All")..KSC(ID_FOLD), TR("Fold or unfold all code folds") },
+    { ID_FOLDLINE, TR("Fold/Unfold Current &Line")..KSC(ID_FOLDLINE), TR("Fold or unfold current line") },
+    { ID_SORT, TR("&Sort")..KSC(ID_SORT), TR("Sort selected lines") },
+  } },
+  { ID_BOOKMARK, TR("Bookmark"), "", {
+    { ID_BOOKMARKTOGGLE, TR("Toggle Bookmark")..KSC(ID_BOOKMARKTOGGLE), TR("Toggle bookmark") },
+    { ID_BOOKMARKNEXT, TR("Go To Next Bookmark")..KSC(ID_BOOKMARKNEXT) },
+    { ID_BOOKMARKPREV, TR("Go To Previous Bookmark")..KSC(ID_BOOKMARKPREV) },
+  } },
+  { },
+  { ID_PREFERENCES, TR("Preferences"), "", {
+    { ID_PREFERENCESSYSTEM, TR("Settings: System")..KSC(ID_PREFERENCESSYSTEM) },
+    { ID_PREFERENCESUSER, TR("Settings: User")..KSC(ID_PREFERENCESUSER) },
+  } },
 }
-
-editMenu:Append(ID_SOURCE, TR("Source"), wx.wxMenu {
-  { ID_COMMENT, TR("C&omment/Uncomment")..KSC(ID_COMMENT), TR("Comment or uncomment current or selected lines") },
-  { ID_REINDENT, TR("Correct &Indentation")..KSC(ID_REINDENT), TR("Re-indent selected lines") },
-  { ID_FOLD, TR("&Fold/Unfold All")..KSC(ID_FOLD), TR("Fold or unfold all code folds") },
-  { ID_SORT, TR("&Sort")..KSC(ID_SORT), TR("Sort selected lines") },
-})
-editMenu:Append(ID_BOOKMARK, TR("Bookmark"), wx.wxMenu {
-  { ID_BOOKMARKTOGGLE, TR("Toggle Bookmark")..KSC(ID_BOOKMARKTOGGLE), TR("Toggle bookmark") },
-  { ID_BOOKMARKNEXT, TR("Go To Next Bookmark")..KSC(ID_BOOKMARKNEXT) },
-  { ID_BOOKMARKPREV, TR("Go To Previous Bookmark")..KSC(ID_BOOKMARKPREV) },
-})
-editMenu:AppendSeparator()
-editMenu:Append(ID_PREFERENCES, TR("Preferences"), wx.wxMenu {
-  { ID_PREFERENCESSYSTEM, TR("Settings: System")..KSC(ID_PREFERENCESSYSTEM) },
-  { ID_PREFERENCESUSER, TR("Settings: User")..KSC(ID_PREFERENCESUSER) },
-})
 menuBar:Append(editMenu, TR("&Edit"))
 
 editMenu:Check(ID_AUTOCOMPLETEENABLE, ide.config.autocomplete)
@@ -242,6 +242,7 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
       end
     end
 
+    local linetoggle = ide.config.editor.commentlinetoggle
     editor:BeginUndoAction()
     -- go last to first as selection positions we captured may be affected
     -- by text changes
@@ -250,9 +251,9 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
       local text = editor:GetLineDyn(line)
       local validline = (line == sline or line < eline or esel-editor:PositionFromLine(line) > 0)
       local _, cpos = text:find("^%s*"..qlc, pos)
-      if not comment and cpos and validline then
+      if (linetoggle or not comment) and cpos and validline then
         editor:DeleteRange(cpos-#lc+editor:PositionFromLine(line), #lc)
-      elseif comment and text:find("%S") and validline then
+      elseif (linetoggle or comment) and text:find("%S") and validline then
         editor:SetTargetStart(pos+editor:PositionFromLine(line)-1)
         editor:SetTargetEnd(editor:GetTargetStart())
         editor:ReplaceTarget(lc)
@@ -372,13 +373,21 @@ frame:Connect(ID_REINDENT, wx.wxEVT_COMMAND_MENU_SELECTED,
     processSelection(editor, function(buf) reIndent(editor, buf) end)
   end)
 
-frame:Connect(ID_FOLD, wx.wxEVT_UPDATE_UI,
-  function(event)
-    local editor = GetEditorWithFocus()
-    event:Enable(editor and editor:CanFold() or false)
-  end)
+local function canfold(event)
+  local editor = GetEditorWithFocus()
+  event:Enable(editor and editor:CanFold() or false)
+end
+
+frame:Connect(ID_FOLD, wx.wxEVT_UPDATE_UI, canfold)
 frame:Connect(ID_FOLD, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) GetEditorWithFocus():FoldSome() end)
+
+frame:Connect(ID_FOLDLINE, wx.wxEVT_UPDATE_UI, canfold)
+frame:Connect(ID_FOLDLINE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function (event)
+    local editor = GetEditorWithFocus()
+    editor:ToggleFold(editor:GetCurrentLine())
+  end)
 
 local BOOKMARK_MARKER = StylesGetMarker("bookmark")
 

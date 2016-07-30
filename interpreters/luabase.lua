@@ -1,13 +1,14 @@
 function MakeLuaInterpreter(version, name)
 
 local function exePath(self, version)
-  local version = tostring(version):gsub('%.','')
-  local mainpath = ide.editorFilename:gsub("[^/\\]+$","")
+  local version = tostring(version or ""):gsub('%.','')
+  local mainpath = ide:GetRootPath()
   local macExe = mainpath..([[bin/lua.app/Contents/MacOS/lua%s]]):format(version)
-  return ide.config.path['lua'..version]
-     or (ide.osname == "Windows" and mainpath..([[bin\lua%s.exe]]):format(version))
-     or (ide.osname == "Unix" and mainpath..([[bin/linux/%s/lua%s]]):format(ide.osarch, version))
-     or (wx.wxFileExists(macExe) and macExe or mainpath..([[bin/lua%s]]):format(version))
+  return (ide.config.path['lua'..version]
+    or (ide.osname == "Windows" and mainpath..([[bin\lua%s.exe]]):format(version))
+    or (ide.osname == "Unix" and mainpath..([[bin/linux/%s/lua%s]]):format(ide.osarch, version))
+    or (wx.wxFileExists(macExe) and macExe or mainpath..([[bin/lua%s]]):format(version))),
+  ide.config.path['lua'..version] ~= nil
 end
 
 return {
@@ -17,7 +18,7 @@ return {
   luaversion = version or '5.1',
   fexepath = exePath,
   frun = function(self,wfilename,rundebug)
-    local exe = self:fexepath(version or "")
+    local exe, iscustom = self:fexepath(version or "")
     local filepath = wfilename:GetFullPath()
 
     do
@@ -30,10 +31,10 @@ return {
         winapi.set_encoding(winapi.CP_UTF8)
         local shortpath = winapi.short_path(filepath)
         if shortpath == filepath then
-          DisplayOutputLn(
+          ide:Print(
             ("Can't get short path for a Unicode file name '%s' to open the file.")
             :format(filepath))
-          DisplayOutputLn(
+          ide:Print(
             ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
             :format(wfilename:GetVolume()))
         end
@@ -42,7 +43,7 @@ return {
     end
 
     if rundebug then
-      DebuggerAttachDefault({runstart = ide.config.debugger.runonstart == true})
+      ide:GetDebugger():SetOptions({runstart = ide.config.debugger.runonstart == true})
 
       -- update arg to point to the proper file
       rundebug = ('if arg then arg[0] = [[%s]] end '):format(filepath)..rundebug
@@ -52,13 +53,13 @@ return {
       filepath = tmpfile:GetFullPath()
       local f = io.open(filepath, "w")
       if not f then
-        DisplayOutputLn("Can't open temporary file '"..filepath.."' for writing.")
+        ide:Print("Can't open temporary file '"..filepath.."' for writing.")
         return
       end
       f:write(rundebug)
       f:close()
     end
-    local params = ide.config.arg.any or ide.config.arg.lua
+    local params = self:GetCommandLineArg("lua")
     local code = ([[-e "io.stdout:setvbuf('no')" "%s"]]):format(filepath)
     local cmd = '"'..exe..'" '..code..(params and " "..params or "")
 
@@ -70,7 +71,7 @@ return {
     end
 
     local cpath = os.getenv(envname)
-    if rundebug and cpath and not ide.config.path['lua'..(version or "")] then
+    if rundebug and cpath and not iscustom then
       -- prepend osclibs as the libraries may be needed for debugging,
       -- but only if no path.lua is set as it may conflict with system libs
       wx.wxSetEnv(envname, ide.osclibs..';'..cpath)
@@ -90,7 +91,6 @@ return {
     return pid
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
   scratchextloop = false,
   unhideanywindow = true,
   takeparameters = true,

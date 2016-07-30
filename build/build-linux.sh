@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# exit if the command line is empty
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 LIBRARY..."
+  exit 0
+fi
+
 case "$(uname -m)" in
 	x86_64)
 		FPIC="-fpic"
@@ -15,7 +21,7 @@ case "$(uname -m)" in
 		;;
 esac
 
-# ZBS binary directory
+# binary directory
 BIN_DIR="$(dirname "$PWD")/bin/linux/$ARCH"
 
 # temporary installation directory for dependencies
@@ -32,19 +38,16 @@ WXWIDGETS_BASENAME="wxWidgets"
 WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
 
 WXLUA_BASENAME="wxlua"
-WXLUA_URL="https://svn.code.sf.net/p/wxlua/svn/trunk"
+WXLUA_URL="https://github.com/pkulchenko/wxlua.git"
 
 LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-# exit if the command line is empty
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 LIBRARY..."
-  exit 0
-fi
+LUASEC_BASENAME="luasec-0.6"
+LUASEC_FILENAME="$LUASEC_BASENAME.zip"
+LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
-WXLUASTRIP="/strip"
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
 
@@ -70,11 +73,13 @@ for ARG in "$@"; do
   wxlua)
     BUILD_WXLUA=true
     ;;
+  luasec)
+    BUILD_LUASEC=true
+    ;;
   luasocket)
     BUILD_LUASOCKET=true
     ;;
   debug)
-    WXLUASTRIP=""
     WXWIDGETSDEBUG="--enable-debug=max --enable-debug_gdb"
     WXLUABUILD="Debug"
     ;;
@@ -103,9 +108,9 @@ if [ ! "$(which cmake)" ]; then
   exit 1
 fi
 
-# check for svn
-if [ ! "$(which svn)" ]; then
-  echo "Error: svn isn't found. Please install console SVN client."
+# check for git
+if [ ! "$(which git)" ]; then
+  echo "Error: git isn't found. Please install console GIT client."
   exit 1
 fi
 
@@ -187,8 +192,10 @@ fi
 
 # build wxLua
 if [ $BUILD_WXLUA ]; then
-  svn co "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to checkout wxLua"; exit 1; }
+  git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
+  git checkout wxwidgets311
+
   # the following patches wxlua source to fix live coding support in wxlua apps
   # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
   sed -i 's/\(m_wxlState = wxLuaState(wxlState.GetLuaState(), wxLUASTATE_GETSTATE|wxLUASTATE_ROOTSTATE);\)/\/\/ removed by ZBS build process \/\/ \1/' modules/wxlua/wxlcallb.cpp
@@ -199,12 +206,13 @@ if [ $BUILD_WXLUA ]; then
 
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
     -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
-    -DwxWidgets_COMPONENTS="stc;html;aui;adv;core;net;base" \
-    -DwxLuaBind_COMPONENTS="stc;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
+    -DwxWidgets_COMPONENTS="stc;gl;html;aui;adv;core;net;base" \
+    -DwxLuaBind_COMPONENTS="stc;gl;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
     -DwxLua_LUA_INCLUDE_DIR="$INSTALL_DIR/include" -DwxLua_LUA_LIBRARY="$INSTALL_DIR/lib/liblua.a" .
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
-  (cd modules/luamodule; make install$WXLUASTRIP)
+  (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/lib/libwx.so" ] || { echo "Error: libwx.so isn't found"; exit 1; }
+  [ "$WXLUABUILD" != "Debug" ] && strip --strip-unneeded "$INSTALL_DIR/lib/libwx.so"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
 fi
@@ -229,14 +237,42 @@ if [ $BUILD_LUASOCKET ]; then
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
 
+# build LuaSec
+if [ $BUILD_LUASEC ]; then
+  # build LuaSec
+  wget --no-check-certificate -c "$LUASEC_URL" -O "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
+  unzip "$LUASEC_FILENAME"
+  # the folder in the archive is "luasec-luasec-....", so need to fix
+  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
+  cd "$LUASEC_BASENAME"
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" \
+    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
+    -lssl -lcrypto \
+    || { echo "Error: failed to build LuaSec"; exit 1; }
+  cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAD"
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  cp src/https.lua "$INSTALL_DIR/share/lua/$LUAD/ssl"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" ] || { echo "Error: ssl.so isn't found"; exit 1; }
+  strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAD/ssl.so"
+  cd ..
+  rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
+fi
+
 # now copy the compiled dependencies to ZBS binary directory
 mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1; }
 [ $BUILD_LUA ] && cp "$INSTALL_DIR/bin/lua$LUAS" "$BIN_DIR"
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.so" "$BIN_DIR"
+
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
   cp "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" "$BIN_DIR/clibs$LUAS/mime"
   cp "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" "$BIN_DIR/clibs$LUAS/socket"
+fi
+
+if [ $BUILD_LUASEC ]; then
+  cp "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" "$BIN_DIR/clibs$LUAS"
+  cp "$INSTALL_DIR/share/lua/$LUAD/ssl.lua" ../lualibs
+  cp "$INSTALL_DIR/share/lua/$LUAD/ssl/https.lua" ../lualibs/ssl
 fi
 
 echo "*** Build has been successfully completed ***"
