@@ -17,6 +17,7 @@ The values shown are the default values.
 - `autoanalyzer = true`: enable autoanalyzer that adds scope aware indicators to variables (up to v0.50 it was spelled as `autoanalizer`).
 - `autorecoverinactivity = 10`: trigger saving autorecovery after N seconds of inactivity; set to `nil` to disable autorecovery.
 - `bordersize = 3`: set the size of the border (sash) between windows and panels (0.91+, updated default in 1.31+).
+- `commandlinehistorylength = 10`: set history length for command lines (1.31+); the history is kept across all projects.
 - `filehistorylength = 20`: set history length for files.
 - `hotexit = false`: enable quick exit without prompting to save files (0.71+).
 The changes in files and all unsaved buffers should be restored during the next launch.
