@@ -16,6 +16,8 @@ See [this post](http://forum.micasaverde.com/index.php/topic,3132.msg13469.html#
 
 It has been confirmed to work with **Vera 3**, **VeraLite**, and **VeraEdge** devices, but it *may* work with other versions of Vera devices as well.
 
+The support for debugging on **VeraPlus** still has some issues that are being worked on and are expected to be resolved shortly.
+
 If you are using **newer versions of Vera firmware** (UI6 or UI7), be sure to check [this answer in the FAQ](#will-the-ide-work-with-my-device-that-is-using-ui6).
 
 ## How can I check what version of the Vera plugin I have?
