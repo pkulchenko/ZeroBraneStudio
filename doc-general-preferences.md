@@ -93,6 +93,7 @@ both local and global variables are offered in a scope-aware way, so they are of
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
 - `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
+- `filetree.showchanges = true`: track and show file system changes in the filetree (1.40+).
 - `filetree.mousemove = true`: enable moving files and directories in the filetree using drag-and-drop (0.80+);
 set to `false` to disable.
 
