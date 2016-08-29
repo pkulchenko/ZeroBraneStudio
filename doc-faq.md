@@ -186,6 +186,11 @@ You can then use `require('mobdebug').start("domain-name", 8173)` in your applic
 
 If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
 
+## How do I restore default configuration for UI elements?
+
+If you made changes by moving panels/windows around and want to undo them,
+you can **restore** the original UI configuration by selecting `View | Default Layout`.
+
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
 You can **remove** the [configuration file](doc-general-preferences#session-configuration) ZeroBrane Studio is using to store these settings.
