@@ -23,10 +23,8 @@ You also get a product key that allows you to use _ZeroBrane Studio for Vera_ fr
 
 ## What Vera devices are supported?
 
-It has been tested with **Vera 3**, **VeraLite**, and **VeraEdge** devices, but it *may* work with other versions of Vera devices as well.
+The product has been tested with **VeraPlus**, **VeraEdge**, **VeraLite**, and **Vera 3** devices, but it *may* work with other Vera devices as well.
 You should feel free to buy and try if it works for you; if it doesn't, we can either try to make it work or refund your payment.
-
-If you are using **newer versions of Vera firmware** (UI6 or UI7), be sure to check [this answer in the FAQ](vera-faq#will-the-ide-work-with-my-device-that-is-using-ui6).
 
 ## What does non-commercial mean?
 
@@ -48,12 +46,12 @@ You can also download and use [ZeroBrane Studio](http://studio.zerobrane.com) be
 
 ## What if I need to change my Vera device? Will the product key still work?
 
-Yes, you can change your Vera device two times (from a device A to device B and then to device C).
-To continue using the product, you will need to request an extension or a new key by sending an email to [support@zerobrane.com](mailto:support@zerobrane.com).
+Yes, you can change your Vera device two times (from a device A to device B and then to device C or back to device A).
+In a rare case when this is not enough, to continue using the product you may request an extension or a new key by sending an email to [support@zerobrane.com](mailto:support@zerobrane.com).
 
 ## I have several Vera devices; how will this work in my case?
 
-When you start a debugging session and the IDE detects you have multiple devices, you will get a prompt to **select a particular device** you want to work with.
+When you start a debugging session and the IDE detects you have multiple devices, you will get prompted to **select a particular device** you want to work with.
 All the subsequent debugging and interactions will be done with that device.
 You won't be asked again until you restart ZeroBrane Studio.
 

@@ -14,11 +14,7 @@ See [this post](http://forum.micasaverde.com/index.php/topic,3132.msg13469.html#
 
 ## What Vera devices are supported?
 
-It has been confirmed to work with **Vera 3**, **VeraLite**, and **VeraEdge** devices, but it *may* work with other versions of Vera devices as well.
-
-The support for debugging on **VeraPlus** still has some issues that are being worked on and are expected to be resolved shortly.
-
-If you are using **newer versions of Vera firmware** (UI6 or UI7), be sure to check [this answer in the FAQ](#will-the-ide-work-with-my-device-that-is-using-ui6).
+It has been confirmed to work with **VeraPlus**, **VeraEdge**, **VeraLite**, and **Vera 3** devices, but it *may* work with other versions of Vera devices as well.
 
 ## How can I check what version of the Vera plugin I have?
 
@@ -41,6 +37,8 @@ by adding to the configuration file (`Edit | Preferences | Settings: User`) the 
 
 ## Will the IDE work with my device that is using UI6+?
 
+(**The auto-detection has been improveed since v0.27 of the Vera plugin, which is included with v1.40+, so no additional configuration should be needed.**)
+
 The auto-detection step that identifies the address of your device to connect to may not work if your device is using *UI6* or *UI7* firmware.
 If the debugging doesn't start or if you get an error message, you may manually configure the IDE to connect to your device
 by adding the following line to the configuration file (`Edit | Preferences | Settings: User`):
@@ -56,7 +54,8 @@ To make the file available for debugging, you can either open it in the IDE or c
 
 ## I had to reset the device and the debugging stopped working. What should I do?
 
-(This is done automatically since v0.14 of the Vera plugin, which is included with v0.50+)
+(**This is done automatically since v0.14 of the Vera plugin, which is included with v0.50+.**)
+
 If you reset all the files on the device, you probably removed one of the components that is needed for the debugging to work.
 To reset the current configuration, which will restore the removed component, you can run the following command in the Local console:
 `ide.packages.vera:SetSettings({regkey = ide.packages.vera:GetSettings().regkey})`.
