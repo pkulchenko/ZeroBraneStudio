@@ -119,8 +119,8 @@ ok(ac ~= nil and ac:find("concat") ~= nil,
   ("Auto-complete (strategy=%s) recognizes variables set based on `require`."):format(s))
 
 editor:SetText('')
-editor:AddText('local table = require("io")\nt = require("table")\nt.')
-local ac = CreateAutoCompList(editor, "t.")
+editor:AddText('local table = require("io")\nb = require("table")\nb.')
+local ac = CreateAutoCompList(editor, "b.")
 ok(ac ~= nil and ac:find("concat") ~= nil,
   ("Auto-complete (strategy=%s) recognizes variables set based on `require` even when it's re-assigned."):format(s))
 
