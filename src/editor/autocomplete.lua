@@ -214,8 +214,8 @@ local function resolveAssign(editor,tx)
     
     if (key and rest and tab.childs) then
       if (tab.childs[key]) then
-      return getclass(tab.childs[key],rest)
-    end
+        return getclass(tab.childs[key],rest)
+      end
       --walk inheritance if we weren't in childs
       if tab.inherits then 
         local bestTab = tab
@@ -276,7 +276,7 @@ local function resolveAssign(editor,tx)
         classname = classname or assigns[c..w]
         if (s ~= "" and old ~= classname) then
           -- continue checking unless this can lead to recursive substitution
-          change = not classname:find("^"..w) and not classname:find("^"..c..w)
+          change = not classname:find("^"..w..anysep) and not classname:find("^"..c..w..anysep)
           c = classname..s
         else
           c = c..w..s
@@ -581,14 +581,14 @@ function CreateAutoCompList(editor,key,pos)
       local tab = ac
       -- map "a.b.c" to class hierarchy (a.b.c)
       for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
-
+  
       if tab and not seen[tab] then
         seen[tab] = true
         for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
           table.insert(apilist, v)
         end
         addInheritance(tab, apilist, seen)
-      end
+    end
     end
   end
 
