@@ -917,8 +917,10 @@ end
 
 local watchers, watcher = {}
 local function watchDir(path)
-  local flags = wx.wxFSW_EVENT_CREATE + wx.wxFSW_EVENT_DELETE + wx.wxFSW_EVENT_RENAME
-  if watcher and not watchers[path] then watcher:Add(wx.wxFileName.DirName(path), flags) end
+  if watcher and not watchers[path] then
+    watcher:Add(wx.wxFileName.DirName(path),
+      wx.wxFSW_EVENT_CREATE + wx.wxFSW_EVENT_DELETE + wx.wxFSW_EVENT_RENAME)
+  end
   -- keep track of watchers even if `watcher` is not yet set to set them later
   watchers[path] = watcher ~= nil
 end
