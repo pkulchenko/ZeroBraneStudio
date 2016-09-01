@@ -147,4 +147,5 @@ return {
   end,
   hasdebugger = true,
   scratchextloop = true,
+  skipcompile = true, -- skip compilation as Gideros 2016.08+ includes bitops and macros
 }
