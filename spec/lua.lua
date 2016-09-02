@@ -216,6 +216,7 @@ return {
               assigns[var] = typ
             end
           else
+            if req then assigns[req] = nil end
             assigns[var] = typ
           end
         end
