@@ -201,20 +201,6 @@ return {
           local class,func = typ:match(varname.."["..q(sep).."]"..varname)
           if (assigns[typ] and not req) then
             assigns[var] = assigns[typ]
-          elseif (func) then
-            local added
-            local funcnames = {"new","load","create"}
-            for _,v in ipairs(funcnames) do
-              if (func == v) then
-                assigns[var] = class
-                added = true
-                break
-              end
-            end
-            if (not added) then
-              -- let's hope autocomplete info can resolve this
-              assigns[var] = typ
-            end
           else
             if req then assigns[req] = nil end
             assigns[var] = typ
