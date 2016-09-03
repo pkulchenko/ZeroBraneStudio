@@ -3,7 +3,14 @@
 
 local unpack = table.unpack or unpack
 local maxlines = 8
-local row_height = 46
+
+local dc = wx.wxMemoryDC()
+local function getFontHeight(font)
+  dc:SetFont(font)
+  local _, h = dc:GetTextExtent("AZ")
+  dc:SetFont(wx.wxNullFont)
+  return h
+end
 
 function CommandBarShow(params)
   local onDone, onUpdate, onItem, onSelection, defaultText, selectedText =
@@ -35,6 +42,20 @@ function CommandBarShow(params)
     pos = wx.wxDefaultPosition
   end
 
+  local tfont = ide:GetProjectTree():GetFont()
+  local ffont = (ide:GetEditor() or ide:CreateBareEditor()):GetFont()
+  ffont:SetPointSize(ffont:GetPointSize()+2)
+  local sfont = wx.wxFont(tfont)
+  tfont:SetPointSize(tfont:GetPointSize()+2)
+
+  local sash = ide:GetUIManager():GetArtProvider():GetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE)
+  local border = sash + 2
+  local hoffset = 4
+  local voffset = 2
+
+  local line_height = getFontHeight(ffont)
+  local row_height = line_height + getFontHeight(sfont) + voffset * 3 -- before, after, and between
+
   local frame = wx.wxFrame(ide:GetMainFrame(), wx.wxID_ANY, "Command Bar",
     pos, wx.wxDefaultSize,
     wx.wxFRAME_NO_TASKBAR + wx.wxFRAME_FLOAT_ON_PARENT + wx.wxNO_BORDER)
@@ -42,8 +63,8 @@ function CommandBarShow(params)
     wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxFULL_REPAINT_ON_RESIZE)
   local search = wx.wxTextCtrl(panel, wx.wxID_ANY, "\1",
     wx.wxDefaultPosition,
-    -- make the text control a bit smaller on OSX
-    wx.wxSize(row_width, ide.osname == 'Macintosh' and 20 or 24),
+    -- make the text control proportional to the font size
+    wx.wxSize(row_width, getFontHeight(tfont) + voffset),
     wx.wxTE_PROCESS_ENTER + wx.wxTE_PROCESS_TAB + wx.wxNO_BORDER)
   local results = wx.wxScrolledWindow(panel, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxSize(0, 0))
@@ -57,17 +78,13 @@ function CommandBarShow(params)
 
   search:SetBackgroundColour(backcolor)
   search:SetForegroundColour(textcolor)
+  search:SetFont(tfont)
 
   local nbrush = wx.wxBrush(backcolor, wx.wxSOLID)
   local sbrush = wx.wxBrush(selcolor, wx.wxSOLID)
   local bbrush = wx.wxBrush(pancolor, wx.wxSOLID)
   local lpen = wx.wxPen(borcolor, 1, wx.wxDOT)
   local bpen = wx.wxPen(borcolor, 1, wx.wxSOLID)
-
-  local sash = ide:GetUIManager():GetArtProvider():GetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE)
-  local border = sash + 2
-  local hoffset = 4
-  local voffset = 4
 
   local topSizer = wx.wxFlexGridSizer(2, 1, -border*2, 0)
   topSizer:SetFlexibleDirection(wx.wxVERTICAL)
@@ -78,13 +95,6 @@ function CommandBarShow(params)
   topSizer:Fit(frame) -- fit the frame/panel around the controls
 
   local minheight = frame:GetClientSize():GetHeight()
-
-  local tfont = ide:GetProjectTree():GetFont()
-  local ffont = (ide:GetEditor() or ide:CreateBareEditor()):GetFont()
-  ffont:SetPointSize(ffont:GetPointSize()+2)
-  local sfont = wx.wxFont(tfont)
-  tfont:SetPointSize(tfont:GetPointSize()+2)
-  search:SetFont(tfont)
 
   -- make a one-time callback;
   -- needed because KILL_FOCUS handler can be called after closing window
@@ -133,7 +143,7 @@ function CommandBarShow(params)
       end
       if sline then
         dc:SetFont(sfont)
-        dc:DrawText(sline, hoffset, row_height*(r-1)+row_height/2+voffset)
+        dc:DrawText(sline, hoffset, row_height*(r-1)+line_height+voffset*2)
       end
     end
 
