@@ -22,7 +22,6 @@ function CommandBarShow(params)
 
   local maxlines = ide.config.commandbar.maxlines
   local lines = {}
-  local linesnow = #lines
   local linenow = 0
 
   local nb = ide:GetEditorNotebook()
@@ -104,9 +103,11 @@ function CommandBarShow(params)
     frame:Close()
   end
 
+  local linesnow
   local function onPaint(event)
     -- adjust the scrollbar before working with the canvas
     local _, starty = results:GetViewStart()
+    -- recalculate the scrollbars if the number of lines shown has changed
     if #lines ~= linesnow then
       -- adjust the starting line when the current line is the last one
       if linenow > starty+maxlines then starty = starty + 1 end
@@ -190,6 +191,7 @@ function CommandBarShow(params)
   end
 
   local function onKeyDown(event)
+    local linesnow = #lines
     local keycode = event:GetKeyCode()
     if keycode == wx.WXK_RETURN then
       onExit(linenow)
