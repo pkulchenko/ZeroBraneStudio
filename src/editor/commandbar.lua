@@ -2,7 +2,6 @@
 ---------------------------------------------------------
 
 local unpack = table.unpack or unpack
-local maxlines = 8
 
 local dc = wx.wxMemoryDC()
 local function getFontHeight(font)
@@ -21,6 +20,7 @@ function CommandBarShow(params)
     row_width = math.max(450, math.floor(row_width * ide:GetMainFrame():GetClientSize():GetWidth()))
   end
 
+  local maxlines = ide.config.commandbar.maxlines
   local lines = {}
   local linesnow = #lines
   local linenow = 0
