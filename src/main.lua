@@ -154,6 +154,7 @@ ide = {
       shorttip = true,
       nodynwords = true,
       ignorecase = false,
+      fillups = nil,
       symbols = true,
       droprest = true,
       strategy = 2,

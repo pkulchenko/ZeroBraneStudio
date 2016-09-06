@@ -777,6 +777,9 @@ function CreateEditor(bare)
     editor:AutoCompSetAutoHide(0)
     editor:AutoCompStops([[ \n\t=-+():.,;*/!"'$%&~'#°^@?´`<>][|}{]])
   end
+  if ide.config.acandtip.fillups then
+    editor:AutoCompSetFillUps(ide.config.acandtip.fillups)
+  end
 
   function editor:GetTokenList() return self.tokenlist end
   function editor:ResetTokenList() self.tokenlist = {}; return self.tokenlist end
@@ -1000,7 +1003,7 @@ function CreateEditor(bare)
         if tip then
           if editor:CallTipActive() then editor:CallTipCancel() end
           if PackageEventHandle("onEditorCallTip", editor, tip) ~= false then
-            callTipFitAndShow(editor, pos, tip)
+            editor:DoWhenIdle(function(editor) callTipFitAndShow(editor, pos, tip) end)
           end
         end
 
