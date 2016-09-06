@@ -939,7 +939,7 @@ function CreateEditor(bare)
 
   editor:Connect(wxstc.wxEVT_STC_CHARADDED,
     function (event)
-      local LF = string.byte("\n")
+      local LF = string.byte("\n") -- `CHARADDED` gets `\n` code on all platforms
       local ch = event:GetKey()
       local pos = editor:GetCurrentPos()
       local line = editor:GetCurrentLine()
@@ -1078,8 +1078,12 @@ function CreateEditor(bare)
         return
       end
 
-      -- if used Shift-Enter, then skip auto complete and just do Enter
-      if wx.wxGetKeyState(wx.WXK_SHIFT) then return addOneLine(editor) end
+      -- if used Shift-Enter, then skip auto complete and just do Enter.
+      -- `lastkey` comparison can be replaced with checking `listCompletionMethod`,
+      -- but it's not exposed in wxSTC (as of wxwidgets 3.1.1)
+      if wx.wxGetKeyState(wx.WXK_SHIFT) and editor.lastkey == ("\r"):byte() then
+        return addOneLine(editor)
+      end
 
       if ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
         local text = event:GetText()
@@ -1336,6 +1340,8 @@ function CreateEditor(bare)
         end
         event:Skip()
       end
+
+      editor.lastkey = keycode
     end)
 
   local function selectAllInstances(instances, name, curpos)
