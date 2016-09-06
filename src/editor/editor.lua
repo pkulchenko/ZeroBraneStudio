@@ -1209,7 +1209,7 @@ function CreateEditor(bare)
 
   editor:Connect(wx.wxEVT_IDLE,
     function (event)
-      while #editor.onidle > 0 do table.remove(editor.onidle)(editor) end
+      while #editor.onidle > 0 do table.remove(editor.onidle, 1)(editor) end
     end)
 
   editor:Connect(wx.wxEVT_LEFT_DOWN,
