@@ -781,6 +781,8 @@ function CreateEditor(bare)
     editor:AutoCompSetFillUps(ide.config.acandtip.fillups)
   end
 
+  if ide:IsValidProperty(editor, "SetMultiPaste") then editor:SetMultiPaste(wxstc.wxSTC_MULTIPASTE_EACH) end
+
   function editor:GetTokenList() return self.tokenlist end
   function editor:ResetTokenList() self.tokenlist = {}; return self.tokenlist end
 
