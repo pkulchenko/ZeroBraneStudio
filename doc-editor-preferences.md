@@ -72,7 +72,7 @@ The description takes four parameters:
 To **combine several modifiers**, make a sum of their values: `wxstc.wxSTC_SCMOD_CTRL + wxstc.wxSTC_SCMOD_SHIFT`.
 On **OSX**, the Command key is mapped to `wxstc.wxSTC_SCMOD_CTRL` and the Control key to `wxstc.wxSTC_SCMOD_META`.
 - [Keyboard command](http://www.scintilla.org/ScintillaDoc.html#KeyboardCommands), which specify the action that needs to be tied to the key combination;
-- operating system, which is one of `'Windows'`, `'Macintosh'`, and `'Unix'` strings. If no operating system is specified, then the combination is available on all systems.
+- (optional) operating system, which is one of `'Windows'`, `'Macintosh'`, or `'Unix'` strings. If no operating system is specified, then the combination is available on all systems.
 
 Note that the editor key mapping is different from the IDE key mapping as the former only works when the editor is in focus and the latter may work when other components have focus.
 When there is a conflict, the IDE shortcuts take preference over editor shortcuts.
