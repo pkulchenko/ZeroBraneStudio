@@ -244,7 +244,22 @@ function EditorAutoComplete(editor)
   -- don't show if what's typed so far matches one of the options
   local right = linetx:sub(localpos+1,#linetx):match("^([%a_]+[%w_]*)")
   local left = lt:match("[%w_]*$") -- extract one word on the left (without separators)
-  if userList and #userList > 0 and not userList:find("%f[%w_]"..left..(right or "").."%f[^%w_]") then
+  local compmatch = {
+    left = "( ?)%f[%w_]"..left.."%f[^%w_]( ?)",
+    leftright = "( ?)%f[%w_]"..left..(right or "").."%f[^%w_]( ?)",
+  }
+  -- if the multiple selection is active, then remove the match from the `userList`,
+  -- as it's going to match a (possibly earlier) copy of the same value
+  local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
+  if userList and selections > 1 then
+    for _, m in pairs(compmatch) do
+      -- replace with a space only when there are spaces on both sides
+      userList = userList:gsub(m, function(s1, s2) return #(s1..s2) == 2 and " " or "" end)
+    end
+  end
+  if userList and #userList > 0
+  -- don't show autocomplete if there is a full match on the list of autocomplete options
+  and not (userList:find(compmatch.left) or userList:find(compmatch.leftright)) then
     editor:UserListShow(1, userList)
   elseif editor:AutoCompActive() then
     editor:AutoCompCancel()
