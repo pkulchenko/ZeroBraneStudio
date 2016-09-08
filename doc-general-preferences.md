@@ -153,11 +153,18 @@ For example, `abc/*.lua` will exclude all Lua files in `abc` directory, but not 
 
 ## Printing
 
-- `print.magnification = -3`: set font size used for printing relative to the screen font size.
+- `print.magnification = -3`: set font size used for printing relative to the screen font size (1.21+).
 - `print.wrapmode = wxstc.wxSTC_WRAP_WORD`: set the text wrapping to wrap on word and style boundaries for printed content (1.21+).
-Possible values: `wxstc.wxSTC_WRAP_WORD` (wrap on word or style boundaries), `wxstc.wxSTC_WRAP_CHAR` (wrap between any characters), `wxstc.wxSTC_WRAP_WHITESPACE` (wrap on whitespace), and `wxstc.wxSTC_WRAP_NONE` (no line wrapping).
+Possible values: `wxstc.wxSTC_WRAP_WORD` (wrap on word or style boundaries),
+`wxstc.wxSTC_WRAP_CHAR` (wrap between any characters),
+`wxstc.wxSTC_WRAP_WHITESPACE` (wrap on whitespace),
+and `wxstc.wxSTC_WRAP_NONE` (no line wrapping).
 - `print.colourmode = wxstc.wxSTC_PRINT_BLACKONWHITE`: set to print all text as black on white background (1.21+).
-Possible values: `wxstc.wxSTC_PRINT_NORMAL` (print using the current screen colors), `wxstc.wxSTC_PRINT_INVERTLIGHT` (invert colors for dark backgrounds), `wxstc.wxSTC_PRINT_BLACKONWHITE` (print all text as black on white background), `wxstc.wxSTC_COLOURONWHITE` (print everything in its own color on white background), and `wxstc.wxSTC_COLOURWHITEDEFAULTBG` (print everything in its own color on white background except line numbers that use their own background color).
+Possible values: `wxstc.wxSTC_PRINT_NORMAL` (print using the current screen colors),
+`wxstc.wxSTC_PRINT_INVERTLIGHT` (invert colors for dark backgrounds),
+`wxstc.wxSTC_PRINT_BLACKONWHITE` (print all text as black on white background),
+`wxstc.wxSTC_PRINT_COLOURONWHITE` (print everything in its own color on white background),
+and `wxstc.wxSTC_PRINT_COLOURWHITEDEFAULTBG` (print everything in its own color on white background except line numbers that use their own background color).
 - `print.header = "%S\t%D\t%p/%P"`: set the header for printed content (1.21+).
 - `print.footer = nil`: set the footer for printed content (1.21+).
 
