@@ -63,11 +63,11 @@ local function createFrame()
                 { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS) },
               }
               local cmdargs = ide:GetPackage("core.project"):GetCmdLines()
-              if #cmdargs > 0 then menu:PrependSeparator() end
+              local curargs = interpreter:GetCommandLineArg()
+              if #cmdargs > 1 or cmdargs[1] ~= curargs then menu:PrependSeparator() end
               local function setParams(ev) ide:SetCommandLineParameters(menu:GetLabel(ev:GetId())) end
               -- do in the reverse order as `Prepend` is used;
               -- skip the currently set parameters
-              local curargs = interpreter:GetCommandLineArg()
               for i = #cmdargs, 1, -1 do
                 if cmdargs[i] ~= curargs then
                   local id = ID("status.commandparameters."..i)
