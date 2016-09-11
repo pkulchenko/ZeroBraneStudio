@@ -76,9 +76,9 @@ set to `false` to collect all words from all open editor tabs and offer them as 
 set to `false` to show a long calltip.
 - `acandtip.startat = 2`: start suggesting dynamic words after N characters.
 - `acandtip.strategy = 2`: method of selecting auto-complete candidates:
-    - `0`: substring comparison (`fo`, but not `fb` matches `foo_bar`);
-    - `1`: substring leading characters, CamelCase or _ separated (`fo` and `fb`, but not `fa` match `foo_bar`);
-    - `2`: leading + any correctly ordered fragments (`fo`, `fa`, `fb`, but not `bf` match `foo_bar`).
+    - `0`: substring comparison (`fo`, but not `fb` matches `foo_bar` and `FooBar`);
+    - `1`: substring leading characters, CamelCase or `_` separated (`fo` and `fb`, but not `fa` match `foo_bar` and `FooBar`);
+    - `2`: leading + any correctly ordered fragments (`fo`, `fa`, `fb`, but not `bf` match `foo_bar` and `FooBar`).
 - `acandtip.symbols = true`: offer local and global variables in the current file in auto-complete (0.90+);
 both local and global variables are offered in a scope-aware way, so they are offered only in those scopes where they are available.
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
