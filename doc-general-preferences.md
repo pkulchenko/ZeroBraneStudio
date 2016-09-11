@@ -260,9 +260,11 @@ You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` i
 (1) by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
 (2) by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
 
-The parameters set using the first option will only be active until you exit the IDE. If you want to remove parameters, set the value to the empty string.
+(1.30+) Any configured parameters will be saved and restored on the next IDE launch.
 
-Some interpreters also allow interpreter specific arguments:
+(1.40+) The parameters will be saved per-project and restored when the project directory is updated.
+
+Some interpreters also allow interpreter specific arguments in configuration file(s):
 
 - `arg.lua`: set arguments for Lua interpreters,
 - `arg.love2d`: set arguments for LÖVE/Love2d interpreter, and
