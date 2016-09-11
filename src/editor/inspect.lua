@@ -147,13 +147,12 @@ function M.show_warnings(top_ast, globinit)
     -- which is very slow even on simple and short scripts
     if ide.config.staticanalyzer.infervalue and ast.isfield
     and not(known(ast.seevalue.value) and ast.seevalue.value ~= nil) then
-      if not fieldseen[name] then
-        fieldseen[name] = true
-        local var = index(ast.parent)
-        local parent = ast.parent and var
-          and (" in '"..var:gsub("%."..name.."$","").."'")
-          or ""
-
+      local var = index(ast.parent)
+      local parent = ast.parent and var
+        and (" in '"..var:gsub("%."..name.."$","").."'")
+        or ""
+      if not fieldseen[name..parent] then
+        fieldseen[name..parent] = true
         local tblref = ast.parent and ast.parent[1]
         local localparam = (tblref and tblref.localdefinition
           and tblref.localdefinition.isparam)
