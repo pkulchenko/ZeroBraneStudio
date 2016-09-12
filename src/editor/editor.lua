@@ -881,9 +881,16 @@ function CreateEditor(bare)
       elseif marginno == margin.FOLD then
         local header = bit.band(editor:GetFoldLevel(line),
           wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
-        if wx.wxGetKeyState(wx.WXK_SHIFT) and wx.wxGetKeyState(wx.WXK_CONTROL) then
+        local shift, ctrl = wx.wxGetKeyState(wx.WXK_SHIFT), wx.wxGetKeyState(wx.WXK_CONTROL)
+        if shift and ctrl then
           editor:FoldSome()
-        elseif header or wx.wxGetKeyState(wx.WXK_SHIFT) then
+        elseif ctrl then -- select the scope that was clicked on
+          local from = header and line or editor:GetFoldParent(line)
+          if from > -1 then -- only select if there is a block to select
+            local to = editor:GetLastChild(from, -1)
+            editor:SetSelection(editor:PositionFromLine(from), editor:PositionFromLine(to+1))
+          end
+        elseif header or shift then
           editor:ToggleFold(line)
         end
       end
