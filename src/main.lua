@@ -77,6 +77,7 @@ ide = {
       allowediting = false,
       verbose = false,
       hostname = nil,
+      linetobreakpoint = false,
       port = nil,
       runonstart = nil,
       redirect = nil,

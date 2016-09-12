@@ -444,7 +444,7 @@ function debugger:ActivateDocument(file, line, activatehow)
 
   PackageEventHandle("onDebuggerActivate", debugger, file, line, activated)
 
-  return activated ~= nil
+  return activated
 end
 
 function debugger:reSetBreakpoints()
@@ -883,6 +883,12 @@ function debugger:exec(command, func)
             -- activation has been canceled; nothing else needs to be done
             if activated == nil then return end
             if activated then
+              -- move cursor to the activated line if it's a breakpoint
+              if ide.config.debugger.linetobreakpoint
+              and command ~= "step" and debugger:stoppedAtBreakpoint(file, line)
+              and not debugger.breaking and ide:IsValidCtrl(activated) then
+                activated:GotoLine(line-1)
+              end
               debugger.stats.line = debugger.stats.line + 1
               if debugger.loop then
                 debugger:updateStackSync()
