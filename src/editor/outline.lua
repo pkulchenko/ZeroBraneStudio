@@ -37,7 +37,7 @@ local function resetOutlineTimer()
 end
 
 local function resetIndexTimer(interval)
-  if ide.config.symbolindexinactivity and not ide.timers.symbolindex:IsRunning() then
+  if ide.timers.symbolindex and ide.config.symbolindexinactivity and not ide.timers.symbolindex:IsRunning() then
     ide.timers.symbolindex:Start(interval or ide.config.symbolindexinactivity*1000, wx.wxTIMER_ONE_SHOT)
   end
 end
@@ -362,6 +362,7 @@ end
 
 local function eachNode(eachFunc, root, recursive)
   local ctrl = outline.outlineCtrl
+  if not ctrl then return end
   local item = ctrl:GetFirstChild(root or ctrl:GetRootItem())
   while true do
     if not item:IsOk() then break end
@@ -370,8 +371,6 @@ local function eachNode(eachFunc, root, recursive)
     item = ctrl:GetNextSibling(item)
   end
 end
-
-createOutlineWindow()
 
 local pathsep = GetPathSeparator()
 local function isInSubDir(name, path)
@@ -425,6 +424,12 @@ local function enableIndex(path)
 end
 
 local package = ide:AddPackage('core.outline', {
+    onRegister = function(self)
+      if not ide.config.outlineinactivity then return end
+
+      createOutlineWindow()
+    end,
+
     -- remove the editor from the list
     onEditorClose = function(self, editor)
       local cache = caches[editor]
