@@ -211,10 +211,12 @@ local function createMarkersWindow()
   end
 end
 
-createMarkersWindow()
-
 local package = ide:AddPackage('core.markers', {
     onRegister = function(self)
+      if not ide.config.markersinactivity then return end
+
+      createMarkersWindow()
+
       local bmmenu = ide:FindMenuItem(ID_BOOKMARK):GetSubMenu()
       bmmenu:AppendSeparator()
       bmmenu:Append(ID_BOOKMARKCLEAR, TR("Clear Bookmarks In Project")..KSC(ID_BOOKMARKCLEAR))
