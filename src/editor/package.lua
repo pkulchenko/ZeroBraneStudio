@@ -236,6 +236,22 @@ function ide:GetOutputNotebook() return self.frame.bottomnotebook end
 function ide:GetOutline() return self.outline end
 function ide:GetProjectNotebook() return self.frame.projnotebook end
 function ide:GetProject() return FileTreeGetDir() end
+function ide:SetProject(projdir,skiptree)
+  -- strip trailing spaces as this may create issues with "path/ " on Windows
+  projdir = projdir:gsub("%s+$","")
+  local dir = wx.wxFileName.DirName(FixDir(projdir))
+  dir:Normalize() -- turn into absolute path if needed
+  if not wx.wxDirExists(dir:GetFullPath()) then return ide.filetree:updateProjectDir(projdir) end
+
+  projdir = dir:GetPath(wx.wxPATH_GET_VOLUME) -- no trailing slash
+
+  ide.config.path.projectdir = projdir ~= "" and projdir or nil
+  ide:SetStatus(projdir)
+  self.frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
+
+  if skiptree then return true end
+  return ide.filetree:updateProjectDir(projdir)
+end
 function ide:GetProjectStartFile()
   local projectdir = FileTreeGetDir()
   local startfile = self.filetree.settings.startfile[projectdir]
@@ -249,7 +265,7 @@ function ide:GetWatch() return self.debugger and self.debugger.watchCtrl end
 function ide:GetStack() return self.debugger and self.debugger.stackCtrl end
 
 function ide:GetTextFromUser(message, caption, value)
-  local dlg = wx.wxTextEntryDialog(ide:GetMainFrame(), message, caption, value)
+  local dlg = wx.wxTextEntryDialog(self.frame, message, caption, value)
   local res = dlg:ShowModal()
   return res == wx.wxID_OK and dlg:GetValue() or nil, res
 end
@@ -916,7 +932,7 @@ end
 
 function ide:ActivateFile(filename)
   if wx.wxDirExists(filename) then
-    ProjectUpdateProjectDir(filename)
+    ide:SetProject(filename)
     return true
   end
 

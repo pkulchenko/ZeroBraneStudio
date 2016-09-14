@@ -212,7 +212,7 @@ local function navigateTo(default, selected)
           -- if the document is already opened (not in the preview)
           -- or can't be opened as a file or folder, then close the preview
           if doc and doc.index ~= pindex
-          or not LoadFile(fullPath, preview or nil) and not ProjectUpdateProjectDir(fullPath) then
+          or not LoadFile(fullPath, preview or nil) and not ide:SetProject(fullPath) then
             if pindex then ClosePage(pindex) end
           end
         end

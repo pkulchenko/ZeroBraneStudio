@@ -525,7 +525,7 @@ local function treeSetConnectorsAndIcons(tree)
     end)
   tree:Connect(ID_PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      ProjectUpdateProjectDir(tree:GetItemFullName(tree:GetSelection()))
+      ide:SetProject(tree:GetItemFullName(tree:GetSelection()))
     end)
 
   tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
@@ -686,7 +686,7 @@ local function treeSetConnectorsAndIcons(tree)
       local cancelled = event:IsEditCancelled()
       if tree:IsRoot(itemsrc) then
         if not cancelled and wx.wxDirExists(label) then
-          ProjectUpdateProjectDir(label)
+          ide:SetProject(label)
         end
         return
       end
@@ -762,11 +762,11 @@ local function appendPathSep(dir)
 end
 
 function filetree:updateProjectDir(newdir)
-  if (not newdir) or not wx.wxDirExists(newdir) then return end
+  if (not newdir) or not wx.wxDirExists(newdir) then return nil, "Directory doesn't exist" end
   local dirname = wx.wxFileName.DirName(newdir)
 
   if filetree.projdir and #filetree.projdir > 0
-  and dirname:SameAs(wx.wxFileName.DirName(filetree.projdir)) then return end
+  and dirname:SameAs(wx.wxFileName.DirName(filetree.projdir)) then return false end
 
   -- strip the last path separator if any
   local newdir = dirname:GetPath(wx.wxPATH_GET_VOLUME)
@@ -794,7 +794,7 @@ function filetree:updateProjectDir(newdir)
     ide.config.projecthistorylength,
     function(s1, s2) return dirname:SameAs(wx.wxFileName.DirName(s2)) end)
 
-  ProjectUpdateProjectDir(newdir,true)
+  ide:SetProject(newdir,true)
   treeSetRoot(projtree,newdir)
 
   -- sync with the current editor window and activate selected file
@@ -805,6 +805,8 @@ function filetree:updateProjectDir(newdir)
   ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID_RECENTPROJECTS))
 
   PackageEventHandle("onProjectLoad", appendPathSep(newdir))
+
+  return true
 end
 
 function FileTreeGetDir() return appendPathSep(filetree.projdir) end
@@ -855,7 +857,7 @@ function FileTreeProjectListUpdate(menu, items)
       menu:Insert(items, item)
       ide.frame:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, function()
           wx.wxSafeYield() -- let the menu on screen (if any) disappear
-          ProjectUpdateProjectDir(FileTreeGetProjects()[i])
+          ide:SetProject(FileTreeGetProjects()[i])
         end)
     end
     -- disable the currently selected project

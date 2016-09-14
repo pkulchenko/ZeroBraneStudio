@@ -139,22 +139,6 @@ end
 -----------------------------
 -- Project directory handling
 
-function ProjectUpdateProjectDir(projdir,skiptree)
-  -- strip trailing spaces as this may create issues with "path/ " on Windows
-  projdir = projdir:gsub("%s+$","")
-  local dir = wx.wxFileName.DirName(FixDir(projdir))
-  dir:Normalize() -- turn into absolute path if needed
-  if not wx.wxDirExists(dir:GetFullPath()) then return end
-
-  projdir = dir:GetPath(wx.wxPATH_GET_VOLUME) -- no trailing slash
-
-  ide.config.path.projectdir = projdir ~= "" and projdir or nil
-  ide:SetStatus(projdir)
-  frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
-  if (not skiptree) then ide.filetree:updateProjectDir(projdir) end
-  return true
-end
-
 local function projChoose(event)
   local editor = GetEditor()
   local fn = wx.wxFileName(
@@ -165,7 +149,7 @@ local function projChoose(event)
   local filePicker = wx.wxDirDialog(frame, TR("Choose a project directory"),
     projectdir ~= "" and projectdir or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
   if filePicker:ShowModal(true) == wx.wxID_OK then
-    return ProjectUpdateProjectDir(filePicker:GetPath())
+    return ide:SetProject(filePicker:GetPath())
   end
   return false
 end
@@ -182,7 +166,8 @@ local function projFromFile(event)
   fn:Normalize() -- want absolute path for dialog
 
   if ide.interpreter then
-    ProjectUpdateProjectDir(ide.interpreter:fprojdir(fn)) end
+    ide:SetProject(ide.interpreter:fprojdir(fn))
+  end
 end
 frame:Connect(ID_PROJECTDIRFROMFILE, wx.wxEVT_COMMAND_MENU_SELECTED, projFromFile)
 frame:Connect(ID_PROJECTDIRFROMFILE, wx.wxEVT_UPDATE_UI,
