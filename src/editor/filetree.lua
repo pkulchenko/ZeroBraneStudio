@@ -959,7 +959,9 @@ local package = ide:AddPackage('core.filetree', {
           end)
       end
       -- start watching cached paths
-      for path, active in pairs(watchers) do watchDir(path) end
+      for path, active in pairs(watchers) do
+        if not active then watchDir(path) end
+      end
     end,
 
     -- check on PreExpand when expanding (as the folder may not expand if it's empty)
