@@ -45,7 +45,7 @@ dofile "src/util.lua"
 local pendingOutput = {}
 ide = {
   MODPREF = "* ",
-  MAXMARGIN = 4,
+  MAXMARGIN = wxstc.wxSTC_MAX_MARGIN or 4,
   ANYMARKERMASK = 2^24-1,
   config = {
     path = {
