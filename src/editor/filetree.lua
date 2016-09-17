@@ -917,14 +917,21 @@ function FileTreeFindByPartialName(name)
   return
 end
 
-local watchers, watcher = {}
+local watchers, blacklist, watcher = {}, {}
 local function watchDir(path)
-  if watcher and not watchers[path] then
-    watcher:Add(wx.wxFileName.DirName(path),
+  if watcher and not watchers[path] and not blacklist[path] then
+    local _ = wx.wxLogNull() -- disable error reporting; will report as needed
+    local ok  = watcher:Add(wx.wxFileName.DirName(path),
       wx.wxFSW_EVENT_CREATE + wx.wxFSW_EVENT_DELETE + wx.wxFSW_EVENT_RENAME)
+    if not ok then
+      blacklist[path] = true
+      ide:GetOutput():Error(("Can't set watch for '%s': %s"):format(path, wx.wxSysErrorMsg()))
+      return nil, wx.wxSysErrorMsg()
+    end
   end
   -- keep track of watchers even if `watcher` is not yet set to set them later
   watchers[path] = watcher ~= nil
+  return watchers[path]
 end
 local function unWatchDir(path)
   if watcher and watchers[path] then watcher:Remove(wx.wxFileName.DirName(path)) end
