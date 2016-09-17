@@ -272,8 +272,8 @@ local function processSelection(editor, func)
   end
   local wholeline = text:find("\n$")
   local buf = {}
-  for line in string.gmatch(text..(wholeline and "" or "\n"), "(.-\r?\n)") do
-    table.insert(buf, line)
+  for ln in string.gmatch(text..(wholeline and "" or "\n"), "(.-\r?\n)") do
+    table.insert(buf, ln)
   end
   if #buf > 0 then
     if func then func(buf) end
