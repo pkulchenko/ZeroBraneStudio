@@ -136,6 +136,9 @@ else()
   install(DIRECTORY ${TOPDIR}/zbstudio/res/icons/ DESTINATION share/icons/hicolor)
   install(FILES ${TOPDIR}/zbstudio/res/zbstudio.desktop DESTINATION share/applications)
 
+  # install Linux software gallery metadata
+  install(FILES ${TOPDIR}/zbstudio/res/zbstudio.appdata.xml DESTINATION share/appdata)
+
   # install miscellaneous documentation files
   install(FILES ${TOPDIR}/CHANGELOG.md ${TOPDIR}/LICENSE ${TOPDIR}/README.md DESTINATION share/doc/zbstudio)
 

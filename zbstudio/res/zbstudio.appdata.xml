@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <id type="desktop">zbstudio.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>ZeroBrane Studio</name>
+  <summary>Lightweight Lua-based IDE for Lua</summary>
+  <description>
+    <p>
+      ZeroBrane Studio is a lightweight Lua IDE with code completion, syntax 
+      highlighting, live coding, code analyzer, and debugging support for
+      Lua 5.1, Lua 5.2, Lua 5.3, LuaJIT, and other Lua engines.
+    </p>
+    <p>
+      It is simple and instantly usable for beginners yet feature-rich and
+      extensible for experienced developers. It has a small footprint and is
+      completely customizable with Lua while still including a full IDE feature
+      set including a remote debugger.
+    </p>
+  </description>
+  <url type="homepage">https://studio.zerobrane.com</url>
+  <screenshots>
+    <screenshot type="default">https://studio.zerobrane.com/images/scratchpad-linux-mint.png</screenshot>
+  </screenshots>
+  <update_contact>paul@kulchenko.com</update_contact>
+</application>
