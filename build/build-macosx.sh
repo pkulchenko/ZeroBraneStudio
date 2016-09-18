@@ -51,6 +51,10 @@ LPEG_BASENAME="lpeg-1.0.0"
 LPEG_FILENAME="$LPEG_BASENAME.tar.gz"
 LPEG_URL="http://www.inf.puc-rio.br/~roberto/lpeg/$LPEG_FILENAME"
 
+LEXLPEG_BASENAME="scintillua_3.6.5-1"
+LEXLPEG_FILENAME="$LEXLPEG_BASENAME.zip"
+LEXLPEG_URL="https://foicica.com/scintillua/download/$LEXLPEG_FILENAME"
+
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
 
@@ -90,6 +94,9 @@ for ARG in "$@"; do
     ;;
   lpeg)
     BUILD_LPEG=true
+    ;;
+  lexlpeg)
+    BUILD_LEXLPEG=true
     ;;
   debug)
     WXWIDGETSDEBUG="--enable-debug=max"
@@ -164,34 +171,6 @@ if [ $BUILD_JIT ]; then
   LUA_URL="https://github.com/pkulchenko/luajit.git"
 fi
 
-# build wxWidgets
-if [ $BUILD_WXWIDGETS ]; then
-  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
-  cd "$WXWIDGETS_BASENAME"
-  MINSDK=""
-  if [ -d $MACOSX_SDK_PATH ]; then
-    MINSDK="--with-macosx-sdk=$MACOSX_SDK_PATH"
-  fi
-  ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
-    --enable-compat28 \
-    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
-    --with-zlib=builtin --disable-richtext \
-    --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
-    --with-osx_cocoa CFLAGS="-Os" CXXFLAGS="-Os"
-
-  PATTERN="defined( __WXMAC__ )\$"
-  if [ "$(grep -c "$PATTERN" src/aui/tabart.cpp)" -ne "1" ]; then
-    echo "Incorrect pattern for a fix in tabart.cpp."
-    exit 1
-  fi
-  sed -i "" "s/$PATTERN/0/" src/aui/tabart.cpp
-
-  make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
-  make install
-  cd ..
-  rm -rf "$WXWIDGETS_BASENAME"
-fi
-
 # build Lua
 if [ $BUILD_LUA ]; then
   if [ $BUILD_JIT ]; then
@@ -225,6 +204,54 @@ if [ $BUILD_LUA ]; then
   [ -f "$INSTALL_DIR/lib/liblua$LUAS.dylib" ] || { echo "Error: liblua$LUAS.dylib isn't found"; exit 1; }
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
+fi
+
+# build lexlpeg
+if [ $BUILD_LEXLPEG ]; then
+  # need wxwidgets/Scintilla and lua files
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  wget --no-check-certificate -c "$LEXLPEG_URL" -O "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
+  unzip "$LEXLPEG_FILENAME"
+  cd "$LEXLPEG_BASENAME"
+
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
+  g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" \
+    "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \
+    -DSCI_LEXER -DLPEG_LEXER -DLPEG_LEXER_EXTERNAL \
+    LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx}
+
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" ] || { echo "Error: LexLPeg.dylib isn't found"; exit 1; }
+
+  cd ..
+  rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+fi
+
+# build wxWidgets
+if [ $BUILD_WXWIDGETS ]; then
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  cd "$WXWIDGETS_BASENAME"
+  MINSDK=""
+  if [ -d $MACOSX_SDK_PATH ]; then
+    MINSDK="--with-macosx-sdk=$MACOSX_SDK_PATH"
+  fi
+  ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
+    --enable-compat28 \
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
+    --with-zlib=builtin --disable-richtext \
+    --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
+    --with-osx_cocoa CFLAGS="-Os" CXXFLAGS="-Os"
+
+  PATTERN="defined( __WXMAC__ )\$"
+  if [ "$(grep -c "$PATTERN" src/aui/tabart.cpp)" -ne "1" ]; then
+    echo "Incorrect pattern for a fix in tabart.cpp."
+    exit 1
+  fi
+  sed -i "" "s/$PATTERN/0/" src/aui/tabart.cpp
+
+  make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
+  make install
+  cd ..
+  rm -rf "$WXWIDGETS_BASENAME"
 fi
 
 # build wxLua
@@ -341,6 +368,7 @@ fi
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.dylib" "$BIN_DIR/clibs"
 [ $BUILD_LFS ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lfs.dylib" "$BIN_DIR/clibs$LUAS"
 [ $BUILD_LPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lpeg.dylib" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LEXLPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" "$BIN_DIR/clibs$LUAS"
 
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}

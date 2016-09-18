@@ -56,6 +56,10 @@ LPEG_BASENAME="lpeg-1.0.0"
 LPEG_FILENAME="$LPEG_BASENAME.tar.gz"
 LPEG_URL="http://www.inf.puc-rio.br/~roberto/lpeg/$LPEG_FILENAME"
 
+LEXLPEG_BASENAME="scintillua_3.6.5-1"
+LEXLPEG_FILENAME="$LEXLPEG_BASENAME.zip"
+LEXLPEG_URL="https://foicica.com/scintillua/download/$LEXLPEG_FILENAME"
+
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
 
@@ -95,6 +99,9 @@ for ARG in "$@"; do
     ;;
   lpeg)
     BUILD_LPEG=true
+    ;;
+  lexlpeg)
+    BUILD_LEXLPEG=true
     ;;
   debug)
     WXWIDGETSDEBUG="--enable-debug=max --enable-debug_gdb"
@@ -169,22 +176,6 @@ if [ $BUILD_JIT ]; then
   LUA_URL="https://github.com/pkulchenko/luajit.git"
 fi
 
-# build wxWidgets
-if [ $BUILD_WXWIDGETS ]; then
-  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
-
-  cd "$WXWIDGETS_BASENAME"
-  ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
-    --enable-compat28 \
-    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
-    --with-zlib=builtin --disable-richtext --with-gtk=2 \
-    CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
-  make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
-  make install
-  cd ..
-  rm -rf "$WXWIDGETS_BASENAME"
-fi
-
 # build Lua
 if [ $BUILD_LUA ]; then
   if [ $BUILD_JIT ]; then
@@ -211,6 +202,43 @@ if [ $BUILD_LUA ]; then
 
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
+fi
+
+# build lexlpeg
+if [ $BUILD_LEXLPEG ]; then
+  # need wxwidgets/Scintilla and lua files
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  wget --no-check-certificate -c "$LEXLPEG_URL" -O "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
+  unzip "$LEXLPEG_FILENAME"
+  cd "$LEXLPEG_BASENAME"
+
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
+  g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" \
+    "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \
+    -DSCI_LEXER -DLPEG_LEXER -DLPEG_LEXER_EXTERNAL \
+    LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx} \
+    "$BIN_DIR/clibs$LUAS/lpeg.so"
+
+  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" ] || { echo "Error: LexLPeg.so isn't found"; exit 1; }
+
+  cd ..
+  rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+fi
+
+# build wxWidgets
+if [ $BUILD_WXWIDGETS ]; then
+  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+
+  cd "$WXWIDGETS_BASENAME"
+  ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
+    --enable-compat28 \
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
+    --with-zlib=builtin --disable-richtext --with-gtk=2 \
+    CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
+  make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
+  make install
+  cd ..
+  rm -rf "$WXWIDGETS_BASENAME"
 fi
 
 # build wxLua
@@ -314,6 +342,7 @@ mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1;
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.so" "$BIN_DIR/clibs"
 [ $BUILD_LFS ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lfs.so" "$BIN_DIR/clibs$LUAS"
 [ $BUILD_LPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lpeg.so" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LEXLPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" "$BIN_DIR/clibs$LUAS"
 
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
