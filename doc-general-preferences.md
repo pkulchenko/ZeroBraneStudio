@@ -51,6 +51,7 @@ set to `true` to display the stats.
 - `debugger.init = nil`: specify code to run (as a **string**) at the beginning of the debugger session.
 This may be used to provide some initialization to be applied before the debugging starts.
 For example, `debugger.init = [[some initialization code]]`.
+- `debugger.linetobreakpoint = false`: move the current line in the editor to the line with the triggered breakpoint (1.41+).
 - `debugger.maxdatalength = 400`: set limit (in bytes) for the data shown in the Stack and Watch results.
 - `debugger.maxdatanum = 400`: limit the number of elements for tables shown in the Stack and Watch results.
 - `debugger.maxdatalevel = 3`: limit the number of nested levels for tables shown in the Stack and Watch results.
