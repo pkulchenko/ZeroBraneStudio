@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>ZeroBraneStudio</string>
 	<key>CFBundleDisplayName</key>
-	<string>ZeroBrane Studio Lua IDE</string>
+	<string>ZeroBrane Studio</string>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>CFBundleIconFile</key>
