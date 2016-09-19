@@ -96,7 +96,7 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 
 ### ZeroBrane Studio and MobDebug
 
-  **ZeroBrane LLC:** Paul Kulchenko (paul@kulchenko.com)
+  **ZeroBrane LLC:** Paul Kulchenko (paul@zerobrane.com)
 
 ### Estrela Editor
 
