@@ -1,4 +1,5 @@
 bin/clibs/git/core.dll
+bin/clibs/lexlpeg.dll
 bin/clibs/lfs.dll
 bin/clibs/liblua.dll
 bin/clibs/libzlib.dll

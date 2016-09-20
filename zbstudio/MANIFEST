@@ -22,6 +22,7 @@ lualibs/metalua/compiler/parser/*.lua
 lualibs/metalua/compiler/parser/annot/*.lua
 lualibs/metalua/grammar/*.lua
 lualibs/mobdebug/mobdebug.lua
+lualibs/lexers/*
 lualibs/ltn12.lua
 lualibs/luadist.lua
 lualibs/mime.lua

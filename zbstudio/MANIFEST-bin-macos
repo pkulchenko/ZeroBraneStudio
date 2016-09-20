@@ -1,4 +1,5 @@
 bin/clibs/git/core.dylib
+bin/clibs/lexlpeg.dylib
 bin/clibs/lfs.dylib
 bin/clibs/lpeg.dylib
 bin/clibs/mime/core.dylib
