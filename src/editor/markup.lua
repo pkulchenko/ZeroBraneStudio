@@ -14,18 +14,23 @@ local MD_MARK_BOXD = '|' -- highlight
 local MD_MARK_MARK = ' ' -- separator
 local MD_LINK_NEWWINDOW = '+' -- indicator to open a new window for links
 local markup = {
-  [MD_MARK_BOXD] = {st=ide:AddIndicator("markup.boxd", 25), fg={127,0,127}, b=true},
-  [MD_MARK_CODE] = {st=ide:AddIndicator("markup.code", 26), fg={127,127,127}, fs=10},
-  [MD_MARK_HEAD] = {st=ide:AddIndicator("markup.head", 27), fn="Lucida Console", b=true},
-  [MD_MARK_LINK] = {st=ide:AddIndicator("markup.link", 28), u=true, hs={32,32,127}},
-  [MD_MARK_BOLD] = {st=ide:AddIndicator("markup.bold", 29), b=true},
-  [MD_MARK_ITAL] = {st=ide:AddIndicator("markup.ital", 30), i=true},
-  [MD_MARK_MARK] = {st=ide:AddIndicator("markup.mark", 31), v=false},
+  [MD_MARK_BOXD] = {st=ide:AddStyle("markup.boxd"), fg={127,0,127}, b=true},
+  [MD_MARK_CODE] = {st=ide:AddStyle("markup.code"), fg={127,127,127}, fs=10},
+  [MD_MARK_HEAD] = {st=ide:AddStyle("markup.head"), fn="Lucida Console", b=true},
+  [MD_MARK_LINK] = {st=ide:AddStyle("markup.link"), u=true, hs={32,32,127}},
+  [MD_MARK_BOLD] = {st=ide:AddStyle("markup.bold"), b=true},
+  [MD_MARK_ITAL] = {st=ide:AddStyle("markup.ital"), i=true},
+  [MD_MARK_MARK] = {st=ide:AddStyle("markup.mark"), v=false},
 }
 
 -- allow other editor features to recognize this special markup
-function MarkupIsSpecial(style) return style == 31 end
-function MarkupIsAny(style) return style >= 25 and style <= 31 end
+function MarkupIsSpecial(style) return style == markup[MD_MARK_MARK].st end
+function MarkupIsAny(style)
+  for _, mark in pairs(markup) do
+    if style == mark.st then return true end
+  end
+  return false
+end
 function MarkupAddStyles(styles)
   local comment = styles.comment or {}
   for key,value in pairs(markup) do

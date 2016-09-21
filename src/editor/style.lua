@@ -346,9 +346,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
       for _, outid in pairs(targets) do
         applystyle(style,outid)
       end
-    -- allow to specify style numbers, but exclude those styles
-    -- that may conflict with indicator numbers
-    elseif (style.st and style.st > 8 and style.st < wxstc.wxSTC_STYLE_DEFAULT) then
+    elseif style.st then
       applystyle(style,style.st)
     end
   end
