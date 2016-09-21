@@ -727,11 +727,15 @@ function ide:AddIndicator(indic, num)
   if not num then -- new indicator; find the smallest available number
     local nums = {}
     for _, indicator in pairs(indicators) do
+      -- wxstc.wxSTC_INDIC_CONTAINER is the first available style
       if indicator >= wxstc.wxSTC_INDIC_CONTAINER then
         nums[indicator-wxstc.wxSTC_INDIC_CONTAINER+1] = true
       end
     end
-    num = #nums + wxstc.wxSTC_INDIC_CONTAINER
+    -- can't do `#nums + wxstc.wxSTC_INDIC_CONTAINER` as #nums can be calculated incorrectly
+    -- on tables that have gaps before 2^n values (`1,2,nil,4`)
+    num = wxstc.wxSTC_INDIC_CONTAINER
+    for _ in ipairs(nums) do num = num + 1 end
     if num > wxstc.wxSTC_INDIC_MAX then return end
   end
   indicators[indic] = num
