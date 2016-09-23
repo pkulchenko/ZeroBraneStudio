@@ -1644,8 +1644,6 @@ function debugger:ScratchpadRefresh()
   end
 end
 
-local numberStyle = wxstc.wxSTC_LUA_NUMBER
-
 function debugger:ScratchpadOn(editor)
   local debugger = self
 
@@ -1671,7 +1669,9 @@ function debugger:ScratchpadOn(editor)
   end
 
   local scratchpadEditor = editor
-  scratchpadEditor:StyleSetUnderline(numberStyle, true)
+  for _, numberStyle in ipairs(scratchpadEditor.spec.isnumber) do
+    scratchpadEditor:StyleSetUnderline(numberStyle, true)
+  end
   debugger.scratchpad.margin = scratchpadEditor:GetMarginWidth(0) +
     scratchpadEditor:GetMarginWidth(1) + scratchpadEditor:GetMarginWidth(2)
 
@@ -1692,10 +1692,10 @@ function debugger:ScratchpadOn(editor)
 
     local point = event:GetPosition()
     local pos = scratchpadEditor:PositionFromPoint(point)
+    local isnumber = scratchpadEditor.spec.isnumber
 
     -- are we over a number in the scratchpad? if not, it's not our event
-    if ((not scratchpad) or
-        (bit.band(scratchpadEditor:GetStyleAt(pos),31) ~= numberStyle)) then
+    if not (scratchpad and isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),31)]) then
       event:Skip()
       return
     end
@@ -1704,14 +1704,14 @@ function debugger:ScratchpadOn(editor)
     local text = scratchpadEditor:GetTextDyn()
 
     local nstart = pos
-    while nstart >= 0
-      and (bit.band(scratchpadEditor:GetStyleAt(nstart),31) == numberStyle)
-      do nstart = nstart - 1 end
+    while nstart >= 0 and isnumber[bit.band(scratchpadEditor:GetStyleAt(nstart),31)] do
+      nstart = nstart - 1
+    end
 
     local nend = pos
-    while nend < string.len(text)
-      and (bit.band(scratchpadEditor:GetStyleAt(nend),31) == numberStyle)
-      do nend = nend + 1 end
+    while nend < string.len(text) and isnumber[bit.band(scratchpadEditor:GetStyleAt(nend),31)] do
+      nend = nend + 1
+    end
 
     -- check if there is minus sign right before the number and include it
     if nstart >= 0 and scratchpadEditor:GetTextRangeDyn(nstart,nstart+1) == '-' then 
@@ -1744,7 +1744,7 @@ function debugger:ScratchpadOn(editor)
 
     -- record the fact that we are over a number or dragging slider
     scratchpad.over = scratchpad and
-      (ipoint ~= nil or (bit.band(scratchpadEditor:GetStyleAt(pos),31) == numberStyle))
+      (ipoint ~= nil or scratchpadEditor.spec.isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),31)])
 
     if ipoint then
       local startpos = scratchpad.start
@@ -1801,7 +1801,9 @@ function debugger:ScratchpadOff()
   if not debugger.scratchpad then return end
 
   for scratchpadEditor in pairs(debugger.scratchpad.editors) do
-    scratchpadEditor:StyleSetUnderline(numberStyle, false)
+    for _, numberStyle in ipairs(scratchpadEditor.spec.isnumber) do
+      scratchpadEditor:StyleSetUnderline(numberStyle, false)
+    end
     scratchpadEditor:Disconnect(wx.wxID_ANY, wx.wxID_ANY, wxstc.wxEVT_STC_MODIFIED)
     scratchpadEditor:Disconnect(wx.wxID_ANY, wx.wxID_ANY, wx.wxEVT_MOTION)
     scratchpadEditor:Disconnect(wx.wxID_ANY, wx.wxID_ANY, wx.wxEVT_LEFT_DOWN)

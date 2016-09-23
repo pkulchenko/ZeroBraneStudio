@@ -302,11 +302,11 @@ local function getValAtPosition(editor, pos)
   local goodpos = true
   if start and not selected then
     local style = bit.band(editor:GetStyleAt(linestart+start),31)
-    if editor.spec.iscomment[style]
-    or (MarkupIsAny and MarkupIsAny(style)) -- markup in comments
+    if (MarkupIsAny and MarkupIsAny(style)) -- markup in comments
+    or editor.spec.iscomment[style]
     or editor.spec.isstring[style]
-    or style == wxstc.wxSTC_LUA_NUMBER
-    or style == wxstc.wxSTC_LUA_WORD then
+    or editor.spec.isnumber[style]
+    or editor.spec.iskeyword[style] then
       goodpos = false
     end
   end
@@ -440,7 +440,7 @@ function IndicateFunctionsOnly(editor, lines, linee)
   local isfncall = editor.spec.isfncall
   local isinvalid = {}
   for i,v in pairs(editor.spec.iscomment) do isinvalid[i] = v end
-  for i,v in pairs(editor.spec.iskeyword0) do isinvalid[i] = v end
+  for i,v in pairs(editor.spec.iskeyword) do isinvalid[i] = v end
   for i,v in pairs(editor.spec.isstring) do isinvalid[i] = v end
 
   editor:SetIndicatorCurrent(indicator.FNCALL)

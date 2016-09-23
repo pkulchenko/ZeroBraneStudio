@@ -475,28 +475,18 @@ local function processPackages(packages)
   end
 end
 
-function UpdateSpecs()
-  for _, spec in pairs(ide.specs) do
+function UpdateSpecs(spec)
+  for _, spec in pairs(spec and {spec} or ide.specs) do
     spec.sep = spec.sep or "\1" -- default separator doesn't match anything
     spec.iscomment = {}
-    spec.iskeyword0 = {}
+    spec.iskeyword = {}
     spec.isstring = {}
-    if (spec.lexerstyleconvert) then
-      if (spec.lexerstyleconvert.comment) then
-        for _, s in pairs(spec.lexerstyleconvert.comment) do
-          spec.iscomment[s] = true
-        end
-      end
-      if (spec.lexerstyleconvert.keywords0) then
-        for _, s in pairs(spec.lexerstyleconvert.keywords0) do
-          spec.iskeyword0[s] = true
-        end
-      end
-      if (spec.lexerstyleconvert.stringtxt) then
-        for _, s in pairs(spec.lexerstyleconvert.stringtxt) do
-          spec.isstring[s] = true
-        end
-      end
+    spec.isnumber = {}
+    if spec.lexerstyleconvert then
+      for _, s in pairs(spec.lexerstyleconvert.comment or {}) do spec.iscomment[s] = true end
+      for _, s in pairs(spec.lexerstyleconvert.keywords0 or {}) do spec.iskeyword[s] = true end
+      for _, s in pairs(spec.lexerstyleconvert.stringtxt or {}) do spec.isstring[s] = true end
+      for _, s in pairs(spec.lexerstyleconvert.number or {}) do spec.isnumber[s] = true end
     end
   end
 end
