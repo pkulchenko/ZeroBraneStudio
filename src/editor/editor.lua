@@ -1635,12 +1635,79 @@ function GetSpec(ext,forcespec)
   return spec
 end
 
+local lexlpegmap = {
+  text = {"identifier"},
+  lexerdef = {"nothing"},
+  comment = {"comment"},
+  stringtxt = {"string","longstring"},
+  preprocessor= {"preprocessor","embedded"},
+  operator = {"operator"},
+  number = {"number"},
+  keywords0 = {"keyword"},
+  keywords1 = {"constant","variable"},
+  keywords2 = {"function","regex"},
+  keywords3 = {"library","class","type"},
+}
+local function setLexLPegLexer(editor, lexername)
+  local lexer = lexername:gsub("^lexlpeg%.","")
+
+  local ppath = package.path
+  local lpath = ide:GetRootPath("lualibs/lexers")
+
+  package.path = MergeFullPath(lpath, "?.lua") -- update `package.path` to reference `lexers/`
+  local ok, lex = pcall(require, "lexer")
+  package.path = ppath -- restore the original `package.path`
+  if not ok then return nil, "Can't find LexLPeg lexer components." end
+
+  local lexmod, err = lex.load(lexer)
+  if not lexmod then return nil, err end
+
+  local lexpath = package.searchpath("lexlpeg", ide.osclibs)
+  if not lexpath then return nil, "Can't find LexLPeg lexer." end
+
+  if not pcall(require, "lpeg") then return nil, "Can't load LexLPeg lexer components." end
+  local err = wx.wxSysErrorCode()
+  local _ = wx.wxLogNull() -- disable error reporting; will report as needed
+  editor:LoadLexerLibrary(lexpath)
+  -- the error code may be non-zero, but still needs to be different from the previous one
+  -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
+  if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
+
+  editor:SetLexerLanguage("lpeg")
+  editor:SetProperty("lexer.lpeg.home", lpath)
+  editor:SetProperty("fold", edcfg.fold and "1" or "0")
+  editor:PrivateLexerCall(4006, lexer) --[[ SetLexerLanguage ]]
+
+  local styleconvert = {}
+  for name, map in pairs(lexlpegmap) do
+    styleconvert[name] = {}
+    for _, stylename in ipairs(map) do
+      if lexmod._TOKENSTYLES[stylename] then
+        table.insert(styleconvert[name], lexmod._TOKENSTYLES[stylename])
+      end
+    end
+  end
+  return true, styleconvert
+end
+
 function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   local lexerstyleconvert = nil
   local spec = forcespec or GetSpec(ext)
   -- found a spec setup lexers and keywords
   if spec then
-    editor:SetLexer(spec.lexer or wxstc.wxSTC_LEX_NULL)
+    if type(spec.lexer) == "string" then
+      local ok, res = setLexLPegLexer(editor, spec.lexer)
+      if ok then
+        spec.lexerstyleconvert = res
+      else
+        spec.lexerstyleconvert = {}
+        ide:Print(("Can't load LexLPeg '%s' lexer: %s"):format(spec.lexer, res))
+        editor:SetLexer(wxstc.wxSTC_LEX_NULL)
+      end
+      UpdateSpecs(spec)
+    else
+      editor:SetLexer(spec.lexer or wxstc.wxSTC_LEX_NULL)
+    end
     lexerstyleconvert = spec.lexerstyleconvert
 
     if (spec.keywords) then
