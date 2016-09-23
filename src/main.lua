@@ -303,6 +303,22 @@ if not setfenv then -- Lua 5.2
     return f end
 end
 
+if not package.searchpath then
+  -- from Scintillua by Mitchell (mitchell.att.foicica.com).
+  -- Searches for the given *name* in the given *path*.
+  -- This is an implementation of Lua 5.2's `package.searchpath()` function for Lua 5.1.
+  function package.searchpath(name, path)
+    local tried = {}
+    for part in path:gmatch('[^;]+') do
+      local filename = part:gsub('%?', name)
+      local f = io.open(filename, 'r')
+      if f then f:close() return filename end
+      tried[#tried + 1] = ("no file '%s'"):format(filename)
+    end
+    return nil, table.concat(tried, '\n')
+  end
+end
+
 dofile "src/version.lua"
 
 for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar", "package"}) do
