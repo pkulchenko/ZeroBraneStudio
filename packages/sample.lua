@@ -81,9 +81,9 @@ local events = {
         and function(self, ed)
           -- document can be empty for newly added documents
           local doc = ide:GetDocument(ed)
-          DisplayOutputLn(self:GetFileName(), k, doc and doc:GetFilePath() or "new document") end
+          ide:Print(self:GetFileName(), k, doc and doc:GetFilePath() or "new document") end
         or function(self, ...)
-          DisplayOutputLn(self:GetFileName(), k, ...) end
+          ide:Print(self:GetFileName(), k, ...) end
     end
   end
 
@@ -94,9 +94,9 @@ local events = {
     menu:Enable(id, true)
 
     editor:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
-      function() DisplayOutputLn("Selected "..pos) end)
+      function() ide:Print("Selected "..pos) end)
 
-    DisplayOutputLn(self:GetFileName(), "onMenuEditor")
+    ide:Print(self:GetFileName(), "onMenuEditor")
   end
 
   P.onMenuEditorTab = function(self, menu, notebook, event, index)
@@ -104,9 +104,9 @@ local events = {
     menu:Enable(id, true)
 
     notebook:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
-      function() DisplayOutputLn("Selected "..index) end)
+      function() ide:Print("Selected "..index) end)
 
-    DisplayOutputLn(self:GetFileName(), "onMenuEditorTab")
+    ide:Print(self:GetFileName(), "onMenuEditorTab")
   end
 
   P.onMenuFiletree = function(self, menu, tree, event)
@@ -116,34 +116,34 @@ local events = {
     menu:Enable(id, true)
 
     tree:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
-      function() DisplayOutputLn("Selected "..name) end)
+      function() ide:Print("Selected "..name) end)
 
-    DisplayOutputLn(self:GetFileName(), "onMenuFiletree")
+    ide:Print(self:GetFileName(), "onMenuFiletree")
   end
 
   P.onInterpreterLoad = function(self, interpreter)
-    DisplayOutputLn(self:GetFileName(), "onInterpreterLoad", interpreter:GetFileName())
+    ide:Print(self:GetFileName(), "onInterpreterLoad", interpreter:GetFileName())
   end
 
   P.onInterpreterClose = function(self, interpreter)
-    DisplayOutputLn(self:GetFileName(), "onInterpreterClose", interpreter:GetFileName())
+    ide:Print(self:GetFileName(), "onInterpreterClose", interpreter:GetFileName())
   end
 
   P.onEditorPreSave = function(self, editor, filepath)
     if filepath and filepath:find("%.txt$") then
-      DisplayOutputLn(self:GetFileName(), "onEditorPreSave", "Aborted saving a .txt file")
+      ide:Print(self:GetFileName(), "onEditorPreSave", "Aborted saving a .txt file")
       return false
     else
-      DisplayOutputLn(self:GetFileName(), "onEditorPreSave", filepath or "New file")
+      ide:Print(self:GetFileName(), "onEditorPreSave", filepath or "New file")
     end
   end
 
   P.onEditorCharAdded = function(self, editor, event)
-    DisplayOutputLn(self:GetFileName(), "onEditorCharAdded", event:GetKey())
+    ide:Print(self:GetFileName(), "onEditorCharAdded", event:GetKey())
   end
 
   P.onEditorKeyDown = function(self, editor, event)
-    DisplayOutputLn(self:GetFileName(), "onEditorKeyDown", event:GetKeyCode())
+    ide:Print(self:GetFileName(), "onEditorKeyDown", event:GetKeyCode())
   end
 
 --]]
