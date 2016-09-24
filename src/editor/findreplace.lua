@@ -134,7 +134,7 @@ function findReplace:GetScope()
   local scopeval = self.scope:GetValue()
   local dir, mask = scopeval:match(('([^%s]*)%s%%s*(.+)'):format(sep,sep))
   if not dir then dir = scopeval end
-  -- trip leading/trailing spaces from the directory
+  -- strip leading/trailing spaces from the directory
   dir = dir:gsub("^%s+",""):gsub("%s+$","")
   -- if the directory doesn't exist, treat it as the extension(s)
   if not mask and not wx.wxDirExists(dir) and dir:find('%*') then
