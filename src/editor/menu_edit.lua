@@ -334,7 +334,7 @@ local function reIndent(editor, buf)
   local isstatic = {}
   for line = 1, #buf+1 do
     local ls = editor:PositionFromLine(edline+line-1)
-    local style = bit.band(editor:GetStyleAt(ls), 31)
+    local style = bit.band(editor:GetStyleAt(ls), ide.STYLEMASK)
     -- don't reformat multi-line comments or strings
     isstatic[line] = (editor.spec.iscomment[style]
       or editor.spec.isstring[style]

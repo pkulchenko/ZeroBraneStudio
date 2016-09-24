@@ -265,6 +265,8 @@ ide = {
     pendingOutput[#pendingOutput + 1] = {...}
   end,
 }
+-- Scintilla switched to using full byte for style numbers from using only first 5 bits
+ide.STYLEMASK = ide.wxver <= "2.9.5" and 31 or 255
 
 -- add wx.wxMOD_RAW_CONTROL as it's missing in wxlua 2.8.12.3;
 -- provide default for wx.wxMOD_CONTROL as it's missing in wxlua 2.8 that

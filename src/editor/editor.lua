@@ -82,7 +82,7 @@ local function updateBraceMatch(editor)
 
   if (pos) then
     -- don't match brackets in markup comments
-    local style = bit.band(editor:GetStyleAt(pos), 31)
+    local style = bit.band(editor:GetStyleAt(pos), ide.STYLEMASK)
     if (MarkupIsSpecial and MarkupIsSpecial(style)
       or editor.spec.iscomment[style]) then return end
 
@@ -995,7 +995,7 @@ function CreateEditor(bare)
 
           local ut = editor:GetUseTabs()
           local tw = ut and editor:GetTabWidth() or editor:GetIndent()
-          local style = bit.band(editor:GetStyleAt(editor:PositionFromLine(line-1)), 31)
+          local style = bit.band(editor:GetStyleAt(editor:PositionFromLine(line-1)), ide.STYLEMASK)
 
           if edcfg.smartindent
           -- don't apply smartindent to multi-line comments or strings
@@ -1327,7 +1327,7 @@ function CreateEditor(bare)
           -- if not, proceed with "normal" processing as there are other
           -- events that may depend on Backspace, for example, re-calculating
           -- auto-complete suggestions.
-          local style = bit.band(editor:GetStyleAt(pos), 31)
+          local style = bit.band(editor:GetStyleAt(pos), ide.STYLEMASK)
           if not MarkupIsSpecial or not MarkupIsSpecial(style) then
             event:Skip()
             return

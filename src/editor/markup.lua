@@ -13,14 +13,15 @@ local MD_MARK_CODE = '`' -- code
 local MD_MARK_BOXD = '|' -- highlight
 local MD_MARK_MARK = ' ' -- separator
 local MD_LINK_NEWWINDOW = '+' -- indicator to open a new window for links
+-- old versions of Scintilla had only 5-bit styles, so assign styles manually in those cases
 local markup = {
-  [MD_MARK_BOXD] = {st=ide:AddStyle("markup.boxd"), fg={127,0,127}, b=true},
-  [MD_MARK_CODE] = {st=ide:AddStyle("markup.code"), fg={127,127,127}, fs=10},
-  [MD_MARK_HEAD] = {st=ide:AddStyle("markup.head"), fn="Lucida Console", b=true},
-  [MD_MARK_LINK] = {st=ide:AddStyle("markup.link"), u=true, hs={32,32,127}},
-  [MD_MARK_BOLD] = {st=ide:AddStyle("markup.bold"), b=true},
-  [MD_MARK_ITAL] = {st=ide:AddStyle("markup.ital"), i=true},
-  [MD_MARK_MARK] = {st=ide:AddStyle("markup.mark"), v=false},
+  [MD_MARK_BOXD] = {st=ide:AddStyle("markup.boxd", ide.STYLEMASK == 31 and 25 or nil), fg={127,0,127}, b=true},
+  [MD_MARK_CODE] = {st=ide:AddStyle("markup.code", ide.STYLEMASK == 31 and 26 or nil), fg={127,127,127}, fs=10},
+  [MD_MARK_HEAD] = {st=ide:AddStyle("markup.head", ide.STYLEMASK == 31 and 27 or nil), fn="Lucida Console", b=true},
+  [MD_MARK_LINK] = {st=ide:AddStyle("markup.link", ide.STYLEMASK == 31 and 28 or nil), u=true, hs={32,32,127}},
+  [MD_MARK_BOLD] = {st=ide:AddStyle("markup.bold", ide.STYLEMASK == 31 and 29 or nil), b=true},
+  [MD_MARK_ITAL] = {st=ide:AddStyle("markup.ital", ide.STYLEMASK == 31 and 30 or nil), i=true},
+  [MD_MARK_MARK] = {st=ide:AddStyle("markup.mark", ide.STYLEMASK == 31 and 31 or nil), v=false},
 }
 
 -- allow other editor features to recognize this special markup
@@ -175,7 +176,7 @@ function MarkupStyle(editor, lines, linee)
 
       if (f) then
         local p = ls+f+off
-        local s = bit.band(editor:GetStyleAt(p), 31)
+        local s = bit.band(editor:GetStyleAt(p), ide.STYLEMASK)
         -- only style comments and only those that are not at the beginning
         -- of the file to avoid styling shebang (#!) lines
         -- also ignore matches for line comments (as defined in the spec)
@@ -190,7 +191,7 @@ function MarkupStyle(editor, lines, linee)
             local lsep = w:find(q(MD_MARK_LINZ)..q(MD_MARK_LINA))
             if lsep then emark = #w-lsep+#MD_MARK_LINT end
           end
-          editor:StartStyling(p, 31)
+          editor:StartStyling(p, ide.STYLEMASK)
           editor:SetStyling(smark, markup[MD_MARK_MARK].st)
           editor:SetStyling(t-f+1-smark-emark, markup[mark].st or markup[MD_MARK_MARK].st)
           editor:SetStyling(emark, markup[MD_MARK_MARK].st)
@@ -204,7 +205,7 @@ function MarkupStyle(editor, lines, linee)
     -- has this line changed its wrapping because of invisible styling?
     if wrapped > 1 and editor:WrapCount(line) < wrapped then needfix = true end
   end
-  editor:StartStyling(es, 31)
+  editor:StartStyling(es, ide.STYLEMASK)
 
   -- if any wrapped lines have changed, then reset WrapMode to fix the drawing
   if needfix then
