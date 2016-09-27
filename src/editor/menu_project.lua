@@ -47,10 +47,8 @@ local debugMenu = ide:MakeMenu {
 }
 menuBar:Append(debugMenu, TR("&Project"))
 
-local debugMenuRun = {
-  start=TR("Start &Debugging")..KSC(ID_STARTDEBUG), continue=TR("Co&ntinue")..KSC(ID_STARTDEBUG)}
-local debugMenuStop = {
-  debugging=TR("S&top Debugging")..KSC(ID_STOPDEBUG), process=TR("S&top Process")..KSC(ID_STOPDEBUG)}
+local debugMenuRunLabel = { [false]=debugMenu:GetLabelText(ID_STARTDEBUG), [true]=TR("Co&ntinue") }
+local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Process") }
 
 local interpreters
 local function selectInterpreter(id)
@@ -359,8 +357,11 @@ frame:Connect(ID_STARTDEBUG, wx.wxEVT_UPDATE_UI,
       ((debugger:IsConnected() == nil and ide:GetLaunchedProcess() == nil and editor ~= nil) or
        (debugger:IsConnected() ~= nil and not debugger:IsRunning())) and
       (not debugger.scratchpad or debugger.scratchpad.paused))
-    local label = (debugger:IsConnected() ~= nil) and debugMenuRun.continue or debugMenuRun.start
-    if debugMenu:GetLabel(ID_STARTDEBUG) ~= label then debugMenu:SetLabel(ID_STARTDEBUG, label) end
+    local isconnected = debugger:IsConnected() ~= nil
+    local label, other = debugMenuRunLabel[isconnected], debugMenuRunLabel[not isconnected]
+    if debugMenu:GetLabelText(ID_STARTDEBUG) == wx.wxMenuItem.GetLabelText(other) then
+      debugMenu:SetLabel(ID_STARTDEBUG, label..KSC(ID_STARTDEBUG))
+    end
   end)
 
 frame:Connect(ID_STOPDEBUG, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -369,9 +370,11 @@ frame:Connect(ID_STOPDEBUG, wx.wxEVT_UPDATE_UI,
   function (event)
     local debugger = ide:GetDebugger()
     event:Enable(debugger:IsConnected() ~= nil or ide:GetLaunchedProcess() ~= nil)
-    local label = (debugger:IsConnected() == nil and ide:GetLaunchedProcess() ~= nil)
-      and debugMenuStop.process or debugMenuStop.debugging
-    if debugMenu:GetLabel(ID_STOPDEBUG) ~= label then debugMenu:SetLabel(ID_STOPDEBUG, label) end
+    local isprocess = debugger:IsConnected() == nil and ide:GetLaunchedProcess() ~= nil
+    local label, other = debugMenuStopLabel[isprocess], debugMenuStopLabel[not isprocess]
+    if debugMenu:GetLabelText(ID_STOPDEBUG) == wx.wxMenuItem.GetLabelText(other) then
+      debugMenu:SetLabel(ID_STOPDEBUG, label..KSC(ID_STOPDEBUG))
+    end
   end)
 
 frame:Connect(ID_DETACHDEBUG, wx.wxEVT_COMMAND_MENU_SELECTED,
