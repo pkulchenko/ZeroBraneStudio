@@ -91,9 +91,9 @@ function ide:GetEditorWithLastFocus()
     and self.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
     and self.infocus:DynamicCast("wxStyledTextCtrl") or nil)
 end
-function ide:GetMenuBar() return self.frame.menuBar end
-function ide:GetStatusBar() return self.frame.statusBar end
-function ide:GetToolBar() return self.frame.toolBar end
+function ide:GetMenuBar() return self.frame and self.frame.menuBar end
+function ide:GetStatusBar() return self.frame and self.frame.statusBar end
+function ide:GetToolBar() return self.frame and self.frame.toolBar end
 function ide:GetDebugger() return self.debugger end
 function ide:SetDebugger(deb)
   self.debugger = deb
@@ -103,7 +103,13 @@ function ide:SetDebugger(deb)
   if ide:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
   return deb
 end
-function ide:GetMainFrame() return self.frame end
+function ide:GetMainFrame()
+  if not self.frame then
+    self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, GetIDEString("editor"),
+      wx.wxDefaultPosition, wx.wxSize(1100, 700))
+  end
+  return self.frame
+end
 function ide:GetUIManager() return self.frame.uimgr end
 function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
 function ide:GetDocuments() return self.openDocuments end

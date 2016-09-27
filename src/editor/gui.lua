@@ -29,8 +29,7 @@ end
 -- Create the wxFrame
 -- ----------------------------------------------------------------------------
 local function createFrame()
-  local frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, GetIDEString("editor"),
-    wx.wxDefaultPosition, wx.wxSize(1100, 700))
+  local frame = ide:GetMainFrame() -- retrieve or create as needed
   frame:Center()
 
   -- update best size of the toolbar after resizing
@@ -653,14 +652,12 @@ end
 -- Add the child windows to the frame
 
 local frame = createFrame()
-ide.frame = frame
 createToolBar(frame)
 createNotebook(frame)
 createProjNotebook(frame)
 createBottomNotebook(frame)
 
 do
-  local frame = ide.frame
   local mgr = frame.uimgr
 
   mgr:AddPane(frame.toolBar, wxaui.wxAuiPaneInfo():
