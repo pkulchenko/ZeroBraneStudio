@@ -1307,9 +1307,9 @@ M.hex_num = '0' * lpeg_S('xX') * M.xdigit^1
 M.oct_num = '0' * lpeg_R('07')^1
 M.integer = lpeg_S('+-')^-1 * (M.hex_num + M.oct_num + M.dec_num)
 M.float = lpeg_S('+-')^-1 *
-          (M.digit^0 * '.' * M.digit^1 + M.digit^1 * '.' * M.digit^0 +
-           M.digit^1) *
-          lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1
+          ((M.digit^0 * '.' * M.digit^1 + M.digit^1 * '.' * M.digit^0) *
+           (lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1)^-1 +
+           (M.digit^1 * lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1))
 M.word = (M.alpha + '_') * (M.alnum + '_')^0
 
 ---
