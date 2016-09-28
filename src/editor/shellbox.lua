@@ -498,6 +498,7 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         -- move cursor to end if not already there
         if not caretOnPromptLine() then
           console:GotoPos(console:GetLength())
+          console:SetReadOnly(false) -- allow the current character to appear at the new location
         -- check if the selection starts before the prompt line and reset it
         elseif console:LineFromPosition(console:GetSelectionStart()) < getPromptLine() then
           console:GotoPos(console:GetLength())
@@ -514,12 +515,12 @@ local function inputEditable(line)
     not (console:LineFromPosition(console:GetSelectionStart()) < getPromptLine())
 end
 
--- new Scintilla (3.2.1) changed the way markers move when the text is updated
+-- Scintilla 3.2.1+ changed the way markers move when the text is updated
 -- ticket: http://sourceforge.net/p/scintilla/bugs/939/
 -- discussion: https://groups.google.com/forum/?hl=en&fromgroups#!topic/scintilla-interest/4giFiKG4VXo
 if ide.wxver >= "2.9.5" then
   -- this is a workaround that stores a position of the last prompt marker
-  -- before insert and restores the same position after (as the marker)
+  -- before insert and restores the same position after as the marker
   -- could have moved if the text is added at the beginning of the line.
   local promptAt
   console:Connect(wxstc.wxEVT_STC_MODIFIED,
