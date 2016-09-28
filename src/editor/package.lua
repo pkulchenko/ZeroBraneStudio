@@ -133,7 +133,9 @@ function ide:FindTopMenu(item)
   return self:GetMenuBar():GetMenu(index), index
 end
 function ide:FindMenuItem(itemid, menu)
-  local item, imenu = self:GetMenuBar():FindItem(itemid, menu)
+  local menubar = self:GetMenuBar()
+  if not menubar then return end -- no associated menu
+  local item, imenu = menubar:FindItem(itemid, menu)
   if menu and not item then item = menu:FindItem(itemid) end
   if not item then return end
   menu = menu or imenu
@@ -943,6 +945,52 @@ local at = {}
 function ide:SetAccelerator(id, ksc) at[id] = ksc; setAcceleratorTable(at) end
 function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
+
+function ide:SetHotKey(id, ksc)
+  -- this function handles several cases
+  -- 1. shortcut is assigned to an ID listed in keymap
+  -- 2. shortcut is assigned to an ID used in a menu item
+  -- 3. shortcut is assigned to an ID linked to an item (but not present in keymap or menu)
+  -- 4. shortcut is assigned to a function (passed instead of ID)
+  local keymap = ide.config.keymap
+
+  -- remove any potential conflict with this hotkey
+  -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
+  -- this doesn't take into account different order in `Ctrl-Shift-F1` and `Shift-Ctrl-F1`.
+  local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
+  for gid, ksc in pairs(keymap) do
+    -- if the same hotkey is used elsewhere (not one of IDs being checked)
+    if ksc:lower():find(kscpat) then
+      keymap[gid] = ""
+      -- try to find a menu item with this ID (if any) to remove the hotkey
+      local item = ide:FindMenuItem(gid)
+      if item then item:SetText(item:GetText():gsub("\t.+","").."") end
+    end
+    -- continue with the loop as there may be multiple associations with the same hotkey
+  end
+
+  -- if the hotkey is associated with a function, handle it first
+  if type(id) == "function" then
+    local fakeid = NewID()
+    ide:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
+    ide:SetAccelerator(fakeid, ksc)
+    return
+  end
+
+  -- if the keymap is already asigned, then reassign it
+  -- if not, then it may need an accelerator, which will be set later
+  if keymap[id] then keymap[id] = ksc end
+
+  local item = ide:FindMenuItem(id)
+  if item then
+    -- get the item text and replace the shortcut
+    -- since it also needs to keep the accelerator (if any), so can't use `GetLabel`
+    item:SetText(item:GetText():gsub("\t.+","")..KSC(nil, ksc))
+  end
+
+  -- if there is no keymap or menu item, then use the accelerator
+  if not keymap[id] and not item then ide:SetAccelerator(id, ksc) end
+end
 
 function ide:IsProjectSubDirectory(dir)
   local projdir = self:GetProject()
