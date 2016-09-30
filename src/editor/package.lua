@@ -901,6 +901,10 @@ function ide:IsValidProperty(ctrl, prop)
   return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end) and ctrl[prop]
 end
 
+function ide:IsValidHotKey(ksc)
+  return wx.wxAcceleratorEntry():FromString(ksc)
+end
+
 function ide:IsWindowShown(win)
   while win do
     if not win:IsShown() then return false end
@@ -947,6 +951,11 @@ function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
 function ide:SetHotKey(id, ksc)
+  if not ide:IsValidHotKey(ksc) then
+    ide:Print(("Can't set invalid hotkey value: %s."):format(ksc))
+    return
+  end
+
   -- this function handles several cases
   -- 1. shortcut is assigned to an ID listed in keymap
   -- 2. shortcut is assigned to an ID used in a menu item
