@@ -433,57 +433,49 @@ end
 
 out:Connect(wx.wxEVT_KEY_DOWN,
   function (event)
-    -- this loop is only needed to allow to get to the end of function easily
-    -- "return" aborts the processing and ignores the key
-    -- "break" aborts the processing and processes the key normally
-    while true do
+    local key = event:GetKeyCode()
+    if out:GetReadOnly() then
       -- no special processing if it's readonly
-      if out:GetReadOnly() then break end
-
-      local key = event:GetKeyCode()
-      if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP then
-        if out:GetCurrentLine() > getInputLine() then break
-        else return end
-      elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
-        break -- can go down
-      elseif key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT then
-        if not caretOnInputLine(true) then return end
-      elseif key == wx.WXK_BACK then
-        if not caretOnInputLine(true) then return end
-      elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
-        if not caretOnInputLine()
-        or out:LineFromPosition(out:GetSelectionStart()) < getInputLine() then
-          return
-        end
-      elseif key == wx.WXK_PAGEUP or key == wx.WXK_NUMPAD_PAGEUP
-          or key == wx.WXK_PAGEDOWN or key == wx.WXK_NUMPAD_PAGEDOWN
-          or key == wx.WXK_END or key == wx.WXK_NUMPAD_END
-          or key == wx.WXK_HOME or key == wx.WXK_NUMPAD_HOME
-          or key == wx.WXK_RIGHT or key == wx.WXK_NUMPAD_RIGHT
-          or key == wx.WXK_SHIFT or key == wx.WXK_CONTROL
-          or key == wx.WXK_ALT then
-        break
-      elseif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER then
-        if not caretOnInputLine()
-        or out:LineFromPosition(out:GetSelectionStart()) < getInputLine() then
-          return
-        end
-        out:GotoPos(out:GetLength()) -- move to the end
-        textout = (textout or '') .. getInputText(inputBound)
-        -- remove selection if any, otherwise the text gets replaced
-        out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
-        break -- don't need to do anything else with return
-      else
-        -- move cursor to end if not already there
-        if not caretOnInputLine() then
-          out:GotoPos(out:GetLength())
-        -- check if the selection starts before the input line and reset it
-        elseif out:LineFromPosition(out:GetSelectionStart()) < getInputLine(-1) then
-          out:GotoPos(out:GetLength())
-          out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
-        end
+    elseif key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP then
+      if out:GetCurrentLine() <= getInputLine() then return end
+    elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
+      -- can go down
+    elseif key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT then
+      if not caretOnInputLine(true) then return end
+    elseif key == wx.WXK_BACK then
+      if not caretOnInputLine(true) then return end
+    elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
+      if not caretOnInputLine()
+      or out:LineFromPosition(out:GetSelectionStart()) < getInputLine() then
+        return
       end
-      break
+    elseif key == wx.WXK_PAGEUP or key == wx.WXK_NUMPAD_PAGEUP
+        or key == wx.WXK_PAGEDOWN or key == wx.WXK_NUMPAD_PAGEDOWN
+        or key == wx.WXK_END or key == wx.WXK_NUMPAD_END
+        or key == wx.WXK_HOME or key == wx.WXK_NUMPAD_HOME
+        or key == wx.WXK_RIGHT or key == wx.WXK_NUMPAD_RIGHT
+        or key == wx.WXK_SHIFT or key == wx.WXK_CONTROL
+        or key == wx.WXK_ALT then
+      -- fall through
+    elseif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER then
+      if not caretOnInputLine()
+      or out:LineFromPosition(out:GetSelectionStart()) < getInputLine() then
+        return
+      end
+      out:GotoPos(out:GetLength()) -- move to the end
+      textout = (textout or '') .. getInputText(inputBound)
+      -- remove selection if any, otherwise the text gets replaced
+      out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
+      -- don't need to do anything else with return
+    else
+      -- move cursor to end if not already there
+      if not caretOnInputLine() then
+        out:GotoPos(out:GetLength())
+      -- check if the selection starts before the input line and reset it
+      elseif out:LineFromPosition(out:GetSelectionStart()) < getInputLine(-1) then
+        out:GotoPos(out:GetLength())
+        out:SetSelection(out:GetSelectionEnd()+1,out:GetSelectionEnd())
+      end
     end
     event:Skip()
   end)
