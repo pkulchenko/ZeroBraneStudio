@@ -418,6 +418,7 @@ out:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
         end
       end
     end
+    event:Skip()
   end)
 
 local function positionInLine(line)
