@@ -449,9 +449,11 @@ local function addDND(notebook)
           notebook:SetWindowStyleFlag(flags - wxaui.wxAUI_NB_TAB_SPLIT)
         end
 
-        -- don't allow dragging out single tabs from tab ctrl
-        -- as wxwidgets doesn't like removing pages from split notebooks.
-        if tabctrl:GetPageCount() == 1 then return end
+        if ide.wxver < "3.0" then
+          -- don't allow dragging out single tabs from tab ctrl
+          -- as wxwidgets doesn't like removing pages from split notebooks.
+          if tabctrl:GetPageCount() == 1 then return end
+        end
 
         local label = notebook:GetPageText(selection)
         local pane = ide:RestorePanelByLabel(label)
