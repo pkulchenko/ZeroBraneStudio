@@ -522,7 +522,7 @@ function IndicateAll(editor, lines)
   -- when there are still some pending events for it, so handle it.
   if not ide:IsValidCtrl(editor) then return end
 
-  -- if markvars is not set in the spec, nothing else to do
+  -- if marksymbols is not set in the spec, nothing else to do
   if not (editor.spec and editor.spec.marksymbols) then return end
 
   local indic = styles.indicator or {}

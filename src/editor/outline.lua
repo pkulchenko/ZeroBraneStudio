@@ -83,10 +83,10 @@ local function outlineRefresh(editor, force)
       local depth = token.context['function'] or 1
       local name, pos = token.name, token.fpos
       text = text or editor:GetTextDyn()
-      local _, _, rname, params = text:find('([^%(]*)(%b())', pos)
-      if name and rname:find(token.name, 1, true) ~= 1 then
-        name = rname:gsub("%s+$","")
-      end
+      local _, _, rname, params = text:find('([^(]*)(%b())', pos)
+      if rname then rname = rname:gsub("%s+$","") end
+      -- if something else got captured, then don't show any parameters
+      if name and rname and name ~= rname then params = "" end
       if not name then
         local s = editor:PositionFromLine(editor:LineFromPosition(pos-1))
         local rest
@@ -108,7 +108,7 @@ local function outlineRefresh(editor, force)
       end
       name = name or outcfg.showanonymous
       funcs[#funcs+1] = {
-        name = ((name or '~')..params):gsub("%s+", " "),
+        name = ((name or '~')..(params or "")):gsub("%s+", " "),
         skip = (not name) and true or nil,
         depth = depth,
         image = ftype,
