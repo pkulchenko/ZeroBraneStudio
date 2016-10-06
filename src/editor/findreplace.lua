@@ -847,7 +847,8 @@ function findReplace:createPanel()
   local borcolor = ide:GetUIManager():GetArtProvider():GetColour(wxaui.wxAUI_DOCKART_BORDER_COLOUR)
   local bpen = wx.wxPen(borcolor, 1, wx.wxSOLID)
   local bbrush = wx.wxBrush(pancolor, wx.wxSOLID)
-  local tfont = ide:GetProjectTree():GetFont()
+  local tempctrl = ide:IsValidCtrl(ide:GetProjectTree()) and ide:GetProjectTree() or wx.wxTreeCtrl()
+  local tfont = tempctrl:GetFont()
   -- don't increase font size on Linux as it gets too large
   tfont:SetPointSize(tfont:GetPointSize() + (ide.osname == 'Unix' and 0 or 1))
 

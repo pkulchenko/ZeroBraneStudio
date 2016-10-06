@@ -41,7 +41,8 @@ function CommandBarShow(params)
     pos = wx.wxDefaultPosition
   end
 
-  local tfont = ide:GetProjectTree():GetFont()
+  local tempctrl = ide:IsValidCtrl(ide:GetProjectTree()) and ide:GetProjectTree() or wx.wxTreeCtrl()
+  local tfont = tempctrl:GetFont()
   local ffont = (ide:GetEditor() or ide:CreateBareEditor()):GetFont()
   ffont:SetPointSize(ffont:GetPointSize()+2)
   local sfont = wx.wxFont(tfont)

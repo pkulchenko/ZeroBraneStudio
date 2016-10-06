@@ -107,8 +107,9 @@ local function treeAddDir(tree,parent_id,rootdir)
 end
 
 local function treeSetRoot(tree,rootdir)
+  if not ide:IsValidCtrl(tree) then return end
   tree:DeleteAllItems()
-  if (not wx.wxDirExists(rootdir)) then return end
+  if not wx.wxDirExists(rootdir) then return end
 
   local root_id = tree:AddRoot(rootdir, image.DIRECTORY)
   tree:SetItemHasChildren(root_id, true) -- make sure that the item can expand
@@ -871,7 +872,8 @@ end
 
 local curr_file
 function FileTreeMarkSelected(file)
-  if not file or not filetree.projdir or #filetree.projdir == 0 then return end
+  if not file or not filetree.projdir or #filetree.projdir == 0
+  or not ide:IsValidCtrl(projtree) then return end
 
   local item_id = wx.wxIsAbsolutePath(file) and projtree:FindItem(file)
 

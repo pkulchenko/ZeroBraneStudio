@@ -380,7 +380,7 @@ local function addDND(notebook)
         local winid = win:GetId()
         if winid == ide:GetOutput():GetId()
         or winid == ide:GetConsole():GetId()
-        or winid == ide:GetProjectTree():GetId()
+        or (ide:IsValidCtrl(ide:GetProjectTree()) and winid == ide:GetProjectTree():GetId())
         or isPreview(win) -- search results preview
         then return end
 
@@ -453,6 +453,12 @@ local function addDND(notebook)
           -- don't allow dragging out single tabs from tab ctrl
           -- as wxwidgets doesn't like removing pages from split notebooks.
           if tabctrl:GetPageCount() == 1 then return end
+        end
+
+        -- don't allow last pages to be dragged out from Project and Output notebooks
+        if (notebook == ide:GetProjectNotebook() or notebook == ide:GetOutputNotebook())
+        and notebook:GetPageCount() == 1 then
+          return
         end
 
         local label = notebook:GetPageText(selection)
