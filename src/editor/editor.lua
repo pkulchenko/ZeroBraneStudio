@@ -1659,7 +1659,21 @@ local function setLexLPegLexer(editor, lexername)
   package.path = ppath -- restore the original `package.path`
   if not ok then return nil, "Can't find LexLPeg lexer components." end
 
+  -- if the requested lexer is a dynamically registered one, then need to create a file for it,
+  -- as LexLPeg lexers are loaded in a separate Lua state, which this process has no contol over.
+  local dynlexer, tmppath, dynfile = ide:GetLexer(lexername), wx.wxFileName.GetTempDir(), nil
+  if dynlexer then
+    -- update lexer name to make it unique
+    lexer = lexer.."-"..wx.wxGetLocalTimeMillis():ToString()
+    -- update lex.LEXERPATH to search there
+    lex.LEXERPATH = MergeFullPath(tmppath, "?.lua")
+    dynfile = MergeFullPath(tmppath, lexer..".lua")
+    -- save the file to the temp folder
+    local ok, err = FileWrite(dynfile, dynlexer)
+    if not ok then return nil, err end
+  end
   local lexmod, err = lex.load(lexer)
+  if dynlexer then FileRemove(dynfile) end
   if not lexmod then return nil, err end
 
   local lexpath = package.searchpath("lexlpeg", ide.osclibs)
@@ -1673,10 +1687,25 @@ local function setLexLPegLexer(editor, lexername)
   -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
   if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
 
+  if dynlexer then
+    -- copy lexer.lua to the temp folder
+    local ok, err = FileCopy(MergeFullPath(lpath, "lexer.lua"), MergeFullPath(tmppath, "lexer.lua"))
+    if not ok then return nil, err end
+    -- save the file to the temp folder
+    local ok, err = FileWrite(dynfile, dynlexer)
+    if not ok then FileRemove(MergeFullPath(tmppath, "lexer.lua")); return nil, err end
+    -- update lpath to point to the temp folder
+    lpath = tmppath
+  end
   editor:SetLexerLanguage("lpeg")
   editor:SetProperty("lexer.lpeg.home", lpath)
   editor:SetProperty("fold", edcfg.fold and "1" or "0")
   editor:PrivateLexerCall(4006, lexer) --[[ SetLexerLanguage ]]
+  if dynlexer then
+    -- remove lexer.lua and the lexer file
+    FileRemove(dynfile)
+    FileRemove(MergeFullPath(tmppath, "lexer.lua"))
+  end
 
   local styleconvert = {}
   for name, map in pairs(lexlpegmap) do

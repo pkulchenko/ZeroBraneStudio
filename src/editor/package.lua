@@ -928,6 +928,17 @@ function ide:RemoveTool(name)
   return ToolsRemoveTool(name)
 end
 
+local lexers = {}
+function ide:AddLexer(name, lexer)
+  lexers[name] = lexer
+end
+function ide:RemoveLexer(name)
+  lexers[name] = nil
+end
+function ide:GetLexer(name)
+  return lexers[name]
+end
+
 local timers = {}
 local function evhandler(event)
   local callback = timers[event:GetId()]
