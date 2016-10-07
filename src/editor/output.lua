@@ -103,10 +103,10 @@ local customprocs = {}
 local textout = '' -- this is a buffer for any text sent to external scripts
 
 function DetachChildProcess()
-  for _, custom in pairs(customprocs) do
+  for pid, custom in pairs(customprocs) do
     -- since processes are detached, their END_PROCESS event is not going
     -- to be called; call endcallback() manually if registered.
-    if custom.endcallback then custom.endcallback() end
+    if custom.endcallback then custom.endcallback(pid) end
     if custom.proc then custom.proc:Detach() end
   end
 end
@@ -122,7 +122,7 @@ function CommandLineRunning(uid)
 end
 
 function CommandLineToShell(uid,state)
-  for pid,custom in pairs(customprocs) do
+  for pid, custom in pairs(customprocs) do
     if (pid == uid or custom.uid == uid) and custom.proc and custom.proc.Exists(tonumber(pid)) then
       if (streamins[pid]) then streamins[pid].toshell = state end
       if (streamerrs[pid]) then streamerrs[pid].toshell = state end
@@ -322,22 +322,26 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
       streamouts[pid] = nil
 
       if not customprocs[pid] then return end
-      if customprocs[pid].endcallback then customprocs[pid].endcallback() end
-      -- if this wasn't started with CommandLineRun, skip the rest
-      if not customprocs[pid].uid then return end
-
-      -- delete markers and set focus to the editor if there is an input marker
-      if out:MarkerPrevious(out:GetLineCount(), PROMPT_MARKER_VALUE) > wx.wxNOT_FOUND then
-        out:MarkerDeleteAll(PROMPT_MARKER)
-        local editor = GetEditor()
-        -- check if editor still exists; it may not if the window is closed
-        if editor then editor:SetFocus() end
+      if customprocs[pid].endcallback then
+        local ok, err = pcall(customprocs[pid].endcallback, pid, event:GetExitCode())
+        if not ok then ide:GetOutput():Error(("Post processing execution failed: %s"):format(err)) end
       end
-      unHideWindow(0)
-      ide:SetLaunchedProcess(nil)
-      nameTab(out, TR("Output"))
-      DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
-        :format(TimeGet() - customprocs[pid].started, pid))
+
+      -- if this was started with uid (`CommandLineRun`), then it needs additional processing
+      if customprocs[pid].uid then
+        -- delete markers and set focus to the editor if there is an input marker
+        if out:MarkerPrevious(out:GetLineCount(), PROMPT_MARKER_VALUE) > wx.wxNOT_FOUND then
+          out:MarkerDeleteAll(PROMPT_MARKER)
+          local editor = GetEditor()
+          -- check if editor still exists; it may not if the window is closed
+          if editor then editor:SetFocus() end
+        end
+        unHideWindow(0)
+        ide:SetLaunchedProcess(nil)
+        nameTab(out, TR("Output"))
+        DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
+          :format(TimeGet() - customprocs[pid].started, pid))
+      end
       customprocs[pid] = nil
     end
   end)
