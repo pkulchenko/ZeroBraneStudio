@@ -566,6 +566,8 @@ end
 displayShellIntro()
 
 function console:Erase()
+  -- allow writing as the editor may be read-only depending on current cursor position
+  self:SetReadOnly(false)
   self:ClearAll()
   displayShellIntro()
 end
