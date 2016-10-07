@@ -567,6 +567,7 @@ function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
     cwd = wx.wxFileName.SetCwd(wdir) and cwd
   end
 
+  local _ = wx.wxLogNull() -- disable error reporting; will report as needed
   local pid = wx.wxExecute(cmd, wx.wxEXEC_ASYNC, proc)
   pid = pid ~= -1 and pid ~= 0 and pid or nil
   if cwd then wx.wxFileName.SetCwd(cwd) end -- restore workdir
