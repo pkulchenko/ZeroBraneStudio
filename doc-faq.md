@@ -105,6 +105,18 @@ Running a script with this escape sequence under LuaJIT will trigger an error: `
 
 The solution in this case is to **"fix" the escape sequence** and replace `\/` with `/`, which will have the same effect in Lua 5.1, LuaJIT, and Lua 5.2.
 
+## How to search or replace with regular expressions?
+
+To **search or replace using regular expressions**, you can toggle `Regular expression` icon on the search panel toolbar.
+These regular expressions do not accept Lua character classes that start with `%` (like `%s`, `%d`, and others), but accept `.` (as any character), char-sets (`[]` and `[^]`), modifiers `+` and `*`, and characters `^` and `$` to match beginning and end of the string.
+Regular expressions only match within a single line (not over multiple lines).
+See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_GETTAG) for details on what special characters are accepted.
+
+## How to replace using captures in regular expressions?
+
+(0.39+) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
+For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherVariable\1`, `MyVariable1` will be replaced with `MyOtherVariable1`, `MyVariable2` with `MyOtherVariable2`, and so on.
+
 ## Why is the text blurry when running on Windows 8?
 
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
