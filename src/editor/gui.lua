@@ -126,23 +126,25 @@ local function createToolBar(frame)
   -- there are two sets of icons: use 24 on OSX and 16 on others.
   local iconsize = tbIconSize()
   local toolBmpSize = wx.wxSize(iconsize, iconsize)
-  local icons, prev = ide.config.toolbar.icons
+  local icons = ide.config.toolbar.icons
+  local needseparator = false
   for _, id in ipairs(icons) do
     if icons[id] ~= false then -- skip explicitly disabled icons
-      if id == ID_SEPARATOR then
-        -- make sure that there are no two separators next to each other;
-        -- this may happen when some of the icons are disabled.
-        if prev ~= ID_SEPARATOR then toolBar:AddSeparator() end
+      if id == ID.SEPARATOR and toolBar:GetToolCount() > 0 then
+        needseparator = true
       else
         local iconmap = ide.config.toolbar.iconmap[id]
         if iconmap then
+          if needseparator then
+            toolBar:AddSeparator()
+            needseparator = false
+          end
           local icon, description = unpack(iconmap)
           local isbitmap = type(icon) == "userdata" and icon:GetClassInfo():GetClassName() == "wxBitmap"
           local bitmap = isbitmap and icon or ide:GetBitmap(icon, "TOOLBAR", toolBmpSize)
           toolBar:AddTool(id, "", bitmap, (TR)(description)..SCinB(id))
         end
       end
-      prev = id
     end
   end
 
