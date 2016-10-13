@@ -672,32 +672,32 @@ end
 local icons = {
   find = {
     internal = {
-      ID_FINDNEXT, ID_SEPARATOR,
-      ID_FINDOPTDIRECTION, ID_FINDOPTWRAPWROUND, ID_FINDOPTSELECTION,
-      ID_FINDOPTWORD, ID_FINDOPTCASE, ID_FINDOPTREGEX,
-      ID_SEPARATOR, ID_FINDOPTSTATUS,
+      ID.FINDNEXT, ID.SEPARATOR,
+      ID.FINDOPTDIRECTION, ID.FINDOPTWRAPWROUND, ID.FINDOPTSELECTION,
+      ID.FINDOPTWORD, ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
     infiles = {
-      ID_FIND, ID_SEPARATOR,
-      ID_FINDOPTCONTEXT, ID_FINDOPTMULTIRESULTS, ID_FINDOPTWORD,
-      ID_FINDOPTCASE, ID_FINDOPTREGEX, ID_FINDOPTSUBDIR,
-      ID_FINDOPTSCOPE, ID_FINDSETDIR,
-      ID_SEPARATOR, ID_FINDOPTSTATUS,
+      ID.FIND, ID_SEPARATOR,
+      ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTSCOPE, ID.FINDSETDIR,
+      ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
   },
   replace = {
     internal = {
-      ID_FINDNEXT, ID_FINDREPLACENEXT, ID_FINDREPLACEALL, ID_SEPARATOR,
-      ID_FINDOPTDIRECTION, ID_FINDOPTWRAPWROUND, ID_FINDOPTSELECTION,
-      ID_FINDOPTWORD, ID_FINDOPTCASE, ID_FINDOPTREGEX,
-      ID_SEPARATOR, ID_FINDOPTSTATUS,
+      ID.FINDNEXT, ID.FINDREPLACENEXT, ID.FINDREPLACEALL, ID.SEPARATOR,
+      ID.FINDOPTDIRECTION, ID.FINDOPTWRAPWROUND, ID.FINDOPTSELECTION,
+      ID.FINDOPTWORD, ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
     infiles = {
-      ID_FIND, ID_FINDREPLACEALL, ID_SEPARATOR,
-      ID_FINDOPTCONTEXT, ID_FINDOPTMULTIRESULTS, ID_FINDOPTWORD,
-      ID_FINDOPTCASE, ID_FINDOPTREGEX, ID_FINDOPTSUBDIR,
-      ID_FINDOPTSCOPE, ID_FINDSETDIR,
-      ID_SEPARATOR, ID_FINDOPTSTATUS,
+      ID.FIND, ID.FINDREPLACEALL, ID.SEPARATOR,
+      ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTSCOPE, ID.FINDSETDIR,
+      ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
   },
 }
@@ -711,11 +711,11 @@ function findReplace:createToolbar()
   tb:Freeze()
   tb:Clear()
   for _, id in ipairs(icons) do
-    if id == ID_SEPARATOR then
+    if id == ID.SEPARATOR then
       tb:AddSeparator()
-    elseif id == ID_FINDOPTSCOPE then
+    elseif id == ID.FINDOPTSCOPE then
       tb:AddControl(scope)
-    elseif id == ID_FINDOPTSTATUS then
+    elseif id == ID.FINDOPTSTATUS then
       tb:AddControl(status)
     else
       local iconmap = ide.config.toolbar.iconmap[id]
@@ -729,14 +729,14 @@ function findReplace:createToolbar()
   end
 
   local options = {
-    [ID_FINDOPTDIRECTION] = 'Down',
-    [ID_FINDOPTWRAPWROUND] = 'Wrap',
-    [ID_FINDOPTWORD] = 'WholeWord',
-    [ID_FINDOPTCASE] = 'MatchCase',
-    [ID_FINDOPTREGEX] = 'RegularExpr',
-    [ID_FINDOPTSUBDIR] = 'SubDirs',
-    [ID_FINDOPTCONTEXT] = 'Context',
-    [ID_FINDOPTMULTIRESULTS] = 'MultiResults',
+    [ID.FINDOPTDIRECTION] = 'Down',
+    [ID.FINDOPTWRAPWROUND] = 'Wrap',
+    [ID.FINDOPTWORD] = 'WholeWord',
+    [ID.FINDOPTCASE] = 'MatchCase',
+    [ID.FINDOPTREGEX] = 'RegularExpr',
+    [ID.FINDOPTSUBDIR] = 'SubDirs',
+    [ID.FINDOPTCONTEXT] = 'Context',
+    [ID.FINDOPTMULTIRESULTS] = 'MultiResults',
   }
 
   for id, var in pairs(options) do
@@ -755,11 +755,11 @@ function findReplace:createToolbar()
     end
   end
 
-  local optseltool = tb:FindTool(ID_FINDOPTSELECTION)
+  local optseltool = tb:FindTool(ID.FINDOPTSELECTION)
   if optseltool then
     optseltool:SetSticky(self.inselection)
-    tb:EnableTool(ID_FINDOPTSELECTION, self.inselection)
-    ctrl:Connect(ID_FINDOPTSELECTION, wx.wxEVT_COMMAND_MENU_SELECTED,
+    tb:EnableTool(ID.FINDOPTSELECTION, self.inselection)
+    ctrl:Connect(ID.FINDOPTSELECTION, wx.wxEVT_COMMAND_MENU_SELECTED,
       function (event)
         self.inselection = not self.inselection
         tb:FindTool(event:GetId()):SetSticky(self.inselection)
@@ -767,15 +767,15 @@ function findReplace:createToolbar()
       end)
   end
 
-  tb:SetToolDropDown(ID_FINDSETDIR, true)
-  tb:Connect(ID_FINDSETDIR, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
+  tb:SetToolDropDown(ID.FINDSETDIR, true)
+  tb:Connect(ID.FINDSETDIR, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
       if event:IsDropDownClicked() then
         local menu = wx.wxMenu({})
         local pos = tb:GetToolRect(event:GetId()):GetBottomLeft()
-        menu:Append(ID_FINDSETDIR, TR("Choose..."))
-        menu:Append(ID_FINDSETTOPROJDIR, TR("Set To Project Directory"))
-        menu:Enable(ID_FINDSETTOPROJDIR, ide:GetProject() ~= nil)
-        menu:Connect(ID_FINDSETTOPROJDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
+        menu:Append(ID.FINDSETDIR, TR("Choose..."))
+        menu:Append(ID.FINDSETTOPROJDIR, TR("Set To Project Directory"))
+        menu:Enable(ID.FINDSETTOPROJDIR, ide:GetProject() ~= nil)
+        menu:Connect(ID.FINDSETTOPROJDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
           function()
             local _, mask = self:GetScope()
             self:refreshToolbar(self:SetScope(ide:GetProject(), mask))
@@ -788,9 +788,9 @@ function findReplace:createToolbar()
             function() self:refreshToolbar(text) end)
         end
         menu:AppendSeparator()
-        menu:Append(ID_RECENTSCOPECLEAR, TR("Clear Items"))
-        menu:Enable(ID_RECENTSCOPECLEAR, #self.settings.slist > 0)
-        menu:Connect(ID_RECENTSCOPECLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
+        menu:Append(ID.RECENTSCOPECLEAR, TR("Clear Items"))
+        menu:Enable(ID.RECENTSCOPECLEAR, #self.settings.slist > 0)
+        menu:Connect(ID.RECENTSCOPECLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
           function()
             self.settings.slist = {}
             self:SaveSettings()
@@ -1069,17 +1069,17 @@ function findReplace:createPanel()
   scope:Connect(wx.wxEVT_KEY_DOWN, keyHandle)
 
   local function notSearching(event) event:Enable(not self.oveditor) end
-  ctrl:Connect(ID_FIND, wx.wxEVT_UPDATE_UI, notSearching)
-  ctrl:Connect(ID_FINDNEXT, wx.wxEVT_UPDATE_UI, notSearching)
-  ctrl:Connect(ID_FINDREPLACENEXT, wx.wxEVT_UPDATE_UI, notSearching)
-  ctrl:Connect(ID_FINDREPLACEALL, wx.wxEVT_UPDATE_UI, notSearching)
+  ctrl:Connect(ID.FIND, wx.wxEVT_UPDATE_UI, notSearching)
+  ctrl:Connect(ID.FINDNEXT, wx.wxEVT_UPDATE_UI, notSearching)
+  ctrl:Connect(ID.FINDREPLACENEXT, wx.wxEVT_UPDATE_UI, notSearching)
+  ctrl:Connect(ID.FINDREPLACEALL, wx.wxEVT_UPDATE_UI, notSearching)
 
-  ctrl:Connect(ID_FIND, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
-  ctrl:Connect(ID_FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
-  ctrl:Connect(ID_FINDREPLACENEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceNext)
-  ctrl:Connect(ID_FINDREPLACEALL, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceAll)
+  ctrl:Connect(ID.FIND, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
+  ctrl:Connect(ID.FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findNext)
+  ctrl:Connect(ID.FINDREPLACENEXT, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceNext)
+  ctrl:Connect(ID.FINDREPLACEALL, wx.wxEVT_COMMAND_MENU_SELECTED, findReplaceAll)
 
-  ctrl:Connect(ID_FINDSETDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
+  ctrl:Connect(ID.FINDSETDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       local dir, mask = self:GetScope()
       local filePicker = wx.wxDirDialog(ctrl, TR("Choose a search directory"),
