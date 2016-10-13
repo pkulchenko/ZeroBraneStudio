@@ -25,7 +25,7 @@ local debugMenu = ide:MakeMenu {
   { ID_STARTDEBUG, TR("Start &Debugging")..KSC(ID_STARTDEBUG), TR("Start or continue debugging") },
   { ID_ATTACHDEBUG, TR("&Start Debugger Server")..KSC(ID_ATTACHDEBUG), TR("Allow external process to start debugging"), wx.wxITEM_CHECK },
   { },
-  { ID_STOPDEBUG, TR("S&top Debugging")..KSC(ID_STOPDEBUG), TR("Stop the currently running process") },
+  { ID_STOPDEBUG, TR("S&top Process")..KSC(ID_STOPDEBUG), TR("Stop the currently running process") },
   { ID_DETACHDEBUG, TR("Detach &Process")..KSC(ID_DETACHDEBUG), TR("Stop debugging and continue running the process") },
   { ID_STEP, TR("Step &Into")..KSC(ID_STEP), TR("Step into") },
   { ID_STEPOVER, TR("Step &Over")..KSC(ID_STEPOVER), TR("Step over") },
@@ -48,7 +48,7 @@ local debugMenu = ide:MakeMenu {
 menuBar:Append(debugMenu, TR("&Project"))
 
 local debugMenuRunLabel = { [false]=debugMenu:GetLabelText(ID_STARTDEBUG), [true]=TR("Co&ntinue") }
-local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Process") }
+local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Debugging") }
 
 local interpreters
 local function selectInterpreter(id)
@@ -370,8 +370,8 @@ frame:Connect(ID_STOPDEBUG, wx.wxEVT_UPDATE_UI,
   function (event)
     local debugger = ide:GetDebugger()
     event:Enable(debugger:IsConnected() ~= nil or ide:GetLaunchedProcess() ~= nil)
-    local isprocess = debugger:IsConnected() == nil and ide:GetLaunchedProcess() ~= nil
-    local label, other = debugMenuStopLabel[isprocess], debugMenuStopLabel[not isprocess]
+    local isdebugging = debugger:IsConnected() ~= nil
+    local label, other = debugMenuStopLabel[isdebugging], debugMenuStopLabel[not isdebugging]
     if debugMenu:GetLabelText(ID_STOPDEBUG) == wx.wxMenuItem.GetLabelText(other) then
       debugMenu:SetLabel(ID_STOPDEBUG, label..KSC(ID_STOPDEBUG))
     end
