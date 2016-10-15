@@ -116,7 +116,7 @@ ide = {
       showallsymbols = true, -- show all symbols in a project
     },
     staticanalyzer = {
-      infervalue = false, -- off by default as it's a slower mode
+      infervalue = false, -- run more detailed static analysis; off by default as it's a slower mode
     },
     search = {
       autocomplete = true,
