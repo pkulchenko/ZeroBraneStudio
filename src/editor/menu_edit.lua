@@ -386,7 +386,11 @@ frame:Connect(ID_FOLDLINE, wx.wxEVT_UPDATE_UI, canfold)
 frame:Connect(ID_FOLDLINE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     local editor = GetEditorWithFocus()
-    editor:ToggleFold(editor:GetCurrentLine())
+    local current = editor:GetCurrentLine()
+    editor:ToggleFold(current)
+    -- move up to the parent line if the current one is not visible
+    local visible = editor:GetLineVisible(current)
+    if not visible and editor:GetFoldParent(current) ~= wx.wxNOT_FOUND then editor:LineUp() end
   end)
 
 local BOOKMARK_MARKER = StylesGetMarker("bookmark")
