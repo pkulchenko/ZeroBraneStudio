@@ -528,7 +528,7 @@ function findReplace:RunInFiles(replace)
           local header = bit.band(editor:GetFoldLevel(line),
             wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
           if wx.wxGetKeyState(wx.WXK_SHIFT) and wx.wxGetKeyState(wx.WXK_CONTROL) then
-            editor:FoldSome()
+            editor:FoldSome(line)
           elseif header then
             editor:ToggleFold(line)
           end

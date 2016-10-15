@@ -884,7 +884,7 @@ function CreateEditor(bare)
           wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
         local shift, ctrl = wx.wxGetKeyState(wx.WXK_SHIFT), wx.wxGetKeyState(wx.WXK_CONTROL)
         if shift and ctrl then
-          editor:FoldSome()
+          editor:FoldSome(line)
         elseif ctrl then -- select the scope that was clicked on
           local from = header and line or editor:GetFoldParent(line)
           if from > -1 then -- only select if there is a block to select

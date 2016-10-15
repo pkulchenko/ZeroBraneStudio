@@ -371,12 +371,16 @@ function ide:CreateStyledTextCtrl(...)
   end
 
   -- circle through "fold all" => "hide base lines" => "unfold all"
-  function editor:FoldSome()
+  function editor:FoldSome(line)
     local foldall = false -- at least on header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
-    local lines = editor:GetLineCount()
 
-    for ln = 0, lines-1 do
+    local header = line and bit.band(editor:GetFoldLevel(line),
+      wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
+    local from = line and (header and line or editor:GetFoldParent(line)) or 0
+    local to = line and from > -1 and editor:GetLastChild(from, -1) or editor:GetLineCount()-1
+
+    for ln = from, to do
       local foldRaw = editor:GetFoldLevel(ln)
       local foldLvl = foldRaw % 4096
       local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
@@ -394,9 +398,9 @@ function ide:CreateStyledTextCtrl(...)
     end
 
     -- shows lines; this doesn't change fold status for folded lines
-    if not foldall and not hidebase then editor:ShowLines(0, lines-1) end
+    if not foldall and not hidebase then editor:ShowLines(from, to) end
 
-    for ln = 0, lines-1 do
+    for ln = from, to do
       local foldRaw = editor:GetFoldLevel(ln)
       local foldLvl = foldRaw % 4096
       local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
