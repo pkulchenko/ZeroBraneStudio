@@ -120,6 +120,8 @@ local function outlineRefresh(editor, force)
   if force == nil then return funcs end
 
   local ctrl = outline.outlineCtrl
+  if not ctrl then return end -- outline can be completely removed/disabled
+
   local cache = caches[editor] or {}
   caches[editor] = cache
 
@@ -642,8 +644,8 @@ function outline:GetEditorSymbols(editor)
   end
 
   -- only refresh the functions when none is present
-  if not caches[editor] or #caches[editor].funcs == 0 then outlineRefresh(editor, true) end
-  return caches[editor].funcs
+  if not caches[editor] or #(caches[editor].funcs or {}) == 0 then outlineRefresh(editor, true) end
+  return caches[editor] and caches[editor].funcs or {}
 end
 
 function outline:RefreshSymbols(path, callback)
