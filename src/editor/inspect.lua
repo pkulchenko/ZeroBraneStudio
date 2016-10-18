@@ -232,7 +232,7 @@ end
 
 frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    ActivateOutput()
+    ide:GetOutput():Activate()
     local editor = GetEditor()
     if not analyzeProgram(editor) then
       CompileProgram(editor, { reportstats = false, keepoutput = true })

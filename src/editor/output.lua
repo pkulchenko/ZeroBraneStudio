@@ -284,7 +284,7 @@ local function getStreams()
         else
           DisplayOutputNoMarker(str)
           if str and (getInputLine() ~= wx.wxNOT_FOUND or out:GetReadOnly()) then
-            ActivateOutput()
+            ide:GetOutput():Activate()
             updateInputMarker()
           end
         end

@@ -482,6 +482,28 @@ function ide:CreateStyledTextCtrl(...)
     return not text:find("%S") or (lc and text:find("^%s*"..q(lc)) ~= nil)
   end
 
+  function editor:Activate(force)
+    -- check for `activateoutput` if the current component is the same as `Output`
+    if self == ide:GetOutput() and not ide.config.activateoutput and not force then return end
+
+    local nb = self:GetParent()
+    -- check that the parent is of the correct type
+    if nb:GetClassInfo():GetClassName() ~= "wxAuiNotebook" then return end
+    nb = nb:DynamicCast("wxAuiNotebook")
+
+    local uimgr = ide:GetUIManager()
+    local pane = uimgr:GetPane(nb)
+    if pane:IsOk() and not pane:IsShown() then
+      pane:Show(true)
+      uimgr:Update()
+    end
+    -- activate output/errorlog window
+    local index = nb:GetPageIndex(self)
+    if nb:GetSelection() == index then return false end
+    nb:SetSelection(index)
+    return true
+  end
+
   editor:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
       local keycode = event:GetKeyCode()

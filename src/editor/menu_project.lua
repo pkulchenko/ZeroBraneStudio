@@ -200,23 +200,9 @@ local function getNameToRun(skipcheck)
   return wx.wxFileName(name or doc:GetFilePath())
 end
 
-function ActivateOutput()
-  if not ide.config.activateoutput then return end
-  -- show output/errorlog pane
-  if not uimgr:GetPane(bottomnotebook):IsShown() then
-    uimgr:GetPane(bottomnotebook):Show(true)
-    uimgr:Update()
-  end
-  -- activate output/errorlog window
-  local index = bottomnotebook:GetPageIndex(bottomnotebook.errorlog)
-  if bottomnotebook:GetSelection() ~= index then
-    bottomnotebook:SetSelection(index)
-  end
-end
-
 local function runInterpreter(wfilename, withdebugger)
   ClearOutput()
-  ActivateOutput()
+  ide:GetOutput():Activate()
 
   ClearAllCurrentLineMarkers()
   if not wfilename then return end
@@ -295,7 +281,7 @@ frame:Connect(ID_BREAKPOINTPREV, wx.wxEVT_UPDATE_UI,
 
 frame:Connect(ID_COMPILE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    ActivateOutput()
+    ide:GetOutput():Activate()
     CompileProgram(GetEditor(), {
         keepoutput = ide:GetLaunchedProcess() ~= nil or ide:GetDebugger():IsConnected()
     })
