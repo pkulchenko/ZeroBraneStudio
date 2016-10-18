@@ -961,7 +961,8 @@ local package = ide:AddPackage('core.filetree', {
                   -- if the file is removed, try to find a non-existing file in the same folder
                   -- as this will trigger a refresh of that folder
                   local path = MergeFullPath(file, kind == wx.wxFSW_EVENT_DELETE and "../\1"  or "")
-                  ide:GetProjectTree():FindItem(path)
+                  local tree = ide:GetProjectTree() -- project tree may be hidden/disabled
+                  if ide:IsValidCtrl(tree) then tree:FindItem(path) end
                 end
                 needrefresh = {}
               end)
