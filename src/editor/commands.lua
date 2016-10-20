@@ -19,8 +19,8 @@ function NewFile(filename)
   editor:SetupKeywords(GetFileExt(filename))
   local doc = AddEditor(editor, filename)
   if doc then
-    PackageEventHandle("onEditorNew", editor)
     SetEditorSelection(doc.index)
+    PackageEventHandle("onEditorNew", editor)
   end
   return editor
 end
