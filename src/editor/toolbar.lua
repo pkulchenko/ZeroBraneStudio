@@ -8,10 +8,11 @@ ide.config.toolbar.icons = {
   ID.FIND, ID.REPLACE, ID.FINDINFILES,
   ID.SEPARATOR,
   ID.RUN, ID.STARTDEBUG, ID.RUNNOW, ID.STOPDEBUG, ID.DETACHDEBUG, ID.BREAK,
-    ID.STEP, ID.STEPOVER, ID.STEPOUT, ID.RUNTO,
+  ID.COMPILE, ID.STEP, ID.STEPOVER, ID.STEPOUT, ID.RUNTO,
   ID.SEPARATOR,
   ID.BREAKPOINTTOGGLE, ID.BOOKMARKTOGGLE, ID.VIEWCALLSTACK, ID.VIEWWATCHWINDOW,
   [ID.FINDINFILES] = false,
+  [ID.COMPILE] = false,
 }
 
 ide.config.toolbar.iconmap = {
@@ -24,6 +25,7 @@ ide.config.toolbar.iconmap = {
   [ID.FIND] = {"FIND", TR("Find text")},
   [ID.REPLACE] = {"FIND-AND-REPLACE", TR("Find and replace text")},
   [ID.FINDINFILES] = {"FIND-IN-FILES", TR("Find in files")},
+  [ID.COMPILE] = {"COMPILE", TR("Compile the current file")},
   [ID.RUN] = {"RUN", TR("Execute the current project/file")},
   [ID.RUNNOW] = {"RUN-NOW", TR("Run as Scratchpad")},
   [ID.STARTDEBUG] = {"DEBUG-START", TR("Start or continue debugging")},
