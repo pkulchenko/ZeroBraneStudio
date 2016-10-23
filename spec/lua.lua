@@ -53,17 +53,17 @@ return {
   isdecindent = function(str)
     str = str:gsub('%-%-%[=*%[.*%]=*%]',''):gsub('%-%-.*','')
     -- this handles three different cases:
-    local term = (str:match("^%s*(%w+)%s*$")
+    local term = (str:match("^%s*([%w_]+)%s*$")
       or str:match("^%s*(elseif)[%s%(]")
       or str:match("^%s*(until)[%s%(]")
-      or str:match("^%s*(else)%f[%W]")
+      or str:match("^%s*(else)%f[^%w_]")
     )
     -- (1) 'end', 'elseif', 'else', 'until'
     local match = term and decindent[term]
     -- (2) 'end)', 'end}', 'end,', and 'end;'
     if not term then term, match = str:match("^%s*(end)%s*([%)%}]*)%s*[,;]?") end
     -- endFoo could be captured as well; filter it out
-    if term and str:match("^%s*(end)%w") then term = nil end
+    if term and str:match("^%s*(end)[%w_]") then term = nil end
     -- (3) '},', '};', '),' and ');'
     if not term then match = str:match("^%s*[%)%}]+%s*[,;]?%s*$") end
 
@@ -86,26 +86,26 @@ return {
     )
 
     local func = (isfndef(str) or str:match("%W+function%s*%(")) and 1 or 0
-    local term = str:match("^%s*(%w+)%W*")
+    local term = str:match("^%s*([%w_]+)%W*")
     local terminc = term and incindent[term] and 1 or 0
     -- fix 'if' not terminated with 'then'
     -- or 'then' not started with 'if'
-    if (term == 'if' or term == 'elseif') and not str:match("%f[%w]then%f[%W]")
-    or (term == 'for') and not str:match("%S%s+do%f[%W]")
-    or (term == 'while') and not str:match("%f[%w]do%f[%W]")
+    if (term == 'if' or term == 'elseif') and not str:match("%f[%w_]then%f[^%w_]")
+    or (term == 'for') and not str:match("%S%s+do%f[^%w_]")
+    or (term == 'while') and not str:match("%f[%w_]do%f[^%w_]")
     -- if this is a function definition, then don't increment the level
     or func == 1 then
       terminc = 0
-    elseif not (term == 'if' or term == 'elseif') and str:match("%f[%w]then%f[%W]")
-    or not (term == 'for') and str:match("%S%s+do%f[%W]")
-    or not (term == 'while') and str:match("%f[%w]do%f[%W]") then
+    elseif not (term == 'if' or term == 'elseif') and str:match("%f[%w_]then%f[^%w_]")
+    or not (term == 'for') and str:match("%S%s+do%f[^%w_]")
+    or not (term == 'while') and str:match("%f[%w_]do%f[^%w_]") then
       terminc = 1
     end
     local _, opened = str:gsub("([%{%(])", "%1")
     local _, closed = str:gsub("([%}%)])", "%1")
     -- ended should only be used to negate term and func effects
-    local anon = str:match("%W+function%s*%(.+%Wend%W")
-    local ended = (terminc + func > 0) and (str:match("%W+end%s*$") or anon) and 1 or 0
+    local anon = str:match("%W+function%s*%(.+[^%w_]end%f[^%w_]")
+    local ended = (terminc + func > 0) and (str:match("[^%w_]+end%s*$") or anon) and 1 or 0
 
     return opened - closed + func + terminc - ended
   end,
