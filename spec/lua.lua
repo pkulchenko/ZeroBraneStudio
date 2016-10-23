@@ -51,7 +51,12 @@ return {
   linecomment = "--",
   sep = ".:",
   isdecindent = function(str)
-    str = str:gsub('%-%-%[=*%[.*%]=*%]',''):gsub('%-%-.*','')
+    str = (str
+      :gsub('%[=*%[.-%]=*%]','') -- remove long strings
+      :gsub('%[=*%[.*',''):gsub('.*%]=*%]','') -- remove partial long strings
+      :gsub('%-%-.*','') -- strip comments after strings are processed
+      :gsub("%b()","()") -- remove all function calls
+    )
     -- this handles three different cases:
     local term = (str:match("^%s*([%w_]+)%s*$")
       or str:match("^%s*(elseif)[%s%(]")
