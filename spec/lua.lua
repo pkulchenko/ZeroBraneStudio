@@ -244,14 +244,18 @@ return {
   },
 
   keywords = {
+    -- keywords
     [[and break do else elseif end for function goto if in local not or repeat return then until while]],
 
-    [[_G _VERSION _ENV false io.stderr io.stdin io.stdout nil math.huge math.pi self true]],
+    -- constants/variables
+    [[_G _VERSION _ENV false io.stderr io.stdin io.stdout nil math.huge math.pi self true package.cpath package.path]],
 
+    -- core/global functions
     [[assert collectgarbage dofile error getfenv getmetatable ipairs load loadfile loadstring
       module next pairs pcall print rawequal rawget rawlen rawset require
       select setfenv setmetatable tonumber tostring type unpack xpcall]],
 
+    -- library functions
     [[bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest bit32.bxor bit32.extract
       bit32.lrotate bit32.lshift bit32.replace bit32.rrotate bit32.rshift
       coroutine.create coroutine.resume coroutine.running coroutine.status coroutine.wrap coroutine.yield
@@ -268,7 +272,7 @@ return {
       math.type math.tointeger math.maxinteger math.mininteger math.ult
       os.clock os.date os.difftime os.execute os.exit os.getenv os.remove os.rename os.setlocale os.time os.tmpname
       package.loadlib package.searchpath package.seeall package.config
-      package.cpath package.loaded package.loaders package.path package.preload package.searchers
+      package.loaded package.loaders package.preload package.searchers
       string.byte string.char string.dump string.find string.format string.gmatch string.gsub string.len
       string.lower string.match string.rep string.reverse string.sub string.upper
       byte find format gmatch gsub len lower match rep reverse sub upper
