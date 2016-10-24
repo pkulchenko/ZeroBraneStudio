@@ -58,8 +58,8 @@ local M = {}
 -- lower case followed by a *.lua* extension. For example, a new Lua lexer has
 -- the name *lua.lua*.
 --
--- Note: Try to refrain from using one-character language names like "b", "c",
--- or "d". For example, Scintillua uses "b_lang", "cpp", and "dmd",
+-- Note: Try to refrain from using one-character language names like "c", "d",
+-- or "r". For example, Scintillua uses "ansi_c", "dmd", and "rstats",
 -- respectively.
 --
 -- ### New Lexer Template
@@ -89,7 +89,7 @@ local M = {}
 --
 --     return M
 --
--- The first 4 lines of code simply define often used convenience variables. The
+-- The first 3 lines of code simply define often used convenience variables. The
 -- 5th and last lines define and return the lexer object Scintilla uses; they
 -- are very important and must be part of every lexer. The sixth line defines
 -- something called a "token", an essential building block of lexers. You will
@@ -566,13 +566,14 @@ local M = {}
 -- `_foldsymbols` table must have a `_patterns` field that contains a list of
 -- [Lua patterns][] that match fold points. If the lexer encounters text that
 -- matches one of those patterns, the lexer looks up the matched text in its
--- token's table to determine whether or not the text is a fold point. In the
--- example above, the first Lua pattern matches any '{' or '}' characters. When
--- the lexer comes across one of those characters, it checks if the match is an
--- `lexer.OPERATOR` token. If so, the lexer identifies the match as a fold
--- point. The same idea applies for the other patterns. (The '%' is in the other
--- patterns because '\*' is a special character in Lua patterns that needs
--- escaping.) How do you specify fold keywords? Here is an example for Lua:
+-- token's table in order to determine whether or not the text is a fold point.
+-- In the example above, the first Lua pattern matches any '{' or '}'
+-- characters. When the lexer comes across one of those characters, it checks if
+-- the match is an `lexer.OPERATOR` token. If so, the lexer identifies the match
+-- as a fold point. The same idea applies for the other patterns. (The '%' is in
+-- the other patterns because '\*' is a special character in Lua patterns that
+-- needs escaping.) How do you specify fold keywords? Here is an example for
+-- Lua:
 --
 --     M._foldsymbols = {
 --       [l.KEYWORD] = {
@@ -585,6 +586,10 @@ local M = {}
 -- Any time the lexer encounters a lower case word, if that word is a
 -- `lexer.KEYWORD` token and in the associated list of fold points, the lexer
 -- identifies the word as a fold point.
+--
+-- If your lexer has case-insensitive keywords as fold points, simply add a
+-- `_case_insensitive = true` option to the `_foldsymbols` table and specify
+-- keywords in lower-case.
 --
 -- If your lexer needs to do some additional processing to determine if a match
 -- is a fold point, assign a function that returns an integer. Returning `1` or
@@ -1008,9 +1013,10 @@ end
 
 ---
 -- Initializes or loads and returns the lexer of string name *name*.
--- Scintilla calls this function to load a lexer. Parent lexers also call this
--- function to load child lexers and vice-versa. The user calls this function
--- to load a lexer when using Scintillua as a Lua library.
+-- Scintilla calls this function in order to load a lexer. Parent lexers also
+-- call this function in order to load child lexers and vice-versa. The user
+-- calls this function in order to load a lexer when using Scintillua as a Lua
+-- library.
 -- @param name The name of the lexing language.
 -- @param alt_name The alternate name of the lexing language. This is useful for
 --   embedding the same child lexer with multiple sets of start and end tokens.
@@ -1025,9 +1031,7 @@ function M.load(name, alt_name)
   -- prevent errors from occurring.
   if not M.property then
     M.property, M.property_int = {}, setmetatable({}, {
-      __index = function(t, k)
-        return tonumber(M.property[k]) or 0
-      end,
+      __index = function(t, k) return tonumber(M.property[k]) or 0 end,
       __newindex = function() error('read-only property') end
     })
   end
@@ -1037,7 +1041,7 @@ function M.load(name, alt_name)
   local lexer_file, error = package.searchpath(name, M.LEXERPATH)
   if not lexer_file then return nil, "Can't find lexer file" end
 
-  local ok, lexer = pcall(dofile, lexer_file or '')
+  local ok, lexer = pcall(dofile, lexer_file)
   if not ok then return nil, "Can't load lexer file" end
 
   if alt_name then lexer._NAME = alt_name end
@@ -1108,6 +1112,7 @@ end
 -- @return table of token names and positions.
 -- @name lex
 function M.lex(lexer, text, init_style)
+  if not lexer._GRAMMAR then return {M.DEFAULT, #text + 1} end
   if not lexer._LEXBYLINE then
     -- For multilang lexers, build a new grammar whose initial_rule is the
     -- current language.
@@ -1147,11 +1152,11 @@ function M.lex(lexer, text, init_style)
 end
 
 ---
--- Folds a chunk of text *text* with lexer *lexer*.
--- Folds *text* starting at position *start_pos* on line number *start_line*
--- with a beginning fold level of *start_level* in the buffer. If *lexer* has a
--- a `_fold` function or a `_foldsymbols` table, that field is used to perform
--- folding. Otherwise, if *lexer* has a `_FOLDBYINDENTATION` field set, or if a
+-- Determines fold points in a chunk of text *text* with lexer *lexer*.
+-- *text* starts at position *start_pos* on line number *start_line* with a
+-- beginning fold level of *start_level* in the buffer. If *lexer* has a `_fold`
+-- function or a `_foldsymbols` table, that field is used to perform folding.
+-- Otherwise, if *lexer* has a `_FOLDBYINDENTATION` field set, or if a
 -- `fold.by.indentation` property is set, folding by indentation is done.
 -- @param lexer The lexer object to fold with.
 -- @param text The text in the buffer to fold.
@@ -1177,12 +1182,14 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
     local fold_zero_sum_lines = M.property_int['fold.on.zero.sum.lines'] > 0
     local fold_symbols = lexer._foldsymbols
     local fold_symbols_patterns = fold_symbols._patterns
+    local fold_symbols_case_insensitive = fold_symbols._case_insensitive
     local style_at, fold_level = M.style_at, M.fold_level
     local line_num, prev_level = start_line, start_level
     local current_level = prev_level
     for i = 1, #lines do
       local pos, line = lines[i][1], lines[i][2]
       if line ~= '' then
+        if fold_symbols_case_insensitive then line = line:lower() end
         local level_decreased = false
         for j = 1, #fold_symbols_patterns do
           for s, match in line:gmatch(fold_symbols_patterns[j]) do
@@ -1310,6 +1317,7 @@ M.float = lpeg_S('+-')^-1 *
           ((M.digit^0 * '.' * M.digit^1 + M.digit^1 * '.' * M.digit^0) *
            (lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1)^-1 +
            (M.digit^1 * lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1))
+
 M.word = (M.alpha + '_') * (M.alnum + '_')^0
 
 ---
@@ -1435,7 +1443,7 @@ end
 -- @param word_chars Optional string of additional characters considered to be
 --   part of a word. By default, word characters are alphanumerics and
 --   underscores ("%w_" in Lua). This parameter may be `nil` or the empty string
---   to indicate no additional word characters.
+--   in order to indicate no additional word characters.
 -- @param case_insensitive Optional boolean flag indicating whether or not the
 --   word match is case-insensitive. The default is `false`.
 -- @return pattern
@@ -1584,7 +1592,7 @@ local function line_from_position(pos) end
 -- @field _NAME The string name of the lexer.
 -- @field _rules An ordered list of rules for a lexer grammar.
 --   Each rule is a table containing an arbitrary rule name and the LPeg pattern
---   associated with the rule. The order of rules is important as rules are
+--   associated with the rule. The order of rules is important, as rules are
 --   matched sequentially.
 --   Child lexers should not use this table to access and/or modify their
 --   parent's rules and vice-versa. Use the `_RULES` table instead.
