@@ -425,6 +425,7 @@ local function enableIndex(path)
   outline:RefreshSymbols(path)
 end
 
+local lastfocus
 local package = ide:AddPackage('core.outline', {
     onRegister = function(self)
       if not ide.config.outlineinactivity then return end
@@ -461,7 +462,13 @@ local package = ide:AddPackage('core.outline', {
     -- go over the file items to turn bold on/off or collapse/expand
     onEditorFocusSet = function(self, editor)
       if (ide.config.outline or {}).showonefile and ide.config.outlineinactivity then
-        outlineRefresh(editor, true)
+        -- this needs to be done when editor gets focus, but during active auto-complete
+        -- the focus shifts between the editor and the popup after each character;
+        -- the refresh is not necessary in this case, so only refresh when the editor changes
+        if not lastfocus or editor:GetId() ~= lastfocus then
+          outlineRefresh(editor, true)
+          lastfocus = editor:GetId()
+        end
         return
       end
 
