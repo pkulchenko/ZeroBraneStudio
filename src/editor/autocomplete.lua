@@ -67,7 +67,7 @@ local function addAPI(ftype, fname) -- relative to API directory
       return
     end
     local suc
-    suc, res = pcall(function() return fn(env.ac.childs) end)
+    suc, res = pcall(fn, env.ac.childs)
     if (not suc) then
       DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
       return
@@ -327,12 +327,12 @@ function GetTipInfo(editor, content, short, fullmatch)
 end
 
 local function reloadAPI(only,subapis)
-  newAPI(apis[only])
+  if only then newAPI(apis[only]) end
   loadallAPIs(only,subapis)
   generateAPIInfo(only)
 end
 
-function ReloadLuaAPI()
+function ReloadAPIs(group)
   local interp = ide.interpreter
   local cfgapi = ide.config.api
   local fname = interp and interp.fname
@@ -344,7 +344,7 @@ function ReloadLuaAPI()
   for _, v in ipairs(type(intapi) == 'table' and intapi or {}) do apinames[v] = true end
   -- interpreter APIs
   for _, v in ipairs(interp and interp.api or {}) do apinames[v] = true end
-  reloadAPI("lua",apinames)
+  reloadAPI(group, apinames)
 end
 
 do

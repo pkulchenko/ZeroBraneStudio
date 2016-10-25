@@ -747,6 +747,7 @@ function ide:RemoveSpec(name) self.specs[name] = nil end
 function ide:AddAPI(type, name, api)
   self.apis[type] = self.apis[type] or {}
   self.apis[type][name] = api
+  ReloadAPIs(type)
 end
 function ide:RemoveAPI(type, name) self.apis[type][name] = nil end
 

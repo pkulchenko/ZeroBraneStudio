@@ -79,7 +79,7 @@ ok(limit(maxstat, function() EditorAutoComplete(editor) end),
 -- create a valuetype self-reference
 -- this is to test "s = Scan(); s:" fragment
 ide.apis.lua.baselib.io.valuetype = "io"
-ReloadLuaAPI()
+ReloadAPIs()
 
 editor:SetText('')
 editor:AddText([[
@@ -91,7 +91,7 @@ ok(limitdepth(1000, function() EditorAutoComplete(editor) end),
 
 -- restore valuetype
 ide.apis.lua.baselib.io.valuetype = nil
-ReloadLuaAPI()
+ReloadAPIs()
 
 editor:SetText('')
 editor:AddText('local error = true\n')

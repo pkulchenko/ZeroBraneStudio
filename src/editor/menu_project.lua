@@ -74,7 +74,7 @@ local function selectInterpreter(id)
   else
     ide:SetStatus("", 4)
   end
-  if changed then ReloadLuaAPI() end
+  if changed then ReloadAPIs() end
 end
 
 function ProjectSetInterpreter(name)
