@@ -438,7 +438,8 @@ local package = ide:AddPackage('core.outline', {
       local cache = caches[editor]
       local fileitem = cache and cache.fileitem
       caches[editor] = nil -- remove from cache
-      if (ide.config.outline or {}).showonefile then return end
+      -- if one file is shown, then only clear outline if the current editor is being closed
+      if (ide.config.outline or {}).showonefile and editor ~= ide:GetEditor() then return end
       if fileitem then outline.outlineCtrl:Delete(fileitem) end
     end,
 
