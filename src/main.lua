@@ -99,6 +99,7 @@ ide = {
       showchanges = true,
     },
     outline = {
+      activateonclick = true,
       jumptocurrentfunction = true,
       showanonymous = '~',
       showcurrentfunction = true,

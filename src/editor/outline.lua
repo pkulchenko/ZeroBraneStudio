@@ -318,7 +318,9 @@ local function createOutlineWindow()
     return true
   end
 
-  ctrl:Connect(wx.wxEVT_LEFT_DOWN, activateByPosition)
+  if (ide.config.outline or {}).activateonclick then
+    ctrl:Connect(wx.wxEVT_LEFT_DOWN, activateByPosition)
+  end
   ctrl:Connect(wx.wxEVT_LEFT_DCLICK, activateByPosition)
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED, function(event)
       ctrl:ActivateItem(event:GetItem())
