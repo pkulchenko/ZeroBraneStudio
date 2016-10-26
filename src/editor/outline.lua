@@ -327,7 +327,10 @@ local function createOutlineWindow()
   ctrl:Connect(ID_OUTLINESORT, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       ide.config.outline.sort = not ide.config.outline.sort
-      for editor, cache in pairs(caches) do
+      local ed = ide:GetEditor()
+      if not ed then return end
+      -- when showing one file only refresh outline for the current editor
+      for editor, cache in pairs((ide.config.outline or {}).showonefile and {[ed] = caches[ed]} or caches) do
         ide:SetStatus(("Refreshing '%s'..."):format(ide:GetDocument(editor):GetFileName()))
         local isexpanded = ctrl:IsExpanded(cache.fileitem)
         outlineRefresh(editor, true)
