@@ -419,7 +419,9 @@ function ide:CreateStyledTextCtrl(...)
         end
       end
     end
-    editor:EnsureCaretVisible()
+    -- if the entire file is being un/folded, make sure the cursor is on the screen
+    -- (although it may be inside a folded fragment)
+    if not line then editor:EnsureCaretVisible() end
   end
 
   local function getMarginWidth(editor)
