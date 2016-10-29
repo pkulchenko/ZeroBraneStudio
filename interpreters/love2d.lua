@@ -1,4 +1,4 @@
--- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
 
 local love2d
 local win = ide.osname == "Windows"
@@ -10,6 +10,7 @@ return {
   api = {"baselib", "love2d"},
   frun = function(self,wfilename,rundebug)
     love2d = love2d or ide.config.path.love2d -- check if the path is configured
+    local projdir = self:fworkdir(wfilename)
     if not love2d then
       local sep = win and ';' or ':'
       local default =
@@ -18,7 +19,7 @@ return {
         or ''
       local path = default
                  ..(os.getenv('PATH') or '')..sep
-                 ..(GetPathWithSep(self:fworkdir(wfilename)))..sep
+                 ..(GetPathWithSep(projdir))..sep
                  ..(os.getenv('HOME') and GetPathWithSep(os.getenv('HOME'))..'bin' or '')
       local paths = {}
       for p in path:gmatch("[^"..sep.."]+") do
@@ -32,10 +33,21 @@ return {
       end
     end
 
-    if not GetFullPathIfExists(self:fworkdir(wfilename), 'main.lua') then
-      ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
-        :format(self:fworkdir(wfilename)))
-      return
+    if not GetFullPathIfExists(projdir, 'main.lua') then
+      local altpath = wfilename:GetPath(wx.wxPATH_GET_VOLUME)
+      local altname = GetFullPathIfExists(altpath, 'main.lua')
+      if altname and wx.wxMessageBox(
+          ("Can't find 'main.lua' file in the current project folder.\n"
+           .."Would you like to switch the project directory to '%s'?"):format(altpath),
+          "LÖVE interpreter",
+          wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES then
+        ide:SetProject(altpath)
+        projdir = altpath
+      else
+        ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
+          :format(projdir))
+        return
+      end
     end
 
     if rundebug then
@@ -48,10 +60,10 @@ return {
     if uhw then uhw.ConsoleWindowClass = 0 end
 
     local params = self:GetCommandLineArg()
-    local cmd = ('"%s" "%s"%s%s'):format(love2d, self:fworkdir(wfilename),
+    local cmd = ('"%s" "%s"%s%s'):format(love2d, projdir,
       params and " "..params or "", rundebug and ' -debug' or '')
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-    return CommandLineRun(cmd,self:fworkdir(wfilename),true,true,nil,nil,
+    return CommandLineRun(cmd,projdir,true,true,nil,nil,
       function() if uhw then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
