@@ -102,7 +102,11 @@ set to `false` to disable.
 
 ## Outline
 
-- `outlineinactivity = 0.250`: trigger Outline update after N seconds of inactivity (1.0+); set to `nil` to disable Outline handling.
+- `outlineinactivity = 0.250`: trigger Outline update after N seconds of inactivity (1.0+);
+set to `nil` to disable Outline handling.
+- `outline.activateonclick = true`: allow navigation on the outline on a single mouse click (1.41+);
+when set to `false`, a double click is required to jump to the function in the source code.
+Setting activation to `false` allows to set focus on the outline to enable mouse/touchpad scrolling.
 - `outline.jumptocurrentfunction = true`: scroll the Outline window to the current function under the cursor (1.11+);
 this setting requires `outline.showcurrentfunction` to be enabled.
 - `outline.showanonymous = '~'`: set the name to be used for anonymous functions (0.81+); set to `false` to hide anonymous functions.
