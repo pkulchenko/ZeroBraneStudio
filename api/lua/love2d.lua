@@ -1,9 +1,9 @@
--- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
 
--- converted from love_api.lua in https://github.com/love2d-community/love-api
--- (API for LÖVE 0.10.1 as of June 19, 2016)
+-- Converted from love_api.lua in https://github.com/love2d-community/love-api
+-- (API for LÖVE 0.10.2 as of November 2, 2016)
 -- Earlier versins used love_api.lua from http://love2d.org/forums/viewtopic.php?f=3&t=1796&start=50#p166908
--- the conversion script is at the bottom of this file
+-- The conversion script is at the bottom of this file
 
 -- To process:
 -- 1. clone love-api and copy love_api.lua and modules/ folder to ZBS/api/lua folder
@@ -739,6 +739,12 @@ local love = {
      returns = "(size: number, errormsg: string)",
      type = "function"
     },
+    getSource = {
+     args = "()",
+     description = "Returns the full path to the the .love file or directory. If the game is fused to the LÖVE executable, then the executable is returned.",
+     returns = "(path: string)",
+     type = "function"
+    },
     getSourceBaseDirectory = {
      args = "()",
      description = "Returns the full path to the directory containing the .love file. If the game is fused to the LÖVE executable, then the directory containing the executable is returned.\n\nIf love.filesystem.isFused is true, the path returned by this function can be passed to love.filesystem.mount, which will make the directory containing the main game readable by love.filesystem.",
@@ -755,6 +761,12 @@ local love = {
      args = "()",
      description = "Gets the current working directory.",
      returns = "(path: string)",
+     type = "function"
+    },
+    init = {
+     args = "(appname: string)",
+     description = "Initializes love.filesystem, will be called internally, so should not be used explicitly.",
+     returns = "()",
      type = "function"
     },
     isDirectory = {
@@ -788,8 +800,8 @@ local love = {
      type = "function"
     },
     load = {
-     args = "(name: string)",
-     description = "Load a file (but not run it).",
+     args = "(name: string, errormsg: string)",
+     description = "Loads a Lua file (but does not run it).",
      returns = "(chunk: function)",
      type = "function"
     },
@@ -933,6 +945,10 @@ local love = {
     },
     AreaSpreadDistribution = {
      childs = {
+      ellipse = {
+       description = "Uniform distribution in an ellipse.",
+       type = "value"
+      },
       none = {
        description = "No distribution - area spread is disabled.",
        type = "value"
@@ -1939,6 +1955,12 @@ local love = {
     },
     Quad = {
      childs = {
+      getViewport = {
+       args = "()",
+       description = "Gets the current viewport of this Quad.",
+       returns = "(x: number, y: number, w: number, h: number)",
+       type = "function"
+      },
       setViewport = {
        args = "()",
        description = "Sets the texture coordinates according to a viewport.",
@@ -1959,7 +1981,7 @@ local love = {
       },
       send = {
        args = "(name: string, number: number, ...: number)",
-       description = "Sends one or more values to a special (extern) variable inside the shader.",
+       description = "Sends one or more values to a special (uniform) variable inside the shader. Uniform variables have to be marked using the uniform or extern keyword.",
        returns = "()",
        type = "function"
       },
@@ -2031,7 +2053,7 @@ local love = {
       },
       setColor = {
        args = "(r: number, g: number, b: number, a: number)",
-       description = "Sets the color that will be used for the next add and set operations. Calling the function without arguments will clear the color.\n\nThe global color set with love.graphics.setColor will not work on the SpriteBatch if any of the sprites has its own color.",
+       description = "Sets the color that will be used for the next add and set operations. Calling the function without arguments will clear the color.\n\nIn version [[0.9.2]] and older, the global color set with love.graphics.setColor will not work on the SpriteBatch if any of the sprites has its own color.",
        returns = "()",
        type = "function"
       },
@@ -2282,7 +2304,7 @@ local love = {
      type = "class"
     },
     circle = {
-     args = "(mode: DrawMode, x: number, y: number, radius: number, segments: number)",
+     args = "(mode: DrawMode, x: number, y: number, radius: number)",
      description = "Draws a circle.",
      returns = "()",
      type = "function"
@@ -2422,7 +2444,7 @@ local love = {
     getStats = {
      args = "()",
      description = "Gets performance-related rendering statistics.",
-     returns = "(drawcalls: number, canvasswitches: number, texturememory: number, images: number, canvases: number, fonts: number)",
+     returns = "(drawcalls: number, canvasswitches: number, texturememory: number, images: number, canvases: number, fonts: number, shaderswitches: number)",
      type = "function"
     },
     getStencilTest = {
@@ -2457,7 +2479,7 @@ local love = {
     },
     isGammaCorrect = {
      args = "()",
-     description = "Gets whether gamma-correct rendering is supported and enabled. It can be enabled by setting t.gammacorrect = true in love.conf.\n\nNot all devices support gamma-correct rendering, in which case it will be automatically disabled and this function will return false. It is supported on desktop systems which have graphics cards that are capable of using OpenGL 3 / DIrectX 10, and iOS devices that can use OpenGL ES 3.",
+     description = "Gets whether gamma-correct rendering is supported and enabled. It can be enabled by setting t.gammacorrect = true in love.conf.\n\nNot all devices support gamma-correct rendering, in which case it will be automatically disabled and this function will return false. It is supported on desktop systems which have graphics cards that are capable of using OpenGL 3 / DirectX 10, and iOS devices that can use OpenGL ES 3.",
      returns = "(gammacorrect: boolean)",
      type = "function"
     },
@@ -2492,7 +2514,7 @@ local love = {
      type = "function"
     },
     newImageFont = {
-     args = "(filename: string, glyphs: string, extraspacing: number)",
+     args = "(filename: string, glyphs: string)",
      description = "Creates a new Font by loading a specifically formatted image.\n\nIn versions prior to 0.9.0, LÖVE expects ISO 8859-1 encoding for the glyphs string.",
      returns = "(font: Font)",
      type = "function"
@@ -2631,7 +2653,7 @@ local love = {
     },
     setCanvas = {
      args = "(canvas: Canvas, ...: Canvas)",
-     description = "Sets the render target to one or more Canvases. All drawing operations until the next love.graphics.setCanvas call will be redirected to the specified canvases and not shown on the screen.\n\nAll canvas arguments must have the same widths and heights and the same texture type. Normally the same thing will be drawn on each canvas, but that can be changed if a pixel shader is used with the \"effects\" function instead of the regular effect.\n\nNot all computers support Canvases, and not all computers which support Canvases will support multiple render targets. Use love.graphics.isSupported to check.\n\nnWhen called without arguments, the render target is reset to the screen.",
+     description = "Captures drawing operations to a Canvas.",
      returns = "()",
      type = "function"
     },
@@ -2957,7 +2979,7 @@ local love = {
       },
       setPixel = {
        args = "(x: number, y: number, r: number, g: number, b: number, a: number)",
-       description = "Sets the color of a pixel.\n\nValid x and y values start at 0 and go up to image width and height minus 1.",
+       description = "Sets the color of a pixel at a specific position in the image.\n\nValid x and y values start at 0 and go up to image width and height minus 1.",
        returns = "()",
        type = "function"
       }
@@ -3133,7 +3155,7 @@ local love = {
       },
       getHat = {
        args = "(hat: number)",
-       description = "Gets the direction of a hat.",
+       description = "Gets the direction of the Joystick's hat.",
        returns = "(direction: JoystickHat)",
        type = "function"
       },
@@ -5577,6 +5599,12 @@ local love = {
     },
     ChainShape = {
      childs = {
+      getNextVertex = {
+       args = "(x: number, y: number)",
+       description = "Gets the vertex that establishes a connection to the next shape.\n\nSetting next and previous ChainShape vertices can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "()",
+       type = "function"
+      },
       getPoint = {
        args = "(index: number)",
        description = "Returns a point of the shape.",
@@ -5587,6 +5615,12 @@ local love = {
        args = "()",
        description = "Returns all points of the shape.",
        returns = "(x1: number, y1: number, x2: number, y2: number, ...: number)",
+       type = "function"
+      },
+      getPreviousVertex = {
+       args = "()",
+       description = "Gets the vertex that establishes a connection to the previous shape.\n\nSetting next and previous ChainShape vertices can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "(x: number, y: number)",
        type = "function"
       },
       getVertexCount = {
@@ -5745,10 +5779,28 @@ local love = {
     },
     EdgeShape = {
      childs = {
-      getPoints = {
+      getNextVertex = {
        args = "()",
-       description = "Returns the local coordinates of the edge points.",
-       returns = "(x1: number, y1: number, x2: number, y2: number)",
+       description = "Gets the vertex that establishes a connection to the next shape.\n\nSetting next and previous EdgeShape vertices can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "(x: number, y: number)",
+       type = "function"
+      },
+      getPreviousVertex = {
+       args = "()",
+       description = "Gets the vertex that establishes a connection to the previous shape.\n\nSetting next and previous EdgeShape vertices can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "(x: number, y: number)",
+       type = "function"
+      },
+      setNextVertex = {
+       args = "(x: number, y: number)",
+       description = "Sets a vertex that establishes a connection to the next shape.\n\nThis can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "()",
+       type = "function"
+      },
+      setPreviousVertex = {
+       args = "(x: number, y: number)",
+       description = "Sets a vertex that establishes a connection to the previous shape.\n\nThis can help prevent unwanted collisions when a flat shape slides along the edge and moves over to the new shape.",
+       returns = "()",
        type = "function"
       }
      },
@@ -6220,6 +6272,12 @@ local love = {
        returns = "()",
        type = "function"
       },
+      setLimitsEnabled = {
+       args = "(enable: boolean)",
+       description = "Enables or disables the limits of the joint.",
+       returns = "()",
+       type = "function"
+      },
       setLowerLimit = {
        args = "(lower: number)",
        description = "Sets the lower limit.",
@@ -6518,6 +6576,12 @@ local love = {
     },
     WheelJoint = {
      childs = {
+      getJointSpeed = {
+       args = "()",
+       description = "Returns the current joint translation speed.",
+       returns = "(speed: number)",
+       type = "function"
+      },
       getJointTranslation = {
        args = "()",
        description = "Returns the current joint translation.",
@@ -6676,7 +6740,7 @@ local love = {
       },
       rayCast = {
        args = "(x1: number, y1: number, x2: number, y2: number, callback: function)",
-       description = "Casts a ray and calls a function with the fixtures that intersect it. You cannot make any assumptions about the order of the callbacks.\n\nEach time the function gets called, 6 arguments get passed to it. The first is the fixture intersecting the ray. The second and third are the coordinates of the intersection point. The fourth and fifth is the surface normal vector of the shape edge. The sixth argument is the position of the intersection on the ray as a number from 0 to 1 (or even higher if the ray length was changed with the return value).\n\nThe ray can be controlled with the return value. A positive value sets a new ray length where 1 is the default value. A value of 0 terminates the ray. If the callback function returns -1, the intersection gets ignored as if it didn't happen.\n\nThere is a bug in 0.8.0 where the normal vector passed to the callback function gets scaled by love.physics.getMeter.",
+       description = "Casts a ray and calls a function for each fixtures it intersects.",
        returns = "()",
        type = "function"
       },
@@ -6811,7 +6875,7 @@ local love = {
      type = "function"
     },
     newRevoluteJoint = {
-     args = "(body1: Body, body2: Body, x: number, y: number, collideConnected: number)",
+     args = "(body1: Body, body2: Body, x: number, y: number, collideConnected: boolean)",
      description = "Creates a pivot joint between two bodies.\n\nThis joint connects two bodies to a point around which they can pivot.",
      returns = "(joint: Joint)",
      type = "function"
@@ -6824,7 +6888,7 @@ local love = {
     },
     newWeldJoint = {
      args = "(body1: Body, body2: Body, x: number, y: number, collideConnected: boolean)",
-     description = "Create a friction joint between two bodies. A WeldJoint essentially glues two bodies together.",
+     description = "Creates a constraint joint between two bodies. A WeldJoint essentially glues two bodies together. The constraint is a bit soft, however, due to Box2D's iterative solver.",
      returns = "(joint: WeldJoint)",
      type = "function"
     },
@@ -6916,7 +6980,7 @@ local love = {
       },
       getSampleCount = {
        args = "()",
-       description = "Returns the sample count of the SoundData.",
+       description = "Returns the number of samples per channel of the SoundData.",
        returns = "(count: number)",
        type = "function"
       },
@@ -7196,7 +7260,7 @@ local love = {
   },
   update = {
    args = "(dt: number)",
-   description = "Callback function triggered when a key is pressed.",
+   description = "Callback function used to update the state of the game every frame.",
    returns = "()",
    type = "function"
   },
@@ -7328,16 +7392,22 @@ local love = {
      returns = "(focus: boolean)",
      type = "function"
     },
-    isCreated = {
-     args = "()",
-     description = "Checks if the window has been created.",
-     returns = "(created: boolean)",
-     type = "function"
-    },
     isDisplaySleepEnabled = {
      args = "()",
      description = "Gets whether the display is allowed to sleep while the program is running.\n\nDisplay sleep is disabled by default. Some types of input (e.g. joystick button presses) might not prevent the display from sleeping, if display sleep is allowed.",
      returns = "(enabled: boolean)",
+     type = "function"
+    },
+    isMaximized = {
+     args = "()",
+     description = "Gets whether the Window is currently maximized.\n\nThe window can be maximized if it is not fullscreen and is resizable, and either the user has pressed the window's Maximize button or love.window.maximize has been called.",
+     returns = "(maximized: boolean)",
+     type = "function"
+    },
+    isOpen = {
+     args = "()",
+     description = "Checks if the window is open.",
+     returns = "(open: boolean)",
      type = "function"
     },
     isVisible = {
@@ -7419,7 +7489,7 @@ local love = {
  },
  description = "Love2d modules, functions, and callbacks.",
  type = "lib",
- version = "0.10.1"
+ version = "0.10.2"
 }
 
 -- when loaded as a package, return the package; otherwise continue with the script
