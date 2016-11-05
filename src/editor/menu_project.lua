@@ -7,8 +7,6 @@ local ide = ide
 local frame = ide.frame
 local menuBar = frame.menuBar
 local openDocuments = ide.openDocuments
-local bottomnotebook = frame.bottomnotebook
-local uimgr = frame.uimgr
 
 ------------------------
 -- Interpreters and Menu

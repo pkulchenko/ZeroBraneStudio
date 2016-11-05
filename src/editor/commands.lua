@@ -236,7 +236,7 @@ function ReportError(msg)
 end
 
 function OpenFile(event)
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   local path = editor and ide:GetDocument(editor):GetFilePath() or nil
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Open file"),
     (path and GetPathWithSep(path) or FileTreeGetDir() or ""),
@@ -431,7 +431,7 @@ local function removePage(index)
 end
 
 function ClosePage(selection)
-  local editor = GetEditor(selection)
+  local editor = ide:GetEditor(selection)
   local id = editor:GetId()
 
   if PackageEventHandle("onEditorPreClose", editor) == false then
@@ -633,7 +633,7 @@ function GetOpenFiles()
   -- to keep tab order
   table.sort(opendocs,function(a,b) return (a.id < b.id) end)
 
-  local id = GetEditor()
+  local id = ide:GetEditor()
   id = id and id:GetId()
   return opendocs, {index = (id and openDocuments[id].index or 0)}
 end
@@ -744,7 +744,7 @@ local function getOpenTabs()
   -- to keep tab order
   table.sort(opendocs, function(a,b) return (a.id < b.id) end)
 
-  local ed = GetEditor()
+  local ed = ide:GetEditor()
   local doc = ed and ide:GetDocument(ed)
   return opendocs, {index = (doc and doc:GetTabIndex() or 0)}
 end
