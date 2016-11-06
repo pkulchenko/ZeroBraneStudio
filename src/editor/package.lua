@@ -81,6 +81,36 @@ function ide:GetPackagePath(packname)
     MergeFullPath('packages', packname or '')
   )
 end
+function ide:GetLaunchPath()
+  local path = ide.editorFilename
+  if ide.osname == "Macintosh" then
+    -- find .app folder in the path; there are two options:
+    -- 1. `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio/zbstudio`(installed path)
+    -- 2. `...ZeroBraneStudio/zbstudio` (cloned repository path)
+    local app = path:match("(.+%.app)/")
+    if app then -- check if the application is already in the path
+      path = app
+    else
+      local apps = FileSysGetRecursive(path, true, "Info.plist", {ondirectory = function(dir)
+            -- don't recurse for more than necessary
+            return dir:find("%.app/Contents/.+") == nil
+          end}
+      )
+      if #apps == 0 then return nil, "Can't find application path." end
+
+      local fn = wx.wxFileName(apps[1])
+      fn:RemoveLastDir()
+      path = fn:GetPath(wx.wxPATH_GET_VOLUME)
+    end
+    -- generate command with `-n` (start a new copy of the application)
+    path = ([[open -n -a "%s" --args]]):format(path)
+  elseif ide.osname == "Unix" then
+    path = ([["%s.sh"]]):format(path)
+  else
+    path = ([["%s"]]):format(path)
+  end
+  return path
+end
 function ide:GetApp() return self.editorApp end
 function ide:GetAppName() return self.appname end
 function ide:GetEditor(index) return GetEditor(index) end
