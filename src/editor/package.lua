@@ -81,7 +81,7 @@ function ide:GetPackagePath(packname)
     MergeFullPath('packages', packname or '')
   )
 end
-function ide:GetLaunchPath()
+function ide:GetLaunchPath(addparams)
   local path = ide.editorFilename
   if ide.osname == "Macintosh" then
     -- find .app folder in the path; there are two options:
@@ -108,6 +108,13 @@ function ide:GetLaunchPath()
     path = ([["%s.sh"]]):format(path)
   else
     path = ([["%s"]]):format(path)
+  end
+  if addparams then
+    for n, val in ipairs(ide.arg) do
+      if val == "-cfg" and #ide.arg > n then
+        path = path .. ([[ %s "%s"]]):format(ide.arg[n], ide.arg[n+1])
+      end
+    end
   end
   return path
 end
