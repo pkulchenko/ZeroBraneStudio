@@ -118,6 +118,10 @@ function ide:GetLaunchPath(addparams)
   end
   return path
 end
+function ide:Exit(hotexit)
+  if hotexit then self.config.hotexit = true end
+  self:GetMainFrame():Close()
+end
 function ide:GetApp() return self.editorApp end
 function ide:GetAppName() return self.appname end
 function ide:GetEditor(index) return GetEditor(index) end
