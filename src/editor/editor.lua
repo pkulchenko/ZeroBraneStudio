@@ -1648,6 +1648,11 @@ local lexlpegmap = {
   keywords2 = {"function","regex"},
   keywords3 = {"library","class","type"},
 }
+local function cleanup(paths)
+  for _, path in ipairs(paths) do
+    if not FileRemove(path) then wx.wxRmdir(path) end
+  end
+end
 local function setLexLPegLexer(editor, lexername)
   local lexer = lexername:gsub("^lexlpeg%.","")
 
@@ -1661,19 +1666,20 @@ local function setLexLPegLexer(editor, lexername)
 
   -- if the requested lexer is a dynamically registered one, then need to create a file for it,
   -- as LexLPeg lexers are loaded in a separate Lua state, which this process has no contol over.
-  local dynlexer, tmppath, dynfile = ide:GetLexer(lexername), wx.wxFileName.GetTempDir(), nil
+  local dynlexer, tmppath, dynfile = ide:GetLexer(lexername), nil
+  local tmppath = MergeFullPath(wx.wxFileName.GetTempDir(), "lexer-"..wx.wxGetLocalTimeMillis():ToString())
   if dynlexer then
-    -- update lexer name to make it unique
-    lexer = lexer.."-"..wx.wxGetLocalTimeMillis():ToString()
+    local ok, err = CreateFullPath(tmppath)
+    if not ok then return nil, err end
     -- update lex.LEXERPATH to search there
     lex.LEXERPATH = MergeFullPath(tmppath, "?.lua")
     dynfile = MergeFullPath(tmppath, lexer..".lua")
     -- save the file to the temp folder
     local ok, err = FileWrite(dynfile, dynlexer)
-    if not ok then return nil, err end
+    if not ok then cleanup({tmppath}); return nil, err end
   end
   local lexmod, err = lex.load(lexer)
-  if dynlexer then FileRemove(dynfile) end
+  if dynlexer then cleanup({dynfile, tmppath}) end
   if not lexmod then return nil, err end
 
   local lexpath = package.searchpath("lexlpeg", ide.osclibs)
@@ -1688,6 +1694,8 @@ local function setLexLPegLexer(editor, lexername)
   if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
 
   if dynlexer then
+    local ok, err = CreateFullPath(tmppath)
+    if not ok then return nil, err end
     -- copy lexer.lua to the temp folder
     local ok, err = FileCopy(MergeFullPath(lpath, "lexer.lua"), MergeFullPath(tmppath, "lexer.lua"))
     if not ok then return nil, err end
@@ -1701,11 +1709,7 @@ local function setLexLPegLexer(editor, lexername)
   editor:SetProperty("lexer.lpeg.home", lpath)
   editor:SetProperty("fold", edcfg.fold and "1" or "0")
   editor:PrivateLexerCall(4006, lexer) --[[ SetLexerLanguage ]]
-  if dynlexer then
-    -- remove lexer.lua and the lexer file
-    FileRemove(dynfile)
-    FileRemove(MergeFullPath(tmppath, "lexer.lua"))
-  end
+  if dynlexer then cleanup({dynfile, MergeFullPath(tmppath, "lexer.lua"), tmppath}) end
 
   local styleconvert = {}
   for name, map in pairs(lexlpegmap) do

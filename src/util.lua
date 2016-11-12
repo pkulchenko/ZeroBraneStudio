@@ -281,6 +281,10 @@ function MergeFullPath(p, f)
     or nil)
 end
 
+function CreateFullPath(path)
+  local ok = wx.wxFileName.Mkdir(path, tonumber(755,8), wx.wxPATH_MKDIR_FULL)
+  return ok, not ok and wx.wxSysErrorMsg() or nil
+end
 function GetFullPathIfExists(p, f)
   local path = MergeFullPath(p, f)
   return path and wx.wxFileExists(path) and path or nil
