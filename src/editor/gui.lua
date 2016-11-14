@@ -380,8 +380,8 @@ local function addDND(notebook)
         local win = notebookfrom:GetPage(idx)
         if not win then return end
         local winid = win:GetId()
-        if winid == ide:GetOutput():GetId()
-        or winid == ide:GetConsole():GetId()
+        if (ide:IsValidCtrl(ide:GetOutput()) and winid == ide:GetOutput():GetId())
+        or (ide:IsValidCtrl(ide:GetConsole()) and winid == ide:GetConsole():GetId())
         or (ide:IsValidCtrl(ide:GetProjectTree()) and winid == ide:GetProjectTree():GetId())
         or isPreview(win) -- search results preview
         then return end
