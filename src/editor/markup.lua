@@ -56,7 +56,7 @@ MarkupAddStyles(ide.config.styles)
 
 function MarkupHotspotClick(pos, editor)
   -- check if this is "our" hotspot event
-  if bit.band(editor:GetStyleAt(pos),31) ~= markup[MD_MARK_LINK].st then
+  if bit.band(editor:GetStyleAt(pos),ide.STYLEMASK) ~= markup[MD_MARK_LINK].st then
     -- not "our" style, so nothing to do for us here
     return
   end
