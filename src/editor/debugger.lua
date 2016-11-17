@@ -1695,7 +1695,7 @@ function debugger:ScratchpadOn(editor)
     local isnumber = scratchpadEditor.spec.isnumber
 
     -- are we over a number in the scratchpad? if not, it's not our event
-    if not (scratchpad and isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),31)]) then
+    if not (scratchpad and isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),ide.STYLEMASK)]) then
       event:Skip()
       return
     end
@@ -1704,12 +1704,12 @@ function debugger:ScratchpadOn(editor)
     local text = scratchpadEditor:GetTextDyn()
 
     local nstart = pos
-    while nstart >= 0 and isnumber[bit.band(scratchpadEditor:GetStyleAt(nstart),31)] do
+    while nstart >= 0 and isnumber[bit.band(scratchpadEditor:GetStyleAt(nstart),ide.STYLEMASK)] do
       nstart = nstart - 1
     end
 
     local nend = pos
-    while nend < string.len(text) and isnumber[bit.band(scratchpadEditor:GetStyleAt(nend),31)] do
+    while nend < string.len(text) and isnumber[bit.band(scratchpadEditor:GetStyleAt(nend),ide.STYLEMASK)] do
       nend = nend + 1
     end
 
@@ -1744,7 +1744,7 @@ function debugger:ScratchpadOn(editor)
 
     -- record the fact that we are over a number or dragging slider
     scratchpad.over = scratchpad and
-      (ipoint ~= nil or scratchpadEditor.spec.isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),31)])
+      (ipoint ~= nil or scratchpadEditor.spec.isnumber[bit.band(scratchpadEditor:GetStyleAt(pos),ide.STYLEMASK)])
 
     if ipoint then
       local startpos = scratchpad.start

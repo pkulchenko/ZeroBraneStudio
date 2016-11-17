@@ -217,7 +217,7 @@ function EditorAutoComplete(editor)
   -- don't do auto-complete in comments or strings.
   -- the current position and the previous one have default style (0),
   -- so we need to check two positions back.
-  local style = pos >= 2 and bit.band(editor:GetStyleAt(pos-2),31) or 0
+  local style = pos >= 2 and bit.band(editor:GetStyleAt(pos-2),ide.STYLEMASK) or 0
   if editor.spec.iscomment[style]
   or editor.spec.isstring[style]
   or (MarkupIsAny and MarkupIsAny(style)) -- markup in comments
@@ -301,7 +301,7 @@ local function getValAtPosition(editor, pos)
   -- comments, strings, numbers (to avoid '1 = 1'), keywords, and such
   local goodpos = true
   if start and not selected then
-    local style = bit.band(editor:GetStyleAt(linestart+start),31)
+    local style = bit.band(editor:GetStyleAt(linestart+start),ide.STYLEMASK)
     if (MarkupIsAny and MarkupIsAny(style)) -- markup in comments
     or editor.spec.iscomment[style]
     or editor.spec.isstring[style]
@@ -458,7 +458,7 @@ function IndicateFunctionsOnly(editor, lines, linee)
 
       if (f) then
         local p = ls+f+off
-        local s = bit.band(editor:GetStyleAt(p),31)
+        local s = bit.band(editor:GetStyleAt(p),ide.STYLEMASK)
         if not isinvalid[s] then editor:IndicatorFillRange(p, #w) end
         off = off + t
       end
