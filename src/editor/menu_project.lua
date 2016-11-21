@@ -45,6 +45,10 @@ local debugMenu = ide:MakeMenu {
 }
 menuBar:Append(debugMenu, TR("&Project"))
 
+-- older (<3.x) versions of wxwidgets may not have `GetLabelText`, so provide alternative
+if pcall(function() return debugMenu.GetLabelText end) then
+  debugMenu.GetLabelText = function(self, ...) return wx.wxMenuItem.GetLabelText(self.GetLabel(self, ...)) end
+end
 local debugMenuRunLabel = { [false]=debugMenu:GetLabelText(ID_STARTDEBUG), [true]=TR("Co&ntinue") }
 local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Debugging") }
 
