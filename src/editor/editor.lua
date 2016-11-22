@@ -1667,7 +1667,8 @@ local function setLexLPegLexer(editor, lexername)
   -- if the requested lexer is a dynamically registered one, then need to create a file for it,
   -- as LexLPeg lexers are loaded in a separate Lua state, which this process has no contol over.
   local dynlexer, tmppath, dynfile = ide:GetLexer(lexername), nil
-  local tmppath = MergeFullPath(wx.wxFileName.GetTempDir(), "lexer-"..wx.wxGetLocalTimeMillis():ToString())
+  local tmppath = MergeFullPath(wx.wxStandardPaths.Get():GetTempDir(),
+    "lexer-"..wx.wxGetLocalTimeMillis():ToString())
   if dynlexer then
     local ok, err = CreateFullPath(tmppath)
     if not ok then return nil, err end
