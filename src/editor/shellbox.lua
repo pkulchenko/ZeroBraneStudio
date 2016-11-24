@@ -100,6 +100,7 @@ function ConsoleSelectCommand(point)
 end
 
 local currentHistory
+local lastCommand = ""
 local function getNextHistoryLine(forward, promptText)
   local count = console:GetLineCount()
   if currentHistory == nil then currentHistory = count end
@@ -113,7 +114,7 @@ local function getNextHistoryLine(forward, promptText)
   else
     currentHistory = console:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
     if currentHistory == wx.wxNOT_FOUND then
-      return ""
+      return lastCommand
     end
   end
   -- need to skip the current prompt line
@@ -566,6 +567,9 @@ end
 displayShellIntro()
 
 function console:Erase()
+  -- save the last command to keep when the history is cleared
+  currentHistory = getPromptLine()
+  lastCommand = getNextHistoryLine(false, "")
   -- allow writing as the editor may be read-only depending on current cursor position
   self:SetReadOnly(false)
   self:ClearAll()
