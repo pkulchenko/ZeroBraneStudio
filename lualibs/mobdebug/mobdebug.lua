@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.64",
+  _VERSION = "0.641",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -663,7 +663,7 @@ local function debug_hook(event, line)
         -- resume with the stack trace and variables
         if vars then restore_vars(vars) end -- restore vars so they are reflected in stack values
         -- this may fail if __tostring method fails at run-time
-        local ok, snapshot = pcall(stack, ngx and 5 or 4)
+        local ok, snapshot = pcall(stack, 4)
         status, res = cororesume(coro_debugger, ok and events.STACK or events.BREAK, snapshot, file, line)
       end
     end
