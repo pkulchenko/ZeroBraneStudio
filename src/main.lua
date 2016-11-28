@@ -515,7 +515,7 @@ local function loadSpecs(filter)
 end
 
 function GetIDEString(keyword, default)
-  return app.stringtable[keyword] or default or keyword
+  return app.stringtable[keyword] or default
 end
 
 ----------------------
