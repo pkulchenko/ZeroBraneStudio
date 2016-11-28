@@ -76,6 +76,23 @@ Plugin authors should only used public API, which includes the following groups 
 - [Editor API](#editor-api)
 - [Menu API](#menu-api)
 
+## Plugin dependencies
+
+The plugins may depend on a particular version of ZeroBrane Studio.
+One of the fields in the plugin description is `dependencies` that may have as its value
+(1) a table with various dependencies or
+(2) a minumum version number of ZeroBrane Studio required to run the plugin.
+
+If the version number for ZeroBrane Studio is larger than the most recent released version
+(for example, the current release version is 0.50, but the plugin has a dependency on 0.51),
+this means that it requires a development version currently being worked on (which will become
+the next release version).
+
+One of the keys in the `dependencies` table may be `osname`, which specified what operating system
+the plugin supports (`Windows`, `Macintosh`, and `Unix` are supported).
+For example, specifying `dependencies = {0.71, osname = "Windows"}` sets `0.71` or later as
+the required version of the IDE and `Windows` as the supported operating system.
+
 ## Event handlers
 
 A plugin can register various [event handlers](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/packages/sample.lua).
