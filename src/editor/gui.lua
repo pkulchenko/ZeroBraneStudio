@@ -193,6 +193,7 @@ local function createNotebook(frame)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
+  ide:ThemeNotebook(notebook)
 
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
@@ -488,6 +489,7 @@ local function createBottomNotebook(frame)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
+  ide:ThemeNotebook(bottomnotebook)
 
   addDND(bottomnotebook)
 
@@ -635,6 +637,9 @@ local function createBottomNotebook(frame)
   bottomnotebook:AddPage(errorlog, TR("Output"), true)
   bottomnotebook:AddPage(shellbox, TR("Local console"), false)
 
+  ide:ThemePanel(errorlog, "errorlog")
+  ide:ThemePanel(shellbox, "shellbox")
+  
   bottomnotebook.errorlog = errorlog
   bottomnotebook.shellbox = shellbox
 
@@ -647,7 +652,8 @@ local function createProjNotebook(frame)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-
+  ide:ThemeNotebook(projnotebook)
+  
   addDND(projnotebook)
 
   -- disallow tabs closing

@@ -114,6 +114,9 @@ local function treeSetRoot(tree,rootdir)
   local root_id = tree:AddRoot(rootdir, image.DIRECTORY)
   tree:SetItemHasChildren(root_id, true) -- make sure that the item can expand
   tree:Expand(root_id) -- this will also populate the tree
+  if ide.config.theme.osxselection then
+    tree:UnselectAll()
+  end
 end
 
 local function findItem(tree, match)
@@ -661,6 +664,9 @@ local function treeSetConnectorsAndIcons(tree)
           if wx.wxFileExists(name) then LoadFile(name,nil,true) end
         end
       else
+        if ide.config.theme.osxselection then
+          tree:UnselectAll()
+        end
         event:Skip()
       end
       return true
@@ -749,7 +755,7 @@ projtree:SetFont(ide.font.fNormal)
 filetree.projtreeCtrl = projtree
 
 ide:GetProjectNotebook():AddPage(projtree, TR("Project"), true)
-
+ide:ThemePanel(projtree, "projtree")
 -- proj connectors
 -- ---------------
 

@@ -171,6 +171,14 @@ ide = {
       menurecentprojects = "%f | %i",
       apptitle = "%T - %F",
     },
+    
+    theme = {
+      customicons = {}, -- allows alternative set of res images
+      simpletabart = false, -- allows alternative tab rendering
+      tabartsize = 0, -- allows alternative tab size
+      panebgcols = {}, -- allows different background color for panes
+      osxselection = false -- make controls behave more like OS X
+    },
 
     activateoutput = true, -- activate output/console on Run/Debug/Compile
     unhidewindow = false, -- to unhide a gui window

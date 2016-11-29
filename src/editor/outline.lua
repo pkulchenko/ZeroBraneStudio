@@ -313,6 +313,9 @@ local function createOutlineWindow()
     if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
       ctrl:ActivateItem(item_id)
     else
+      if ide.config.theme.osxselection then
+        ctrl:UnselectAll()
+      end
       event:Skip()
     end
     return true
