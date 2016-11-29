@@ -115,7 +115,7 @@ do -- recent file history
     if not LoadFile(filename, nil, true) then
       wx.wxMessageBox(
         TR("File '%s' no longer exists."):format(filename),
-        GetIDEString("editormessage"),
+        ide:GetProperty("editormessage"),
         wx.wxOK + wx.wxCENTRE, ide.frame)
       remFileHistory(filename)
       updateRecentFiles(filehistory)

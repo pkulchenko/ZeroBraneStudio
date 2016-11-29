@@ -360,7 +360,7 @@ local function treeSetConnectorsAndIcons(tree)
     if isdir and FileDirHasContent(source..pathsep) then return false end
     if wx.wxMessageBox(
       TR("Do you want to delete '%s'?"):format(source),
-      GetIDEString("editormessage"),
+      ide:GetProperty("editormessage"),
       wx.wxYES_NO + wx.wxCENTRE, ide.frame) ~= wx.wxYES then return false end
 
     if isdir then

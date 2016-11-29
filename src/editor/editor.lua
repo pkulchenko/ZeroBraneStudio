@@ -116,14 +116,14 @@ local function isFileAlteredOnDisk(editor)
         openDocuments[id].modTime = nil
         wx.wxMessageBox(
           TR("File '%s' no longer exists."):format(fileName),
-          GetIDEString("editormessage"),
+          ide:GetProperty("editormessage"),
           wx.wxOK + wx.wxCENTRE, ide.frame)
       elseif not editor:GetReadOnly() and modTime:IsValid() and oldModTime:IsEarlierThan(modTime) then
         local ret = (edcfg.autoreload and (not ide:GetDocument(editor):IsModified()) and wx.wxYES)
           or wx.wxMessageBox(
             TR("File '%s' has been modified on disk."):format(fileName)
             .."\n"..TR("Do you want to reload it?"),
-            GetIDEString("editormessage"),
+            ide:GetProperty("editormessage"),
             wx.wxYES_NO + wx.wxCENTRE, ide.frame)
 
         if ret ~= wx.wxYES or ReLoadFile(filePath, editor, true) then

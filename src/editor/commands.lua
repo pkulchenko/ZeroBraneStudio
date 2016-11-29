@@ -305,7 +305,7 @@ end
 function ApproveFileOverwrite()
   return wx.wxMessageBox(
     TR("File already exists.").."\n"..TR("Do you want to overwrite it?"),
-    GetIDEString("editormessage"),
+    ide:GetProperty("editormessage"),
     wx.wxYES_NO + wx.wxCENTRE, ide.frame) == wx.wxYES
 end
 

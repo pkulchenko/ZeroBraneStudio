@@ -72,6 +72,9 @@ function PackageRegister(file, ...)
   return PackageEventHandleOne(file, "onRegister", ...)
 end
 
+function ide:GetProperty(keyword, default)
+  return self.app.stringtable[keyword] or default
+end
 function ide:GetRootPath(path)
   return MergeFullPath(GetPathWithSep(self.editorFilename), path or '')
 end
@@ -146,7 +149,7 @@ function ide:SetDebugger(deb)
 end
 function ide:GetMainFrame()
   if not self.frame then
-    self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, GetIDEString("editor"),
+    self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, self:GetProperty("editor"),
       wx.wxDefaultPosition, wx.wxSize(1100, 700))
   end
   return self.frame

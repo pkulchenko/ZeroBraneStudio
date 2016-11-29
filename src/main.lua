@@ -514,10 +514,6 @@ local function loadSpecs(filter)
   UpdateSpecs()
 end
 
-function GetIDEString(keyword, default)
-  return app.stringtable[keyword] or default
-end
-
 ----------------------
 -- process config
 
@@ -585,7 +581,7 @@ end
 
 LoadLuaConfig(ide.appname.."/config.lua")
 
-ide.editorApp:SetAppName(GetIDEString("settingsapp"))
+ide.editorApp:SetAppName(ide:GetProperty("settingsapp"))
 
 -- check if the .ini file needs to be migrated on Windows
 if ide.osname == 'Windows' and ide.wxver >= "2.9.5" then

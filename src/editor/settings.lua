@@ -35,7 +35,8 @@ if ini and wx.wxIsAbsolutePath(ini) and not wx.wxFileName(ini):IsDirWritable() t
   ini = nil
 end
 
-local settings = wx.wxFileConfig(GetIDEString("settingsapp"), GetIDEString("settingsvendor"), ini or "")
+local settings = wx.wxFileConfig(
+  ide:GetProperty("settingsapp"), ide:GetProperty("settingsvendor"), ini or "")
 ide.settings = settings
 
 local function settingsReadSafe(settings,what,default)
