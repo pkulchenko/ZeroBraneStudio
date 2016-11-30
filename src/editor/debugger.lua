@@ -346,6 +346,7 @@ function debugger:ActivateDocument(file, line, activatehow)
   local activated
   local indebugger = file:find('mobdebug%.lua$')
   local fileName = wx.wxFileName(file)
+  local fileNameLower = wx.wxFileName(file:lower())
 
   for _, document in pairs(ide.openDocuments) do
     local editor = document.editor
@@ -353,6 +354,7 @@ function debugger:ActivateDocument(file, line, activatehow)
     -- when checking for the content remove all newlines as they may be
     -- reported differently from the original by the Lua engine.
     if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath))
+    or ide.config.debugger.ignorecase and fileNameLower:SameAs(wx.wxFileName(document.filePath:lower()))
     or content and content:gsub("[\n\r]","") == editor:GetTextDyn():gsub("[\n\r]","") then
       ClearAllCurrentLineMarkers()
       if line then
