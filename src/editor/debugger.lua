@@ -353,8 +353,10 @@ function debugger:ActivateDocument(file, line, activatehow)
     -- either the file name matches, or the content;
     -- when checking for the content remove all newlines as they may be
     -- reported differently from the original by the Lua engine.
-    if document.filePath and fileName:SameAs(wx.wxFileName(document.filePath))
-    or ide.config.debugger.ignorecase and fileNameLower:SameAs(wx.wxFileName(document.filePath:lower()))
+    local ignorecase = ide.config.debugger.ignorecase or (debugger.options or {}).ignorecase
+    local filePath = document:GetFilePath()
+    if filePath and (fileName:SameAs(wx.wxFileName(filePath))
+      or ignorecase and fileNameLower:SameAs(wx.wxFileName(filePath:lower())))
     or content and content:gsub("[\n\r]","") == editor:GetTextDyn():gsub("[\n\r]","") then
       ClearAllCurrentLineMarkers()
       if line then
@@ -406,8 +408,7 @@ function debugger:ActivateDocument(file, line, activatehow)
         -- breakpoints that have been set based on its filepath;
         -- if the content has been matched, then existing breakpoints
         -- need to be removed and new ones set, based on the content.
-        if not debugger.editormap[editor] and document.filePath then
-          local filePath = document.filePath
+        if not debugger.editormap[editor] and filePath then
           local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
           while filePath and line ~= -1 do
             debugger:handle("delb " .. filePath .. " " .. (line+1))
