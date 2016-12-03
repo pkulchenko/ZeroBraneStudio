@@ -1,5 +1,120 @@
 # ZeroBrane Studio Changelog
 
+## Current master (Dec 03 2016)
+
+### Highlights
+  - Added support for LexLPeg-based lexers (closes #701).
+  - Added support for dynamic LexLPeg lexers with `AddLexer`/`RemoveLexer` methods (#701, #166).
+  - Added selecting blocks by `Ctrl-click` on the fold margin (closes #653).
+  - Added multipaste support that wasn't enabled in the previous release (closes #311, #260).
+  - Updated Love2d API for 0.10.2 (#247).
+  - Updated `Ctrl-Shift-FoldMarginClick` to un/fold the block with all children (closes #706).
+
+### Special thanks
+  - To [halfnelson](https://github.com/halfnelson) for auto-complete improvements.
+  - To [Mailaender](https://github.com/Mailaender) for appdata.xml on Linux.
+
+### Improvements
+  - Added `ignorecase` as an option for the debugger (closes #718).
+  - Added `debugger.ignorecase` to configure ignoring case in activating files in debugger (#718).
+  - Added `GetProperty` method (#166).
+  - Added keeping the last command when the console history is cleared.
+  - Added replacement for `wxMenu.GetLabelText` for earlier wxwidgets versions (#260).
+  - Added `Restart` method (#166).
+  - Added `Exit` method (#166).
+  - Added parameter generation to `GetLaunchPath` method (#166).
+  - Added `GetLaunchPath` method (#166).
+  - Added `outline.activateonclick` setting to set outline activation (#337).
+  - Added `Compile` icon to use in the toolbar (hidden by default).
+  - Added support for dynamic LexLPeg lexers with `AddLexer`/`RemoveLexer` methods (#701, #166).
+  - Added LexLPeg license (#701).
+  - Added support for LexLPeg-based lexers (closes #701).
+  - Added `package.searchpath` when running under Lua 5.1 (#701).
+  - Added moving the cursor to the fold header after folding (closes #704).
+  - Added LexLPeg binaries and lexers based on scintillua 3.6.5-1 (#701).
+  - Added `IsValidHotKey` check for hotkey to be valid before setting (#166).
+  - Added `SetHotKey` method that checks for and resolves hotkey conflict (#166).
+  - Added `AddStyle`, `GetStyle`, `GetStyles`, and `RemoveStyle` methods (#166).
+  - Added `SetProject` method to set/update project directory (#166).
+  - Added an appdata.xml file.
+  - Added selecting blocks by `Ctrl-click` on the fold margin (closes #653).
+  - Added changing the current line to a triggered breakpoint (closes #694).
+  - Added multipaste support that wasn't enabled after wxwidgets merge (closes #311, #260).
+  - Added fillup character handling to autocomplete (`acandtip.fillups`).
+  - Added `commandbar.maxlines` configuration setting.
+  - Allowed single tabs to be dragged out of split notebooks (closes #700).
+  - Optimized toolbar icons to remove text and other chunks.
+  - Refactored key processing in the Output panel to simplify.
+  - Removed stoppage on phantom breakpoints when document fails to activate.
+  - Removed unnecessary scrolling after fold margin click (fixes #708).
+  - Removed `text` spec that is not needed and not complete to be useful.
+  - Removed error popup on failure to launch a command (as it's reported with the return value).
+  - Removed filters that are no longer used/needed.
+  - Replaced `wxFileName.GetTempDir` with alternative available in earlier wxwidgets versions (#260).
+  - Replaced `ActivateOutput` with `Activate` method for all editor-based objects (#166).
+  - Removed auto-complete for `new/create` methods as it's too Lua-specific.
+  - Updated to return `nil` on non-existing IDE properties.
+  - Upgraded Mobdebug (0.641) to improve stack view in Nginx/Openresty debugging.
+  - Updated style processing to remove hardcoded style mask (follow-up to 308412).
+  - Updated Console/Output usage to allow for Console to be hidden.
+  - Updated dynamic LexLPeg lexers to use a separate temporary folder (#701).
+  - Updated Love2d API for 0.10.2 (#247).
+  - Updated love2d interpreter to switch project directory when `main.lua` file is not present.
+  - Updated API processing to force reload after a new API is added.
+  - Updated Lua spec to move `package.path` and `package.cpath` to constants (#84, #79).
+  - Updated LexLPeg lexer to allow fold on case insensitive keywords (#701).
+  - Updated event handling to allow added editor tab to be closed from `onEditorNew`.
+  - Updated search results fold to match the editor fold behavior.
+  - Updated `Ctrl-Shift-FoldMarginClick` to un/fold the block with all children (closes #706).
+  - Updated configuration option description.
+  - Updated ID references in find-replace to avoid using global variables.
+  - Updated LexLPeg lexer to improve float parsing (#701).
+  - Updated spec-related processing to avoid Lua-specific checks (#701).
+  - Updated build scripts to build LexLPeg (#701).
+  - Updated `Stop Debugging` label to show `Stop Process` by default.
+  - Updated toolbar generation to only add separators when needed.
+  - Updated script post processing to provide pid and error code to the handler.
+  - Updated project tree usage to allow for it to be hidden.
+  - Updated outline processing to allow for `functions` without parameters.
+  - Updated double click processing in the Output panel to allow handlers to be added.
+  - Updated console window to show the typed symbol after moving to the input line.
+  - Updated main frame initialization to move it before the config processing.
+  - Updated start/stop debugging menu labels to allow dynamic updates to them.
+  - Update style handling for compatibility with wxwidgets 2.9.5+ (follow-up to 30841216).
+  - Updated package sample to use current API calls.
+  - Updated unindent on backspace to use included Scintilla functionality.
+  - Updated markup processing to use `AddStyle` instead of `AddIndicator`.
+  - Updated `AddIndicator` to use more robust logic for new indicators.
+  - Updated application name in OSX package.
+  - Updated file watch error handling to only report once per session (#693).
+  - Updated initial watches to only set when not active (#693).
+  - Updated bookmarks to use a different bookmark icon when available.
+  - Updated to use MAX_MARGIN value from wxSTC when available.
+  - Updated Outline to hide the tab when disabled.
+  - Updated Markers to hide the tab when disabled.
+  - Updated static analyzer to report unknown field on all values (instead of only the first one).
+  - Updated command line arguments popup to remove separator from empty menu.
+  - Updated `Shift-Enter` processing in auto-complete to only trigger on that combination.
+  - Updated editor idle processing to handle items in the same order as they are submitted.
+  - Updated commandbar to take font size configuration and OS differences into account.
+  - Updated Gideros interpeter to skip compilation (to allow for bitops and macros).
+  - Updated to make autocomplete recursion prevention less aggressive (closes #692).
+  - Updated to walk inheritance list when resolving assign (#692).
+
+### Fixes
+  - Fixed indexing to start after inactivity when `showonefile` is set (#337).
+  - Fixed switching outline sorting when `showonefile` is set (#337).
+  - Fixed removing outline when closing the last editor with `showonefile` set (#337).
+  - Fixed outline flicker during autocomplete when `outline.showonefile` is set (#442).
+  - Fixed indentation of fragments with partial long string/comments (#639, #324).
+  - Fixed indentation of words that match keywords surrounded by underscores (#324).
+  - Fixed clearing Console window when the cursor is not in an editable area (closes #702).
+  - Fixed menu item removal to delete separators at the top of the menu.
+  - Fix type calculation in auto-complete for values returned by `require` (#692).
+  - Fixed compatibility with wxlua/wxwidgets without `wxFSW_EVENT*` constants (closes #693).
+  - Fixed autocomplete for variables when multiple selection is active.
+  - Fixed commandbar issue when arrow key is pressed while large file is loaded in preview.
+
 ## v1.40 (Aug 26 2016)
 
 ### Highlights
