@@ -343,7 +343,7 @@ function debugger:ActivateDocument(file, line, activatehow)
 
   if PackageEventHandle("onDebuggerPreActivate", debugger, file, line) == false then return end
 
-  local activated
+  local activated = false
   local indebugger = file:find('mobdebug%.lua$')
   local fileName = wx.wxFileName(file)
   local fileNameLower = wx.wxFileName(file:lower())
