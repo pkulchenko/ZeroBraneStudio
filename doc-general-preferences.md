@@ -48,6 +48,9 @@ set to `true` to display the stats.
 
 - `debugger.allowediting = false`: enable editing of files while debugging.
 - `debugger.hostname = "hostname.or.IP.address"`: set hostname to use for debugging.
+- `debugger.ignorecase = false`: make debugger to ignore case mismatch when activating files (1.41+);
+This can be used to activate files that have different spelling of the file names (case-wise);
+for example, `Test` vs `test` vs `TEST`.
 - `debugger.init = nil`: specify code to run (as a **string**) at the beginning of the debugger session.
 This may be used to provide some initialization to be applied before the debugging starts.
 For example, `debugger.init = [[some initialization code]]`.
