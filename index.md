@@ -12,12 +12,17 @@ high school students with no programming experience), yet
 **[feature-rich](features)** and **[extensible](doc-plugin)** for experienced developers.
 Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **completely customizable with Lua**.
 Unlike&nbsp;TextMate and Sublime Text, it includes a **remote debugger** and a **full IDE feature set**.
-Unlike&nbsp;Decoda, it runs on Windows, Mac OSX, and Linux and supports **on-device debugging**.
+Unlike&nbsp;Decoda, it runs on **Windows, Mac OSX, and Linux** and supports **on-device debugging**.
 
 ZeroBrane Studio also provides several unique features: **live coding** for
 immediate feedback, **Markdown formatting** in comments for providing
 instructions with minimal context switching, and **integrated interactive
 materials** for those learning Lua or getting familiar with programming.
+
+The installation package includes some of the **most popular libraries** ([luasocket](https://github.com/diegonehab/luasocket),
+[luafilesystem](https://github.com/keplerproject/luafilesystem),
+[luasec](https://github.com/brunoos/luasec),
+and [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg/)) compiled for Lua 5.1, 5.2, and 5.3 versions on all supported platforms.
 
 For those interested in **game and mobile development**, the IDE supports debugging for
 [LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
