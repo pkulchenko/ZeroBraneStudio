@@ -49,11 +49,12 @@ and [more](documentation#debugging).
 * Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
 * **Auto-completion** for functions, keywords, and custom APIs;
 * **Interactive console** to test code snippets with local and remote execution;
+* **Integrated debugger** (with support for local and remote debugging, including cross-platform and on-device debugging);
 * [Live coding](documentation#live-coding) with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide),
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 GSL-Shell and other Lua engines;
-* **Integrated debugger** (with support for local and remote debugging, including cross-platform and on-device debugging);
+* **50+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage);
 * **Fuzzy search** for files, symbols, and library functions, **function outline**, and **[more](features)**.
