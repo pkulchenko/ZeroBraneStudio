@@ -313,6 +313,10 @@ local function getStreams()
   sendStream(streamouts)
 end
 
+function out:ProcessStreams()
+  if (#streamins or #streamerrs) then getStreams() end
+end
+
 out:Connect(wx.wxEVT_END_PROCESS, function(event)
     local pid = event:GetPid()
     if (pid ~= -1) then
@@ -347,7 +351,7 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
   end)
 
 out:Connect(wx.wxEVT_IDLE, function()
-    if (#streamins or #streamerrs) then getStreams() end
+    out:ProcessStreams()
     if ide.osname == 'Windows' then unHideWindow() end
   end)
 
