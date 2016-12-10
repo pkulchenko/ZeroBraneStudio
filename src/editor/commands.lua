@@ -344,14 +344,8 @@ function SaveFileAs(editor)
 
     if cansave and SaveFile(editor, filePath) then
       SetEditorSelection() -- update title of the editor
-      if ext ~= GetFileExt(filePath) then
-        -- new extension, so setup new keywords and re-apply indicators
-        editor:ClearDocumentStyle() -- remove styles from the document
-        editor:SetupKeywords(GetFileExt(filePath))
-        IndicateAll(editor)
-        IndicateFunctionsOnly(editor)
-        MarkupStyle(editor)
-      end
+      -- new extension, this will reset keywords and indicators
+      if ext ~= GetFileExt(filePath) then LoadFile(filePath, editor) end
       saved = true
 
       if existing then
