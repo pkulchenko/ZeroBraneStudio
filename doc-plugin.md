@@ -13,6 +13,17 @@ interpreters (`interpreters/`): to implement components for setting debugging an
 In addition to these options, it also provides **plugin API to extend its functionality** in a more fine graned way.
 For example, one can write a plugin to add a menu item to turn line wrapping `on` or `off` from the IDE or a plugin to map a shortcut to a character not present on the keyboard.
 
+## Plugin repository
+
+There are **50+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage),
+including packages like
+[DocumentMap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua),
+[UniqueTabName](https://github.com/pkulchenko/ZeroBranePackage/blob/master/uniquetabname.lua),
+[CloneView](https://github.com/pkulchenko/ZeroBranePackage/blob/master/cloneview.lua),
+[ProjectSettings](https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua),
+[SyntaxCheckOnType](https://github.com/pkulchenko/ZeroBranePackage/blob/master/syntaxcheckontype.lua),
+and many others.
+
 ## Plugin structure
 
 A **plugin is a Lua file** that returns a table with several fields -- `name`, `description`, `author`, `version` -- and various [event handlers](#event-handler).
