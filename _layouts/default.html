@@ -11,8 +11,8 @@
  <link rel="stylesheet" media="all" href="stylesheets/styles.css" type="text/css" />
  <link rel="stylesheet" media="all" href="stylesheets/syntax.css" type="text/css" />
  <link rel="stylesheet" media="print" href="stylesheets/print.css" type="text/css" />
- {% capture root %}{% if page.root %}{{ page.root }}{% else %}./{% endif %}{%endcapture%}
- {% capture title %}{% if page.title %}{{ page.title }} - {% elsif post.title %}{{ post.title }} - {% endif %}{% endcapture %}
+ {% capture root %}{% if page.root %}{{ page.root }}{% else %}./{% endif %}{% endcapture %}
+ {% capture title %}{% if page.url != "/" %}{{ page.title }} - {% elsif post.title %}{{ post.title }} - {% endif %}{% endcapture %}
 
  {% if page.url == '/support.html' %}
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -53,7 +53,7 @@ $(document).ready(function(){
  {% endif %}
 
  <title>{{ title }}ZeroBrane Studio - Lua IDE/editor/debugger for Windows, Mac OSX, and Linux</title>
- {% if page.title %}<style>
+ {% if page.url != "/" %}<style>
   #content { border-right: 0px; }
   #beta, .layout-wtt #beta, .layout-twt #beta, .layout-wt #beta, .layout-tw #beta, .layout-wm #beta, .layout-mw #beta { display: none; }
  </style>{% endif %}
@@ -93,7 +93,7 @@ $(document).ready(function(){
       <div id="header-description">Lightweight IDE for your Lua needs</div>
      </div>
      <div id="menu-wrapper">
-      <h1><div>{% if page.title %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
+      <h1><div>{% if page.url != "/" %}{{page.title}}{% else %}&nbsp;{% endif %}</div></h1>
       <div id="menu-links">
         {% if page.url == '/support.html' or page.url == '/download.html'%}<strong>Download</strong>{% else %}<a href="support">Download</a>{% endif %}
         {% if page.url == '/features.html'%}<strong>Features</strong>{% else %}<a href="features">Features</a>{% endif %}
@@ -110,7 +110,7 @@ $(document).ready(function(){
       <div id="alpha-inner">
        <div class="entry-asset asset entry">
         <div class="asset-content entry-content">
-         <div class="asset-body {{ page.title }}">
+         <div class="asset-body {% if page.url != "/" %}{{page.title}}{% endif %}">
           {{ content }}</div>
         </div>
        </div>
