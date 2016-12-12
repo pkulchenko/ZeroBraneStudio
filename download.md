@@ -3,16 +3,16 @@ layout: default
 title: Download
 ---
 
-# Download ZeroBrane Studio v1.40 (Aug 26 2016)
+# Download ZeroBrane Studio v1.50 (Dec 11 2016)
 
 <ul class="download" id="download-options">
-  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.40-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.40-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.50-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.50-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Mac OS X 10.6.8+ (dmg file)</a></li>
-  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.40-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.40-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.50-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.50-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
-      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.40-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.40-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+      <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.50-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.50-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (exe installer)</a></li>
-  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.40-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.40-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
+  <li><a class="linux" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.50-linux.sh" onclick="var that=this;_gaq.push(['_trackEvent','Download-linux','ZeroBraneStudioEduPack-1.50-linux.sh',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Linux 32/64bit (shell archive)</a></li>
 </ul>
 <div class="thank-you" id="thank-you">If you paid for ZeroBrane Studio, <strong>thank you for your contribution</strong>. If you have not, please consider <a href="support">supporting the project</a>.</div>
@@ -20,21 +20,13 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Added ability to load/save files with invalid UTF-8 encoded characters.
-- Added support for IME composition to input Chinese characters.
-- Added support for dead key combinations (used on international keyboads).
-- Added support for handling Unicode paths and parameters on Windows.
-- Added luasec v0.6 (with openssl 1.0.2h).
-- Added lpeg v1.0.
-- Added lfs v1.6.3.
-- Added tracking file system changes in the project tree to auto-refresh it.
-- Added opening files on drag-n-drop on dock icon on OSX.
-- Added opening files on drag-n-drop on Linux.
-- Added refresh of search results from the right-click-on-tab menu.
-- Added reverse search on `Shift-Enter`.
-- Updated Gideros API for v2016.06.
-- Updated Corona API for v2016.2906.
-- Updated Love2d API for v0.10.1.
+- Added support for LexLPeg-based lexers.
+- Added support for dynamic LexLPeg lexers with `AddLexer`/`RemoveLexer` methods.
+- Added selecting blocks by `Ctrl-click` on the fold margin.
+- Added multipaste support that wasn't enabled in the previous release.
+- Updated Love2d API for 0.10.2.
+- Updated `Ctrl-Shift-FoldMarginClick` to un/fold the block with all children.
+- Fixed editor styling after saving a file with a different extension.
 
 Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/CHANGELOG.md).
 
