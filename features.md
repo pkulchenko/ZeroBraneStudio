@@ -36,7 +36,7 @@ Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides
 **Debug any Lua application**
 Set breakpoints before or _during_ debugging. Step in, over, and out. Run to cursor, break and continue your script. Review the call stack. Inspect and modify variables.
 
-**Custom intepreters**
+**Custom interpreters**
 Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
 **Lightweight**
@@ -81,7 +81,7 @@ If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss th
 
 **Translatable interface**
 <a href="images/internationalization-russian.png"><img style="background:url(images/internationalization-russian.png) -220px -30px" src="images/t.gif" class="inset"/></a>
-Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, and Brazilian Portuguese) or creare your own.
+Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, and Brazilian Portuguese) or create your own.
 
 **Project file browser**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inset"/></a>
