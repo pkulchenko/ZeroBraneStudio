@@ -32,7 +32,7 @@ return {
         -- normalize to absolute path
         if fn:Normalize(wx.wxPATH_NORM_ALL, dir) and fn:FileExists() then
           LoadFile(fn:GetFullPath(),nil,true)
-          ProjectUpdateProjectDir(fn:GetPath(wx.wxPATH_GET_VOLUME))
+          ide:SetProject(fn:GetPath(wx.wxPATH_GET_VOLUME))
           break
         end
       end
