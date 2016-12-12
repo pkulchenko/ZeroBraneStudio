@@ -1,6 +1,6 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Dec 03 2016)
+## v1.50 (Dec 11 2016)
 
 ### Highlights
   - Added support for LexLPeg-based lexers (closes #701).
@@ -15,6 +15,7 @@
   - To [Mailaender](https://github.com/Mailaender) for appdata.xml on Linux.
 
 ### Improvements
+  - Added Output method `ProcessStreams` (#166).
   - Added `ignorecase` as an option for the debugger (closes #718).
   - Added `debugger.ignorecase` to configure ignoring case in activating files in debugger (#718).
   - Added `GetProperty` method (#166).
@@ -102,6 +103,7 @@
   - Updated to walk inheritance list when resolving assign (#692).
 
 ### Fixes
+  - Fixed styling editor content after `Save As` operation with a different extension.
   - Fixed indexing to start after inactivity when `showonefile` is set (#337).
   - Fixed switching outline sorting when `showonefile` is set (#337).
   - Fixed removing outline when closing the last editor with `showonefile` set (#337).
