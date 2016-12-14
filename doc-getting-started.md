@@ -162,3 +162,14 @@ You can change the
 [general preferences](doc-general-preferences),
 [editor preferences](doc-editor-preferences),
 and the [IDE keymap](doc-faq#how-can-i-modify-a-key-mapping).
+
+## Extending the IDE
+
+In addition to the functionality included by default, there are also **50+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage),
+including packages like
+[DocumentMap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua),
+[UniqueTabName](https://github.com/pkulchenko/ZeroBranePackage/blob/master/uniquetabname.lua),
+[CloneView](https://github.com/pkulchenko/ZeroBranePackage/blob/master/cloneview.lua),
+[ProjectSettings](https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua),
+[SyntaxCheckOnType](https://github.com/pkulchenko/ZeroBranePackage/blob/master/syntaxcheckontype.lua),
+and many others. You can create your own package (or modify an existing one) by following the [plugin documentation](doc-plugin).
