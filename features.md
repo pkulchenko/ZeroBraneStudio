@@ -12,6 +12,9 @@ Written in Lua. Extensible and open.
 **Portable**
 Run it from any folder. No installation required.
 
+**Extensible**
+50+ plugins in the [package repository](https://github.com/pkulchenko/ZeroBranePackage); [add your own](doc-plugin).
+
 **Scope aware selection**
 Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Type a new name.
 
