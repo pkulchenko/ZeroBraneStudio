@@ -37,7 +37,7 @@ return {
   author = "Paul Kulchenko",
   version = 0.1,
 
-  onRegister = function(self) DisplayOutputLn("Sample plugin registered") end,
+  onRegister = function(self) ide:Print("Sample plugin registered") end,
 }
 ```
 
@@ -239,8 +239,8 @@ For example, to add `install` and `uninstall` commands to the console, you may d
 
 ```lua
 local commands = {
-  install = function(m) DisplayOutputLn("Installed "..m) end,
-  uninstall = function(m) DisplayOutputLn("Uninstalled "..m) end,
+  install = function(m) ide:Print("Installed "..m) end,
+  uninstall = function(m) ide:Print("Uninstalled "..m) end,
 }
 
 return {
@@ -347,7 +347,7 @@ return {
 
     -- attach a function to the added menu item
     editor:Connect(iditem, wx.wxEVT_COMMAND_MENU_SELECTED,
-      function(event) DisplayOutputLn("Selected popup item") end)
+      function(event) ide:Print("Selected popup item") end)
   end
 }
 ```
@@ -372,7 +372,7 @@ ide:GetMainFrame():Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
 
     local file = ide:GetDocument(ed):GetFilePath()
     if file then -- a new (untitled) file may not have path
-      ide:ExecuteCommand('make', ide:GetProject(), function(s) DisplayOutput(s) end)
+      ide:ExecuteCommand('make', ide:GetProject(), function(s) ide:Print(s) end)
     end
   end)
 ```
