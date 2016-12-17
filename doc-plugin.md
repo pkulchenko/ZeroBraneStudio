@@ -317,9 +317,8 @@ return {
 ## Example: Modifying main and popup menus
 
 ```lua
-local G = ...
-local id = G.ID("popupmenu.popupshow")
-local iditem = G.ID("popupmenu.popupitem")
+local id = ID("popupmenu.popupshow")
+local iditem = ID("popupmenu.popupitem")
 return {
   name = "Sample plugin with popup menu",
   description = "Sample plugin showing how to setup and use popup menu.",
