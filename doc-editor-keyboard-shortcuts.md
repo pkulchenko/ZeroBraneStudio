@@ -32,8 +32,8 @@ Other shortcuts used in the application can be modified as described in the [key
 - `Ctrl-\`: Jump to next word part. `Shift` extends selection
 - `Alt-End`: Jump to end of display line (for wrapped lines)
 - `Alt-Home`: Jump to beginning of display line (for wrapped lines)
-- `Ctrl-Tab`/`Ctrl-PgUp`: Cycle right through editor tabs
-- `Ctrl-Shift-Tab`/`Ctrl-PgDn`: Cycle left through editor tabs
+- `Ctrl-Tab`/`Ctrl-PgDn`: Cycle right through editor tabs
+- `Ctrl-Shift-Tab`/`Ctrl-PgUp`: Cycle left through editor tabs
 
 **Folding** commands:
 
