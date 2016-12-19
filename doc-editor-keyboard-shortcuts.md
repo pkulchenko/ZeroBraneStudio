@@ -34,6 +34,9 @@ Other shortcuts used in the application can be modified as described in the [key
 - `Alt-Home`: Jump to beginning of display line (for wrapped lines)
 - `Ctrl-Tab`/`Ctrl-PgDn`: Cycle right through editor tabs
 - `Ctrl-Shift-Tab`/`Ctrl-PgUp`: Cycle left through editor tabs
+- `Ctrl-Alt-Click`: Jump to definition (if there is a variable under cursor)
+- `Ctrl-DblClick`: Select all instance of a variable or (when there is no variable under cursor) include the word under cursor into multiple selection
+- `Alt-Left`: Jump to previous position after `Jump to definition`
 
 **Folding** commands:
 
