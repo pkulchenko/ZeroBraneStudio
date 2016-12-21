@@ -24,12 +24,12 @@ Other shortcuts used in the application can be modified as described in the [key
 **Navigation and selection** commands:
 
 - `Alt-Shift-cursor`: Block selection
-- `Ctrl-[`: Jump to previous paragraph. `Shift` extends selection
-- `Ctrl-]`: Jump to next paragraph. `Shift` extends selection
-- `Ctrl-Left`: Jump to previous word. `Shift` extends selection
-- `Ctrl-Right`: Jump to next word. `Shift` extends selection
-- `Ctrl-/`: Jump to previous word part. `Shift` extends selection	
-- `Ctrl-\`: Jump to next word part. `Shift` extends selection
+- `Ctrl-(Shift-)[`: Jump to previous paragraph; `Shift` extends selection
+- `Ctrl-(Shift-)]`: Jump to next paragraph; `Shift` extends selection
+- `Ctrl-(Shift-)Left`: Jump to previous word; `Shift` extends selection
+- `Ctrl-(Shift-)Right`: Jump to next word; `Shift` extends selection
+- `Ctrl-(Shift-)/`: Jump to previous word part; `Shift` extends selection
+- `Ctrl-(Shift-)\`: Jump to next word part; `Shift` extends selection
 - `Alt-End`: Jump to end of display line (for wrapped lines)
 - `Alt-Home`: Jump to beginning of display line (for wrapped lines)
 - `Ctrl-Tab`/`Ctrl-PgDn`: Cycle right through editor tabs
