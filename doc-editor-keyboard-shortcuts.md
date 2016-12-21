@@ -54,3 +54,4 @@ Other shortcuts used in the application can be modified as described in the [key
 - `Ctrl-MouseWheel`: Magnify/Reduce text size
 
 **Note for Mac OSX users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab`, `Ctrl-Shift-Tab`, `Ctrl-PgUp`, and `Ctrl-PgDn` commands.
+Also, Use `Delete` for `Backspace` and `Fn+Delete` for `Delete`.
