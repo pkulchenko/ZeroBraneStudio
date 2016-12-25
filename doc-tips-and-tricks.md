@@ -113,12 +113,14 @@ You can **change the current project** in several ways:
 
 ## Project tree refresh
 
-When new files are added to or removed from the file system outside of the IDE, these changes may not be reflected in the project tree immediately.
-To refresh the project tree you have several options:
+(1.40+) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
+
+To refresh the project tree manually you have several options:
 
 1. Collapse/Expand a particular directory, which will refresh its content.
 2. (1.10+) Use `Refresh` item in the context menu in the project tree (mouse right click).
-3. Install [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
+
+If you are using one of the earlier versions, you can check [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
 
 ## Show Output and Console windows side by side.
 

@@ -26,8 +26,9 @@ You can also configure the IDE to [auto-open files](https://github.com/pkulchenk
 
 ## How to refresh the files shown in the Project tree after the changes made outside of the IDE?
 
-When new files are added to or removed from the file system outside of the IDE, these changes may not be reflected in the project tree immediately.
-See the [Project refresh section](doc-tips-and-tricks#project-tree-refresh) in the documentation on how to make the tree to refresh.
+(1.40+) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
+You can still refresh the Project tree content manually when it gets out of sync by using `Refresh` item in the Project tree local menu (activated with right click on an item).
+If you are using one of the earlier versions, you can check [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
 
 ## Why do I get a warning about attempt to connect to port 8172 when I start debugging?
 
