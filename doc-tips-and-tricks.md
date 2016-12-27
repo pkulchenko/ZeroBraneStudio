@@ -52,6 +52,10 @@ If no conflict is detected, the file content is going to be reloaded and its cur
 
 You can refresh search results by using right click on the tab and selecting `Refresh Search Results` from the popup menu.
 
+## Close search results pages
+
+You can close search multiple results pages by using right click on the tab and selecting `Close Search Results Pages` from the popup menu.
+
 ## Quick jump to the function call from the Stack view.
 
 To **jump to the position in the source code referred to in the Stack window**, double click on a function name in the stack frame.
