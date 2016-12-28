@@ -234,6 +234,12 @@ Before v0.90, the list of functions was available through the dropdown in the to
 Starting from v0.90, the list of functions is available through a separate tab located next to the project tab.
 The content of the Outline can be [configured in various ways](doc-general-preferences#outline).
 
+## Why not all upvalues are shown in the debugger?
+
+Upvalues shown in watch/console/stack windows will only include those **upvalues that are used or referenced** in the current function.
+For example, if you step into function `abc` from the following fragment -- `local a, b = 1, 2; function abc() print(a) end` -- then only `a` variable will be listed as the upvalue.
+If you try to access the value of `b` in the Watch or the Console window, you'll get `nil` as that **upvalue is not present in the scope** of that function.
+
 ## Why am I getting `mach-o, but wrong architecture` error on OSX?
 
 You may be trying to load a 64bit module using Lua executable that is included with the IDE.
