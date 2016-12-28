@@ -128,7 +128,8 @@ Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Dis
 See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
 
 (v1.11+) If you are using v1.11 or later, this may no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
-You may still need to enable it for other executables (for example, `bin/lua.exe`) as needed to make the applications you start from the IDE dpi-aware as well.
+(v1.40+) HiDPI awareness has also been enabled for Lua executables for all supported versions.
+You may still need to enable it for other executables (not included with the IDE) as needed to make the applications you start from the IDE dpi-aware as well.
 
 ## Why is the text blurry in the editor when running on retina display (OSX)?
 
