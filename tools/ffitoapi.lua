@@ -43,7 +43,7 @@ if not StripCommentsC then
 end
 
 local function ffiToApi(ffidef)
-  local str = ffidef
+  local str = ffidef:gsub("\r","")
   str = ffidef:match("(%-%-%[%[.+%]%])")
   local header = ffidef:match("[^\r\n]+")
   ffidef = StripCommentsC(ffidef)
@@ -89,10 +89,14 @@ local function ffiToApi(ffidef)
       table.insert(funcs,curfunc)
       curfunc = nil
     end
+    
+    local outer = tx
+      -- remove structs/enums content 
+      :gsub("(%b{})","{}")
+      -- remove multiline function arguments
+      :gsub("(%b())", function(cap) return cap:gsub("[\r\n]"," ") end)
+      :gsub("[ \t]+", " ")
 
-    local outer = tx:gsub("(%b{})","{}")
-
-    -- FIXME pattern doesnt recognize multiline defs
     for l in outer:gmatch("[^\r\n]+") do
       -- extern void func(blubb);
       -- extern void ( * func )(blubb);
@@ -136,6 +140,9 @@ local function ffiToApi(ffidef)
         end
       end
     end
+    
+    -- collapse
+    tx = tx:gsub("[ \t]+", " ")
 
     -- search for enums
     for def in tx:gmatch("enum[_%w%s\r\n]*(%b{})[_%w%s\r\n]*;") do
@@ -196,11 +203,11 @@ local function ffiToApi(ffidef)
   end
   fixcontent(content)
 
-  str = str..[[
-
-  --auto-generated api from ffi headers
-  local api =
-  ]]
+  str = 
+  --str.. 
+    "-- "..header..
+    "-- auto-generated api from ffi headers\n"..
+    "local api=\n"
 
   -- serialize api string
   local function serialize(str,id,tab,lvl)
@@ -212,84 +219,62 @@ local function ffiToApi(ffidef)
   end
 
   local function genapi(str,content,lvl)
-    lvl = lvl or 1
-    str = str..string.gsub([[
-      ##{
-        ]],"##",string.rep(" ",lvl))
+    lvl = lvl or 2
+    str = str..string.gsub("##{\n","##",string.rep(" ",lvl))
 
-      local value =
-      [[##["$NAME$"] = { type ='value', description = "$DESCR$", valuetype = $TYPE$, },
-      ]]
-      local enum =
-      [[##["$NAME$"] = { type ='value', },
-      ]]
-      local funcdef =
-      [[##["$NAME$"] = { type ='function',
-        ## description = "$DESCR$",
-        ## returns = "$RET$",
-        ## valuetype = $TYPE$,
-        ## args = "$ARGS$", },
-      ]]
-      str = serialize(str,value,content.values or {},lvl)
-      str = serialize(str,enum,content.enums or {},lvl)
-      str = serialize(str,funcdef,content.funcs or {},lvl)
+    local value =
+    '##["$NAME$"] = { type ="value", description = "$DESCR$", valuetype = $TYPE$, },\n'
+    local enum =
+    '##["$NAME$"] = { type ="value", },\n'
+    local funcdef =
+    '##["$NAME$"] = { type ="function",\n'..
+    '##  description = "$DESCR$",\n'..
+    '##  returns = "$RET$",\n'..
+    '##  valuetype = $TYPE$,\n'..
+    '##  args = "$ARGS$", },\n'
 
-      local classdef =
-      [[##["$NAME$"] = { type ='class',
-        ## description = "$DESCR$",
-        ## $CHILDS$
-        ##},
-      ]]
-      for i,v in pairs(content.classes or {}) do
-        v.CHILDS = v.content and genapi("childs = ",v.content,lvl+1) or ""
-      end
+    str = serialize(str,value,content.values or {},lvl)
+    str = serialize(str,enum,content.enums or {},lvl)
+    str = serialize(str,funcdef,content.funcs or {},lvl)
 
-      str = serialize(str,classdef,content.classes or {},lvl)
+    local classdef =
+    '##["$NAME$"] = { type ="class",\n'..
+    '##  description = "$DESCR$",\n'..
+    '##  $CHILDS$ },\n'
 
-      str = str..string.gsub([[
-        ##}]],"##",string.rep(" ",lvl))
+    for i,v in pairs(content.classes or {}) do
+      v.CHILDS = v.content and genapi("childs =\n",v.content,lvl+2) or ""
+    end
+
+    str = serialize(str,classdef,content.classes or {},lvl)
+
+    str = str..string.gsub("##}","##",string.rep(" ",lvl))
 
     return str
   end
 
-  str = genapi(str,content)
+  str = genapi(str,content):gsub("%s*valuetype = nil,","")
 
-  str = str..[[
+  str = str.."\n\nreturn {\n"
 
-  return {
-    ]]
+  local lib =
+  '  $NAME$ = {\n'..
+  '    type = "lib",\n'..
+  '    description = "$DESCR$",\n'..
+  '    childs = api,\n'..
+  '  },\n'
 
-    local lib =
-    [[
-    $NAME$ = {
-      type = 'lib',
-      description = "$DESCR$",
-      childs = $API$,
-    },
-    ]]
 
-    local libs = {}
-    for i,prefix in ipairs(prefixes) do
-      local p = {NAME=prefix, DESCR = description, API="api"}
-      table.insert(libs,p)
-    end
+  local libs = {}
+  for i,prefix in ipairs(prefixes) do
+    local p = {NAME=prefix, DESCR = description}
+    table.insert(libs,p)
+  end
 
-    str = serialize(str,lib,libs)
-    str = str..[[
-  }
-  ]]
+  str = serialize(str,lib,libs)
+  str = str.."}\n"
 
   return str
-end
-
-local function exec(wxfname,projectdir)
-  -- get cur editor text
-  local editor = GetEditor()
-  if (not editor) then return end
-  local tx = editor:GetText()
-  tx = ffiToApi(tx)
-  -- replace text
-  if tx then editor:SetText(tx) end
 end
 
 if (not ide) then
@@ -308,6 +293,15 @@ return {
   exec = {
     name = "luajit ffi string to editor api",
     description = "converts current file to api, for autocompletion inside this editor",
-    fn = exec,
+    fn =  function(wxfname,projectdir)
+      print(wxfname,projectdir)
+      -- get cur editor text
+      local editor = GetEditor()
+      if (not editor) then return end
+      local tx = editor:GetText()
+      tx = ffiToApi(tx)
+      -- replace text
+      if tx then editor:SetText(tx) end
+    end,
   },
 }
