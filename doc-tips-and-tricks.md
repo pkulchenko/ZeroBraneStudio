@@ -48,6 +48,11 @@ If no conflict is detected, the file content is going to be reloaded and its cur
 
 (0.80+) This option is enabled by default.
 
+## Hiding files in the Project tree
+
+You can hide files with specific extensions in the Project tree by opening a local menu in the tree (right click on any tree item) and selecting `Hide '.ext' Files`.
+You can unhide hidden files by selecting `Show Hidden Files` from the same menu.
+
 ## Refresh search results
 
 You can refresh search results by using right click on the tab and selecting `Refresh Search Results` from the popup menu.
