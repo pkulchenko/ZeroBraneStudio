@@ -138,6 +138,7 @@ ide = {
     toolbar = {
       icons = {},
       iconmap = {},
+      iconsize = nil, -- icon size is set dynamically unless specified in the config
     },
 
     keymap = {},
