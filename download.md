@@ -40,4 +40,4 @@ and plan to install the upgrade into the same location, make sure to **save your
 
 ## What if I have questions or want to receive product updates?
 
-Several ways to stay in touch are listed [here](community).
+Several ways to stay in touch are listed on the [community page](community).
