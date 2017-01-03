@@ -63,8 +63,13 @@ GSL-shell, and other engines.
 
 ## Installation
 
-ZeroBrane Studio can be installed into and run from any folder.
-No compilation is needed, although the scripts to compile required libraries for Windows, OSX, and Linux platforms are available in the `build/` folder.
+ZeroBrane Studio can be **installed into and run from any folder**. There are three options to install the IDE:
+
+- Download [installation package for the latest release](https://studio.zerobrane.com/) for individual platforms (Windows, OSX, or Linux);
+- Download [snapshot of the repository for each of the releases](releases), which works for all platforms;
+- Clone the repository to access the current development version.
+
+**No compilation is needed** for any of the installation options, although the scripts to compile required libraries for Windows, OSX, and Linux platforms are available in the `build/` folder.
 
 ## Usage
 
