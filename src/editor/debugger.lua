@@ -983,8 +983,9 @@ do
   end
   function debugger:Update()
     local debugger = self
+    local smth = false
     if debugger.server or debugger.listening and TimeGet() > nextupdate then
-      copas.step(0)
+      smth = copas.step(0)
       nextupdate = TimeGet() + nextupdatedelta
     end
 
@@ -1009,6 +1010,7 @@ do
         end
       end
     end
+    return smth
   end
 end
 
