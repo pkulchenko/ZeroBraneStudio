@@ -641,7 +641,8 @@ function debugger:Listen(start)
 
       -- this may be a remote call without using an interpreter and as such
       -- debugger.options may not be set, but runonstart is still configured.
-      if options.runstart == nil then options.runstart = ide.config.debugger.runonstart end
+      local runstart = options.runstart
+      if runstart == nil then runstart = ide.config.debugger.runonstart end
 
       -- support allowediting as set in the interpreter or config
       if options.allowediting == nil then options.allowediting = ide.config.debugger.allowediting end
@@ -725,10 +726,10 @@ function debugger:Listen(start)
             .." "..TR("Compilation error")
             ..":\n"..err)
           return debugger:terminate()
-        elseif options.runstart and not debugger.scratchpad then
+        elseif runstart and not debugger.scratchpad then
           if debugger:stoppedAtBreakpoint(file, line) then
             debugger:ActivateDocument(file, line)
-            options.runstart = false
+            runstart = false
           end
         elseif file and line and not debugger:ActivateDocument(file, line) then
           displayError(TR("Debugging suspended at '%s:%s' (couldn't activate the file).")
@@ -745,13 +746,13 @@ function debugger:Listen(start)
             .." "..TR("Compilation error")
             ..":\n"..err)
           return debugger:terminate()
-        elseif options.runstart then
+        elseif runstart then
           local file = (debugger:mapRemotePath(basedir, file, line or 0, activate.CHECKONLY)
             or file or startfile)
 
           if debugger:stoppedAtBreakpoint(file, line or 0) then
             debugger:ActivateDocument(file, line or 0)
-            options.runstart = false
+            runstart = false
           end
         elseif file and line then
           local activated = debugger:ActivateDocument(file, line, activate.NOREPORT)
@@ -809,7 +810,7 @@ function debugger:Listen(start)
       if (debugger.scratchpad) then
         debugger.scratchpad.updated = true
       else
-        if (options.runstart) then
+        if runstart then
           ClearAllCurrentLineMarkers()
           debugger:Run()
         end
