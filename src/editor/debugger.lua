@@ -575,7 +575,9 @@ function debugger:mapRemotePath(basedir, file, line, method)
   if not remotedir or remotedir == "" or wx.wxFileName(remotedir):SameAs(wx.wxFileName(debugger.basedir)) then return end
 
   -- if found a local mapping under basedir
-  local activated = longestpath and debugger:ActivateDocument(longestpath, line, method or activate.NOREPORT)
+  local activated = longestpath and (debugger:ActivateDocument(longestpath, line, method or activate.NOREPORT)
+    -- local file may exist, but not activated when not (auto-)opened, still need to remap
+    or wx.wxFileName(longestpath):FileExists())
   if activated then
     -- find remote basedir by removing the tail from remote file
     debugger:handle("basedir " .. debugger.basedir .. "\t" .. remotedir)
