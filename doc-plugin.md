@@ -207,10 +207,12 @@ local interpreter = {
   description = "Lua sample interpreter",
   api = {"baselib", "sample"},
   frun = function(self,wfilename,rundebug)
+    if rundebug then
+      ide:GetDebugger():SetOptions({ --[[ pass debugging options here if needed ]] })
+    end
     CommandLineRun("lua "..wfilename,self:fworkdir(wfilename),true,false)
   end,
   hasdebugger = true,
-  fattachdebug = function(self) DebuggerAttachDefault() end,
 }
 
 return {
