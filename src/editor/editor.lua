@@ -1676,7 +1676,7 @@ local function setLexLPegLexer(editor, lexername)
     lex.LEXERPATH = MergeFullPath(tmppath, "?.lua")
     dynfile = MergeFullPath(tmppath, lexer..".lua")
     -- save the file to the temp folder
-    local ok, err = FileWrite(dynfile, dynlexer)
+    ok, err = FileWrite(dynfile, dynlexer)
     if not ok then cleanup({tmppath}); return nil, err end
   end
   local lexmod, err = lex.load(lexer)
@@ -1687,21 +1687,23 @@ local function setLexLPegLexer(editor, lexername)
   if not lexpath then return nil, "Can't find LexLPeg lexer." end
 
   if not pcall(require, "lpeg") then return nil, "Can't load LexLPeg lexer components." end
-  local err = wx.wxSysErrorCode()
-  local _ = wx.wxLogNull() -- disable error reporting; will report as needed
-  editor:LoadLexerLibrary(lexpath)
-  -- the error code may be non-zero, but still needs to be different from the previous one
-  -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
-  if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
+  do
+    local err = wx.wxSysErrorCode()
+    local _ = wx.wxLogNull() -- disable error reporting; will report as needed
+    editor:LoadLexerLibrary(lexpath)
+    -- the error code may be non-zero, but still needs to be different from the previous one
+    -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
+    if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
+  end
 
   if dynlexer then
     local ok, err = CreateFullPath(tmppath)
     if not ok then return nil, err end
     -- copy lexer.lua to the temp folder
-    local ok, err = FileCopy(MergeFullPath(lpath, "lexer.lua"), MergeFullPath(tmppath, "lexer.lua"))
+    ok, err = FileCopy(MergeFullPath(lpath, "lexer.lua"), MergeFullPath(tmppath, "lexer.lua"))
     if not ok then return nil, err end
     -- save the file to the temp folder
-    local ok, err = FileWrite(dynfile, dynlexer)
+    ok, err = FileWrite(dynfile, dynlexer)
     if not ok then FileRemove(MergeFullPath(tmppath, "lexer.lua")); return nil, err end
     -- update lpath to point to the temp folder
     lpath = tmppath
