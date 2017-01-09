@@ -1023,7 +1023,16 @@ function CreateEditor(bare)
           editor:GotoPos(editor:GetCurrentPos()+indent)
         end
 
-      elseif ch == ("("):byte() then
+      elseif ch == ("("):byte() or ch == (","):byte() then
+        if ch == (","):byte() then
+          -- comma requires special handling: either it's in a list of parameters
+          -- and follows an opening bracket, or it does nothing
+          if linetxtopos:gsub("%b()",""):find("%(") then
+            linetxtopos = linetxtopos:gsub("%b()",""):gsub("%(.+,$", "(")
+          else
+            linetxtopos = nil
+          end
+        end
         local tip = GetTipInfo(editor,linetxtopos,ide.config.acandtip.shorttip)
         if tip then
           if editor:CallTipActive() then editor:CallTipCancel() end
