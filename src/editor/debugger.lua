@@ -1559,12 +1559,6 @@ end
 
 function debugger:breakpointToggle(editor, line, value)
   local debugger = self
-  local isset = bit.band(editor:MarkerGet(line-1), BREAKPOINT_MARKER_VALUE) > 0
-  if value then
-    if not isset then editor:MarkerAdd(line-1, BREAKPOINT_MARKER) end
-  else
-    if isset then editor:MarkerDelete(line-1, BREAKPOINT_MARKER) end
-  end
   local file = debugger.editormap and debugger.editormap[editor] or debuggerMakeFileName(editor)
   debugger:BreakpointSet(file, line, value)
 end
