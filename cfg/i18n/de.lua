@@ -1,6 +1,6 @@
 return {
   [0] = function(c) return c == 1 and 1 or 2 end, -- plural
-  ["%s event failed: %s"] = "Ereignis fehlgeschlagen : %s", -- src\editor\package.lua
+  ["%s event failed: %s"] = "Ereignis fehlgeschlagen: %s", -- src\editor\package.lua
   ["%s%% formatted..."] = "%s%% formatiert...", -- src\editor\print.lua
   ["%s%% loaded..."] = "%s%% geladen...", -- src\editor\commands.lua
   ["&About"] = "&Über", -- src\editor\menu_help.lua
@@ -53,7 +53,7 @@ return {
   ["Add To Scratchpad"] = "Zu Entwurf hinzufügen", -- src\editor\editor.lua
   ["Add Watch Expression"] = "Beobachtungspunkt hinzufügen", -- src\editor\editor.lua
   ["All files"] = "Alle Dateien", -- src\editor\commands.lua
-  ["Allow external process to start debugging"] = "Externem Prozeß erlauben, den Debugger zu starten", -- src\editor\menu_project.lua
+  ["Allow external process to start debugging"] = "Externem Prozess erlauben, den Debugger zu starten", -- src\editor\menu_project.lua
   ["Analyze the source code"] = "Quellcode analysieren", -- src\editor\inspect.lua
   ["Analyze"] = "&Analyseroutine", -- src\editor\inspect.lua
   ["Auto Complete Identifiers"] = "Auto-Vervollständigen von Bezeichnern", -- src\editor\menu_edit.lua
@@ -72,7 +72,7 @@ return {
   ["Can't run the entry point script ('%s')."] = "Kann Script für Einsprungspunkt ('%s') nicht ausführen.", -- src\editor\debugger.lua
   ["Can't start debugger server at %s:%d: %s."] = "Kann Debugserver nicht starten (%s:%d): %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "Kann Debuggen nicht starten für '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging session due to internal error '%s'."] = "Debugging kann nicht gestartet werden wegen internem Fehler '%s'.", -- src\editor\debugger.lua
+  ["Can't start debugging session due to internal error '%s'."] = "Debugging kann nicht gestartet werden wegen eines internen Fehlers '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "Debugging kann ohne geöffnete Datei nicht gestartet werden oder wenn die aktuelle Datei nicht gespeichert ist ('%s').", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "Kann Debugserver nicht stoppen wenn er vorher nicht gestartet wurde.", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Durch Benutzer abgebrochen.", -- src\editor\findreplace.lua
@@ -99,20 +99,20 @@ return {
   ["Compile the current file"] = "Aktuelle Datei kompilieren", -- src\editor\menu_project.lua
   ["Complete &Identifier"] = "&Bezeichner vervollständigen", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = " Aktuellen Bezeichner vervollständigen", -- src\editor\menu_edit.lua
-  ["Consider removing backslash from escape sequence '%s'."] = "Möglicherweise muß `\' aus '%s' entfernt werden.", -- src\editor\commands.lua
+  ["Consider removing backslash from escape sequence '%s'."] = "Möglicherweise muss `\' aus '%s' entfernt werden.", -- src\editor\commands.lua
   ["Copy Full Path"] = "Kopiere Pfadangabe", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Copy selected text to clipboard"] = "Text in Zwischenablage kopieren", -- src\editor\menu_edit.lua
   ["Correct &Indentation"] = "E&inzug korrigieren", -- src\editor\menu_edit.lua
-  ["Couldn't activate file '%s' for debugging; continuing without it."] = "Konnte Datei '%s' zwecks nicht Debugging aktivieren; fahre ohne die Datei fort.", -- src\editor\debugger.lua
+  ["Couldn't activate file '%s' for debugging; continuing without it."] = "Konnte Datei '%s' nicht für das Debugging aktivieren; fahre ohne diese Datei fort.", -- src\editor\debugger.lua
   ["Create an empty document"] = "Leeres Dokument anlegen", -- src\editor\toolbar.lua, src\editor\menu_file.lua
   ["Cu&t"] = "A&usschneiden", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
-  ["Cut selected text to clipboard"] = "Schneide ausgewählten Text in die Zwischenablage hinein", -- src\editor\menu_edit.lua
+  ["Cut selected text to clipboard"] = "Schneide ausgewählten Text in die Zwischenablage aus", -- src\editor\menu_edit.lua
   ["Debugger server started at %s:%d."] = "Debugserver gestartet als %s:%d.", -- src\editor\debugger.lua
-  ["Debugger server stopped at %s:%d."] = "Debugserver gestoppt als %s:%d.", -- src\editor\debugger.lua
+  ["Debugger server stopped at %s:%d."] = "Debugserver gestoppt auf %s:%d.", -- src\editor\debugger.lua
   ["Debugging session completed (%s)."] = "Debugging Session beendet (%s).", -- src\editor\debugger.lua
   ["Debugging session started in '%s'."] = "Debugging Session gestartet '%s'.", -- src\editor\debugger.lua
   ["Debugging suspended at '%s:%s' (couldn't activate the file)."] = "Debugging angehalten bei '%s:%s' (konnte Datei nicht aktivieren).", -- src\editor\debugger.lua
-  ["Detach &Process"] = "Prozeß abkoppeln", -- src\editor\menu_project.lua
+  ["Detach &Process"] = "Prozess abkoppeln", -- src\editor\menu_project.lua
   ["Disable Indexing For '%s'"] = "Indizieren ausschalten für '%s'", -- src\editor\outline.lua
   ["Do you want to delete '%s'?"] = "Soll '%s' gelöscht werden?", -- src\editor\filetree.lua
   ["Do you want to overwrite it?"] = "Überschreiben?", -- src\editor\commands.lua
@@ -145,7 +145,7 @@ return {
   ["Find and insert library function"] = "Suchen und Einfügen von Funktion aus Bibliothek", -- src\editor\menu_search.lua
   ["Find and replace text in files"] = "Finde und ersetze Text in Dateien", -- src\editor\menu_search.lua
   ["Find and replace text"] = "Finde und ersetze Text", -- src\editor\toolbar.lua, src\editor\menu_search.lua
-  ["Find in files"] = "Finde in dateien", -- src\editor\toolbar.lua
+  ["Find in files"] = "Finde in Dateien", -- src\editor\toolbar.lua
   ["Find next"] = "Finde nächste", -- src\editor\toolbar.lua
   ["Find text in files"] = "Finde Text in Dateien", -- src\editor\menu_search.lua
   ["Find text"] = "Finde Text", -- src\editor\toolbar.lua, src\editor\menu_search.lua
@@ -186,7 +186,7 @@ return {
   ["Markers"] = "Markierungen", -- src\editor\markers.lua
   ["Match case"] = "Groß-/Kleinschreibung", -- src\editor\toolbar.lua
   ["Match whole word"] = "Ganzes Wort", -- src\editor\toolbar.lua
-  ["Mixed end-of-line encodings detected."] = "Gemischte End-of-Line Kodierung entdeckt.", -- src\editor\commands.lua
+  ["Mixed end-of-line encodings detected."] = "Gemischte Kodierung der Zeilenendungen entdeckt.", -- src\editor\commands.lua
   ["Navigate"] = "Navigieren", -- src\editor\menu_search.lua
   ["New &File"] = "Neue &Datei", -- src\editor\filetree.lua
   ["OVR"] = "OVR", -- src\editor\editor.lua
@@ -206,11 +206,11 @@ return {
   ["Press cancel to abort."] = "Abbrechen Drücken zum Beenden.", -- src\editor\commands.lua
   ["Print the current document"] = "Drucke aktuelles Dokument", -- src\editor\print.lua
   ["Program '%s' started in '%s' (pid: %d)."] = "Programm '%s' gestartet in '%s' (pid : %d).", -- src\editor\output.lua
-  ["Program can't start because conflicting process is running as '%s'."] = "Programm kann nicht starten, da blockierender Prozeß als '%s' läuft.", -- src\editor\output.lua
+  ["Program can't start because conflicting process is running as '%s'."] = "Programm kann nicht starten, da blockierender Prozess als '%s' läuft.", -- src\editor\output.lua
   ["Program completed in %.2f seconds (pid: %d)."] = "Programm beendet nach %.2f Sekunden (pid : %d).", -- src\editor\output.lua
   ["Program starting as '%s'."] = "Programm gestartet als '%s'.", -- src\editor\output.lua
   ["Program stopped (pid: %d)."] = "Programm gestoppt (pid: %d).", -- src\editor\debugger.lua
-  ["Program unable to run as '%s'."] = "Programm kann nicht als '%s' laufen.", -- src\editor\output.lua
+  ["Program unable to run as '%s'."] = "Programm kann nicht als '%s' ausgeführt werden.", -- src\editor\output.lua
   ["Project Directory"] = "&Projektverzeichnis", -- src\editor\menu_project.lua, src\editor\filetree.lua
   ["Project history"] = "Liste bisheriger Projekte", -- src\editor\menu_file.lua
   ["Project"] = "Projekt", -- src\editor\filetree.lua
@@ -230,7 +230,7 @@ return {
   ["Refresh Search Results"] = "Suchergebnisse aktualisieren", -- src\editor\gui.lua
   ["Refresh indexed symbols from files in the selected directory"] = "Erneuere indizierte Symbole in Dateien des ausgewählten Verzeichnisses", -- src\editor\outline.lua
   ["Refresh"] = "Aktualisieren", -- src\editor\filetree.lua
-  ["Refused a request to start a new debugging session as there is one in progress already."] = "Starten einer neuen Debuggingsession abgelehnt, da bereits eine läuft.", -- src\editor\debugger.lua
+  ["Refused a request to start a new debugging session as there is one in progress already."] = "Starten einer neuen Debuggingsession abgelehnt, da bereits eine abläuft.", -- src\editor\debugger.lua
   ["Regular expression"] = "Regulärer Ausdruck", -- src\editor\toolbar.lua
   ["Remote console"] = "Fernsteuerungs-Konsole", -- src\editor\shellbox.lua
   ["Rename All Instances"] = "Umbenennen aller Instanzen", -- src\editor\editor.lua
@@ -245,7 +245,7 @@ return {
   ["Run as Scratchpad"] = "Als &Entwurf starten", -- src\editor\toolbar.lua
   ["Run to cursor"] = "Stoppe Ausführung an Cursorposition", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["S&top Debugging"] = "Debugging a&nhalten", -- src\editor\menu_project.lua
-  ["S&top Process"] = "Prozeß &anhalten", -- src\editor\menu_project.lua
+  ["S&top Process"] = "Prozess &anhalten", -- src\editor\menu_project.lua
   ["Save &As..."] = "S&peichern als...", -- src\editor\gui.lua, src\editor\menu_file.lua
   ["Save A&ll"] = "&Alle Speichern", -- src\editor\menu_file.lua
   ["Save Changes?"] = "Änderungen speichern?", -- src\editor\commands.lua
@@ -301,12 +301,12 @@ return {
   ["Step into"] = "Schritt hinein", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Step out of the current function"] = "Schritt aus der aktuellen Funktion heraus", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Step over"] = "Überspringen", -- src\editor\toolbar.lua, src\editor\menu_project.lua
-  ["Stop debugging and continue running the process"] = "Beende debuggen und setze den Prozeß fort", -- src\editor\toolbar.lua, src\editor\menu_project.lua
-  ["Stop the currently running process"] = "Aktuell laufenden Prozeß stoppen", -- src\editor\toolbar.lua, src\editor\menu_project.lua
+  ["Stop debugging and continue running the process"] = "Beende das Debuggen und setze den Prozess fort", -- src\editor\toolbar.lua, src\editor\menu_project.lua
+  ["Stop the currently running process"] = "Aktuell laufenden Prozess stoppen", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Switch to or from full screen mode"] = "Vollbild an/aus", -- src\editor\menu_view.lua
   ["Symbol Index"] = "Symbolindex", -- src\editor\outline.lua
   ["Text not found."] = "Text nicht gefunden.", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "Die API-Datei muß sich in einem Unterverzeichnis des API-Verzeichnisses befinden.", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "Die API-Datei muss sich in einem Unterverzeichnis des API-Verzeichnisses befinden.", -- src\editor\autocomplete.lua
   ["Toggle Bookmark"] = "Lesezeichen setzen/löschen", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "Haltepunkt an/aus", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Lesezeichen setzen/löschen", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -318,7 +318,7 @@ return {
   ["Unable to delete directory '%s': %s"] = "Scheitern beim Löschen von Verzeichnis '%s': %s", -- src\editor\filetree.lua
   ["Unable to delete file '%s': %s"] = "Kann Datei '%s' nicht löschen: %s", -- src\editor\filetree.lua
   ["Unable to load file '%s'."] = "Scheitern beim Laden von Datei '%s'.", -- src\editor\commands.lua
-  ["Unable to rename file '%s'."] = "Scheitern beim umbenennen von Datei '%s'.", -- src\editor\filetree.lua
+  ["Unable to rename file '%s'."] = "Scheitern beim Umbenennen von Datei '%s'.", -- src\editor\filetree.lua
   ["Unable to save file '%s': %s"] = "Scheitern beim Speichern von Datei '%s' : %s", -- src\editor\commands.lua
   ["Unable to stop program (pid: %d), code %d."] = "Scheitern beim Stoppen des Prozesses (pid : %d), code %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "Letzte Änderung rückgängig machen", -- src\editor\menu_edit.lua
@@ -338,7 +338,7 @@ return {
   ["View the stack window"] = "Stapel/Stack-Fenster ansehen", -- src\editor\toolbar.lua, src\editor\menu_view.lua
   ["View the watch window"] = "Fenster für Beobachtungspunkte ansehen", -- src\editor\toolbar.lua, src\editor\menu_view.lua
   ["Watch"] = "Beobachtungspunkte", -- src\editor\debugger.lua
-  ["Welcome to the interactive Lua interpreter."] = "Willkommen zum interaktiven Lua-Interpretr!", -- src\editor\shellbox.lua
+  ["Welcome to the interactive Lua interpreter."] = "Willkommen zum interaktiven Lua-Interpreter!", -- src\editor\shellbox.lua
   ["Wrap around"] = "Am Anfang fortsetzen", -- src\editor\toolbar.lua
   ["You must save the program first."] = "Erst das Programm speichern.", -- src\editor\commands.lua
   ["Zoom In"] = "Hineinzoomen", -- src\editor\menu_view.lua
