@@ -6,12 +6,14 @@ title: Installation
 <ul id='toc'>&nbsp;</ul>
 
 ZeroBrane Studio can be **installed** in three different ways:
-1. Using the setup scripts provided on the [download](download) page.
-2. By downloading the [snapshot of the repository](https://github.com/pkulchenko/ZeroBraneStudio/releases).
-3. By [cloning the repository](https://github.com/pkulchenko/ZeroBraneStudio).
 
-The IDE can be installed into and run from any directory.
-**No compilation is needed**, although the scripts to compile required libraries for Windows, OSX, and Linux platforms are available in the `build/` directory.
+1. Download and install one of the packages provided on the [download](download) page.
+2. Download the [snapshot of the repository](https://github.com/pkulchenko/ZeroBraneStudio/releases).
+3. Close [the repository](https://github.com/pkulchenko/ZeroBraneStudio).
+
+The IDE can be installed into and **run from any directory**.
+No additional installation steps are needed for repository clones and snapshots (you only need to unpack the files into a destination folder).
+**No compilation is needed** as the binary components are already included, although the scripts to compile required libraries for Windows, OSX, and Linux platforms are available in the `build/` directory.
 
 ## Windows
 
@@ -30,7 +32,7 @@ As an alternative, you can **move those system settings to user settings** (`Edi
 
 ## Linux
 
-The installation using the setup script requires administrative privileges.
+The installation using the setup script requires **administrative privileges**.
 If you want to install the IDE into a user directory, use the second or third option.
 
 If you are using a server version of Ubuntu, you may need to run `sudo apt-get install libgtk2.0-0 xdg-utils`.
