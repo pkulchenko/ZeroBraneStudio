@@ -54,7 +54,7 @@ GSL-shell, and other engines.
 * **Static analysis** to catch errors and typos during development.
 * **Function outline**.
 * **Go to definition** navigation.
-* **Multi-cursor editing** and selecting and **renaming all instances** of a variable.
+* **Multi-cursor editing** with **scope-aware variable selection and renaming**.
 * **Fuzzy search** with `Go To File`, **project-wide** `Go To Symbol` navigation, and `Insert Library Function`.
 * Find and replace in multiple files with **preview and undo**.
 * Several **ways to extend** the current functionality:
@@ -85,25 +85,26 @@ The IDE can be **installed into and run from any directory**. There are three op
 
 ## Usage
 
-```
-Open file(s):
-  zbstudio [option] [<project directory>] <filename> [<filename>...]
-  non-options are treated as a project directory to set or a file to open
+The IDE can be launched by using the `zbstudio` command with slight variations depending on whether a packaged installation or a repository copy is used:
 
-Set project directory:
-  zbstudio <project directory> [<filename>...]
-  (0.39+) a directory passed as a parameter will be set as the project directory
+* **Windows**: Run `zbstudio` from the directory that the IDE is installed to or create a shortcut pointing to `zbstudio.exe`.
+* **Linux**: Run `zbstudio` when installed from the package installation or run `./zbstudio.sh` when using a snapshot/clone of the repository.
+* **Mac OSX**: Launch the `ZeroBrane Studio` application if installed or run `./zbstudio.sh` when using a snapshot/clone of the repository.
 
-Overwrite default configuration:
-  zbstudio -cfg "<lua configuration code>" [<filename>]
-  e.g.: zbstudio -cfg "editor.fontsize=12" somefile.lua
+The general command for launching is the following: `zbstudio [option] [<project directory>] [<filename>...]`.
 
-Load custom configuration:
-  zbstudio -cfg path/file.lua [<filename>]
-  e.g.: zbstudio -cfg cfg/estrela.lua
-```
+* **Open files**: `zbstudio <filename> [<filename>...]`.
+* **Set project directory** (and optionally open files): `zbstudio <project directory> [<filename>...]`.
+* **Overwrite default configuration**: `zbstudio -cfg "string with configuration settings"`, for example: `zbstudio -cfg "editor.fontsize=12; editor.usetabs=true"`.
+* **Load custom configuration file**: `zbstudio -cfg <filename>`, for example: `zbstudio -cfg cfg/estrela.lua`.
 
-If you are loading a file, you can also request the cursor to be set on a particular line or at a particular position by using `filename:<line>` and `filename:p<pos>` syntax (0.71+).
+All configuration changes applied from the command line are only effective for the current session.
+
+If you are loading a file, you can also **set the cursor** on a specific line or at a specific position by using `filename:<line>` and `filename:p<pos>` syntax (0.71+).
+
+In all cases only one instance of the IDE will be allowed to launch by default:
+if one instance is already running, the other one won't launch, but the directory and file parameters
+passed to the second instance will trigger opening of that directory and file(s) in the already started instance.
 
 ## Contributing
 
