@@ -24,7 +24,6 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 	padding: 0;
 	border: 0;
 	outline: 0;
-	font-size: 100%;
 	vertical-align: baseline;
 	background: transparent;
 }
@@ -431,7 +430,7 @@ h2.archive-header {
 .page-asset .asset-body {
     margin-left: 55px;
     padding-top: 5px;
-    font-size: 13px;
+    font-size: 130%;
     margin-bottom: 10px;
 }
 .asset .asset-body p,
