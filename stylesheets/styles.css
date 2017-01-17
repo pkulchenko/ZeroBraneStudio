@@ -171,6 +171,7 @@ h1#page-title, h2.archive-title {
 }
 #header-content {
   float: left;
+  height: 70px; /* make the height the same as the logo */
 }
 #header-name {
   float: none;
@@ -384,9 +385,6 @@ li ol, li ul {
 }
 .widget-header .more {
   font-size: 15px;
-}
-#menu-wrapper  {
-  float: right;
 }
 #menu-wrapper h1 {
   color: #184460;
