@@ -202,7 +202,7 @@ body {
 }
 #container {
   color: #184460;
-  min-width: 400px;
+  min-width: 320px; /* have enough space for the header and the content */
 }
 #content {
   margin: 0 1em;
@@ -631,4 +631,8 @@ iframe {
     max-width: 100%;
     width: 100%;
   }
+}
+
+@media screen and (max-width: 350px) {
+  #logo-wrapper { display: none; }
 }
