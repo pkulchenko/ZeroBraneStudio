@@ -622,3 +622,15 @@ h2 {
 iframe {
   background: url(../images/spinner.gif) center center no-repeat;
 }
+
+/* reflow sidebar on mobile for better readability */
+
+@media screen and (max-width: 768px) {
+  #content { border-right-width: 0; }
+  #beta, .layout-wtt #beta, .layout-twt #beta, .layout-wt #beta, .layout-tw #beta, .layout-wm #beta, .layout-mw #beta {
+    float: left;
+    margin-right: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+}
