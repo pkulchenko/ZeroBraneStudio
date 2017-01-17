@@ -8,4 +8,5 @@ body {
   color: #000;
 }
 
-#menu-links, #toc { display:none }
+#menu-links, #toc, #beta { display:none }
+#content { border-right-width: 0; }
