@@ -4,28 +4,28 @@ title: Remote Debugging
 ---
 
 ZeroBrane Studio supports **remote debugging** that allows to debug arbitrary Lua applications.
-The application may be running on the same or a different computer from the one running a ZeroBrane Studio instance
-(the debugger is using a socket interface to interact with the application).
+The application may be running on the same or a different computer from the one running
+the IDE instance (the debugger is using a socket interface to interact with the application).
 
 ## Remote debugging
 
-* Open ZeroBrane Studio. 
+* Launch the IDE.
 Go to `Project | Start Debugger Server` and **start the debugger server** (if this menu item is disabled, the server is already started).
 * **Open the Lua file** you want to debug.
 * **Select the project directory** by going to `Project | Project Directory | Choose...`
 or using `Project | Project Directory | Set From Current File`.
 * Add `require('mobdebug').start()` call to your file.
-If the application is running on a **different computer**, you need to specify an address of the computer where ZeroBrane Studio is running as the first parameter to the `start()` call: `require('mobdebug').start("12.345.67.89")` or `require('mobdebug').start("domain.name")`.
+If the application is running on a **different computer**, you need to specify an address of the computer running the IDE as the first parameter to the `start()` call: `require('mobdebug').start("12.345.67.89")` or `require('mobdebug').start("domain.name")`.
 You can see the **domain name** to connect to in the Output window when you start debugger server: `Debugger server started at <domain>:8172.`
 * Make `mobdebug.lua` and `luasocket` available to your application. This can be done in one of three ways:
-(1) Set `LUA_PATH` and `LUA_CPATH` before starting your application (see [Setup environment for debugging](#setup-environment-for-debugging));
-(2) Reference path to `mobdebug.lua` and `luasocket` using `package.path` and `package.cpath` (see [Configure path for debugging](#configure-path-for-debugging)); or
-(3) Include `mobdebug.lua` with your application by copying it from `lualibs/mobdebug/mobdebug.lua` (this assumes your application already provides `luasocket` support).
-* **Run your application**. You should see a green arrow pointing to the next statement after the `start()` call in ZeroBrane Studio and should be able to step through the code.
+  1. Set `LUA_PATH` and `LUA_CPATH` before starting your application (see [Setup environment for debugging](#setup-environment-for-debugging));
+  2. Reference path to `mobdebug.lua` and `luasocket` using `package.path` and `package.cpath` (see [Configure path for debugging](#configure-path-for-debugging)); or
+  3. Include `mobdebug.lua` with your application by copying it from `lualibs/mobdebug/mobdebug.lua` (this assumes your application already provides `luasocket` support).
+* **Run your application**. You should see a green arrow pointing to the next statement after the `start()` call in the IDE and should be able to step through the code.
 
 ## Setup environment for debugging
 
-You can use a simple script to set `LUA_PATH` and `LUA_CPATH` environmental variables to reference `mobdebug` and `luasocket` files that come with ZeroBrane Studio:
+You can use a simple script to set `LUA_PATH` and `LUA_CPATH` environmental variables to reference `mobdebug` and `luasocket` files that come with the IDE:
 
     set ZBS=D:\path\to\ZeroBraneStudio
     set LUA_PATH=./?.lua;%ZBS%/lualibs/?/?.lua;%ZBS%/lualibs/?.lua
@@ -39,6 +39,10 @@ and reference proper location depending on your Linux architecture (replace `x86
     export LUA_PATH="./?.lua;$ZBS/lualibs/?/?.lua;$ZBS/lualibs/?.lua"
     export LUA_CPATH="$ZBS/bin/linux/x86/?.so;$ZBS/bin/linux/x86/clibs/?.so"
     ./myapplication
+
+Note that these instructions are for **Lua 5.1**- and **LuaJIT**-based systems.
+If your application is using **Lua 5.2** or **Lua 5.3** interpreters, then replace `clibs` in `LUA_CPATH`
+values with `clibs52` or `clibs53`, respectively, to load proper versions of the required modules.
 
 ## Configure path for debugging
 
