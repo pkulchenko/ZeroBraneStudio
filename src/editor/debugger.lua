@@ -302,7 +302,7 @@ local function killProcess(pid)
     -- (at least on Windows Vista SP2)
     local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
     if ret == wx.wxKILL_OK then
-      DisplayOutputLn(TR("Program stopped (pid: %d)."):format(pid))
+      ide:Print(TR("Program stopped (pid: %d)."):format(pid))
     elseif ret ~= wx.wxKILL_NO_PROCESS then
       wx.wxMilliSleep(250)
       if wx.wxProcess.Exists(pid) then
@@ -583,8 +583,7 @@ function debugger:mapRemotePath(basedir, file, line, method)
     debugger:handle("basedir " .. debugger.basedir .. "\t" .. remotedir)
     -- reset breakpoints again as remote basedir has changed
     debugger:reSetBreakpoints()
-    DisplayOutputLn(TR("Mapped remote request for '%s' to '%s'.")
-      :format(remotedir, debugger.basedir))
+    ide:Print(TR("Mapped remote request for '%s' to '%s'."):format(remotedir, debugger.basedir))
 
     return longestpath
   end
@@ -598,7 +597,7 @@ function debugger:Listen(start)
     if debugger.listening then
       debugger:terminate() -- terminate if running
       copas.removeserver(debugger.listening)
-      DisplayOutputLn(TR("Debugger server stopped at %s:%d.")
+      ide:Print(TR("Debugger server stopped at %s:%d.")
         :format(debugger.hostname, debugger.portnumber))
       debugger.listening = false
     else
@@ -615,8 +614,7 @@ function debugger:Listen(start)
       :format(debugger.hostname, debugger.portnumber, err or TR("unknown error")))
     return
   end
-  DisplayOutputLn(TR("Debugger server started at %s:%d.")
-    :format(debugger.hostname, debugger.portnumber))
+  ide:Print(TR("Debugger server started at %s:%d."):format(debugger.hostname, debugger.portnumber))
 
   copas.autoclose = false
   copas.addserver(server, function (skt)
@@ -702,7 +700,7 @@ function debugger:Listen(start)
                 -- this is an error message sent remotely
                 local ok, res = LoadSafe("return "..m)
                 if ok then
-                  DisplayOutputLn(res)
+                  ide:Print(res)
                   return
                 end
               end
@@ -807,7 +805,7 @@ function debugger:Listen(start)
       debugger:updateStackSync()
       debugger:updateWatchesSync()
 
-      DisplayOutputLn(TR("Debugging session started in '%s'."):format(debugger.basedir))
+      ide:Print(TR("Debugging session started in '%s'."):format(debugger.basedir))
 
       if (debugger.scratchpad) then
         debugger.scratchpad.updated = true
@@ -1528,7 +1526,7 @@ function debugger:teardown()
   local debugger = self
   if debugger.server then
     local lines = TR("traced %d instruction", debugger.stats.line):format(debugger.stats.line)
-    DisplayOutputLn(TR("Debugging session completed (%s)."):format(lines))
+    ide:Print(TR("Debugging session completed (%s)."):format(lines))
     debugger:UpdateStatus(ide:GetLaunchedProcess() and "running" or "stopped")
     if debugger.runtocursor then
       local ed, ln = unpack(debugger.runtocursor)
