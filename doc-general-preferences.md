@@ -265,8 +265,9 @@ You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` i
 ## Command line parameters
 
 (0.50+) Command line parameters can be specified in two ways (for those interpreters that support them):
-(1) by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
-(2) by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
+
+1. by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
+2. by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
 
 (1.30+) Any configured parameters will be saved and restored on the next IDE launch.
 

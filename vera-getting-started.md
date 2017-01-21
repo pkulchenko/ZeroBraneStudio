@@ -57,10 +57,11 @@ The current project directory is displayed in the **Project panel**.
 The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting a file and pressing `Enter` or double-clicking on it.
 
 To **change** the current project directory you have several options:
-(1) use the dropdown to select one of the project directories you used previously,
-(2) type or copy a new path into the dropdown at the top of the project panel,
-(3) go to `Project | Project Directory | Choose...` and set a new directory, or
-(4) go to `Project | Project Directory | Set From Current File` to set it to the same directory as the path of the current file.
+
+1. use the dropdown to select one of the project directories you used previously,
+2. type or copy a new path into the dropdown at the top of the project panel,
+3. go to `Project | Project Directory | Choose...` and set a new directory, or
+4. go to `Project | Project Directory | Set From Current File` to set it to the same directory as the path of the current file.
 
 ## Selecting interpreter
 
