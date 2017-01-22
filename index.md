@@ -7,12 +7,12 @@ highlighting, live coding, code analyzer, and debugging support
 for Lua 5.1, [Lua 5.2](doc-lua52-debugging), [Lua 5.3](doc-lua53-debugging),
 [LuaJIT](doc-luajit-debugging), and [other Lua engines](documentation#debugging).
 
-It is **simple and instantly usable** for beginners (as tested with middle and
-high school students with no programming experience), yet
-**[feature-rich](features)** and **[extensible](doc-plugin)** for experienced developers.
-Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **completely customizable with Lua**.
+It is **[feature-rich](features)** and **[extensible](doc-plugin)** for experienced developers,
+yet **simple and instantly usable** for beginners (as tested with middle and
+high school students with no programming experience).
+Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **full customizable with Lua**.
 Unlike&nbsp;TextMate and Sublime Text, it includes a **remote debugger** and a **full IDE feature set**.
-Unlike&nbsp;Decoda, it runs on **Windows, Mac OSX, and Linux** and supports **on-device debugging**.
+Unlike&nbsp;Decoda, it runs on **Windows, Mac OSX, and Linux** and supports various Lua versions with **on-device debugging**.
 
 ZeroBrane Studio also provides several unique features: **live coding** for
 immediate feedback, **Markdown formatting** in comments for providing
@@ -49,7 +49,7 @@ and [more](documentation#debugging).
 * Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
 * **Auto-completion** for functions, keywords, and custom APIs;
 * **Interactive console** to test code snippets with local and remote execution;
-* **Integrated debugger** (with support for local and remote debugging, including cross-platform and on-device debugging);
+* **Integrated debugger** (with support for local and remote debugging, including **cross-platform** and **on-device** debugging);
 * [Live coding](documentation#live-coding) with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide),
