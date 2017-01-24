@@ -343,6 +343,10 @@ function ide:LoadTool(path, filter)
   loadToTab(path or "tools", filter or "tools", ide.tools, false)
 end
 
+function ide:LoadInterpreter(path, filter)
+  loadToTab(path or "interpreters", filter or "interpreters", ide.interpreters, false,
+    ide.proto.Interpreter)
+end
 
 dofile "src/version.lua"
 
@@ -464,11 +468,6 @@ end
 ide.app = dofile(ide.appname.."/app.lua")
 local app = assert(ide.app)
 
-local function loadInterpreters(filter)
-  loadToTab("interpreters", filter or "interpreters", ide.interpreters, false,
-    ide.proto.Interpreter)
-end
-
 -- load packages
 local function processPackages(packages)
   -- check dependencies and assign file names to each package
@@ -574,7 +573,7 @@ do
   setmetatable(ide.config, {
     __index = setmetatable({
         load = {
-          interpreters = loadInterpreters,
+          interpreters = function(filter) return ide:LoadInterpreter(nil, filter) end,
           specs = function(filter) return ide:LoadSpec(nil, filter) end,
           tools = function(filter) return ide:LoadTool(nil, filter) end,
         },
@@ -607,7 +606,7 @@ end
 
 if app.preinit then app.preinit() end
 
-loadInterpreters()
+ide:LoadInterpreter()
 ide:LoadSpec()
 ide:LoadTool()
 
