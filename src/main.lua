@@ -339,6 +339,11 @@ function ide:LoadSpec(path, filter)
   UpdateSpecs()
 end
 
+function ide:LoadTool(path, filter)
+  loadToTab(path or "tools", filter or "tools", ide.tools, false)
+end
+
+
 dofile "src/version.lua"
 
 for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar", "package"}) do
@@ -464,11 +469,6 @@ local function loadInterpreters(filter)
     ide.proto.Interpreter)
 end
 
--- load tools
-local function loadTools(filter)
-  loadToTab("tools", filter or "tools", ide.tools, false)
-end
-
 -- load packages
 local function processPackages(packages)
   -- check dependencies and assign file names to each package
@@ -576,7 +576,7 @@ do
         load = {
           interpreters = loadInterpreters,
           specs = function(filter) return ide:LoadSpec(nil, filter) end,
-          tools = loadTools,
+          tools = function(filter) return ide:LoadTool(nil, filter) end,
         },
         package = package,
         include = include,
@@ -609,7 +609,7 @@ if app.preinit then app.preinit() end
 
 loadInterpreters()
 ide:LoadSpec()
-loadTools()
+ide:LoadTool()
 
 do
   -- process configs
