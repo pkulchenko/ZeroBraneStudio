@@ -334,6 +334,11 @@ local function loadToTab(folder, filter, tab, recursive, proto)
   return tab
 end
 
+function ide:LoadSpec(path, filter)
+  loadToTab(path or "spec", filter or "specs", ide.specs, true)
+  UpdateSpecs()
+end
+
 dofile "src/version.lua"
 
 for _, file in ipairs({"proto", "ids", "style", "keymap", "toolbar", "package"}) do
@@ -510,12 +515,6 @@ function UpdateSpecs(spec)
   end
 end
 
--- load specs
-local function loadSpecs(filter)
-  loadToTab("spec", filter or "specs", ide.specs, true)
-  UpdateSpecs()
-end
-
 ----------------------
 -- process config
 
@@ -574,7 +573,11 @@ do
 
   setmetatable(ide.config, {
     __index = setmetatable({
-        load = {interpreters = loadInterpreters, specs = loadSpecs, tools = loadTools},
+        load = {
+          interpreters = loadInterpreters,
+          specs = function(filter) return ide:LoadSpec(nil, filter) end,
+          tools = loadTools,
+        },
         package = package,
         include = include,
     }, {__index = _G or _ENV})
@@ -605,7 +608,7 @@ end
 if app.preinit then app.preinit() end
 
 loadInterpreters()
-loadSpecs()
+ide:LoadSpec()
 loadTools()
 
 do
