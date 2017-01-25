@@ -568,9 +568,9 @@ do
     __index = setmetatable({
         -- these are provided for compatibility only to avoid breaking configs using `load.*`
         load = {
-          interpreters = function() end,
-          specs = function() end,
-          tools = function() end,
+          interpreters = function() ide:Print("Warning: using `load.interpreters()` in config is deprecated.") end,
+          specs = function() ide:Print("Warning: using `load.specs()` in config is deprecated.") end,
+          tools = function() ide:Print("Warning: using `load.tools()` in config is deprecated.") end,
         },
         package = package,
         include = include,
