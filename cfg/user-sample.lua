@@ -113,7 +113,7 @@ styles.indicator.fncall.st = wxstc.wxSTC_INDIC_PLAIN
   --]]
 
 -- to enable additional spec files (like spec/glsl.lua)
-load.specs(function(file) return file:find('spec[/\\]glsl%.lua$') end)
+-- (no longer needed in v1.51+) load.specs(function(file) return file:find('spec[/\\]glsl%.lua$') end)
 
 -- to specify a default EOL encoding to be used for new files:
 -- `wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`;

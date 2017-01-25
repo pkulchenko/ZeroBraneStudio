@@ -1,13 +1,4 @@
-local skipspecs = {
-  cg = true, glsl = true, luxres = true, opencl = true, sql = true,
-  cbase = true, hlsl = true, oglgpuprog = true, ptx = true, text = true,
-}
 return {
-  loadfilters = {
-    tools = function(file) return false end,
-    specs = function(file) return not skipspecs[file:match('spec[/\\]([^/\\]+)%.lua$') or ''] end,
-  },
-
   postinit = function ()
     local ide = ide
     local bundle = wx.wxIconBundle()

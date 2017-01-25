@@ -2,11 +2,6 @@
 -- create/modify the `user.lua` file in the current folder
 -- and add `include "estrela"` (1.21+) to load all tools and specifications by default again.
 
--- load all tools, specs, and interpreters
-local all = function() return true end
-load.tools(all)
-load.specs(all)
-
 -- this flag means that toggling between projects, will not affect the 
 -- list of opened files (old estrela default).
 projectautoopen = false

@@ -322,30 +322,24 @@ if not package.searchpath then
   end
 end
 
-local function loadToTab(folder, filter, tab, recursive, proto)
-  if filter and type(filter) ~= 'function' then
-    filter = ide.app.loadfilters[filter] or nil
-  end
+local function loadToTab(folder, tab, recursive, proto)
   for _, file in ipairs(FileSysGetRecursive(folder, recursive, "*.lua")) do
-    if not filter or filter(file) then
-      LoadLuaFileExt(tab, file, proto)
-    end
+    LoadLuaFileExt(tab, file, proto)
   end
   return tab
 end
 
-function ide:LoadSpec(path, filter)
-  loadToTab(path or "spec", filter or "specs", ide.specs, true)
+function ide:LoadSpec(path)
+  loadToTab(path or "spec", ide.specs, true)
   UpdateSpecs()
 end
 
-function ide:LoadTool(path, filter)
-  loadToTab(path or "tools", filter or "tools", ide.tools, false)
+function ide:LoadTool(path)
+  loadToTab(path or "tools", ide.tools, false)
 end
 
-function ide:LoadInterpreter(path, filter)
-  loadToTab(path or "interpreters", filter or "interpreters", ide.interpreters, false,
-    ide.proto.Interpreter)
+function ide:LoadInterpreter(path)
+  loadToTab(path or "interpreters", ide.interpreters, false, ide.proto.Interpreter)
 end
 
 dofile "src/version.lua"
@@ -542,7 +536,7 @@ do
               '.', 'packages/', '../packages/',
               ide.oshome and MergeFullPath(ide.oshome, "."..ide.appname.."/packages")}) do
             local p = MergeFullPath(config and MergeFullPath(config, packagepath) or packagepath, p)
-            pkg = wx.wxDirExists(p) and loadToTab(p, nil, {}, false, ide.proto.Plugin)
+            pkg = wx.wxDirExists(p) and loadToTab(p, {}, false, ide.proto.Plugin)
               or wx.wxFileExists(p) and LoadLuaFileExt({}, p, ide.proto.Plugin)
               or wx.wxFileExists(p..".lua") and LoadLuaFileExt({}, p..".lua", ide.proto.Plugin)
             if pkg then
@@ -572,10 +566,11 @@ do
 
   setmetatable(ide.config, {
     __index = setmetatable({
+        -- these are provided for compatibility only to avoid breaking configs using `load.*`
         load = {
-          interpreters = function(filter) return ide:LoadInterpreter(nil, filter) end,
-          specs = function(filter) return ide:LoadSpec(nil, filter) end,
-          tools = function(filter) return ide:LoadTool(nil, filter) end,
+          interpreters = function() end,
+          specs = function() end,
+          tools = function() end,
         },
         package = package,
         include = include,
@@ -638,11 +633,11 @@ do
   end
 end
 
-processPackages(loadToTab("packages", nil, {}, false, ide.proto.Plugin))
+processPackages(loadToTab("packages", {}, false, ide.proto.Plugin))
 if ide.oshome then
   local userpackages = MergeFullPath(ide.oshome, "."..ide.appname.."/packages")
   if wx.wxDirExists(userpackages) then
-    processPackages(loadToTab(userpackages, nil, {}, false, ide.proto.Plugin))
+    processPackages(loadToTab(userpackages, {}, false, ide.proto.Plugin))
   end
 end
 
