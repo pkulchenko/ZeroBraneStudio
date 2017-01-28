@@ -993,12 +993,38 @@ function ide:RestorePanelByLabel(name)
   return self:AddPanel(unpack(panels[name]))
 end
 
+local function tool2id(name) return ID("tools.exec."..name) end
+
 function ide:AddTool(name, command, updateui)
-  return ToolsAddTool(name, command, updateui)
+  local toolMenu = self:FindTopMenu('&Tools')
+  if not toolMenu then
+    local helpMenu, helpindex = self:FindTopMenu('&Help')
+    if not helpMenu then helpindex = self:GetMenuBar():GetMenuCount() end
+
+    toolMenu = ide:MakeMenu {}
+    self:GetMenuBar():Insert(helpindex, toolMenu, "&Tools")
+  end
+  local id = tool2id(name)
+  toolMenu:Append(id, name)
+  if command then
+    toolMenu:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
+      function (event)
+        local editor = ide:GetEditor()
+        if not editor then return end
+
+        command(ide:GetDocument(editor):GetFilePath(), ide:GetProject())
+        return true
+      end)
+    toolMenu:Connect(id, wx.wxEVT_UPDATE_UI,
+      updateui or function(event) event:Enable(ide:GetEditor() ~= nil) end)
+  end
+  return id, toolMenu
 end
 
 function ide:RemoveTool(name)
-  return ToolsRemoveTool(name)
+  self:RemoveMenuItem(tool2id(name))
+  local toolMenu, toolindex = self:FindTopMenu('&Tools')
+  if toolMenu and toolMenu:GetMenuItemCount() == 0 then self:GetMenuBar():Remove(toolindex) end
 end
 
 local lexers = {}

@@ -334,7 +334,26 @@ function ide:LoadSpec(path)
 end
 
 function ide:LoadTool(path)
-  loadToTab(path or "tools", ide.tools, false)
+  local tools = {}
+  for name,tool in pairs(loadToTab(path or "tools", {}, false)) do
+    if tool.fninit then
+      local ok, err = pcall(tool.fninit, ide:GetMainFrame(), ide:GetMenuBar())
+      if not ok then ide:Print(("Error when initializing tool %s: %s"):format(name, err)) end
+    end
+    if tool.exec and tool.exec.name then table.insert(tools,tool) end
+  end
+
+  -- sort tools
+  table.sort(tools,function(a,b) return a.exec.name < b.exec.name end)
+
+  for _, tool in ipairs(tools) do
+    -- add menus for each
+    local id, menu = ide:AddTool(tool.exec.name, tool.exec.fn)
+    -- add descriptions
+    if id and tool.exec.description then menu:SetHelpString(id, tool.exec.description) end
+  end
+
+  return #tools
 end
 
 function ide:LoadInterpreter(path)
@@ -602,7 +621,6 @@ if app.preinit then app.preinit() end
 
 ide:LoadInterpreter()
 ide:LoadSpec()
-ide:LoadTool()
 
 do
   -- process configs
@@ -647,11 +665,13 @@ for _, file in ipairs({
     "settings", "singleinstance", "iofilters", "markup",
     "gui", "filetree", "output", "debugger", "outline", "commandbar",
     "editor", "findreplace", "commands", "autocomplete", "shellbox", "markers",
-    "menu_file", "menu_edit", "menu_search",
-    "menu_view", "menu_project", "menu_tools", "menu_help",
+    "menu_file", "menu_edit", "menu_search", "menu_view", "menu_project", "menu_help",
     "print", "inspect" }) do
   dofile("src/editor/"..file..".lua")
 end
+
+-- delay loading tools until everything is loaded as it modifies the menus
+ide:LoadTool()
 
 -- register all the plugins
 PackageEventHandle("onRegister")
