@@ -323,7 +323,9 @@ if not package.searchpath then
 end
 
 local function loadToTab(folder, tab, recursive, proto)
-  local files = wx.wxFileExists(folder) and {folder} or FileSysGetRecursive(folder, recursive, "*.lua")
+  local files = (wx.wxFileExists(folder) and {folder}
+    or wx.wxDirExists(folder) and FileSysGetRecursive(folder, recursive, "*.lua")
+    or {})
   for _, file in ipairs(files) do LoadLuaFileExt(tab, file, proto) end
   return tab
 end
