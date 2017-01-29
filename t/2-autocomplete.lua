@@ -176,14 +176,14 @@ IndicateAll(editor)
 
 local status, res = pcall(CreateAutoCompList, editor, "va")
 ok(status and (res or ""):match('value'),
-  ("Auto-complete (strategy=%s) offers completions for variables' (1/2)."):format(s))
+  ("Auto-complete (strategy=%s) offers completions for variables (1/2)."):format(s))
 
 editor:SetText('')
 editor:AddText('local value\nprint(va')
 
 local status, res = pcall(CreateAutoCompList, editor, "va")
 ok(status and (res or ""):match('value'),
-  ("Auto-complete (strategy=%s) offers completions for variables' (2/2)."):format(s))
+  ("Auto-complete (strategy=%s) offers completions for variables (2/2)."):format(s))
 
 end
 
