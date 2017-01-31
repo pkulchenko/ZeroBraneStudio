@@ -213,9 +213,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   local function getDir(path)
     dir:Open(path)
     if not dir:IsOpened() then
-      if DisplayOutputLn and TR then
-        DisplayOutputLn(TR("Can't open '%s': %s"):format(path, wx.wxSysErrorMsg()))
-      end
+      if TR then ide:Print(TR("Can't open '%s': %s"):format(path, wx.wxSysErrorMsg())) end
       return
     end
 
