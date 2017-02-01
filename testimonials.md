@@ -3,6 +3,9 @@ layout: default
 title: Testimonials
 ---
 
+my kids love ZeroBrane.
+([Phil Hagelberg](https://lobste.rs/s/qegqpy/30_years_later_qbasic_is_still_best/comments/yfnlyc#c_yfnlyc))
+
 **Love the debugger**, saving my life.
 (Troy Sandal)
 
@@ -11,6 +14,9 @@ ZBS has been a **wonderful experience** so far.
 
 Löve + ZeroBraneStudio == **Awesome Live Coding**!
 ([Nikita Dudnik](http://nikdudnik.com/post/30067678839/ive-spent-last-day-looking-for-a-suitable))
+
+Love ZeroBrane Studio. **Lightweight. Works. Powerful.**
+([Ross Berteig](http://lua-users.org/lists/lua-l/2016-08/msg00500.html))
 
 **I like ZBS for what it is**. I love it for where it is headed.
 ([Andrew Starks](https://github.com/andrewstarks))
@@ -27,23 +33,26 @@ ZBS is beautiful experience. I am using it usually **10 hrs every day w/o proble
 Superb! ZeroBrane just became my **lua/moai IDE of choice**. Thanks for integrating MOAI debugging!
 ([Stu](http://www.tabletop-terrain.com/))
 
-Thanks for the best IDE out there! I really love it, **very simple, well organized, very robust**, it is a must.
-(Dimitri Delattre)
+Thanks again for your awesome IDE. **I've moved over to it, forsaking my previous investment in Decoda**!
+(Stephen Nichols)
 
 I'd like to thank you for the Zerobrane IDE. **It is the best** (I've tested almost all of the competitors).
 (Sandro Moreira)
 
+Thanks for the best IDE out there! I really love it, **very simple, well organized, very robust**, it is a must.
+(Dimitri Delattre)
+
 What a **breath of fresh air**. After using for a couple of hours I went back and paid $24 and felt even better :-).
 ([doctorbling](http://notebook.kulchenko.com/zerobrane/zerobrane-studio-is-one-year-old#comment-186))
-
-Thank you for contributing such an excellent project. This is the **first truly useful Lua IDE for Mac** that I've found.
-(Steve Weiss) 
 
 I like the **clean and simple interface**, and a quick test of the debug feature (step by step) shown it is well made.
 ([Philippe Lhoste](http://lua-users.org/lists/lua-l/2012-06/msg00854.html))
 
-Thanks again for your awesome IDE. **I've moved over to it, forsaking my previous investment in Decoda**!
-(Stephen Nichols)
+Thank you for contributing such an excellent project. This is the **first truly useful Lua IDE for Mac** that I've found.
+(Steve Weiss)
+
+IMHO, ZBS is the **fastest, most-flexible, best-thought-out IDE AND Debugger I've used** since I began coding professionally in 1980.
+([Michael Berlyn](https://twitter.com/MichaelBerlyn/status/825720539381637121))
 
 Thanks a lot for such a wonderful IDE!  It's **really easy to use and has some unique features** especially compared to slooooow and cumbersome Eclipse.
 ([Arthur](https://github.com/toiffel))
