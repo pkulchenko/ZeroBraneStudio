@@ -809,15 +809,10 @@ function ide:AddStyle(style, num)
   num = num or styles[style]
   if not num then -- new style; find the smallest available number
     local nums = {}
-    for _, stylenum in pairs(styles) do
-      -- wxstc.wxSTC_STYLE_LASTPREDEFINED + 1 is the first available style
-      if stylenum > wxstc.wxSTC_STYLE_LASTPREDEFINED then
-        nums[stylenum-wxstc.wxSTC_STYLE_LASTPREDEFINED] = true
-      end
-    end
-    num = wxstc.wxSTC_STYLE_LASTPREDEFINED + 1
-    for _ in ipairs(nums) do num = num + 1 end
-    if num > wxstc.wxSTC_STYLE_MAX then return end
+    for _, stylenum in pairs(styles) do nums[stylenum] = true end
+    num = wxstc.wxSTC_STYLE_MAX
+    while nums[num] and num > wxstc.wxSTC_STYLE_LASTPREDEFINED do num = num - 1 end
+    if num <= wxstc.wxSTC_STYLE_LASTPREDEFINED then return end
   end
   styles[style] = num
   return num
