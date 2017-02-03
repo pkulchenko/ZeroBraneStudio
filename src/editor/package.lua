@@ -787,6 +787,7 @@ end
 function ide:AddSpec(name, spec)
   self.specs[name] = spec
   UpdateSpecs()
+  if spec.apitype then ReloadAPIs(spec.apitype) end
 end
 function ide:RemoveSpec(name) self.specs[name] = nil end
 
