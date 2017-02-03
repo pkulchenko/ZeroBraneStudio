@@ -91,20 +91,6 @@ local function loadallAPIs(only, subapis, known)
   end
 end
 
-local function scanAPIs()
-  for _, file in ipairs(FileSysGetRecursive("api", true, "*.lua")) do
-    if not IsDirectory(file) then
-      local ftype, fname = file:match("api[/\\]([^/\\]+)[/\\](.*)%.")
-      if not ftype or not fname then
-        DisplayOutputLn(TR("The API file must be located in a subdirectory of the API directory."))
-        return
-      end
-      ide.apis[ftype] = ide.apis[ftype] or {}
-      ide.apis[ftype][fname] = file
-    end
-  end
-end
-
 ---------
 -- ToolTip and reserved words list
 -- also fixes function descriptions
@@ -326,13 +312,28 @@ function GetTipInfo(editor, content, short, fullmatch)
   return res and #res > 0 and res or nil
 end
 
-local function reloadAPI(only,subapis)
+local function reloadAPI(only, subapis, known)
   if only then newAPI(apis[only]) end
-  loadallAPIs(only,subapis)
+  loadallAPIs(only, subapis, known)
   generateAPIInfo(only)
 end
 
-function ReloadAPIs(group)
+function ReloadAPIs(group, known)
+  -- special case to reload all
+  if group == "*" then
+    if not known then
+      known = {}
+      for _, spec in pairs(ide.specs) do
+        if (spec.apitype) then
+          known[spec.apitype] = true
+        end
+      end
+      -- by default load every known api except lua
+      known.lua = false
+    end
+    reloadAPI(nil, nil, known)
+    return
+  end
   local interp = ide.interpreter
   local cfgapi = ide.config.api
   local fname = interp and interp.fname
@@ -344,22 +345,7 @@ function ReloadAPIs(group)
   for _, v in ipairs(type(intapi) == 'table' and intapi or {}) do apinames[v] = true end
   -- interpreter APIs
   for _, v in ipairs(interp and interp.api or {}) do apinames[v] = true end
-  reloadAPI(group, apinames)
-end
-
-do
-  local known = {}
-  for _, spec in pairs(ide.specs) do
-    if (spec.apitype) then
-      known[spec.apitype] = true
-    end
-  end
-  -- by defaul load every known api except lua
-  known.lua = false
-
-  scanAPIs()
-  loadallAPIs(nil,nil,known)
-  generateAPIInfo()
+  reloadAPI(group, apinames, known)
 end
 
 -------------

@@ -333,6 +333,8 @@ end
 function ide:LoadSpec(path)
   loadToTab(path or "spec", ide.specs, true)
   UpdateSpecs()
+  -- force reload of all APIs as some of them may depend on the specs
+  if ReloadAPIs then ReloadAPIs("*") end
 end
 
 function ide:LoadTool(path)
@@ -360,6 +362,26 @@ end
 
 function ide:LoadInterpreter(path)
   loadToTab(path or "interpreters", ide.interpreters, false, ide.proto.Interpreter)
+end
+
+function ide:LoadAPI(path)
+  local folder = path or "api"
+  local files = (wx.wxFileExists(folder) and {folder}
+    or wx.wxDirExists(folder) and FileSysGetRecursive(folder, true, "*.lua")
+    or {})
+  for _, file in ipairs(files) do
+    if not IsDirectory(file) then
+      local ftype, fname = file:match("api[/\\]([^/\\]+)[/\\](.*)%.")
+      if not ftype or not fname then
+        ide:Print(TR("The API file must be located in a subdirectory of the API directory."))
+      else
+        ide.apis[ftype] = ide.apis[ftype] or {}
+        -- make sure the path is absolute to access it if the current directory changes
+        ide.apis[ftype][fname] = MergeFullPath("", file)
+      end
+    end
+  end
+  if ReloadAPIs then ReloadAPIs("*") end
 end
 
 dofile "src/version.lua"
@@ -674,6 +696,8 @@ end
 
 -- delay loading tools until everything is loaded as it modifies the menus
 ide:LoadTool()
+-- delay loading APIs until auto-complete is loaded
+ide:LoadAPI()
 
 -- register all the plugins
 PackageEventHandle("onRegister")
