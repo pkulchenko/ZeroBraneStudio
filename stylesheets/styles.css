@@ -636,3 +636,7 @@ iframe {
 @media screen and (max-width: 350px) {
   #logo-wrapper { display: none; }
 }
+
+@media screen and (max-width: 980px) {
+  #support-screenshot { display: none; }
+}
