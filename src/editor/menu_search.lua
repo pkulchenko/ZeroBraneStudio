@@ -191,7 +191,7 @@ local function navigateTo(default, selected)
             end
           end
         -- set line position in the (current) editor if requested
-        elseif text and text:find(special.LINE..'(%d+)%s*$') then
+        elseif text and text:find(special.LINE..'(%d*)%s*$') then
           local toline = tonumber(text:match(special.LINE..'(%d+)'))
           if toline and ed then
             ed:GotoLine(toline-1)
