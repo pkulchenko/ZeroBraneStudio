@@ -123,7 +123,7 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 ## Where is Estrela?
 
 The [Estrela project](http://www.luxinia.de/index.php/Estrela/) that this IDE is based on has been merged into ZeroBrane Studio.
-If you have used Estrela for graphics shader authoring or Luxinia, you can use [this GraphicsCodePack](https://github.com/pixeljetstream/zbstudio-graphicscodepack)
+If you have used Estrela for graphics shader authoring, you can use [this GraphicsCodePack](https://github.com/pixeljetstream/zbstudio-graphicscodepack)
 to get access to all API files, specifications and tools.
   
 ## License
