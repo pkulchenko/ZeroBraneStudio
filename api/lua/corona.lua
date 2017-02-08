@@ -4210,53 +4210,17 @@ package.cpath = package.cpath .. ';../../bin/clibs/?.dll'
 
 local mobdebug = require('mobdebug')
 local lfs = require('lfs')
-
 local DIR_SEP = '/'
-
 local API = {}
-
-local function trim(s)
-  local from = s:match"^%s*()"
-  return from > #s and "" or s:match(".*%S", from)
-end
 
 local function startswith(s, piece)
   return string.sub(s, 1, string.len(piece)) == piece
 end
 
-local function endswith(s, send)
-  return #s >= #send and s:find(send, #s-#send+1, true) and true or false
-end
-
-local function extractPath(p)
-  local c
-  for i = p:len(), 1, -1 do
-    c = p:sub(i, i)
-    if c == DIR_SEP then
-      return p:sub(1, i - 1), p:sub(i + 1)
-    end
-  end
-end
-
 local function beforeComma(line)
-  local c
   for i = 1, line:len() do
     if line:sub(i, i) == '.' then
       return line:sub(1, i - 1)
-    end
-  end
-  return line
-end
-
-local function extractFirstSentence(line)
-  local count = line:len()
-  for i = 1, count do
-    if line:sub(i, i) == '.' then
-      if i == count then
-        return line
-      elseif line:sub(i + 1, i + 1) == ' ' then
-        return line:sub(1, i)
-      end
     end
   end
   return line
