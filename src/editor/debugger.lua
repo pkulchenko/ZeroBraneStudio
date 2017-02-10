@@ -133,7 +133,6 @@ function debugger:updateWatchesSync(onlyitem)
   end
 end
 
-local simpleType = {['nil'] = true, ['string'] = true, ['number'] = true, ['boolean'] = true}
 local callData = {}
 
 function debugger:updateStackSync()
@@ -189,13 +188,8 @@ function debugger:updateStackSync()
       for name,val in pairs(type(frame[2]) == "table" and frame[2] or {}) do
         -- format the variable name, value as a single line and,
         -- if not a simple type, the string value.
-
-        -- comment can be not necessarily a string for tables with metatables
-        -- that provide its own __tostring method
-        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
-        local text = ("%s = %s%s"):
-          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
+        local value = val[1]
+        local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
         stackCtrl:SetItemValueIfExpandable(item, value)
         stackCtrl:SetItemName(item, name)
@@ -203,10 +197,8 @@ function debugger:updateStackSync()
 
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
-        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
-        local text = ("%s = %s%s"):
-          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
+        local value = val[1]
+        local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
         stackCtrl:SetItemValueIfExpandable(item, value)
         stackCtrl:SetItemName(item, name)
