@@ -1289,24 +1289,24 @@ local function debuggerCreateWatchWindow()
   end
 
   function watchCtrl:IsWatch(item)
-    return item:IsOk() and watchCtrl:GetItemParent(item):GetValue() == root:GetValue()
+    return item:IsOk() and self:GetItemParent(item):GetValue() == root:GetValue()
   end
 
   function watchCtrl:IsEditable(item)
     return (item and item:IsOk()
-      and (watchCtrl:IsWatch(item) or watchCtrl:GetItemName(item) ~= nil))
+      and (self:IsWatch(item) or self:GetItemName(item) ~= nil))
   end
 
   function watchCtrl:GetItemFullExpression(item)
     local expr = ''
     while true do
-      local name = watchCtrl:GetItemName(item)
-      expr = (watchCtrl:IsWatch(item)
-        and ('({%s})[1]'):format(watchCtrl:GetItemExpression(item))
+      local name = self:GetItemName(item)
+      expr = (self:IsWatch(item)
+        and ('({%s})[1]'):format(self:GetItemExpression(item))
         or (type(name) == 'string' and '[%q]' or '[%s]'):format(tostring(name))
       )..expr
-      if watchCtrl:IsWatch(item) then break end
-      item = watchCtrl:GetItemParent(item)
+      if self:IsWatch(item) then break end
+      item = self:GetItemParent(item)
       if not item:IsOk() then break end
     end
     return expr, item:IsOk() and item or nil
