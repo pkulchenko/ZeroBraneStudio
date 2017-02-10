@@ -198,6 +198,7 @@ function debugger:updateStackSync()
                  (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
         stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemName(item, name)
       end
 
       -- add the upvalues for this call stack level to the tree item
@@ -208,6 +209,7 @@ function debugger:updateStackSync()
                  (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
         stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemName(item, name)
       end
 
       stackCtrl:SortChildren(callitem)
@@ -1163,14 +1165,31 @@ local function debuggerCreateStackWindow()
 
   stackCtrl:SetImageList(debugger.imglist)
 
+  local names = {}
+  function stackCtrl:SetItemName(item, name)
+    local nametype = type(name)
+    names[item:GetValue()] = (
+      (nametype == 'string' or nametype == 'number' or nametype == 'boolean')
+      and name or nil
+    )
+  end
+
+  function stackCtrl:GetItemName(item)
+    return names[item:GetValue()]
+  end
+
   local valuecache = {}
-  function stackCtrl:SetItemValueIfExpandable(item, value)
+  function stackCtrl:SetItemValueIfExpandable(item, value, delayed)
     local expandable = type(value) == 'table' and next(value) ~= nil
     if expandable then -- cache table value to expand when requested
       valuecache[item:GetValue()] = value
+    elseif delayed and type(value) == 'table' then
+      expandable = true
     end
     self:SetItemHasChildren(item, expandable)
   end
+
+  function stackCtrl:IsExpandable(item) return not valuecache[item:GetValue()] end
 
   function stackCtrl:DeleteAll()
     self:DeleteAllItems()
@@ -1181,11 +1200,56 @@ local function debuggerCreateStackWindow()
     return valuecache[item:GetValue()] or {}
   end
 
+  function stackCtrl:IsFrame(item)
+    return item:IsOk() and self:GetItemParent(item):IsOk()
+    and self:GetItemParent(item):GetValue() == self:GetRootItem():GetValue()
+  end
+
+  function stackCtrl:GetItemFullExpression(item)
+    local expr = ''
+    while item:IsOk() and not self:IsFrame(item) do
+      local name = self:GetItemName(item)
+      -- check if it's a top item, as it needs to be used as is;
+      -- convert `(*vararg num)` to `select(num, ...)`
+      expr = (self:IsFrame(self:GetItemParent(item))
+        and name:gsub("^%(%*vararg (%d+)%)$", "select(%1, ...)")
+        or (type(name) == 'string' and '[%q]' or '[%s]'):format(tostring(name)))
+      ..expr
+      item = self:GetItemParent(item)
+    end
+    return expr, item:IsOk() and item or nil
+  end
+
+  function stackCtrl:ExpandItemValue(item)
+    local expr, itemupd = self:GetItemFullExpression(item)
+
+    local debugger = ide:GetDebugger()
+    if debugger.running then debugger:Update() end
+    if debugger.server and not debugger.running
+    and (not debugger.scratchpad or debugger.scratchpad.paused) then
+      copas.addthread(function()
+        local debugger = debugger
+        local value, _, err = debugger:evaluate(expr, {maxlevel = 1})
+        if err then
+          stackCtrl:SetItemText(item, 'error: '..err:gsub("%[.-%]:%d+:%s+",""))
+        else
+          local ok, res = LoadSafe("return "..value)
+          if ok then
+            stackCtrl:SetItemValueIfExpandable(item, res)
+            stackCtrl:Expand(item)
+          end
+        end
+      end)
+    end
+  end
+
   stackCtrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
     function (event)
       local item_id = event:GetItem()
       local count = stackCtrl:GetChildrenCount(item_id, false)
       if count > 0 then return true end
+
+      if stackCtrl:IsExpandable(item_id) then return stackCtrl:ExpandItemValue(item_id) end
 
       local image = stackCtrl:GetItemImage(item_id)
       local num = 1
@@ -1193,7 +1257,8 @@ local function debuggerCreateStackWindow()
         local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
         local text = stringifyKeyIntoPrefix(name, num)..strval
         local item = stackCtrl:AppendItem(item_id, text, image)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemValueIfExpandable(item, value, true)
+        stackCtrl:SetItemName(item, name)
 
         num = num + 1
         if num > stackmaxnum then break end
