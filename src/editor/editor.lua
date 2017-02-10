@@ -403,7 +403,7 @@ function EditorCallTip(editor, pos, x, y)
         if PackageEventHandle("onEditorCallTip", editor, val, funccall or var, true) ~= false then
           callTipFitAndShow(editor, pos, val)
         end
-      end)
+      end, {maxlevel = ide.config.debugger.maxdatalevel})
     end
   elseif tip then
     local oncalltip = PackageEventHandle("onEditorCallTip", editor, tip, funccall or var, false)
