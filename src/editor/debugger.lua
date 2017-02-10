@@ -127,6 +127,7 @@ function debugger:updateWatchesSync(onlyitem)
       if onlyitem then break end
       item = watchCtrl:GetNextSibling(item)
     end
+    debugger.needrefresh.watches = false
   elseif not shown and canupdate then
     debugger.needrefresh.watches = true
   end
@@ -215,6 +216,7 @@ function debugger:updateStackSync()
     stackCtrl:EnsureVisible(stackCtrl:GetFirstChild(root))
     stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     stackCtrl:Thaw()
+    debugger.needrefresh.stack = false
   elseif not shown and canupdate then
     debugger.needrefresh.stack = true
   end
