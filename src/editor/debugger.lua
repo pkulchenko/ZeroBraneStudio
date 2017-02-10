@@ -1223,13 +1223,20 @@ local function debuggerCreateStackWindow()
   function stackCtrl:ExpandItemValue(item)
     local expr, itemupd = self:GetItemFullExpression(item)
 
+    -- count the number of frames before the one this item is in (starting from 1)
+    local stack = 0
+    repeat
+      stack = stack + 1
+      itemupd = self:GetPrevSibling(itemupd)
+    until not itemupd:IsOk()
+
     local debugger = ide:GetDebugger()
     if debugger.running then debugger:Update() end
     if debugger.server and not debugger.running
     and (not debugger.scratchpad or debugger.scratchpad.paused) then
       copas.addthread(function()
         local debugger = debugger
-        local value, _, err = debugger:evaluate(expr, {maxlevel = 1})
+        local value, _, err = debugger:evaluate(expr, {maxlevel = 1, stack = stack})
         if err then
           stackCtrl:SetItemText(item, 'error: '..err:gsub("%[.-%]:%d+:%s+",""))
         else
