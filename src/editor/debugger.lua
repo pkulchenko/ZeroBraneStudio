@@ -1271,10 +1271,11 @@ local function debuggerCreateStackWindow()
       local image = stackCtrl:GetItemImage(item_id)
       local num = 1
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
-        local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
-        local text = stringifyKeyIntoPrefix(name, num)..strval
-        local item = stackCtrl:AppendItem(item_id, text, image)
+        local item = stackCtrl:AppendItem(item_id, "", image)
         stackCtrl:SetItemValueIfExpandable(item, value, true)
+
+        local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(trimToMaxLength(serialize(value, params)))
+        stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         stackCtrl:SetItemName(item, name)
 
         num = num + 1
