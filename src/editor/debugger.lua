@@ -1211,15 +1211,19 @@ local function debuggerCreateStackWindow()
     return expr, item:IsOk() and item or nil
   end
 
-  function stackCtrl:ExpandItemValue(item)
-    local expr, itemupd = self:GetItemFullExpression(item)
-
-    -- count the number of frames before the one this item is in (starting from 1)
-    local stack = 0
+  function stackCtrl:GetItemPos(item)
+    if not item:IsOk() then return end
+    local pos = 0
     repeat
-      stack = stack + 1
-      itemupd = self:GetPrevSibling(itemupd)
-    until not itemupd:IsOk()
+      pos = pos + 1
+      item = self:GetPrevSibling(item)
+    until not item:IsOk()
+    return pos
+  end
+
+  function stackCtrl:ExpandItemValue(item)
+    local expr, itemframe = self:GetItemFullExpression(item)
+    local stack = self:GetItemPos(itemframe)
 
     local debugger = ide:GetDebugger()
     if debugger.running then debugger:Update() end
@@ -1235,6 +1239,21 @@ local function debuggerCreateStackWindow()
           if ok then
             stackCtrl:SetItemValueIfExpandable(item, res)
             stackCtrl:Expand(item)
+
+            -- update cache in the parent
+            local parent = stackCtrl:GetItemParent(item)
+            valuecache[parent:GetValue()][stackCtrl:GetItemName(item)] = res
+
+            -- now update all serialized values in the tree starting from the expanded item
+            while item:IsOk() and not stackCtrl:IsFrame(item) do
+              local value = valuecache[item:GetValue()]
+              local strval = fixUTF8(trimToMaxLength(serialize(value, {comment = false})))
+              local name = stackCtrl:GetItemName(item)
+              local text = (stackCtrl:IsFrame(stackCtrl:GetItemParent(item))
+                and name.." = " or stringifyKeyIntoPrefix(name, stackCtrl:GetItemPos(item)))..strval
+              stackCtrl:SetItemText(item, text)
+              item = stackCtrl:GetItemParent(item)
+            end
           end
         end
       end)
