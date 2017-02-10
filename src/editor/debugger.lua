@@ -1170,18 +1170,17 @@ local function debuggerCreateStackWindow()
     return names[item:GetValue()]
   end
 
+  local expandable = {} -- special value
   local valuecache = {}
   function stackCtrl:SetItemValueIfExpandable(item, value, delayed)
-    local expandable = type(value) == 'table' and next(value) ~= nil
-    if expandable then -- cache table value to expand when requested
-      valuecache[item:GetValue()] = value
-    elseif delayed and type(value) == 'table' then
-      expandable = true
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed)
+    if isexpandable then -- cache table value to expand when requested
+      valuecache[item:GetValue()] = next(value) == nil and expandable or value
     end
-    self:SetItemHasChildren(item, expandable)
+    self:SetItemHasChildren(item, isexpandable)
   end
 
-  function stackCtrl:IsExpandable(item) return not valuecache[item:GetValue()] end
+  function stackCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
   function stackCtrl:DeleteAll()
     self:DeleteAllItems()
