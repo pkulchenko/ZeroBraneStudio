@@ -72,7 +72,7 @@ Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) 
 
 **Watch view**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inset"/></a>
-Use a convenient way to evaluate variables and expressions (including tables) after every step of the debugger.
+Evaluate variables and expressions (including tables) after every step of the debugger. Expand tables and modify the values.
 
 **Live coding**
 <a href="images/scratchpad-linux-mint.png"><img style="background:url(images/scratchpad-linux-mint.png) -580px -300px" src="images/t.gif" class="inset"/></a>
