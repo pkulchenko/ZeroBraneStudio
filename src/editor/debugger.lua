@@ -143,7 +143,7 @@ function debugger:updateStackSync()
   local shown = stackCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and stackCtrl:IsShown())
   local canupdate = debugger.server and not debugger.running and not debugger.scratchpad
   if shown and canupdate then
-    local stack, _, err = debugger:stack()
+    local stack, _, err = debugger:stack(params)
     if not stack or #stack == 0 then
       stackCtrl:DeleteAll()
       if err then -- report an error if any
@@ -1086,9 +1086,10 @@ function debugger:detach(cmd)
     debugger:exec(cmd or "done")
   end
 end
-function debugger:evaluate(expression) return self:handle('eval ' .. expression) end
-function debugger:execute(expression) return self:handle('exec ' .. expression) end
-function debugger:stack() return self:handle('stack') end
+local function todeb(params) return params and " -- "..mobdebug.line(params, {comment = false}) or "" end
+function debugger:evaluate(exp, params) return self:handle('eval ' .. exp .. todeb(params)) end
+function debugger:execute(exp, params) return self:handle('exec '.. exp .. todeb(params)) end
+function debugger:stack(params) return self:handle('stack' .. todeb(params)) end
 function debugger:Break(command)
   local debugger = self
   -- stop if we're running a "trace" command
@@ -1119,13 +1120,13 @@ function debugger:breakpoint(file, line, state)
   end
   return debugger:handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
 end
-function debugger:EvalAsync(var, callback)
+function debugger:EvalAsync(var, callback, params)
   local debugger = self
   if debugger.server and not debugger.running and callback
   and not debugger.scratchpad and not (debugger.options or {}).noeval then
     copas.addthread(function()
       local debugger = debugger
-      local _, values, err = debugger:evaluate(var)
+      local _, values, err = debugger:evaluate(var, params)
       if err then
         callback(nil, (err:gsub("%[.-%]:%d+:%s*","error: ")))
       else
