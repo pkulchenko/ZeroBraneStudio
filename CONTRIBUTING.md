@@ -1,6 +1,6 @@
 # Help
 
-For questions and feature discussions, please use the the maillist or the IRC channel as described in the [community section](http://studio.zerobrane.com/community) of the project website.
+For questions, feature discussions, and suggestions about including binary modules, please use the the maillist or the IRC channel as described in the [community section](http://studio.zerobrane.com/community) of the project website.
 
 # Bugs
 
