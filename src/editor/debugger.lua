@@ -1272,7 +1272,9 @@ local function debuggerCreateStackWindow()
       local num = 1
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
         local item = stackCtrl:AppendItem(item_id, "", image)
-        stackCtrl:SetItemValueIfExpandable(item, value, true)
+        -- show table as "expandable" if it can be expanded and the key/name is string, number,
+        -- or boolean, as the other values for keys can't be queried.
+        stackCtrl:SetItemValueIfExpandable(item, value, stackCtrl:GetItemName(item) ~= nil)
 
         local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(trimToMaxLength(serialize(value, params)))
         stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
