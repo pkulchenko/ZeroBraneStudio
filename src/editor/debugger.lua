@@ -191,7 +191,7 @@ function debugger:updateStackSync()
         local value = val[1]
         local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemValueIfExpandable(item, value, stackmaxlevel == 1)
         stackCtrl:SetItemName(item, name)
       end
 
@@ -200,7 +200,7 @@ function debugger:updateStackSync()
         local value = val[1]
         local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemValueIfExpandable(item, value, stackmaxlevel == 1)
         stackCtrl:SetItemName(item, name)
       end
 
