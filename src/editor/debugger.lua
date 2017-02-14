@@ -1287,6 +1287,7 @@ local function debuggerCreateStackWindow()
 
       local image = stackCtrl:GetItemImage(item_id)
       local num = 1
+      stackCtrl:Freeze()
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
         local item = stackCtrl:AppendItem(item_id, "", image)
         stackCtrl:SetItemValueIfExpandable(item, value, true)
@@ -1298,6 +1299,7 @@ local function debuggerCreateStackWindow()
         num = num + 1
         if num > stackmaxnum then break end
       end
+      stackCtrl:Thaw()
       return true
     end)
 
