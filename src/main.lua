@@ -82,9 +82,9 @@ ide = {
       port = nil,
       runonstart = nil,
       redirect = nil,
-      maxdatalength = 400,
-      maxdatanum = 400,
-      maxdatalevel = 3,
+      maxdatalength = 256,
+      maxdatanum = 128,
+      maxdatalevel = 2,
       refuseonconflict = true,
     },
     default = {
