@@ -1233,16 +1233,33 @@ local function debuggerCreateStackWindow()
         local debugger = debugger
         local value, _, err = debugger:evaluate(expr, {maxlevel = 1, stack = stack})
         if err then
-          stackCtrl:SetItemText(item, 'error: '..err:gsub("%[.-%]:%d+:%s+",""))
+          err = err:gsub("%[.-%]:%d+:%s+","")
+          -- this may happen when attempting to expand a sub-element referenced by a key
+          -- that can't be evaluated, like a table, function, or userdata
+          if err ~= "attempt to index a nil value" then
+            stackCtrl:SetItemText(item, 'error: '..err)
+          else
+            local name = stackCtrl:GetItemName(item)
+            local text = stringifyKeyIntoPrefix(name, stackCtrl:GetItemPos(item)).."{}"
+            stackCtrl:SetItemText(item, text)
+            stackCtrl:SetItemValueIfExpandable(item, {})
+            stackCtrl:Expand(item)
+          end
         else
-          local ok, res = LoadSafe("return "..value)
+          local ok, res = LoadSafe("return "..tostring(value))
           if ok then
             stackCtrl:SetItemValueIfExpandable(item, res)
             stackCtrl:Expand(item)
 
+            local name = stackCtrl:GetItemName(item)
+            if not name then
+              stackCtrl:SetItemText(item, (stackCtrl:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              return
+            end
+
             -- update cache in the parent
             local parent = stackCtrl:GetItemParent(item)
-            valuecache[parent:GetValue()][stackCtrl:GetItemName(item)] = res
+            valuecache[parent:GetValue()][name] = res
 
             -- now update all serialized values in the tree starting from the expanded item
             while item:IsOk() and not stackCtrl:IsFrame(item) do
@@ -1272,9 +1289,7 @@ local function debuggerCreateStackWindow()
       local num = 1
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
         local item = stackCtrl:AppendItem(item_id, "", image)
-        -- show table as "expandable" if it can be expanded and the key/name is string, number,
-        -- or boolean, as the other values for keys can't be queried.
-        stackCtrl:SetItemValueIfExpandable(item, value, stackCtrl:GetItemName(item) ~= nil)
+        stackCtrl:SetItemValueIfExpandable(item, value, true)
 
         local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(trimToMaxLength(serialize(value, params)))
         stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
