@@ -1323,7 +1323,7 @@ local function debuggerCreateWatchWindow()
         local debugger = debugger
         local _, values, error = debugger:evaluate(expr)
         ide:CopyToClipboard(error and error:gsub("%[.-%]:%d+:%s+","")
-          or (#values == 0 and 'nil' or values[1]))
+          or (#values == 0 and 'nil' or fixUTF8(values[1])))
       end)
     end
   end
