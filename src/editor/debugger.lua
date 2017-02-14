@@ -104,8 +104,8 @@ function debugger:updateWatchesSync(onlyitem)
           watchCtrl:SetItemValueIfExpandable(item, res)
         end
 
-        local newval = (expression .. ' = '
-          .. (error and ('error: '..error) or table.concat(values, ", ")))
+        local newval = fixUTF8(trimToMaxLength(expression .. ' = '
+          .. (error and ('error: '..error) or table.concat(values, ", "))))
         local val = watchCtrl:GetItemText(item)
 
         watchCtrl:SetItemBackgroundColour(item, val ~= newval and hicl or bgcl)
