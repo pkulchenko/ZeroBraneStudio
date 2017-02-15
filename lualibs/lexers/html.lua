@@ -149,6 +149,9 @@ local js_start_rule = #(P('<') * script_element *
 end))) * M.embed_start_tag -- <script type="text/javascript">
 local js_end_rule = #('</' * script_element * ws^0 * '>') *
                     M.embed_end_tag -- </script>
+local js_line_comment = '//' * (l.nonnewline_esc - js_end_rule)^0
+local js_block_comment = '/*' * (l.any - '*/' - js_end_rule)^0 * P('*/')^-1
+js._RULES['comment'] = token(l.COMMENT, js_line_comment + js_block_comment)
 l.embed_lexer(M, js, js_start_rule, js_end_rule)
 
 -- Embedded CoffeeScript.
