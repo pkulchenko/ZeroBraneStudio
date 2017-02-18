@@ -39,11 +39,6 @@ local activate = {CHECKONLY = "checkonly", NOREPORT = "noreport", CLEARALL = "cl
 
 local function serialize(value, options) return mobdebug.line(value, options) end
 
-local stackmaxlength = ide.config.debugger.maxdatalength
-local stackmaxnum = ide.config.debugger.maxdatanum
-local stackmaxlevel = ide.config.debugger.maxdatalevel
-local params = {comment = false, nocode = true, maxlevel = stackmaxlevel, maxnum = stackmaxnum}
-
 local function displayError(...) return ide:GetOutput():Error(...) end
 
 local function fixUTF8(...)
@@ -51,14 +46,6 @@ local function fixUTF8(...)
   -- convert to escaped decimal code as these can only appear in strings
   local function fix(s) return '\\'..string.byte(s) end
   for i = 1, #t do t[i] = FixUTF8(t[i], fix) end
-  return unpack(t)
-end
-
-local function trimToMaxLength(...)
-  local t = {...}
-  for i = 1, #t do
-    t[i] = t[i]:sub(1, stackmaxlength)..(#t[i] > stackmaxlength and '...' or '')
-  end
   return unpack(t)
 end
 
@@ -104,8 +91,8 @@ function debugger:updateWatchesSync(onlyitem)
           watchCtrl:SetItemValueIfExpandable(item, res)
         end
 
-        local newval = fixUTF8(trimToMaxLength(expression .. ' = '
-          .. (error and ('error: '..error) or table.concat(values, ", "))))
+        local newval = fixUTF8(expression .. ' = '
+          .. (error and ('error: '..error) or table.concat(values, ", ")))
         local val = watchCtrl:GetItemText(item)
 
         watchCtrl:SetItemBackgroundColour(item, val ~= newval and hicl or bgcl)
@@ -142,7 +129,7 @@ function debugger:updateStackSync()
   local shown = stackCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and stackCtrl:IsShown())
   local canupdate = debugger.server and not debugger.running and not debugger.scratchpad
   if shown and canupdate then
-    local stack, _, err = debugger:stack(params)
+    local stack, _, err = debugger:stack(debugger:GetDataOptions({maxlength=false}))
     if not stack or #stack == 0 then
       stackCtrl:DeleteAll()
       if err then -- report an error if any
@@ -152,6 +139,9 @@ function debugger:updateStackSync()
     end
     stackCtrl:Freeze()
     stackCtrl:DeleteAll()
+
+    local forceexpand = ide.config.debugger.maxdatalevel == 1
+    local params = debugger:GetDataOptions({maxlevel=false})
 
     local root = stackCtrl:AddRoot("Stack")
     callData = {} -- reset call cache
@@ -189,18 +179,18 @@ function debugger:updateStackSync()
         -- format the variable name, value as a single line and,
         -- if not a simple type, the string value.
         local value = val[1]
-        local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
+        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
-        stackCtrl:SetItemValueIfExpandable(item, value, stackmaxlevel == 1)
+        stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
         stackCtrl:SetItemName(item, name)
       end
 
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
         local value = val[1]
-        local text = ("%s = %s"):format(name, fixUTF8(trimToMaxLength(serialize(value, params))))
+        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
-        stackCtrl:SetItemValueIfExpandable(item, value, stackmaxlevel == 1)
+        stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
         stackCtrl:SetItemName(item, name)
       end
 
@@ -1261,10 +1251,12 @@ local function debuggerCreateStackWindow()
             local parent = stackCtrl:GetItemParent(item)
             valuecache[parent:GetValue()][name] = res
 
+            local params = debugger:GetDataOptions({maxlevel=false})
+
             -- now update all serialized values in the tree starting from the expanded item
             while item:IsOk() and not stackCtrl:IsFrame(item) do
               local value = valuecache[item:GetValue()]
-              local strval = fixUTF8(trimToMaxLength(serialize(value, {comment = false})))
+              local strval = fixUTF8(serialize(value, params))
               local name = stackCtrl:GetItemName(item)
               local text = (stackCtrl:IsFrame(stackCtrl:GetItemParent(item))
                 and name.." = " or stringifyKeyIntoPrefix(name, stackCtrl:GetItemPos(item)))..strval
@@ -1286,18 +1278,20 @@ local function debuggerCreateStackWindow()
       if stackCtrl:IsExpandable(item_id) then return stackCtrl:ExpandItemValue(item_id) end
 
       local image = stackCtrl:GetItemImage(item_id)
-      local num = 1
+      local num, maxnum = 1, ide.config.debugger.maxdatanum
+      local params = debugger:GetDataOptions({maxlevel = false})
+
       stackCtrl:Freeze()
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
         local item = stackCtrl:AppendItem(item_id, "", image)
         stackCtrl:SetItemValueIfExpandable(item, value, true)
 
-        local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(trimToMaxLength(serialize(value, params)))
+        local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(serialize(value, params))
         stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         stackCtrl:SetItemName(item, name)
 
         num = num + 1
-        if num > stackmaxnum then break end
+        if num > maxnum then break end
       end
       stackCtrl:Thaw()
       return true
@@ -1458,17 +1452,21 @@ local function debuggerCreateWatchWindow()
       if count > 0 then return true end
 
       local image = watchCtrl:GetItemImage(item_id)
-      local num = 1
+      local num, maxnum = 1, ide.config.debugger.maxdatanum
+      local params = debugger:GetDataOptions({maxlevel = false})
+
+      watchCtrl:Freeze()
       for name,value in pairs(watchCtrl:GetItemChildren(item_id)) do
-        local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
+        local strval = fixUTF8(serialize(value, params))
         local text = stringifyKeyIntoPrefix(name, num)..strval
         local item = watchCtrl:AppendItem(item_id, text, image)
         watchCtrl:SetItemValueIfExpandable(item, value)
         watchCtrl:SetItemName(item, name)
 
         num = num + 1
-        if num > stackmaxnum then break end
+        if num > maxnum then break end
       end
+      watchCtrl:Thaw()
       return true
     end)
 
