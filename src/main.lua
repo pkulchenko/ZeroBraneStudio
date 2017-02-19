@@ -79,6 +79,7 @@ ide = {
       hostname = nil,
       ignorecase = false,
       linetobreakpoint = false,
+      numformat = "%.16g",
       port = nil,
       runonstart = nil,
       redirect = nil,
