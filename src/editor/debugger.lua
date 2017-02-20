@@ -74,13 +74,14 @@ function debugger:updateWatchesSync(onlyitem)
     local root = watchCtrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
+    local params = debugger:GetDataOptions({maxlength=false})
     local item = onlyitem or watchCtrl:GetFirstChild(root)
     while true do
       if not item:IsOk() then break end
 
       local expression = watchCtrl:GetItemExpression(item)
       if expression then
-        local _, values, error = debugger:evaluate(expression)
+        local _, values, error = debugger:evaluate(expression, params)
         local curchildren = watchCtrl:GetItemChildren(item)
         if error then
           error = error:gsub("%[.-%]:%d+:%s+","")
