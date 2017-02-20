@@ -1167,6 +1167,8 @@ local function debuggerCreateStackWindow()
     local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed)
     if isexpandable then -- cache table value to expand when requested
       valuecache[item:GetValue()] = next(value) == nil and expandable or value
+    elseif type(value) ~= 'table' then
+      valuecache[item:GetValue()] = nil
     end
     self:SetItemHasChildren(item, isexpandable)
   end
@@ -1176,6 +1178,7 @@ local function debuggerCreateStackWindow()
   function stackCtrl:DeleteAll()
     self:DeleteAllItems()
     valuecache = {}
+    names = {}
   end
 
   function stackCtrl:GetItemChildren(item)
@@ -1183,8 +1186,8 @@ local function debuggerCreateStackWindow()
   end
 
   function stackCtrl:IsFrame(item)
-    return item:IsOk() and self:GetItemParent(item):IsOk()
-    and self:GetItemParent(item):GetValue() == self:GetRootItem():GetValue()
+    return (item and item:IsOk() and self:GetItemParent(item):IsOk()
+      and self:GetItemParent(item):GetValue() == self:GetRootItem():GetValue())
   end
 
   function stackCtrl:GetItemFullExpression(item)
@@ -1228,41 +1231,43 @@ local function debuggerCreateStackWindow()
           -- this may happen when attempting to expand a sub-element referenced by a key
           -- that can't be evaluated, like a table, function, or userdata
           if err ~= "attempt to index a nil value" then
-            stackCtrl:SetItemText(item, 'error: '..err)
+            self:SetItemText(item, 'error: '..err)
           else
-            local name = stackCtrl:GetItemName(item)
-            local text = stringifyKeyIntoPrefix(name, stackCtrl:GetItemPos(item)).."{}"
-            stackCtrl:SetItemText(item, text)
-            stackCtrl:SetItemValueIfExpandable(item, {})
-            stackCtrl:Expand(item)
+            local name = self:GetItemName(item)
+            local text = stringifyKeyIntoPrefix(name, self:GetItemPos(item)).."{}"
+            self:SetItemText(item, text)
+            self:SetItemValueIfExpandable(item, {})
+            self:Expand(item)
           end
         else
           local ok, res = LoadSafe("return "..tostring(value))
           if ok then
-            stackCtrl:SetItemValueIfExpandable(item, res)
-            stackCtrl:Expand(item)
+            self:SetItemValueIfExpandable(item, res)
+            self:Expand(item)
 
-            local name = stackCtrl:GetItemName(item)
+            local name = self:GetItemName(item)
             if not name then
-              stackCtrl:SetItemText(item, (stackCtrl:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              self:SetItemText(item, (self:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
               return
             end
 
             -- update cache in the parent
-            local parent = stackCtrl:GetItemParent(item)
+            local parent = self:GetItemParent(item)
             valuecache[parent:GetValue()][name] = res
 
             local params = debugger:GetDataOptions({maxlevel=false})
 
             -- now update all serialized values in the tree starting from the expanded item
-            while item:IsOk() and not stackCtrl:IsFrame(item) do
+            while item:IsOk() and not self:IsFrame(item) do
               local value = valuecache[item:GetValue()]
               local strval = fixUTF8(serialize(value, params))
-              local name = stackCtrl:GetItemName(item)
-              local text = (stackCtrl:IsFrame(stackCtrl:GetItemParent(item))
-                and name.." = " or stringifyKeyIntoPrefix(name, stackCtrl:GetItemPos(item)))..strval
-              stackCtrl:SetItemText(item, text)
-              item = stackCtrl:GetItemParent(item)
+              local name = self:GetItemName(item)
+              local text = (self:IsFrame(self:GetItemParent(item))
+                and name.." = "
+                or stringifyKeyIntoPrefix(name, self:GetItemPos(item)))
+              ..strval
+              self:SetItemText(item, text)
+              item = self:GetItemParent(item)
             end
           end
         end
