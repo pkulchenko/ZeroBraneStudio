@@ -1380,19 +1380,27 @@ local function debuggerCreateWatchWindow()
     return names[item:GetValue()]
   end
 
+  local expandable = {} -- special value
   local valuecache = {}
-  function watchCtrl:SetItemValueIfExpandable(item, value)
-    local expandable = type(value) == 'table' and next(value) ~= nil
-    valuecache[item:GetValue()] = expandable and value or nil
-    self:SetItemHasChildren(item, expandable)
+  function watchCtrl:SetItemValueIfExpandable(item, value, delayed)
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed)
+    if isexpandable then -- cache table value to expand when requested
+      valuecache[item:GetValue()] = next(value) == nil and expandable or value
+    elseif type(value) ~= 'table' then
+      valuecache[item:GetValue()] = nil
+    end
+    self:SetItemHasChildren(item, isexpandable)
   end
+
+  function watchCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
   function watchCtrl:GetItemChildren(item)
     return valuecache[item:GetValue()] or {}
   end
 
   function watchCtrl:IsWatch(item)
-    return item:IsOk() and self:GetItemParent(item):GetValue() == root:GetValue()
+    return (item and item:IsOk() and self:GetItemParent(item):IsOk()
+      and self:GetItemParent(item):GetValue() == root:GetValue())
   end
 
   function watchCtrl:IsEditable(item)
@@ -1451,11 +1459,71 @@ local function debuggerCreateWatchWindow()
     end
   end
 
+  function watchCtrl:GetItemPos(item)
+    if not item:IsOk() then return end
+    local pos = 0
+    repeat
+      pos = pos + 1
+      item = self:GetPrevSibling(item)
+    until not item:IsOk()
+    return pos
+  end
+
+  function watchCtrl:ExpandItemValue(item)
+    local expr = self:GetItemFullExpression(item)
+
+    local debugger = ide:GetDebugger()
+    if debugger.running then debugger:Update() end
+    if debugger.server and not debugger.running
+    and (not debugger.scratchpad or debugger.scratchpad.paused) then
+      copas.addthread(function()
+        local debugger = debugger
+        local value, _, err = debugger:evaluate(expr, {maxlevel = 1})
+        if err then
+          self:SetItemText(item, 'error: '..err:gsub("%[.-%]:%d+:%s+",""))
+        else
+          local ok, res = LoadSafe("return "..tostring(value))
+          if ok then
+            self:SetItemValueIfExpandable(item, res)
+            self:Expand(item)
+            local name = self:GetItemName(item)
+            if not name then
+              self:SetItemText(item, (self:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              return
+            end
+
+            -- update cache in the parent
+            local parent = self:GetItemParent(item)
+            valuecache[parent:GetValue()][name] = res
+
+            local params = debugger:GetDataOptions({maxlevel=false})
+
+            -- now update all serialized values in the tree starting from the expanded item
+            while item:IsOk() do
+              local value = valuecache[item:GetValue()]
+              local strval = fixUTF8(serialize(value, params))
+              local name = self:GetItemName(item)
+              local text = (self:IsWatch(item)
+                and self:GetItemExpression(item).." = "
+                or stringifyKeyIntoPrefix(name, self:GetItemPos(item)))
+              ..strval
+              self:SetItemText(item, text)
+              if self:IsWatch(item) then break end
+              item = self:GetItemParent(item)
+            end
+          end
+        end
+      end)
+    end
+  end
+
   watchCtrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
     function (event)
       local item_id = event:GetItem()
       local count = watchCtrl:GetChildrenCount(item_id, false)
       if count > 0 then return true end
+
+      if watchCtrl:IsExpandable(item_id) then return watchCtrl:ExpandItemValue(item_id) end
 
       local image = watchCtrl:GetItemImage(item_id)
       local num, maxnum = 1, ide.config.debugger.maxdatanum
@@ -1463,10 +1531,11 @@ local function debuggerCreateWatchWindow()
 
       watchCtrl:Freeze()
       for name,value in pairs(watchCtrl:GetItemChildren(item_id)) do
-        local strval = fixUTF8(serialize(value, params))
-        local text = stringifyKeyIntoPrefix(name, num)..strval
-        local item = watchCtrl:AppendItem(item_id, text, image)
-        watchCtrl:SetItemValueIfExpandable(item, value)
+        local item = watchCtrl:AppendItem(item_id, "", image)
+        watchCtrl:SetItemValueIfExpandable(item, value, true)
+
+        local strval = watchCtrl:IsExpandable(item) and "{...}" or fixUTF8(serialize(value, params))
+        watchCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         watchCtrl:SetItemName(item, name)
 
         num = num + 1
