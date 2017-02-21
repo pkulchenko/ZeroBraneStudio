@@ -1165,7 +1165,9 @@ local function debuggerCreateStackWindow()
   local expandable = {} -- special value
   local valuecache = {}
   function stackCtrl:SetItemValueIfExpandable(item, value, delayed)
-    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed)
+    local maxlvl = tonumber(ide.config.debugger.maxdatalevel)
+    -- don't make empty tables expandable if expansion is disabled (`maxdatalevel` is false)
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed and maxlvl ~= nil)
     if isexpandable then -- cache table value to expand when requested
       valuecache[item:GetValue()] = next(value) == nil and expandable or value
     elseif type(value) ~= 'table' then
@@ -1385,7 +1387,9 @@ local function debuggerCreateWatchWindow()
   local expandable = {} -- special value
   local valuecache = {}
   function watchCtrl:SetItemValueIfExpandable(item, value, delayed)
-    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed)
+    local maxlvl = tonumber(ide.config.debugger.maxdatalevel)
+    -- don't make empty tables expandable if expansion is disabled (`maxdatalevel` is false)
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed and maxlvl ~= nil)
     if isexpandable then -- cache table value to expand when requested
       valuecache[item:GetValue()] = next(value) == nil and expandable or value
     elseif type(value) ~= 'table' then
