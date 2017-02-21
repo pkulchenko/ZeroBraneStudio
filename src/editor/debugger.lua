@@ -50,6 +50,7 @@ local function fixUTF8(...)
 end
 
 local q = EscapeMagic
+local MORE = "{...}"
 
 function debugger:init(init)
   local o = {}
@@ -1247,7 +1248,8 @@ local function debuggerCreateStackWindow()
 
             local name = self:GetItemName(item)
             if not name then
-              self:SetItemText(item, (self:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              -- this is an empty table, so replace MORE indicator with the empty table
+              self:SetItemText(item, (self:GetItemText(item):gsub(q(MORE), "{}")))
               return
             end
 
@@ -1292,7 +1294,7 @@ local function debuggerCreateStackWindow()
         local item = stackCtrl:AppendItem(item_id, "", image)
         stackCtrl:SetItemValueIfExpandable(item, value, true)
 
-        local strval = stackCtrl:IsExpandable(item) and "{...}" or fixUTF8(serialize(value, params))
+        local strval = stackCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
         stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         stackCtrl:SetItemName(item, name)
 
@@ -1534,7 +1536,7 @@ local function debuggerCreateWatchWindow()
         local item = watchCtrl:AppendItem(item_id, "", image)
         watchCtrl:SetItemValueIfExpandable(item, value, true)
 
-        local strval = watchCtrl:IsExpandable(item) and "{...}" or fixUTF8(serialize(value, params))
+        local strval = watchCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
         watchCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         watchCtrl:SetItemName(item, name)
 
