@@ -85,7 +85,7 @@ ide = {
       redirect = nil,
       maxdatalength = 256,
       maxdatanum = 128,
-      maxdatalevel = 2,
+      maxdatalevel = 3,
       refuseonconflict = true,
     },
     default = {
