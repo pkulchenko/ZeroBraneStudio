@@ -1,4 +1,4 @@
--- Copy the content of this file to user.lua;
+-- Add to your user / system configuration file: include "eclipse-keys"
 -- see the [configuration](http://studio.zerobrane.com/doc-configuration.html) page for details.
 
 -- Alt-Shift-Cmd-X (Alt maps to Option, Ctrl maps to Command)
@@ -69,5 +69,4 @@ local xcode = {
   [ID.QUICKEVAL]        = "",
 }
 
-local G = ...
-for id, key in G.pairs(xcode) do keymap[id] = key end
+for id, key in pairs(xcode) do keymap[id] = key end
