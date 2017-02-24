@@ -74,7 +74,16 @@ ide.proto.Debugger = {__index = {
   GetConsole = function(self)
     local debugger = self
     return function(...) return debugger:shell(...) end
-  end
+  end,
+  GetDataOptions = function(self, options)
+    local cfg = ide.config.debugger
+    local params = {
+      comment = false, nocode = true, numformat = cfg.numformat,
+      maxlevel = cfg.maxdatalevel, maxnum = cfg.maxdatanum, maxlength = cfg.maxdatalength,
+    }
+    for k, v in pairs(options or {}) do params[k] = v end
+    return params
+  end,
 }}
 
 ide.proto.ID = {

@@ -403,7 +403,7 @@ function EditorCallTip(editor, pos, x, y)
         if PackageEventHandle("onEditorCallTip", editor, val, funccall or var, true) ~= false then
           callTipFitAndShow(editor, pos, val)
         end
-      end)
+      end, debugger:GetDataOptions({maxlevel = false}))
     end
   elseif tip then
     local oncalltip = PackageEventHandle("onEditorCallTip", editor, tip, funccall or var, false)

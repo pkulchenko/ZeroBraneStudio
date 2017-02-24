@@ -39,11 +39,6 @@ local activate = {CHECKONLY = "checkonly", NOREPORT = "noreport", CLEARALL = "cl
 
 local function serialize(value, options) return mobdebug.line(value, options) end
 
-local stackmaxlength = ide.config.debugger.maxdatalength
-local stackmaxnum = ide.config.debugger.maxdatanum
-local stackmaxlevel = ide.config.debugger.maxdatalevel
-local params = {comment = false, nocode = true, maxlevel = stackmaxlevel, maxnum = stackmaxnum}
-
 local function displayError(...) return ide:GetOutput():Error(...) end
 
 local function fixUTF8(...)
@@ -54,15 +49,8 @@ local function fixUTF8(...)
   return unpack(t)
 end
 
-local function trimToMaxLength(...)
-  local t = {...}
-  for i = 1, #t do
-    t[i] = t[i]:sub(1, stackmaxlength)..(#t[i] > stackmaxlength and '...' or '')
-  end
-  return unpack(t)
-end
-
 local q = EscapeMagic
+local MORE = "{...}"
 
 function debugger:init(init)
   local o = {}
@@ -87,13 +75,14 @@ function debugger:updateWatchesSync(onlyitem)
     local root = watchCtrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
+    local params = debugger:GetDataOptions({maxlength=false})
     local item = onlyitem or watchCtrl:GetFirstChild(root)
     while true do
       if not item:IsOk() then break end
 
       local expression = watchCtrl:GetItemExpression(item)
       if expression then
-        local _, values, error = debugger:evaluate(expression)
+        local _, values, error = debugger:evaluate(expression, params)
         local curchildren = watchCtrl:GetItemChildren(item)
         if error then
           error = error:gsub("%[.-%]:%d+:%s+","")
@@ -104,8 +93,8 @@ function debugger:updateWatchesSync(onlyitem)
           watchCtrl:SetItemValueIfExpandable(item, res)
         end
 
-        local newval = fixUTF8(trimToMaxLength(expression .. ' = '
-          .. (error and ('error: '..error) or table.concat(values, ", "))))
+        local newval = fixUTF8(expression .. ' = '
+          .. (error and ('error: '..error) or table.concat(values, ", ")))
         local val = watchCtrl:GetItemText(item)
 
         watchCtrl:SetItemBackgroundColour(item, val ~= newval and hicl or bgcl)
@@ -133,7 +122,6 @@ function debugger:updateWatchesSync(onlyitem)
   end
 end
 
-local simpleType = {['nil'] = true, ['string'] = true, ['number'] = true, ['boolean'] = true}
 local callData = {}
 
 function debugger:updateStackSync()
@@ -143,7 +131,7 @@ function debugger:updateStackSync()
   local shown = stackCtrl and (pane:IsOk() and pane:IsShown() or not pane:IsOk() and stackCtrl:IsShown())
   local canupdate = debugger.server and not debugger.running and not debugger.scratchpad
   if shown and canupdate then
-    local stack, _, err = debugger:stack()
+    local stack, _, err = debugger:stack(debugger:GetDataOptions({maxlength=false}))
     if not stack or #stack == 0 then
       stackCtrl:DeleteAll()
       if err then -- report an error if any
@@ -153,6 +141,9 @@ function debugger:updateStackSync()
     end
     stackCtrl:Freeze()
     stackCtrl:DeleteAll()
+
+    local forceexpand = ide.config.debugger.maxdatalevel == 1
+    local params = debugger:GetDataOptions({maxlevel=false})
 
     local root = stackCtrl:AddRoot("Stack")
     callData = {} -- reset call cache
@@ -189,25 +180,20 @@ function debugger:updateStackSync()
       for name,val in pairs(type(frame[2]) == "table" and frame[2] or {}) do
         -- format the variable name, value as a single line and,
         -- if not a simple type, the string value.
-
-        -- comment can be not necessarily a string for tables with metatables
-        -- that provide its own __tostring method
-        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
-        local text = ("%s = %s%s"):
-          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
+        local value = val[1]
+        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
+        stackCtrl:SetItemName(item, name)
       end
 
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
-        local value, comment = val[1], fixUTF8(trimToMaxLength(tostring(val[2])))
-        local text = ("%s = %s%s"):
-          format(name, fixUTF8(trimToMaxLength(serialize(value, params))),
-                 (simpleType[type(value)] or not val[2]) and "" or ("  --[["..comment.."]]"))
+        local value = val[1]
+        local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
+        stackCtrl:SetItemName(item, name)
       end
 
       stackCtrl:SortChildren(callitem)
@@ -1086,9 +1072,10 @@ function debugger:detach(cmd)
     debugger:exec(cmd or "done")
   end
 end
-function debugger:evaluate(expression) return self:handle('eval ' .. expression) end
-function debugger:execute(expression) return self:handle('exec ' .. expression) end
-function debugger:stack() return self:handle('stack') end
+local function todeb(params) return params and " -- "..mobdebug.line(params, {comment = false}) or "" end
+function debugger:evaluate(exp, params) return self:handle('eval ' .. exp .. todeb(params)) end
+function debugger:execute(exp, params) return self:handle('exec '.. exp .. todeb(params)) end
+function debugger:stack(params) return self:handle('stack' .. todeb(params)) end
 function debugger:Break(command)
   local debugger = self
   -- stop if we're running a "trace" command
@@ -1119,13 +1106,13 @@ function debugger:breakpoint(file, line, state)
   end
   return debugger:handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
 end
-function debugger:EvalAsync(var, callback)
+function debugger:EvalAsync(var, callback, params)
   local debugger = self
   if debugger.server and not debugger.running and callback
   and not debugger.scratchpad and not (debugger.options or {}).noeval then
     copas.addthread(function()
       local debugger = debugger
-      local _, values, err = debugger:evaluate(var)
+      local _, values, err = debugger:evaluate(var, params)
       if err then
         callback(nil, (err:gsub("%[.-%]:%d+:%s*","error: ")))
       else
@@ -1162,22 +1149,134 @@ local function debuggerCreateStackWindow()
 
   stackCtrl:SetImageList(debugger.imglist)
 
-  local valuecache = {}
-  function stackCtrl:SetItemValueIfExpandable(item, value)
-    local expandable = type(value) == 'table' and next(value) ~= nil
-    if expandable then -- cache table value to expand when requested
-      valuecache[item:GetValue()] = value
-    end
-    self:SetItemHasChildren(item, expandable)
+  local names = {}
+  function stackCtrl:SetItemName(item, name)
+    local nametype = type(name)
+    names[item:GetValue()] = (
+      (nametype == 'string' or nametype == 'number' or nametype == 'boolean')
+      and name or nil
+    )
   end
+
+  function stackCtrl:GetItemName(item)
+    return names[item:GetValue()]
+  end
+
+  local expandable = {} -- special value
+  local valuecache = {}
+  function stackCtrl:SetItemValueIfExpandable(item, value, delayed)
+    local maxlvl = tonumber(ide.config.debugger.maxdatalevel)
+    -- don't make empty tables expandable if expansion is disabled (`maxdatalevel` is false)
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed and maxlvl ~= nil)
+    if isexpandable then -- cache table value to expand when requested
+      valuecache[item:GetValue()] = next(value) == nil and expandable or value
+    elseif type(value) ~= 'table' then
+      valuecache[item:GetValue()] = nil
+    end
+    self:SetItemHasChildren(item, isexpandable)
+  end
+
+  function stackCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
   function stackCtrl:DeleteAll()
     self:DeleteAllItems()
     valuecache = {}
+    names = {}
   end
 
   function stackCtrl:GetItemChildren(item)
     return valuecache[item:GetValue()] or {}
+  end
+
+  function stackCtrl:IsFrame(item)
+    return (item and item:IsOk() and self:GetItemParent(item):IsOk()
+      and self:GetItemParent(item):GetValue() == self:GetRootItem():GetValue())
+  end
+
+  function stackCtrl:GetItemFullExpression(item)
+    local expr = ''
+    while item:IsOk() and not self:IsFrame(item) do
+      local name = self:GetItemName(item)
+      -- check if it's a top item, as it needs to be used as is;
+      -- convert `(*vararg num)` to `select(num, ...)`
+      expr = (self:IsFrame(self:GetItemParent(item))
+        and name:gsub("^%(%*vararg (%d+)%)$", "select(%1, ...)")
+        or (type(name) == 'string' and '[%q]' or '[%s]'):format(tostring(name)))
+      ..expr
+      item = self:GetItemParent(item)
+    end
+    return expr, item:IsOk() and item or nil
+  end
+
+  function stackCtrl:GetItemPos(item)
+    if not item:IsOk() then return end
+    local pos = 0
+    repeat
+      pos = pos + 1
+      item = self:GetPrevSibling(item)
+    until not item:IsOk()
+    return pos
+  end
+
+  function stackCtrl:ExpandItemValue(item)
+    local expr, itemframe = self:GetItemFullExpression(item)
+    local stack = self:GetItemPos(itemframe)
+
+    local debugger = ide:GetDebugger()
+    if debugger.running then debugger:Update() end
+    if debugger.server and not debugger.running
+    and (not debugger.scratchpad or debugger.scratchpad.paused) then
+      copas.addthread(function()
+        local debugger = debugger
+        local value, _, err = debugger:evaluate(expr, {maxlevel = 1, stack = stack})
+        if err then
+          err = err:gsub("%[.-%]:%d+:%s+","")
+          -- this may happen when attempting to expand a sub-element referenced by a key
+          -- that can't be evaluated, like a table, function, or userdata
+          if err ~= "attempt to index a nil value" then
+            self:SetItemText(item, 'error: '..err)
+          else
+            local name = self:GetItemName(item)
+            local text = stringifyKeyIntoPrefix(name, self:GetItemPos(item)).."{}"
+            self:SetItemText(item, text)
+            self:SetItemValueIfExpandable(item, {})
+            self:Expand(item)
+          end
+        else
+          local ok, res = LoadSafe("return "..tostring(value))
+          if ok then
+            self:SetItemValueIfExpandable(item, res)
+            self:Expand(item)
+
+            local name = self:GetItemName(item)
+            if not name then
+              -- this is an empty table, so replace MORE indicator with the empty table
+              self:SetItemText(item, (self:GetItemText(item):gsub(q(MORE), "{}")))
+              return
+            end
+
+            -- update cache in the parent
+            local parent = self:GetItemParent(item)
+            valuecache[parent:GetValue()][name] = res
+
+            local params = debugger:GetDataOptions({maxlevel=false})
+
+            -- now update all serialized values in the tree starting from the expanded item
+            while item:IsOk() and not self:IsFrame(item) do
+              local value = valuecache[item:GetValue()]
+              local strval = fixUTF8(serialize(value, params))
+              local name = self:GetItemName(item)
+              local text = (self:IsFrame(self:GetItemParent(item))
+                and name.." = "
+                or stringifyKeyIntoPrefix(name, self:GetItemPos(item)))
+              ..strval
+              self:SetItemText(item, text)
+              item = self:GetItemParent(item)
+            end
+          end
+        end
+      end)
+    end
   end
 
   stackCtrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
@@ -1186,17 +1285,25 @@ local function debuggerCreateStackWindow()
       local count = stackCtrl:GetChildrenCount(item_id, false)
       if count > 0 then return true end
 
+      if stackCtrl:IsExpandable(item_id) then return stackCtrl:ExpandItemValue(item_id) end
+
       local image = stackCtrl:GetItemImage(item_id)
-      local num = 1
+      local num, maxnum = 1, ide.config.debugger.maxdatanum
+      local params = debugger:GetDataOptions({maxlevel = false})
+
+      stackCtrl:Freeze()
       for name,value in pairs(stackCtrl:GetItemChildren(item_id)) do
-        local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
-        local text = stringifyKeyIntoPrefix(name, num)..strval
-        local item = stackCtrl:AppendItem(item_id, text, image)
-        stackCtrl:SetItemValueIfExpandable(item, value)
+        local item = stackCtrl:AppendItem(item_id, "", image)
+        stackCtrl:SetItemValueIfExpandable(item, value, true)
+
+        local strval = stackCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
+        stackCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
+        stackCtrl:SetItemName(item, name)
 
         num = num + 1
-        if num > stackmaxnum then break end
+        if num > maxnum then break end
       end
+      stackCtrl:Thaw()
       return true
     end)
 
@@ -1277,36 +1384,46 @@ local function debuggerCreateWatchWindow()
     return names[item:GetValue()]
   end
 
+  local expandable = {} -- special value
   local valuecache = {}
-  function watchCtrl:SetItemValueIfExpandable(item, value)
-    local expandable = type(value) == 'table' and next(value) ~= nil
-    valuecache[item:GetValue()] = expandable and value or nil
-    self:SetItemHasChildren(item, expandable)
+  function watchCtrl:SetItemValueIfExpandable(item, value, delayed)
+    local maxlvl = tonumber(ide.config.debugger.maxdatalevel)
+    -- don't make empty tables expandable if expansion is disabled (`maxdatalevel` is false)
+    local isexpandable = type(value) == 'table' and (next(value) ~= nil or delayed and maxlvl ~= nil)
+    if isexpandable then -- cache table value to expand when requested
+      valuecache[item:GetValue()] = next(value) == nil and expandable or value
+    elseif type(value) ~= 'table' then
+      valuecache[item:GetValue()] = nil
+    end
+    self:SetItemHasChildren(item, isexpandable)
   end
+
+  function watchCtrl:IsExpandable(item) return valuecache[item:GetValue()] == expandable end
 
   function watchCtrl:GetItemChildren(item)
     return valuecache[item:GetValue()] or {}
   end
 
   function watchCtrl:IsWatch(item)
-    return item:IsOk() and watchCtrl:GetItemParent(item):GetValue() == root:GetValue()
+    return (item and item:IsOk() and self:GetItemParent(item):IsOk()
+      and self:GetItemParent(item):GetValue() == root:GetValue())
   end
 
   function watchCtrl:IsEditable(item)
     return (item and item:IsOk()
-      and (watchCtrl:IsWatch(item) or watchCtrl:GetItemName(item) ~= nil))
+      and (self:IsWatch(item) or self:GetItemName(item) ~= nil))
   end
 
   function watchCtrl:GetItemFullExpression(item)
     local expr = ''
     while true do
-      local name = watchCtrl:GetItemName(item)
-      expr = (watchCtrl:IsWatch(item)
-        and ('({%s})[1]'):format(watchCtrl:GetItemExpression(item))
+      local name = self:GetItemName(item)
+      expr = (self:IsWatch(item)
+        and ('({%s})[1]'):format(self:GetItemExpression(item))
         or (type(name) == 'string' and '[%q]' or '[%s]'):format(tostring(name))
       )..expr
-      if watchCtrl:IsWatch(item) then break end
-      item = watchCtrl:GetItemParent(item)
+      if self:IsWatch(item) then break end
+      item = self:GetItemParent(item)
       if not item:IsOk() then break end
     end
     return expr, item:IsOk() and item or nil
@@ -1348,24 +1465,89 @@ local function debuggerCreateWatchWindow()
     end
   end
 
+  function watchCtrl:GetItemPos(item)
+    if not item:IsOk() then return end
+    local pos = 0
+    repeat
+      pos = pos + 1
+      item = self:GetPrevSibling(item)
+    until not item:IsOk()
+    return pos
+  end
+
+  function watchCtrl:ExpandItemValue(item)
+    local expr = self:GetItemFullExpression(item)
+
+    local debugger = ide:GetDebugger()
+    if debugger.running then debugger:Update() end
+    if debugger.server and not debugger.running
+    and (not debugger.scratchpad or debugger.scratchpad.paused) then
+      copas.addthread(function()
+        local debugger = debugger
+        local value, _, err = debugger:evaluate(expr, {maxlevel = 1})
+        if err then
+          self:SetItemText(item, 'error: '..err:gsub("%[.-%]:%d+:%s+",""))
+        else
+          local ok, res = LoadSafe("return "..tostring(value))
+          if ok then
+            self:SetItemValueIfExpandable(item, res)
+            self:Expand(item)
+            local name = self:GetItemName(item)
+            if not name then
+              self:SetItemText(item, (self:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              return
+            end
+
+            -- update cache in the parent
+            local parent = self:GetItemParent(item)
+            valuecache[parent:GetValue()][name] = res
+
+            local params = debugger:GetDataOptions({maxlevel=false})
+
+            -- now update all serialized values in the tree starting from the expanded item
+            while item:IsOk() do
+              local value = valuecache[item:GetValue()]
+              local strval = fixUTF8(serialize(value, params))
+              local name = self:GetItemName(item)
+              local text = (self:IsWatch(item)
+                and self:GetItemExpression(item).." = "
+                or stringifyKeyIntoPrefix(name, self:GetItemPos(item)))
+              ..strval
+              self:SetItemText(item, text)
+              if self:IsWatch(item) then break end
+              item = self:GetItemParent(item)
+            end
+          end
+        end
+      end)
+    end
+  end
+
   watchCtrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_EXPANDING,
     function (event)
       local item_id = event:GetItem()
       local count = watchCtrl:GetChildrenCount(item_id, false)
       if count > 0 then return true end
 
+      if watchCtrl:IsExpandable(item_id) then return watchCtrl:ExpandItemValue(item_id) end
+
       local image = watchCtrl:GetItemImage(item_id)
-      local num = 1
+      local num, maxnum = 1, ide.config.debugger.maxdatanum
+      local params = debugger:GetDataOptions({maxlevel = false})
+
+      watchCtrl:Freeze()
       for name,value in pairs(watchCtrl:GetItemChildren(item_id)) do
-        local strval = fixUTF8(trimToMaxLength(serialize(value, params)))
-        local text = stringifyKeyIntoPrefix(name, num)..strval
-        local item = watchCtrl:AppendItem(item_id, text, image)
-        watchCtrl:SetItemValueIfExpandable(item, value)
+        local item = watchCtrl:AppendItem(item_id, "", image)
+        watchCtrl:SetItemValueIfExpandable(item, value, true)
+
+        local strval = watchCtrl:IsExpandable(item) and MORE or fixUTF8(serialize(value, params))
+        watchCtrl:SetItemText(item, stringifyKeyIntoPrefix(name, num)..strval)
         watchCtrl:SetItemName(item, name)
 
         num = num + 1
-        if num > stackmaxnum then break end
+        if num > maxnum then break end
       end
+      watchCtrl:Thaw()
       return true
     end)
 
