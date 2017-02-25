@@ -58,6 +58,8 @@ For example, `debugger.init = [[some initialization code]]`.
 - `debugger.maxdatalength = 256`: set (approximate) limit (in bytes) for the data shown in the Stack and Watch results.
 - `debugger.maxdatanum = 128`: limit the number of elements for tables shown in the Stack and Watch results.
 - `debugger.maxdatalevel = 3`: limit the number of nested levels for tables shown in the Stack and Watch results as well as in the tooltips.
+- `debugger.numformat = "%.16g"`: specify numeric format used in the Stack and Watch results (1.51+).
+The numbers in the Console are shown using "%.17g" format, which is needed for preserving all significant bits in double values.
 - `debugger.port = 8172`: set port number to use for debugging.
 - `debugger.redirect = nil`: specify how `print` results should be redirected in the application being debugged (0.39+).
 Use `'c'` for 'copying' (appears in the application output and the Output panel),
