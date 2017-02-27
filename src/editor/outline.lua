@@ -249,7 +249,7 @@ local function indexFromQueue()
       outline:UpdateSymbols(fname, outlineRefresh(editor))
       editor:Destroy()
     else
-      DisplayOutputLn(TR("Can't open file '%s': %s"):format(fname, err))
+      ide:Print(TR("Can't open file '%s': %s"):format(fname, err))
     end
     if #outline.indexqueue == 0 then
       outline:SaveSettings()

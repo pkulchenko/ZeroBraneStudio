@@ -656,8 +656,7 @@ function ide:CreateImageList(group, ...)
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
     if imglist:Add(icon) == -1 then
-      DisplayOutputLn(("Failed to add image '%s' to the image list.")
-        :format(file or select(i, ...)))
+      ide:Print(("Failed to add image '%s' to the image list."):format(file or select(i, ...)))
     end
   end
   return imglist
@@ -897,7 +896,7 @@ function ide:RemoveConfig(name)
     for key, value in pairs(configcache[name].overrides) do setLongKey(self.config, key, value) end
     if configcache[name].configmeta then setmetatable(self.config, configcache[name].configmeta) end
   else
-    DisplayOutputLn(("Error while restoring configuration: '%s'."):format(res))
+    ide:Print(("Error while restoring configuration: '%s'."):format(res))
   end
   configcache[name] = nil -- clear the slot after use
   ReApplySpecAndStyles() -- apply current config to the UI

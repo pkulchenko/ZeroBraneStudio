@@ -95,7 +95,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
         -- skip binary files with unknown extensions as they may have any sequences
         -- when using Raw methods, this can only happen for binary files (that include \0 chars)
         if editor.useraw or editor.spec == ide.specs.none and IsBinary(s) then
-          DisplayOutputLn(("%s: %s"):format(filePath,
+          ide:Print(("%s: %s"):format(filePath,
               TR("Binary file is shown as read-only as it is only partially loaded.")))
           file_text = ''
           editor:SetReadOnly(true)
@@ -112,7 +112,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
           for _, n in ipairs(invalid) do
             local line = editor:LineFromPosition(n)
             if line ~= lastline then
-              DisplayOutputLn(("%s:%d: %s"):format(filePath, line+1,
+              ide:Print(("%s:%d: %s"):format(filePath, line+1,
                   TR("Replaced an invalid UTF8 character with %s."):format(replacement)))
               lastline = line
             end
@@ -148,7 +148,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
     local foundlf = (string.find(file_text,"[^\r]\n") ~= nil)
       or (string.find(file_text,"^\n") ~= nil) -- edge case: file beginning with LF and having no other LF
     if foundcrlf and foundlf then -- file with mixed line-endings
-      DisplayOutputLn(("%s: %s")
+      ide:Print(("%s: %s")
         :format(filePath, TR("Mixed end-of-line encodings detected.")..' '..
           TR("Use '%s' to show line endings and '%s' to convert them.")
         :format("ide:GetEditor():SetViewEOL(1)", "ide:GetEditor():ConvertEOLs(ide:GetEditor():GetEOLMode())")))
@@ -555,13 +555,13 @@ function CompileProgram(editor, params)
   if func then
     compileOk = compileOk + 1
     if params.reportstats then
-      DisplayOutputLn(TR("Compilation successful; %.0f%% success rate (%d/%d).")
+      ide:Print(TR("Compilation successful; %.0f%% success rate (%d/%d).")
         :format(compileOk/compileTotal*100, compileOk, compileTotal))
     end
   else
     ide:GetOutput():Activate()
-    DisplayOutputLn(TR("Compilation error").." "..TR("on line %d"):format(line)..":")
-    DisplayOutputLn((err:gsub("\n$", "")))
+    ide:Print(TR("Compilation error").." "..TR("on line %d"):format(line)..":")
+    ide:Print((err:gsub("\n$", "")))
     -- check for escapes invalid in LuaJIT/Lua 5.2 that are allowed in Lua 5.1
     if err:find('invalid escape sequence') then
       local s = editor:GetLineDyn(line-1)
@@ -572,7 +572,7 @@ function CompileProgram(editor, params)
         :gsub('(\\z%s*)', function(s) return string.rep(' ', #s) end)
       local invalid = cleaned:find("\\")
       if invalid then
-        DisplayOutputLn(TR("Consider removing backslash from escape sequence '%s'.")
+        ide:Print(TR("Consider removing backslash from escape sequence '%s'.")
           :format(s:sub(invalid,invalid+1)))
       end
     end
@@ -691,17 +691,16 @@ end
 function SetOpenTabs(params)
   local recovery, nametab = LoadSafe("return "..params.recovery)
   if not recovery or not nametab then
-    DisplayOutputLn(TR("Can't process auto-recovery record; invalid format: %s."):format(nametab or "unknown"))
+    ide:Print(TR("Can't process auto-recovery record; invalid format: %s."):format(nametab or "unknown"))
     return
   end
   if not params.quiet then
-    DisplayOutputLn(TR("Found auto-recovery record and restored saved session."))
+    ide:Print(TR("Found auto-recovery record and restored saved session."))
   end
   for _,doc in ipairs(nametab) do
     -- check for missing file if no content is stored
     if doc.filepath and not doc.content and not wx.wxFileExists(doc.filepath) then
-      DisplayOutputLn(TR("File '%s' is missing and can't be recovered.")
-        :format(doc.filepath))
+      ide:Print(TR("File '%s' is missing and can't be recovered."):format(doc.filepath))
     else
       local editor = (doc.filepath and LoadFile(doc.filepath,nil,true,true)
         or findUnusedEditor() or NewFile(doc.filename))
@@ -709,7 +708,7 @@ function SetOpenTabs(params)
       if doc.content then
         editor:SetTextDyn(doc.content)
         if doc.filepath and opendoc.modTime and doc.modified < opendoc.modTime:GetTicks() then
-          DisplayOutputLn(TR("File '%s' has more recent timestamp than restored '%s'; please review before saving.")
+          ide:Print(TR("File '%s' has more recent timestamp than restored '%s'; please review before saving.")
             :format(doc.filepath, opendoc:GetTabText()))
         end
         opendoc:SetModified(true)

@@ -1238,7 +1238,7 @@ function CreateEditor(bare)
       end
       if minupdated then
         local ok, res = pcall(IndicateAll, editor, minupdated)
-        if not ok then DisplayOutputLn("Internal error: ",res,minupdated) end
+        if not ok then ide:Print("Internal error: ",res,minupdated) end
       end
       local firstvisible = editor:GetFirstVisibleLine()
       local firstline = editor:DocLineFromVisible(firstvisible)

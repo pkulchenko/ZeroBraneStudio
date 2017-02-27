@@ -449,7 +449,7 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
       self.curfilename = file
       local filetext, err = FileRead(file, firstReadSize)
       if not filetext then
-        DisplayOutputLn(TR("Can't open file '%s': %s"):format(file, err))
+        ide:Print(TR("Can't open file '%s': %s"):format(file, err))
       elseif not checkBinary(GetFileExt(file), filetext) then
         -- read the rest if there is more to read in the file
         if #filetext == firstReadSize then filetext = FileRead(file) end

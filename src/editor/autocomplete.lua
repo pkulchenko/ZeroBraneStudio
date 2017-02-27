@@ -63,13 +63,13 @@ local function addAPI(ftype, fname) -- relative to API directory
   else
     local fn, err = loadfile(api)
     if err then
-      DisplayOutputLn(TR("Error while loading API file: %s"):format(err))
+      ide:Print(TR("Error while loading API file: %s"):format(err))
       return
     end
     local suc
     suc, res = pcall(fn, env.ac.childs)
     if (not suc) then
-      DisplayOutputLn(TR("Error while processing API file: %s"):format(res))
+      ide:Print(TR("Error while processing API file: %s"):format(res))
       return
     end
     -- cache the result
@@ -242,7 +242,7 @@ local function resolveAssign(editor,tx)
       -- abort the check if the auto-complete is taking too long
       if n > 50 and os.clock() > stopat then
         if ide.config.acandtip.warning then
-          DisplayOutputLn("Warning: Auto-complete was aborted after taking too long to complete."
+          ide:Print("Warning: Auto-complete was aborted after taking too long to complete."
             .. " Please report this warning along with the text you were typing to support@zerobrane.com.")
         end
         break
