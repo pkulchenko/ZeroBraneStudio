@@ -368,7 +368,7 @@ function ide:CreateStyledTextCtrl(...)
   end
 
   local suffix = "\1\0"
-  function editor:CopyDyn()
+  function editor:CopyAny()
     if not self.useraw then return self:Copy() end
     -- check if selected fragment is a valid UTF-8 sequence
     local text = self:GetSelectedTextRaw()
@@ -383,7 +383,7 @@ function ide:CreateStyledTextCtrl(...)
     clip:Close()
   end
 
-  function editor:PasteDyn()
+  function editor:PasteAny()
     if not self.useraw then return self:Paste() end
     local tdo = wx.wxTextDataObject()
     local clip = wx.wxClipboard.Get()
@@ -397,6 +397,10 @@ function ide:CreateStyledTextCtrl(...)
     self:AddTextRaw(text)
     self:GotoPos(self:GetCurrentPos())
   end
+
+  -- Copy and Paste only handle non-UTF-8 data on Windows, so disable them on OSX/Linux
+  editor.CopyDyn = ide.osname == "Windows" and editor.CopyAny or editor.Copy
+  editor.PasteDyn = ide.osname == "Windows" and editor.PasteAny or editor.Paste
 
   function editor:GotoPosEnforcePolicy(pos)
     self:GotoPos(pos)
