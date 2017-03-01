@@ -17,8 +17,48 @@ for n, code in ipairs(UTF8s) do
   is(FixUTF8(code), code, ("Valid UTF8 code is left unmodified (%d/%d)."):format(n, #UTF8s))
 end
 
+local function copyToClipboard(text, format)
+  local tdo = wx.wxTextDataObject()
+  if format == wx.wxDF_TEXT then
+    tdo:SetData(wx.wxDataFormat(format), text)
+  else
+    tdo:SetText(text)
+  end
+
+  local clip = wx.wxClipboard.Get()
+  clip:Open()
+  clip:SetData(tdo)
+  clip:Close()
+end
 
 local editor = NewFile()
+
+-- copying valid UTF8
+local valid = "ás grande"
+copyToClipboard(valid)
+editor:PasteDyn()
+is(editor:GetTextDyn(), valid, "Valid UTF-8 string is pasted from the clipboard.")
+
+-- copying invalid UTF8
+local invalid = "-- \193"
+copyToClipboard(invalid, wx.wxDF_TEXT)
+editor:SetTextDyn(invalid)
+ok(#editor:GetTextDyn() == #invalid, "Length of stored string is the same as the invalid UTF-8 string.")
+
+local valid = "ásg"
+ok(#editor:GetTextDyn() == #valid, "Length of copied content is the same as the valid UTF-8 string.")
+editor:SetSelectionStart(0)
+editor:SetSelectionEnd(#invalid)
+editor:CopyDyn() -- populate the buffer with the "invalid" copy
+editor:SetSelectionEnd(0)
+editor:PasteDyn()
+is(editor:GetTextDyn(), invalid..invalid, "Invalid UTF-8 string is copied and pasted.")
+
+-- copying valid when the buffer is for invalid of the same length
+copyToClipboard(valid)
+editor:SetText("")
+editor:PasteDyn()
+is(editor:GetTextDyn(), valid, "Valid UTF-8 string is pasted from the clipboard after coping invalid UTF-8 string.")
 
 for _, tst in ipairs({
   "_ = .1 + 1. + 1.1 + 0xa",

@@ -347,6 +347,10 @@ local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn"
   "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
 local useraw = nil
 
+local invalidUTF8, invalidLength
+local suffix = "\1\0"
+local DF_TEXT = wx.wxDataFormat(wx.wxDF_TEXT)
+
 function ide:CreateStyledTextCtrl(...)
   local editor = wxstc.wxStyledTextCtrl(...)
   if not editor then return end
@@ -367,8 +371,8 @@ function ide:CreateStyledTextCtrl(...)
     editor[m] = function(...) return editor[m:gsub("Dyn", useraw and "Raw" or "")](...) or def end
   end
 
-  local suffix = "\1\0"
-  function editor:CopyAny()
+  function editor:CopyDyn()
+    invalidUTF8 = nil
     if not self.useraw then return self:Copy() end
     -- check if selected fragment is a valid UTF-8 sequence
     local text = self:GetSelectedTextRaw()
@@ -376,31 +380,31 @@ function ide:CreateStyledTextCtrl(...)
     local tdo = wx.wxTextDataObject()
     -- append suffix as wxwidgets (3.1+ on Windows) truncate last char for odd-length strings
     local workaround = ide.osname == "Windows" and (#text % 2 > 0) and suffix or ""
-    tdo:SetData(wx.wxDataFormat(wx.wxDF_TEXT), text..workaround)
+    tdo:SetData(DF_TEXT, text..workaround)
+    invalidUTF8, invalidLength = text, tdo:GetDataSize()
+
     local clip = wx.wxClipboard.Get()
     clip:Open()
     clip:SetData(tdo)
     clip:Close()
   end
 
-  function editor:PasteAny()
+  function editor:PasteDyn()
     if not self.useraw then return self:Paste() end
     local tdo = wx.wxTextDataObject()
     local clip = wx.wxClipboard.Get()
     clip:Open()
     clip:GetData(tdo)
     clip:Close()
-    local ok, text = tdo:GetDataHere(wx.wxDataFormat(wx.wxDF_TEXT))
+    local ok, text = tdo:GetDataHere(DF_TEXT)
     -- check if the fragment being pasted is a valid UTF-8 sequence
-    if not ok or text == "" or wx.wxString.FromUTF8(text) ~= "" then return self:Paste() end
-    if ide.osname == "Windows" then text = text:gsub(suffix.."+$","") end
-    self:AddTextRaw(text)
+    if ide.osname == "Windows" then text = text and text:gsub(suffix.."+$","") end
+    if not ok or wx.wxString.FromUTF8(text) ~= ""
+    or not invalidUTF8 or invalidLength ~= tdo:GetDataSize() then return self:Paste() end
+
+    self:AddTextRaw(ide.osname ~= "Windows" and invalidUTF8 or text)
     self:GotoPos(self:GetCurrentPos())
   end
-
-  -- Copy and Paste only handle non-UTF-8 data on Windows, so disable them on OSX/Linux
-  editor.CopyDyn = ide.osname == "Windows" and editor.CopyAny or editor.Copy
-  editor.PasteDyn = ide.osname == "Windows" and editor.PasteAny or editor.Paste
 
   function editor:GotoPosEnforcePolicy(pos)
     self:GotoPos(pos)
