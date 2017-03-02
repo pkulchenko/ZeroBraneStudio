@@ -78,6 +78,10 @@ To limit the negative impact of socket checks for pending messages, the debugger
 To make the debugger to check more frequently, you can update `checkcount` field (`require('mobdebug').checkcount = 1`) before or after debugging is started.
 - If breakpoints are still not working, you may want to enable verbose debugging (`debugger.verbose=true`) as this will provide additional information about paths reported by the interpreter and used by the IDE.
 
+## Why stepping into coroutines doesn't work?
+
+See [this section](doc-lua-debugging#coroutine-debugging) in the documentation for details on how to enable it.
+
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
 Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window (when [editor.autoactivate](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) is enabled) with the code you can then step through.
