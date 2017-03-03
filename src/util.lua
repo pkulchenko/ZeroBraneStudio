@@ -247,6 +247,8 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       end
       found, file = dir:GetNext()
     end
+    -- wxlua < 3.1 doesn't provide Close method for the directory, so check for it
+    if ide:IsValidProperty(dir, "Close") then dir:Close() end
   end
   while #queue > 0 do getDir(table.remove(queue)) end
 
