@@ -4,7 +4,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ $(uname) == 'Darwin' ]]; then
-  (cd "$DIR"; open zbstudio/ZeroBraneStudio.app --args "$@")
+  (cd "$DIR"; zbstudio/ZeroBraneStudio.app/Contents/MacOS/ZeroBraneStudio "$@")
 else
   case "$(uname -m)" in
 	x86_64) ARCH=x64;;
