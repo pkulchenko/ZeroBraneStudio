@@ -1,9 +1,7 @@
 #!/bin/bash
 
 ZBS_PATH=${0%/*/*}
-# when launching from the command line, the path may be relative,
-# but needs to be absolute to make dynamic library references to work
-if [[ "$ZBS_PATH" != /* ]]; then ZBS_PATH="${PWD%}/$ZBS_PATH"; fi
+if [ ! -d $ZBS_PATH ]; then ZBS_PATH=${PWD%/*}; fi
 ZBS_BIN="$ZBS_PATH/ZeroBraneStudio/bin"
 if [[ ! -e "$ZBS_BIN/libedit.3.dylib" && ! -e /usr/lib/libedit.3.dylib ]]
 then ln -s /usr/lib/libedit.2.dylib "$ZBS_BIN/libedit.3.dylib"; fi
