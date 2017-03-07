@@ -4,7 +4,11 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ $(uname) == "Darwin" ]]; then
-  (cd "$DIR"; if [[ $( xattr -pl "com.apple.quarantine" zbstudio 2>&1 ) == com.apple.quarantine:* ]]; then xattr -rd com.apple.quarantine zbstudio bin; fi; open zbstudio/ZeroBraneStudio.app --args "$@")
+  # MacOS Sierra throws `error -10810` running with quarantined files even when explicitly allowed
+  ATTR="com.apple.quarantine"
+  (cd "$DIR"; \
+   if [[ $( xattr -pl $ATTR zbstudio 2>&1 ) == $ATTR:* ]]; then xattr -rd $ATTR zbstudio bin; fi; \
+   open zbstudio/ZeroBraneStudio.app --args "$@")
 else
   case "$(uname -m)" in
 	x86_64) ARCH=x64;;
