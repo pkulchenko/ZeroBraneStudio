@@ -15,6 +15,10 @@ case "$(uname -m)" in
 		FPIC="-fpic"
 		ARCH="armhf"
 		;;
+        aarch64)
+		FPIC="-fpic"
+		ARCH="aarch64"
+		;;
 	*)
 		FPIC=""
 		ARCH="x86"

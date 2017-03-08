@@ -18,8 +18,12 @@ if islinux then
   local file = io.popen("uname -m")
   if file then
     local machine=file:read("*l")
-    local archtype= { x86_64="x64", armv7l="armhf" }
-    arch = archtype[machine] or "x86"
+    local archtype= {
+      x86_64  = "x64",
+      armv7l  = "armhf",
+      aarch64 = "aarch64",
+    }
+    arch = archtype[machine] or arch
     file:close()
   end
 end

@@ -11,9 +11,10 @@ if [[ $(uname) == "Darwin" ]]; then
    open zbstudio/ZeroBraneStudio.app --args "$@")
 else
   case "$(uname -m)" in
-	x86_64) ARCH=x64;;
-	armv7l) ARCH=armhf;;
-	*)	ARCH=x86;;
+    x86_64)  ARCH=x64;;
+    armv7l)  ARCH=armhf;;
+    aarch64) ARCH=aarch64;;
+    *)       ARCH=x86;;
   esac
   (cd "$DIR"; bin/linux/$ARCH/lua src/main.lua zbstudio "$@") &
 fi
