@@ -26,7 +26,7 @@ You can also configure the IDE to [auto-open files](https://github.com/pkulchenk
 
 ## How to refresh the files shown in the Project tree after the changes made outside of the IDE?
 
-(1.40+) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
+(**1.40+**) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
 You can still refresh the Project tree content manually when it gets out of sync by using `Refresh` item in the Project tree local menu (activated with right click on an item).
 If you are using one of the earlier versions, you can check [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
 
@@ -123,7 +123,7 @@ See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_GET
 
 ## How to replace using captures in regular expressions?
 
-(0.39+) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
+(**0.39+**) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
 For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherVariable\1`, `MyVariable1` will be replaced with `MyOtherVariable1`, `MyVariable2` with `MyOtherVariable2`, and so on.
 
 ## Why is the text blurry when running on Windows 8?
@@ -131,8 +131,8 @@ For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherV
 Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
 See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
 
-(v1.11+) If you are using v1.11 or later, this may no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
-(v1.40+) HiDPI awareness has also been enabled for Lua executables for all supported versions.
+(**1.11+**) If you are using v1.11 or later, this may no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
+(**1.40+**) HiDPI awareness has also been enabled for Lua executables for all supported versions.
 You may still need to enable it for other executables (not included with the IDE) as needed to make the applications you start from the IDE dpi-aware as well.
 
 ## Why is the text blurry in the editor when running on retina display (OSX)?
@@ -157,7 +157,7 @@ For more information on how to modify colors and appearance of IDE elements, che
 
 ## How to accept keyboard input for applications started from the IDE?
 
-(This is no longer necessary for 1.21+) You need to output something using `print` or `io.write` before reading input.
+(**No longer necessary for 1.21+**) You need to output something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
 If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
@@ -185,7 +185,7 @@ You may also review [xcode-keys](https://github.com/pkulchenko/ZeroBraneStudio/b
 
 ## Why am I getting a warning about "invalid UTF8 character" in the files I open in the editor?
 
-You probably have files created using one of Microsoft [Windows code pages](http://en.wikipedia.org/wiki/Windows_code_page#List); most likely 1252, 936, or 950.
+(**1.30 and earlier**) You probably have files created using one of Microsoft [Windows code pages](http://en.wikipedia.org/wiki/Windows_code_page#List); most likely 1252, 936, or 950.
 ZeroBrane Studio is using [UTF-8 encoding](http://en.wikipedia.org/wiki/UTF-8), which allows users to use any supported language, but the files need to use Unicode encodings.
 If you want to continue editing this file in the IDE, you have two choices:
 
@@ -234,9 +234,10 @@ You can also change the color and the type of the marker: `styles.marker.current
 
 ## Where do I find the list of functions in the current file?
 
-Before v0.90, the list of functions was available through the dropdown in the toolbar.
-Starting from v0.90, the list of functions is available through a separate tab located next to the project tab.
+(**0.90+**) The list of functions is shown in the Outline tab located next to the Project tab.
 The content of the Outline can be [configured in various ways](doc-general-preferences#outline).
+
+(**0.80 and earlier**) The list of functions was available through the dropdown in the toolbar.
 
 ## Why not all upvalues are shown in the debugger?
 
@@ -267,6 +268,6 @@ You can later change it to a different file or unset by selecting `Unset .... As
 
 ## How do I show Corona SDK Console window on Windows?
 
-(0.81+) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration). See [all Corona-specific preferences](doc-corona-preferences) for details.
+(**0.81+**) You may set `corona = {showconsole = true}` in [system or user configuration](doc-configuration). See [all Corona-specific preferences](doc-corona-preferences) for details.
 
-(0.80 and earlier versions) You may add the following line to [system or user configuration](doc-configuration): `unhidewindow.ConsoleWindowClass = 0`.
+(**0.80 and earlier**) You may add the following line to [system or user configuration](doc-configuration): `unhidewindow.ConsoleWindowClass = 0`.
