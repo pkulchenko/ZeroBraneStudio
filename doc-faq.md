@@ -137,10 +137,9 @@ You may still need to enable it for other executables (not included with the IDE
 
 ## Why is the text blurry in the editor when running on retina display (OSX)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration);
-this setting is enabled by default on OSX starting from v0.60.
+You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on OSX starting from v0.60.
 
-Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
+(**1.30 and earlier**) Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
 ## How to change background color in the editor?
 
