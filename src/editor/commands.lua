@@ -41,12 +41,17 @@ end
 
 function LoadFile(filePath, editor, file_must_exist, skipselection)
   filePath = filePath:gsub("%s+$","")
-  filePath = wx.wxFileName(filePath)
-  filePath:Normalize() -- make it absolute and remove all .. and . if possible
-  filePath = filePath:GetFullPath()
 
   -- if the file name is empty or is a directory, don't do anything
   if filePath == '' or wx.wxDirExists(filePath) then return nil end
+
+  filePath = FileNormalizePath(filePath)
+  -- on some Windows versions, normalization doesn't return "original" file name,
+  -- so detect that and use LongPath instead
+  if ide.osname == "Windows" and wx.wxFileExists(filePath)
+  and FileNormalizePath(filePath:upper()) ~= FileNormalizePath(filePath:lower()) then
+    filePath = FileGetLongPath(filePath)
+  end
 
   -- prevent files from being reopened again
   if (not editor) then

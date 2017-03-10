@@ -281,6 +281,35 @@ function MergeFullPath(p, f)
     or nil)
 end
 
+function FileNormalizePath(path)
+  local filePath = wx.wxFileName(path)
+  filePath:Normalize()
+  filePath:SetVolume(filePath:GetVolume():upper())
+  return filePath:GetFullPath()
+end
+
+function FileGetLongPath(path)
+  local fn = wx.wxFileName(path)
+  local vol = fn:GetVolume():upper()
+  local volsep = wx.wxFileName.GetVolumeSeparator(vol:byte()-("A"):byte()+1)
+  local sep = string.char(wx.wxFileName.GetPathSeparator())
+  local dir = wx.wxDir()
+  local dirs = fn:GetDirs()
+  table.insert(dirs, fn:GetFullName())
+  local normalized = vol..volsep
+  local hasclose = ide:IsValidProperty(dir, "Close")
+  while #dirs > 0 do
+    dir:Open(normalized)
+    if not dir:IsOpened() then return path end
+    local p = table.remove(dirs, 1)
+    local ok, segment = dir:GetFirst(p)
+    if not ok then return path end
+    normalized = normalized..sep..segment
+    if hasclose then dir:Close() end
+  end
+  return normalized
+end
+
 function CreateFullPath(path)
   local ok = wx.wxFileName.Mkdir(path, tonumber(755,8), wx.wxPATH_MKDIR_FULL)
   return ok, not ok and wx.wxSysErrorMsg() or nil
