@@ -93,14 +93,14 @@ both local and global variables are offered in a scope-aware way, so they are of
 ## Output and Console
 
 - `outputshell.fontname = "Courier New"`: set font name.
-- `outputshell.fontsize = 10`: set font size (the default value is `11` on OSX).
+- `outputshell.fontsize = 10`: set font size (the default value is `11` on MacOS).
 - `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
 - `outputshell.usewrap = true`: wrap long lines (0.51+); set to `nil` or `false` to disable. This setting only applies to the Output window; the Console always wraps its lines.
 
 ## Project/Filetree
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
-- `filetree.fontsize = 10`: set font size (the default size is `11` on OSX).
+- `filetree.fontsize = 10`: set font size (the default size is `11` on MacOS).
 - `filetree.showchanges = true`: track and show file system changes in the filetree (1.40+).
 - `filetree.mousemove = true`: enable moving files and directories in the filetree using drag-and-drop (0.80+);
 set to `false` to disable.
@@ -197,7 +197,7 @@ For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all inter
 - `toolbar.icons = { ID.NEW, ID.OPEN, ... ID.SEPARATOR, ...}`: set the order of the buttons in the toolbar.
 - `toolbar.iconsize = nil`: set the size of the icons in the toolbar.
 Only two sizes are currently supported: `16` and `24` pixels.
-Starting from v1.11+ the default size for icons is 24 pixels on OSX or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
+Starting from v1.11+ the default size for icons is 24 pixels on MacOS or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
 You can still set the values to `16` or `24` as desired.
 
 The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) or to `wx.wxBitmap` object; see this plugin for an [example on how to create a toolbar bitmap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/maketoolbar.lua).
@@ -260,7 +260,7 @@ The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can 
 Some configuration information that needs to be preserved between launches (windows and panels sizes and positions, open editor tabs, recently used projects and files and so on) is saved in a special file.
 The location (and the name) of this file is system dependent:
 it is located in `%HOME%\ZeroBraneStudio.ini` (for v0.35 and earlier) and in `%APPDATA%\ZeroBraneStudio.ini` (for v0.36 and later) on Windows (`%APPDATA%` is mapped to a hidden folder `C:\Users\<user>\AppData\Roaming`),
-`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on Mac OSX, and in
+`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on MacOS, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
 
