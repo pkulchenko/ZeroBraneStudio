@@ -292,6 +292,9 @@ if not wx.wxMOD_SHIFT then wx.wxMOD_SHIFT = 0x04 end
 if not wx.wxDIR_NO_FOLLOW then wx.wxDIR_NO_FOLLOW = 0x10 end
 if not wxaui.wxAUI_TB_PLAIN_BACKGROUND then wxaui.wxAUI_TB_PLAIN_BACKGROUND = 2^8 end
 if not wx.wxNOT_FOUND then wx.wxNOT_FOUND = -1 end
+if not wx.wxEXEC_NOEVENTS then wx.wxEXEC_NOEVENTS = 16 end
+if not wx.wxEXEC_HIDE_CONSOLE then wx.wxEXEC_HIDE_CONSOLE = 32 end
+if not wx.wxEXEC_BLOCK then wx.wxEXEC_BLOCK = wx.wxEXEC_SYNC + wx.wxEXEC_NOEVENTS end
 
 if not setfenv then -- Lua 5.2
   -- based on http://lua-users.org/lists/lua-l/2010-06/msg00314.html
