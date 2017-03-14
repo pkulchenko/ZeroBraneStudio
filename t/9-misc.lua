@@ -94,3 +94,13 @@ ok(ide:FindMenuItem(ID.ABOUT):GetText():match("\t(.*)") == nil, "`SetHotKey` rem
 
 ide:SetHotKey(ID.STARTDEBUG, "Ctrl+N") -- this should resolve conflict with `Ctrl-N`
 ok(ide:FindMenuItem(ID.NEW):GetText():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (2/2).")
+
+if ide.osname == "Windows" then
+  local capname, cwd = [[T\TesT.LUA]], wx.wxGetCwd()
+  -- relative path
+  is(FileGetLongPath(capname), capname:lower(), "`GetLongFilePath` returns properly formatted path on Windows (1/3).")
+  -- absolute path with volume
+  is(FileGetLongPath(MergeFullPath(cwd,capname)), MergeFullPath(cwd,capname:lower()), "`GetLongFilePath` returns properly formatted path on Windows (2/3).")
+  -- absolute path with no volume
+  is(FileGetLongPath(MergeFullPath(cwd,capname):gsub("^.:","")), MergeFullPath(cwd,capname:lower()):gsub("^.:",""), "`GetLongFilePath` returns properly formatted path on Windows (3/3).")
+end

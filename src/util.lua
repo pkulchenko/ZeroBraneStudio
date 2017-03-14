@@ -291,12 +291,11 @@ end
 function FileGetLongPath(path)
   local fn = wx.wxFileName(path)
   local vol = fn:GetVolume():upper()
-  local volsep = wx.wxFileName.GetVolumeSeparator(vol:byte()-("A"):byte()+1)
-  local sep = string.char(wx.wxFileName.GetPathSeparator())
+  local volsep = vol and vol:byte() and wx.wxFileName.GetVolumeSeparator(vol:byte()-("A"):byte()+1)
   local dir = wx.wxDir()
   local dirs = fn:GetDirs()
   table.insert(dirs, fn:GetFullName())
-  local normalized = vol..volsep
+  local normalized = vol and volsep and vol..volsep or (path:match("^[/\\]") or ".")
   local hasclose = ide:IsValidProperty(dir, "Close")
   while #dirs > 0 do
     dir:Open(normalized)
@@ -304,10 +303,12 @@ function FileGetLongPath(path)
     local p = table.remove(dirs, 1)
     local ok, segment = dir:GetFirst(p)
     if not ok then return path end
-    normalized = normalized..sep..segment
+    normalized = MergeFullPath(normalized,segment)
     if hasclose then dir:Close() end
   end
-  return normalized
+  local file = wx.wxFileName(normalized)
+  file:Normalize(wx.wxPATH_NORM_DOTS) -- remove leading dots, if any
+  return file:GetFullPath()
 end
 
 function CreateFullPath(path)
