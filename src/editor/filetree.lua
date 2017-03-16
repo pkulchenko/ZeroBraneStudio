@@ -13,6 +13,7 @@ ide.filetree = {
     "FOLDER", "FILE-KNOWN", "FILE-NORMAL", "FILE-NORMAL-START",
     "FOLDER-MAPPED"),
   settings = {extensionignore = {}, startfile = {}, mapped = {}},
+  extmap = {},
 }
 local filetree = ide.filetree
 local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
@@ -23,11 +24,31 @@ local image = {
   DIRECTORYMAPPED = 4,
 }
 
+local clearbmp = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(16,16))
+local function createImg(ext)
+  local bitmap = wx.wxBitmap(16, 16)
+  local font = wx.wxFont(ide.font.eNormal)
+  font:SetPointSize(5)
+  local mdc = wx.wxMemoryDC()
+  mdc:SelectObject(bitmap)
+  mdc:SetFont(font)
+  mdc:DrawBitmap(clearbmp, 0, 0, true)
+  mdc:SetTextForeground(wx.wxBLACK)
+  mdc:DrawText(ext:sub(1,3), 2, 5) -- take first three letters only
+  mdc:SelectObject(wx.wxNullBitmap)
+  return bitmap
+end
+
 local function getIcon(name, isdir)
   local startfile = GetFullPathIfExists(FileTreeGetDir(),
     filetree.settings.startfile[FileTreeGetDir()])
-  local known = GetSpec(GetFileExt(name))
-  local icon = isdir and image.DIRECTORY or known and image.FILEKNOWN or image.FILEOTHER
+  local ext = GetFileExt(name)
+  local extmap = ide.filetree.extmap
+  local known = extmap[ext] or #(ide:GetKnownExtensions(ext)) > 0
+  if known and not extmap[ext] then
+    extmap[ext] = ide.filetree.imglist:Add(createImg(ext))
+  end
+  local icon = isdir and image.DIRECTORY or known and extmap[ext] or image.FILEOTHER
   if startfile and startfile == name then icon = image.FILEOTHERSTART end
   return icon
 end
