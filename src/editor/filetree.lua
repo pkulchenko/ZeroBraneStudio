@@ -25,6 +25,15 @@ local image = {
 }
 
 local clearbmp = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(16,16))
+local function str2rgb(str)
+  local a = ('a'):byte()
+  -- `red`/`blue` are more prominent colors; use them for the first two letters; suppress `green`
+  local r = (((str:sub(1,1):lower():byte() or a)-a) % 27)/27
+  local b = (((str:sub(2,2):lower():byte() or a)-a) % 27)/27
+  local g = (((str:sub(3,3):lower():byte() or a)-a) % 27)/27/3
+  local ratio = 256/(r + g + b + 1e-6)
+  return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
+end
 local function createImg(ext)
   local bitmap = wx.wxBitmap(16, 16)
   local font = wx.wxFont(ide.font.eNormal)
@@ -33,7 +42,7 @@ local function createImg(ext)
   mdc:SelectObject(bitmap)
   mdc:SetFont(font)
   mdc:DrawBitmap(clearbmp, 0, 0, true)
-  mdc:SetTextForeground(wx.wxBLACK)
+  mdc:SetTextForeground(wx.wxColour(unpack(str2rgb(ext))))
   mdc:DrawText(ext:sub(1,3), 2, 5) -- take first three letters only
   mdc:SelectObject(wx.wxNullBitmap)
   return bitmap
