@@ -35,6 +35,8 @@ local function str2rgb(str)
   return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
 end
 local function createImg(ext)
+  local iconmap = ide.config.filetree.iconmap
+  local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
   local bitmap = wx.wxBitmap(16, 16)
   local font = wx.wxFont(ide.font.eNormal)
   font:SetPointSize(5)
@@ -42,7 +44,7 @@ local function createImg(ext)
   mdc:SelectObject(bitmap)
   mdc:SetFont(font)
   mdc:DrawBitmap(clearbmp, 0, 0, true)
-  mdc:SetTextForeground(wx.wxColour(unpack(str2rgb(ext))))
+  mdc:SetTextForeground(wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext))))
   mdc:DrawText(ext:sub(1,3), 2, 5) -- take first three letters only
   mdc:SelectObject(wx.wxNullBitmap)
   return bitmap
@@ -55,7 +57,8 @@ local function getIcon(name, isdir)
   local extmap = ide.filetree.extmap
   local known = extmap[ext] or #(ide:GetKnownExtensions(ext)) > 0
   if known and not extmap[ext] then
-    extmap[ext] = ide.filetree.imglist:Add(createImg(ext))
+    local iconmap = ide.config.filetree.iconmap
+    extmap[ext] = iconmap and ide.filetree.imglist:Add(createImg(ext)) or image.FILEKNOWN
   end
   local icon = isdir and image.DIRECTORY or known and extmap[ext] or image.FILEOTHER
   if startfile and startfile == name then icon = image.FILEOTHERSTART end

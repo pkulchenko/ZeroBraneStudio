@@ -103,6 +103,7 @@ ide = {
     filetree = {
       mousemove = true,
       showchanges = true,
+      iconmap = {},
     },
     outline = {
       activateonclick = true,
