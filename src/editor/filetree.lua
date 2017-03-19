@@ -55,7 +55,7 @@ local function getIcon(name, isdir)
     filetree.settings.startfile[FileTreeGetDir()])
   local ext = GetFileExt(name)
   local extmap = ide.filetree.extmap
-  local known = extmap[ext] or #(ide:GetKnownExtensions(ext)) > 0
+  local known = extmap[ext] or GetSpec(ext)
   if known and not extmap[ext] then
     local iconmap = ide.config.filetree.iconmap
     extmap[ext] = iconmap and ide.filetree.imglist:Add(createImg(ext)) or image.FILEKNOWN

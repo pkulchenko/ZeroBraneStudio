@@ -1620,28 +1620,25 @@ function AddEditor(editor, name)
   end
 end
 
-function GetSpec(ext,forcespec)
-  local spec = forcespec
-
-  -- search proper spec
-  -- allow forcespec for "override"
-  if ext and not spec then
-    for _,curspec in pairs(ide.specs) do
-      local exts = curspec.exts
-      if (exts) then
-        for _,curext in ipairs(exts) do
-          if (curext == ext) then
-            spec = curspec
-            break
-          end
-        end
-        if (spec) then
-          break
-        end
-      end
+function GetSpec(ext)
+  if not ext then return end
+  for _,curspec in pairs(ide.specs) do
+    for _,curext in ipairs(curspec.exts or {}) do
+      if curext == ext then return curspec end
     end
   end
-  return spec
+  -- check for extension to spec mapping and create the spec on the fly if present
+  if type(edcfg.specmap) == "table" and edcfg.specmap[ext] then
+    local name = edcfg.specmap[ext]
+    -- check if there is already spec with this name, but doesn't have this extension registered
+    if ide.specs[name] then
+      table.insert(ide.specs[name].exts or {}, ext)
+      return ide.specs[name]
+    end
+    local spec = { exts = {ext}, lexer = "lexlpeg."..name }
+    ide:AddSpec(name, spec)
+    return spec
+  end
 end
 
 local lexlpegmap = {
