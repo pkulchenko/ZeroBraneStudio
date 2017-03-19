@@ -46,7 +46,7 @@ function M.warnings_from_string(src, file)
   end
 
   local globinit = {arg = true} -- skip `arg` global variable
-  local spec = GetSpec(wx.wxFileName(file):GetExt())
+  local spec = ide:FindSpec(wx.wxFileName(file):GetExt())
   for k in pairs(spec and GetApi(spec.apitype or "none").ac.childs or {}) do
     globinit[k] = true
   end

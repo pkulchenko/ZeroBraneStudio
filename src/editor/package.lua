@@ -798,6 +798,28 @@ function ide:AddSpec(name, spec)
 end
 function ide:RemoveSpec(name) self.specs[name] = nil end
 
+function ide:FindSpec(ext)
+  if not ext then return end
+  for _,curspec in pairs(self.specs) do
+    for _,curext in ipairs(curspec.exts or {}) do
+      if curext == ext then return curspec end
+    end
+  end
+  -- check for extension to spec mapping and create the spec on the fly if present
+  local edcfg = self.config.editor
+  if type(edcfg.specmap) == "table" and edcfg.specmap[ext] then
+    local name = edcfg.specmap[ext]
+    -- check if there is already spec with this name, but doesn't have this extension registered
+    if self.specs[name] then
+      table.insert(self.specs[name].exts or {}, ext)
+      return self.specs[name]
+    end
+    local spec = { exts = {ext}, lexer = "lexlpeg."..name }
+    self:AddSpec(name, spec)
+    return spec
+  end
+end
+
 function ide:AddAPI(type, name, api)
   self.apis[type] = self.apis[type] or {}
   self.apis[type][name] = api

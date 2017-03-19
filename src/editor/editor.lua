@@ -1620,27 +1620,6 @@ function AddEditor(editor, name)
   end
 end
 
-function GetSpec(ext)
-  if not ext then return end
-  for _,curspec in pairs(ide.specs) do
-    for _,curext in ipairs(curspec.exts or {}) do
-      if curext == ext then return curspec end
-    end
-  end
-  -- check for extension to spec mapping and create the spec on the fly if present
-  if type(edcfg.specmap) == "table" and edcfg.specmap[ext] then
-    local name = edcfg.specmap[ext]
-    -- check if there is already spec with this name, but doesn't have this extension registered
-    if ide.specs[name] then
-      table.insert(ide.specs[name].exts or {}, ext)
-      return ide.specs[name]
-    end
-    local spec = { exts = {ext}, lexer = "lexlpeg."..name }
-    ide:AddSpec(name, spec)
-    return spec
-  end
-end
-
 local lexlpegmap = {
   text = {"identifier"},
   lexerdef = {"nothing"},
@@ -1734,7 +1713,7 @@ end
 
 function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   local lexerstyleconvert = nil
-  local spec = forcespec or GetSpec(ext)
+  local spec = forcespec or ide:FindSpec(ext)
   -- found a spec setup lexers and keywords
   if spec then
     if type(spec.lexer) == "string" then

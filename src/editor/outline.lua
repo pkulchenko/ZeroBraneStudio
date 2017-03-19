@@ -667,7 +667,7 @@ function outline:RefreshSymbols(path, callback)
 
   local exts = {}
   for _, ext in pairs(ide:GetKnownExtensions()) do
-    local spec = GetSpec(ext)
+    local spec = ide:FindSpec(ext)
     if spec and spec.marksymbols then table.insert(exts, ext) end
   end
 
