@@ -39,7 +39,7 @@ local function createImg(ext)
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
   local bitmap = wx.wxBitmap(16, 16)
   local font = wx.wxFont(ide.font.eNormal)
-  font:SetPointSize(5)
+  font:SetPointSize(ide.osname == "Macintosh" and 6 or 5)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
   mdc:SetFont(font)
