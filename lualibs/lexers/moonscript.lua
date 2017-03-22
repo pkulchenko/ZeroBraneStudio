@@ -163,7 +163,7 @@ M._tokenstyles = {
   fndef = l.STYLE_PREPROCESSOR,
   symbol = l.STYLE_EMBEDDED,
   tbl_key = l.STYLE_REGEX,
-  error = l.STYLE_ERROR,
+  -- error = l.STYLE_ERROR, -- commented out as it's causing a crash in Scintilla
 }
 
 M._FOLDBYINDENTATION = true
