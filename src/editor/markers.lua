@@ -127,7 +127,7 @@ local function createMarkersWindow()
   ctrl:SetImageList(markers.imglist)
   ctrl:SetFont(ide.font.fNormal)
 
-  function ctrl:ActivateItem(item_id, toggle)
+  function ctrl:ActivateItem(item_id, marker)
     local itemimage = ctrl:GetItemImage(item_id)
     if itemimage == image.FILE then
       -- activate editor tab
@@ -140,9 +140,8 @@ local function createMarkersWindow()
         if editor then
           local line = tonumber(ctrl:GetItemText(item_id):match("^(%d+):"))
           if line then
-            if toggle then
-              local _ = (itemimage == image.BOOKMARK and editor:BookmarkToggle(line-1, false)
-                or itemimage == image.BREAKPOINT and editor:BreakpointToggle(line-1, false))
+            if marker then
+              editor:MarkerToggle(marker, line-1, false)
               ctrl:Delete(item_id)
               return -- don't activate the editor when the breakpoint is toggled
             end
@@ -161,7 +160,14 @@ local function createMarkersWindow()
     local item_id, flags = ctrl:HitTest(event:GetPosition())
 
     if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
-      ctrl:ActivateItem(item_id, bit.band(flags, wx.wxTREE_HITTEST_ONITEMICON) > 0)
+      local marker
+      local itemimage = ctrl:GetItemImage(item_id)
+      if bit.band(flags, wx.wxTREE_HITTEST_ONITEMICON) > 0 then
+        for iname, itype in pairs(image) do
+          if itemimage == itype then marker = iname:lower() end
+        end
+      end
+      ctrl:ActivateItem(item_id, marker)
     else
       event:Skip()
     end
@@ -186,12 +192,15 @@ local function createMarkersWindow()
         { ID_BOOKMARKCLEAR, TR("Clear Bookmarks In Project")..KSC(ID_BOOKMARKCLEAR) },
         { ID_BREAKPOINTCLEAR, TR("Clear Breakpoints In Project")..KSC(ID_BREAKPOINTCLEAR) },
       }
-      local activate = function() ctrl:ActivateItem(item_id, true) end
-      menu:Enable(ID_BOOKMARKTOGGLE, ctrl:GetItemImage(item_id) == image.BOOKMARK)
-      menu:Connect(ID_BOOKMARKTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED, activate)
+      local itemimage = ctrl:GetItemImage(item_id)
 
-      menu:Enable(ID_BREAKPOINTTOGGLE, ctrl:GetItemImage(item_id) == image.BREAKPOINT)
-      menu:Connect(ID_BREAKPOINTTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED, activate)
+      menu:Enable(ID_BOOKMARKTOGGLE, itemimage == image.BOOKMARK)
+      menu:Connect(ID_BOOKMARKTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED,
+        function() ctrl:ActivateItem(item_id, "bookmark") end)
+
+      menu:Enable(ID_BREAKPOINTTOGGLE, itemimage == image.BREAKPOINT)
+      menu:Connect(ID_BREAKPOINTTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED,
+        function() ctrl:ActivateItem(item_id, "breakpoint") end)
 
       PackageEventHandle("onMenuMarkers", menu, ctrl, event)
 
