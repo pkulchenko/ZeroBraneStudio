@@ -257,15 +257,27 @@ local package = ide:AddPackage('core.markers', {
 
       local bmmenu = ide:FindMenuItem(ID_BOOKMARK):GetSubMenu()
       bmmenu:AppendSeparator()
+      bmmenu:Append(ID_BOOKMARKFILECLEAR, TR("Clear Bookmarks In File")..KSC(ID_BOOKMARKFILECLEAR))
       bmmenu:Append(ID_BOOKMARKPROJECTCLEAR, TR("Clear Bookmarks In Project")..KSC(ID_BOOKMARKPROJECTCLEAR))
 
       local bpmenu = ide:FindMenuItem(ID_BREAKPOINT):GetSubMenu()
       bpmenu:AppendSeparator()
+      bpmenu:Append(ID_BREAKPOINTFILECLEAR, TR("Clear Breakpoints In File")..KSC(ID_BREAKPOINTFILECLEAR))
       bpmenu:Append(ID_BREAKPOINTPROJECTCLEAR, TR("Clear Breakpoints In Project")..KSC(ID_BREAKPOINTPROJECTCLEAR))
 
+      ide:GetMainFrame():Connect(ID_BOOKMARKFILECLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
+        function()
+          local editor = ide:GetEditor()
+          if editor then clearAllEditorMarkers("bookmark", editor) end
+        end)
       ide:GetMainFrame():Connect(ID_BOOKMARKPROJECTCLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
         function() clearAllProjectMarkers("bookmark") end)
 
+      ide:GetMainFrame():Connect(ID_BREAKPOINTFILECLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
+        function()
+          local editor = ide:GetEditor()
+          if editor then clearAllEditorMarkers("breakpoint", editor) end
+        end)
       ide:GetMainFrame():Connect(ID_BREAKPOINTPROJECTCLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
         function() clearAllProjectMarkers("breakpoint") end)
     end,

@@ -65,6 +65,13 @@ is(#editor:MarkerGetAll(), 0, "Breakpoint is removed after toggling on a line wi
 editor:BreakpointToggle(1)
 is(#editor:MarkerGetAll(), 0, "Breakpoint is not set on a comment line.")
 
+editor:BreakpointToggle(0)
+editor:BreakpointToggle(2)
+is(#editor:MarkerGetAll(), 2, "Two breakpoints are set after toggling.")
+
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.BREAKPOINTFILECLEAR))
+is(#editor:MarkerGetAll(), 0, "Breakpoints are cleared after clearing breakpoints in a file.")
+
 ok(ide.wxver >= "3.1.1" and wxstc.wxSTC_INDIC_TEXTFORE or nil, "Text foreground color indicator is available.")
 
 -- cleanup
