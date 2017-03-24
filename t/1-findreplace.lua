@@ -7,7 +7,7 @@ local search = "123"
 local replace = "4"
 editor:AppendText(search..search.."\n"..search..search)
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_FIND))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.FIND))
 ok(findReplace.panel, "Open Find/Replace panel.")
 
 findReplace:SetFind(search)
@@ -25,10 +25,10 @@ local findnext = wx.wxUpdateUIEvent(ID_FINDNEXT)
 ide.frame:ProcessEvent(findnext)
 ok(findnext:GetEnabled(), "Quick find is enabled without current selection.")
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_FINDNEXT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.FINDNEXT))
 is(editor:GetSelectionEnd(), selend, "Quick Find works based on previous search.")
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_FINDNEXT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.FINDNEXT))
 is(editor:GetSelectionStart(), selend, "Quick Find finds next match.")
 
 -- check that text in "find" control is checked against selection with replacing
@@ -101,7 +101,7 @@ is(editor:GetText():match("Updated %d"), "Updated 0", "Replace fails on invalid 
 findReplace:SetFind("something")
 findReplace:Show() -- set focus on the find
 if ide.osname == 'Windows' then
-  ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_CUT))
+  ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.CUT))
   ok(findReplace:GetFind() == nil, "`Cut` command cuts content of the `Find` control in the search panel.")
 end
 

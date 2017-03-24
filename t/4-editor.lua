@@ -11,8 +11,7 @@ local findReplace = ide.findReplace
 findReplace:SetFind(line)
 findReplace:Find()
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(
-  wx.wxEVT_COMMAND_MENU_SELECTED, ID_COMMENT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.COMMENT))
 
 local text = editor:GetText()
 ok(text:find(comment..line) and not text:find(comment.."3"),
@@ -22,8 +21,7 @@ findReplace:SetFind("--"..line)
 findReplace:Find()
 editor:SetCurrentPos(editor:GetLength())
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(
-  wx.wxEVT_COMMAND_MENU_SELECTED, ID_COMMENT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.COMMENT))
 
 text = editor:GetText()
 ok(text:find(comment.."  "..comment..line) and text:find(comment.."3"),
@@ -32,8 +30,7 @@ ok(text:find(comment.."  "..comment..line) and text:find(comment.."3"),
 findReplace:Find()
 editor:SetCurrentPos(editor:GetLength())
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(
-  wx.wxEVT_COMMAND_MENU_SELECTED, ID_COMMENT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.COMMENT))
 
 text = editor:GetText()
 ok(not text:find(comment.."  "..comment..line) and not text:find(comment.."3"),
@@ -42,8 +39,7 @@ ok(not text:find(comment.."  "..comment..line) and not text:find(comment.."3"),
 editor:SetAnchor(0)
 editor:SetCurrentPos(editor:PositionFromLine(2))
 
-ide.frame:ProcessEvent(wx.wxCommandEvent(
-  wx.wxEVT_COMMAND_MENU_SELECTED, ID_COMMENT))
+ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.COMMENT))
 
 text = editor:GetText()
 ok(text:find(comment.."  "..comment..line) and text:find(comment.."1") and not text:find(comment.."3"),
