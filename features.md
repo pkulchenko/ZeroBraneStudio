@@ -21,11 +21,11 @@ Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Ty
 **Go to definition**
 Go to a local variable/function definition. Navigate back using the history of saved positions.
 
-**Multi-cursor editing**
-Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
-
 **Function outline**
 Review and navigate all functions (and their parameters) defined in the current file, including anonymous ones.
+
+**Multi-cursor editing**
+Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
 **Small**
 With the Windows and OSX installation packages being less than 5MB, it is one of the smallest if not _the smallest_ fully featured IDE.
