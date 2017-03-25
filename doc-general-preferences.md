@@ -101,6 +101,9 @@ both local and global variables are offered in a scope-aware way, so they are of
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
 - `filetree.fontsize = 10`: set font size (the default size is `11` on MacOS).
+- `filetree.iconmap = {}`: set mapping from extension to colors to use in Project/Filetree icons (1.51+);
+set to `false` to disable showing extensions in icons.
+The color associated with an extension is in `{r,g,b}` format; for example, to associate `lua` extension with `red` color, use `filetree.iconmap.lua = {fg = {255, 0, 0}}`.
 - `filetree.showchanges = true`: track and show file system changes in the filetree (1.40+).
 - `filetree.mousemove = true`: enable moving files and directories in the filetree using drag-and-drop (0.80+);
 set to `false` to disable.
