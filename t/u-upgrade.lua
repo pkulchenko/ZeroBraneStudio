@@ -39,3 +39,7 @@ for env, val in pairs(envs) do
 end
 
 is(jit.version, "LuaJIT 2.0.4", "Using LuaJIT with the expected version.")
+
+require "lpeg"
+local lexpath = package.searchpath("lexlpeg", ide.osclibs)
+ok(package.loadlib(lexpath, "GetLexerCount") ~= nil, "LexLPeg lexer is loaded.")

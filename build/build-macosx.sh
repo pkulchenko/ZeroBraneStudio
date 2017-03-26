@@ -214,13 +214,18 @@ if [ $BUILD_LEXLPEG ]; then
   unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
+  # comment out loading lpeg as it's causing issues with _luaopen_lpeg symbol
+  # (as it's not statically compiled) and will be loaded from Lua code anyway
+  sed -i "" 's/luaopen_lpeg, "lpeg"/luaopen_debug, LUA_DBLIBNAME/' LexLPeg.cxx
+
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
-  g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" \
+  g++ $BUILD_FLAGS -install_name lexlpeg.dylib -o "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" \
     "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \
     -DSCI_LEXER -DLPEG_LEXER -DLPEG_LEXER_EXTERNAL \
     LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx}
 
   [ -f "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib" ] || { echo "Error: LexLPeg.dylib isn't found"; exit 1; }
+  strip -u -r "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.dylib"
 
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
