@@ -216,14 +216,14 @@ if [ $BUILD_LEXLPEG ]; then
   unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
-  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
-  g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" \
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
+  g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" \
     "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \
     -DSCI_LEXER -DLPEG_LEXER -DLPEG_LEXER_EXTERNAL \
     LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx} \
     "$BIN_DIR/clibs$LUAS/lpeg.so"
 
-  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" ] || { echo "Error: LexLPeg.so isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" ] || { echo "Error: LexLPeg.so isn't found"; exit 1; }
 
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
@@ -298,10 +298,10 @@ if [ $BUILD_LFS ]; then
   tar -xzf "$LFS_FILENAME"
   mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
   cd "$LFS_BASENAME/src"
-  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lfs.so" lfs.c \
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
-  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lfs.so" ] || { echo "Error: lfs.so isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" ] || { echo "Error: lfs.so isn't found"; exit 1; }
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
@@ -311,10 +311,10 @@ if [ $BUILD_LPEG ]; then
   wget --no-check-certificate -c "$LPEG_URL" -O "$LPEG_FILENAME" || { echo "Error: failed to download lpeg"; exit 1; }
   tar -xzf "$LPEG_FILENAME"
   cd "$LPEG_BASENAME"
-  mkdir -p "$INSTALL_DIR/lib/lua/$LUAD/"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/lpeg.so" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.so" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
     || { echo "Error: failed to build lpeg"; exit 1; }
-  [ -f "$INSTALL_DIR/lib/lua/$LUAD/lpeg.so" ] || { echo "Error: lpeg.so isn't found"; exit 1; }
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.so" ] || { echo "Error: lpeg.so isn't found"; exit 1; }
   cd ..
   rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
@@ -327,15 +327,15 @@ if [ $BUILD_LUASEC ]; then
   # the folder in the archive is "luasec-luasec-....", so need to fix
   mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" \
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" \
     src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
     -lssl -lcrypto \
     || { echo "Error: failed to build LuaSec"; exit 1; }
-  cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAD"
-  mkdir -p "$INSTALL_DIR/share/lua/$LUAD/ssl"
-  cp src/https.lua "$INSTALL_DIR/share/lua/$LUAD/ssl"
-  [ -f "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" ] || { echo "Error: ssl.so isn't found"; exit 1; }
-  strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAD/ssl.so"
+  cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAV"
+  mkdir -p "$INSTALL_DIR/share/lua/$LUAV/ssl"
+  cp src/https.lua "$INSTALL_DIR/share/lua/$LUAV/ssl"
+  [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" ] || { echo "Error: ssl.so isn't found"; exit 1; }
+  strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/ssl.so"
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi
@@ -344,9 +344,9 @@ fi
 mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1; }
 [ $BUILD_LUA ] && cp "$INSTALL_DIR/bin/lua$LUAS" "$BIN_DIR"
 [ $BUILD_WXLUA ] && cp "$INSTALL_DIR/lib/libwx.so" "$BIN_DIR/clibs"
-[ $BUILD_LFS ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lfs.so" "$BIN_DIR/clibs$LUAS"
-[ $BUILD_LPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lpeg.so" "$BIN_DIR/clibs$LUAS"
-[ $BUILD_LEXLPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAD/lexlpeg.so" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LFS ] && cp "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAV/lpeg.so" "$BIN_DIR/clibs$LUAS"
+[ $BUILD_LEXLPEG ] && cp "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" "$BIN_DIR/clibs$LUAS"
 
 if [ $BUILD_LUASOCKET ]; then
   mkdir -p "$BIN_DIR/clibs$LUAS/"{mime,socket}
@@ -355,9 +355,9 @@ if [ $BUILD_LUASOCKET ]; then
 fi
 
 if [ $BUILD_LUASEC ]; then
-  cp "$INSTALL_DIR/lib/lua/$LUAD/ssl.so" "$BIN_DIR/clibs$LUAS"
-  cp "$INSTALL_DIR/share/lua/$LUAD/ssl.lua" ../lualibs
-  cp "$INSTALL_DIR/share/lua/$LUAD/ssl/https.lua" ../lualibs/ssl
+  cp "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" "$BIN_DIR/clibs$LUAS"
+  cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" ../lualibs
+  cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" ../lualibs/ssl
 fi
 
 echo "*** Build has been successfully completed ***"
