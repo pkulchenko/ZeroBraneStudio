@@ -20,8 +20,8 @@ local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
 local pathsep = GetPathSeparator()
 local q = EscapeMagic
 local image = {
-  DIRECTORY = 0, FILEKNOWN = 1, FILEOTHER = 2, FILEOTHERSTART = 3,
-  DIRECTORYMAPPED = 4,
+  DIRECTORY = 0, DIRECTORYMAPPED = 1, FILEOTHER = 2, FILEOTHERSTART = 3,
+  FILEKNOWN = 4,
 }
 
 local clearbmp = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(16,16))
@@ -194,7 +194,8 @@ local function treeSetConnectorsAndIcons(tree)
 
   function tree:IsDirectory(item_id) return isIt(item_id, image.DIRECTORY) end
   function tree:IsDirMapped(item_id) return isIt(item_id, image.DIRECTORYMAPPED) end
-  function tree:IsFileKnown(item_id) return isIt(item_id, image.FILEKNOWN) end
+  -- "file known" is a special case as it includes file types registered dynamically
+  function tree:IsFileKnown(item_id) return tree:GetItemImage(item_id) >= image.FILEKNOWN end
   function tree:IsFileOther(item_id) return isIt(item_id, image.FILEOTHER) end
   function tree:IsFileStart(item_id) return isIt(item_id, image.FILEOTHERSTART) end
   function tree:IsRoot(item_id) return not tree:GetItemParent(item_id):IsOk() end
