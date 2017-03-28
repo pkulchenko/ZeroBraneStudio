@@ -302,14 +302,14 @@ if [ $BUILD_LUASOCKET ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" \
     src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
-  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
-  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib"
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" ] || { echo "Error: mime/core.dylib isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" ] || { echo "Error: socket/core.dylib isn't found"; exit 1; }
+  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
+  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
+  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
@@ -321,9 +321,10 @@ if [ $BUILD_LFS ]; then
   mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
   cd "$LFS_BASENAME/src"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" lfs.c \
+  gcc $BUILD_FLAGS -install_name lfs.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" ] || { echo "Error: lfs.dylib isn't found"; exit 1; }
+  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib"
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
@@ -334,9 +335,10 @@ if [ $BUILD_LPEG ]; then
   tar -xzf "$LPEG_FILENAME"
   cd "$LPEG_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
+  gcc $BUILD_FLAGS -install_name lpeg.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
     || { echo "Error: failed to build lpeg"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" ] || { echo "Error: lpeg.dylib isn't found"; exit 1; }
+  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib"
   cd ..
   rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
@@ -349,7 +351,7 @@ if [ $BUILD_LUASEC ]; then
   # the folder in the archive is "luasec-luasec-....", so need to fix
   mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" \
+  gcc $BUILD_FLAGS -install_name ssl.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" \
     src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
     -lssl -lcrypto \
     || { echo "Error: failed to build LuaSec"; exit 1; }
