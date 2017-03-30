@@ -1,5 +1,97 @@
 # ZeroBrane Studio Changelog
 
+## Current master (Mar 29 2017)
+
+### Highlights
+  - Added syntax highlighting and folding for 110+ languages and file formats.
+  - Added dynamic table expansion to Stack and Watch windows.
+  - Added clearing breakpoints and bookmarks in a file.
+  - Improved handling of valid and invalid UTF8 strings in copy/paste operations (#729, #556).
+  - Fixed showing and copying invalid UTF-8 values in the Watch window (fixes #734).
+  - Fixed style conflict in HTML with embedded lexers, which caused disappearance of text fragments.
+
+### Special thanks
+  - To [Christoph Kubisch](https://github.com/pixeljetstream) for luxinia cleanup and [GraphicsCodePack](https://github.com/pixeljetstream/zbstudio-graphicscodepack) integration.
+  - To deining for German translation updates and fixes.
+  - To snisioi for adding configuration file with Eclipse shortcuts.
+
+### Improvements
+  - Added clearing breakpoints and bookmarks in a file to the main menu.
+  - Added clearing breakpoints and bookmarks in a file to the Markers menu.
+  - Added `moonscript` and other lexers to the extension mapping.
+  - Added `FindSpec` method (#166).
+  - Added syntax highlighting and folding for 100+ languages (based on Scintillua).
+  - Added mapping to set extension color in Project icons (#470).
+  - Added color indicators for extentions in Project icons (#470).
+  - Added showing extension in Project window icons (closes #470).
+  - Added support for aarch64 architecture (#745).
+  - Added signed versions of MacOS executables (#743).
+  - Added closing directory iterator (where available) after use (#633).
+  - Added hiding Stack/Watch expansion indicator when `maxdatalevel` is not set.
+  - Added shared indicator for expandable tables in Stack and Watch processing.
+  - Adding eclipse shortcut key config
+  - Added dynamic table expansion to Watch expressions.
+  - Added `numformat` debugger option to set numeric format (#739).
+  - Added `GetDataOptions` debugger method (#166).
+  - Added indicator for expandable items in the Stack view.
+  - Added limiting tooltip values in debugger for the configured depth.
+  - Added refresh of the Stack values in the tree after expansion.
+  - Added API reloading after registering a new spec.
+  - Added `LoadAPI` package method to load API files (#166).
+  - Added deprecation notices to `load.*` functions when used in config.
+  - Added `LoadInterpreter` package method (#166).
+  - Added `LoadTool` package method (#166).
+  - Added `LoadSpec` package method (#166).
+  - Added `toolbar.iconsize` default setting.
+  - Improved expansion of values that can't be evaluated.
+  - Improved handling of valid and invalid UTF8 strings in copy/paste (#729, #556).
+  - Minor corrections in de.lua (closes #723).
+  - Removed duplicate code toggling breakpoint marker in the debugger.
+  - Refactored marker processing to avoid hardcoding marker types.
+  - Removed specs that are no longer needed (covered by integrated lexers).
+  - Refactored stack processing for expansion to make it more consistent with Watch processing.
+  - Removed top level comments from the Stack view results.
+  - Removed graphics-related APIs to move to plugins.
+  - Removed load filters, tools, and graphics-related specs to move to plugins.
+  - Updated MacOS build scripts to strip binaries and update install_name.
+  - Updated build scripts for more consistent usage of lua/lib folders.
+  - Updated tests to use `ID` table instead of individual values.
+  - Updated extension font size in Project tree icons on MacOS for better visibility (#470).
+  - Updated generation of 'original' case for local file names (#744).
+  - Updated file loading to show files on Windows with 'original' case when available (closes #744).
+  - Updated formatting and added comments to MacOS launch script (#743).
+  - Updated MacOS launch script to work with quarantined files on Sierra (#743).
+  - Upgraded Mobdebug (0.646) to add STACK/EXEC options for expansion support.
+  - Updated instructions in configs for alternative shortcuts.
+  - Updated serialization of Watch results to take number format into consideration (closes #739).
+  - Updated debugger to use dynamic serialization options for Stack expansion.
+  - Updated default limits for stack expansion for better performance.
+  - Updated expansion check for `userdata` and similar table keys.
+  - Updated expansion checks to properly handle empty tables after expansion.
+  - Updated Stack processing to expand values in different stack frames.
+  - Updated Stack processing to dynamically retrieve expandable values.
+  - Updated debugger eval/exec methods to pass optional parameters to the debugger.
+  - Updated lexlpeg lexer to handle folding in embedded lexers (scintillua/rev/1e0037b4af2f).
+  - Updated Estrela reference in README to point to the GraphicsCodePack repository.
+  - Updated tooltip display to also show after comma in parameter list.
+  - Updated debugger to request further socket processing when needed.
+
+### Fixes
+  - Fixed enabling `Set as Start File` for all known extensions (fixes #747).
+  - Fixed LexLPeg loading on MacOS.
+  - Fixed copying text with accented characters on OSX (closes #729).
+  - Fixed restoring recovery record with unknown/empty value.
+  - Fixed copying invalid UTF-8 values in the Watch window (#734).
+  - Fixed showing invalid UTF-8 values in the Watch window (fixes #734).
+  - Fixed first expanding of a table value in the Stack window.
+  - Fixed `Go To Line` selection when the line number is not provided (closes #730).
+  - Fixed style conflict in HTML with embedded lexers, which caused disappearance of some text.
+  - Fixed path remapping in the debugger when a local file is present, but not activated.
+  - Fixed `runonstart` processing in debugger when starting external sessions.
+
+### Incompatibilities
+  - Deprecated load methods in the config as they are no longer needed.
+
 ## v1.50 (Dec 11 2016)
 
 ### Highlights
