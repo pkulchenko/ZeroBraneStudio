@@ -128,7 +128,7 @@ local function outlineRefresh(editor, force)
   -- add file
   local filename = ide:GetDocument(editor):GetTabText()
   local fileitem = cache.fileitem
-  if not fileitem then
+  if not fileitem or not fileitem:IsOk() then
     local root = ctrl:GetRootItem()
     if not root or not root:IsOk() then return end
 
@@ -293,7 +293,7 @@ local function createOutlineWindow()
         if not parent:IsOk() then return end
       end
       -- activate editor tab
-      local editor = onefile and GetEditor() or ctrl:GetItemData(parent):GetData()
+      local editor = onefile and ide:GetEditor() or ctrl:GetItemData(parent):GetData()
       local cache = caches[editor]
       if editor and cache then
         -- move to position in the file
@@ -607,6 +607,7 @@ local package = ide:AddPackage('core.outline', {
       -- scan all items recursively starting from the current file
       eachNode(function(ctrl, item)
           local func = cache.funcs[ctrl:GetItemData(item):GetData()]
+          if not func then return end
           local val = edpos >= func.pos and func.poe and edpos <= func.poe
           if edline == editor:LineFromPosition(func.pos)+1
           or (func.poe and edline == editor:LineFromPosition(func.poe)+1) then
