@@ -370,7 +370,9 @@ end
 local function eachNode(eachFunc, root, recursive)
   local ctrl = outline.outlineCtrl
   if not ctrl then return end
-  local item = ctrl:GetFirstChild(root or ctrl:GetRootItem())
+  root = root or ctrl:GetRootItem()
+  if not (root and root:IsOk()) then return end
+  item = ctrl:GetFirstChild(root)
   while true do
     if not item:IsOk() then break end
     if eachFunc and eachFunc(ctrl, item) then break end
