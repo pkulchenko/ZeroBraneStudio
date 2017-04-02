@@ -1675,7 +1675,9 @@ local function setLexLPegLexer(editor, lexername)
   do
     local err = wx.wxSysErrorCode()
     local _ = wx.wxLogNull() -- disable error reporting; will report as needed
-    editor:LoadLexerLibrary(lexpath)
+    if not pcall(function() editor:LoadLexerLibrary(lexpath) end) then
+      return nil, "Can't load LexLPeg library."
+    end
     -- the error code may be non-zero, but still needs to be different from the previous one
     -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
     if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
