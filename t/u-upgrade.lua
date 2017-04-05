@@ -1,5 +1,6 @@
-local ver311 = ide.wxver >= "3.1.1"
-ok(ver311 and wx.wxFileName().ShouldFollowLink or nil, "wxlua/wxwidgets includes wxFileName().ShouldFollowLink.")
+if ide.wxver >= "3.1" then
+  ok(wx.wxFileName().ShouldFollowLink ~= nil, "wxlua/wxwidgets includes wxFileName().ShouldFollowLink.")
+end
 
 local function waitToComplete(bid)
   while wx.wxProcess.Exists(bid) do

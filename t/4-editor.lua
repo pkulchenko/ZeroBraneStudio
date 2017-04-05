@@ -68,7 +68,9 @@ is(#editor:MarkerGetAll(), 2, "Two breakpoints are set after toggling.")
 ide.frame:ProcessEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.BREAKPOINTFILECLEAR))
 is(#editor:MarkerGetAll(), 0, "Breakpoints are cleared after clearing breakpoints in a file.")
 
-ok(ide.wxver >= "3.1.1" and wxstc.wxSTC_INDIC_TEXTFORE or nil, "Text foreground color indicator is available.")
+if ide.wxver >= "3.1" then
+  ok(wxstc.wxSTC_INDIC_TEXTFORE ~= nil, "Text foreground color indicator is available.")
+end
 
 -- cleanup
 ide:GetDocument(editor):SetModified(false)

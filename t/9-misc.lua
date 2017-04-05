@@ -39,20 +39,22 @@ copyToClipboard(valid)
 editor:PasteDyn()
 is(editor:GetTextDyn(), valid, "Valid UTF-8 string is pasted from the clipboard.")
 
--- copying invalid UTF8
-local invalid = "-- \193"
-copyToClipboard(invalid, wx.wxDF_TEXT)
-editor:SetTextDyn(invalid)
-ok(#editor:GetTextDyn() == #invalid, "Length of stored string is the same as the invalid UTF-8 string.")
+if ide.wxver >= "3.1" then
+  -- copying invalid UTF8
+  local invalid = "-- \193"
+  copyToClipboard(invalid, wx.wxDF_TEXT)
+  editor:SetTextDyn(invalid)
+  ok(#editor:GetTextDyn() == #invalid, "Length of stored string is the same as the invalid UTF-8 string.")
 
-local valid = "ásg"
-ok(#editor:GetTextDyn() == #valid, "Length of copied content is the same as the valid UTF-8 string.")
-editor:SetSelectionStart(0)
-editor:SetSelectionEnd(#invalid)
-editor:CopyDyn() -- populate the buffer with the "invalid" copy
-editor:SetSelectionEnd(0)
-editor:PasteDyn()
-is(editor:GetTextDyn(), invalid..invalid, "Invalid UTF-8 string is copied and pasted.")
+  local valid = "ásg"
+  ok(#editor:GetTextDyn() == #valid, "Length of copied content is the same as the valid UTF-8 string.")
+  editor:SetSelectionStart(0)
+  editor:SetSelectionEnd(#invalid)
+  editor:CopyDyn() -- populate the buffer with the "invalid" copy
+  editor:SetSelectionEnd(0)
+  editor:PasteDyn()
+  is(editor:GetTextDyn(), invalid..invalid, "Invalid UTF-8 string is copied and pasted.")
+end
 
 -- copying valid when the buffer is for invalid of the same length
 copyToClipboard(valid)
