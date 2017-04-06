@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.646",
+  _VERSION = "0.648",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -1088,27 +1088,31 @@ local function start(controller_host, controller_port)
     -- start from 16th frame, which is sufficiently large for this check.
     stack_level = stack_depth(16)
 
-    -- provide our own traceback function to report the error remotely
-    do
+    -- provide our own traceback function to report errors remotely
+    -- but only under Lua 5.1/LuaJIT as it's not called under Lua 5.2+
+    -- (http://lua-users.org/lists/lua-l/2016-05/msg00297.html)
+    local function f() return function()end end
+    if f() ~= f() then -- Lua 5.1 or LuaJIT
       local dtraceback = debug.traceback
       debug.traceback = function (...)
         if select('#', ...) >= 1 then
-          local err, lvl = ...
-          if err and type(err) ~= 'thread' then
-            local trace = dtraceback(err, (lvl or 2)+1)
-            if genv.print == iobase.print then -- no remote redirect
-              return trace
-            else
-              genv.print(trace) -- report the error remotely
-              return -- don't report locally to avoid double reporting
-            end
+          local thr, err, lvl = ...
+          if type(thr) ~= 'thread' then err, lvl = thr, err end
+          local trace = dtraceback(err, (lvl or 1)+1)
+          if genv.print == iobase.print then -- no remote redirect
+            return trace
+          else
+            genv.print(trace) -- report the error remotely
+            return -- don't report locally to avoid double reporting
           end
         end
         -- direct call to debug.traceback: return the original.
         -- debug.traceback(nil, level) doesn't work in Lua 5.1
         -- (http://lua-users.org/lists/lua-l/2011-06/msg00574.html), so
         -- simply remove first frame from the stack trace
-        return (dtraceback(...):gsub("(stack traceback:\n)[^\n]*\n", "%1"))
+        local tb = dtraceback("", 2) -- skip debugger frames
+        -- if the string is returned, then remove the first new line as it's not needed
+        return type(tb) == "string" and tb:gsub("^\n","") or tb
       end
     end
     coro_debugger = corocreate(debugger_loop)
