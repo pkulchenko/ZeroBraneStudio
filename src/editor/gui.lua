@@ -113,10 +113,9 @@ end
 
 local function tbIconSize()
   -- use large icons by default on OSX and on large screens
-  local iconsize = (tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
+  local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
+  return (iconsize and (iconsize % 8) == 0 and iconsize
     or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500) and 24 or 16))
-  if iconsize ~= 24 then iconsize = 16 end
-  return iconsize
 end
 
 local function createToolBar(frame)
