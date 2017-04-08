@@ -1,5 +1,5 @@
 -- Original author Sergey Lerg; updates by Paul Kulchenko
--- Converted from CoronaSDK-APIDOC-2016-2906;
+-- Converted from CoronaSDK-APIDOC-2017-3068;
 -- the conversion script is at the bottom of this file
 
 -- To process:
@@ -40,7 +40,7 @@ local api = {
  _Body = {
   childs = {
    angularDamping = {
-    description = "The numerical value for how much the body's rotation should be damped. The default is zero (0). There is no minimum or maximum value - just adjust to get the desired results.",
+    description = "The numerical value for how much the body's rotation should be damped. The default is zero (`0`). There is no minimum or maximum value - just adjust to get the desired results.",
     type = "value"
    },
    angularVelocity = {
@@ -118,11 +118,11 @@ local api = {
     type = "value"
    },
    isSleepingAllowed = {
-    description = "A boolean for whether a body is allowed to \"sleep\". The default is `true`.",
+    description = "A boolean for whether a body is allowed to \"sleep.\" The default is `true`.",
     type = "value"
    },
    linearDamping = {
-    description = "The numerical value for how much the body's linear motion is damped. The default is zero (0).",
+    description = "The numerical value for how much the body's linear motion is damped. The default is zero (`0`).",
     type = "value"
    },
    mass = {
@@ -131,7 +131,7 @@ local api = {
    },
    resetMassData = {
     args = "()",
-    description = "If the default mass data for the body has been overridden (TBD), this function resets it to the mass calculated from the shapes.",
+    description = "If the default mass data for the body has been overridden, this function resets it to the mass calculated from the shapes.",
     returns = "()",
     type = "method"
    },
@@ -149,26 +149,26 @@ local api = {
   childs = {
    getLabel = {
     args = "()",
-    description = "Returns the Button label text as a string.",
+    description = "Returns the ButtonWidget label text as a string.",
     returns = "(String)",
     type = "method",
     valuetype = "string"
    },
    setEnabled = {
     args = "( isEnabled )",
-    description = "Sets the Button as either enabled or disabled.",
+    description = "Sets the ButtonWidget as either enabled or disabled.",
     returns = "()",
     type = "method"
    },
    setLabel = {
     args = "( label )",
-    description = "Sets/updates the Button label text.",
+    description = "Sets/updates the ButtonWidget label text.",
     returns = "()",
     type = "method"
    }
   },
-  description = "Button objects are created using widget.newButton().",
-  inherits = "_EventDispatcher",
+  description = "ButtonWidget objects are created using widget.newButton().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _CirclePath = {
@@ -373,12 +373,12 @@ local api = {
    },
    rotate = {
     args = "( deltaAngle )",
-    description = "Effectively adds a value (`deltaAngle`) to the object's current rotation property value. The rotation occurs around the object's anchor point.",
+    description = "Effectively adds a value (`deltaAngle`) to the object's current rotation. This rotation is based on degrees in the clockwise direction. The rotation occurs around the object's anchor point.",
     returns = "()",
     type = "method"
    },
    rotation = {
-    description = "Change or retrieve the rotation of an object. The rotation occurs around the object's anchor point.",
+    description = "Sets the rotation of an object in degrees; this rotation is based in the clockwise direction where `0` is directly upward. The rotation occurs around the object's anchor point.",
     type = "value"
    },
    scale = {
@@ -457,7 +457,7 @@ local api = {
     type = "method"
    }
   },
-  description = "This object is used to display particle effects.",
+  description = "",
   inherits = "_DisplayObject",
   type = "class"
  },
@@ -485,18 +485,6 @@ local api = {
   description = "`EventDispatcher` is any DisplayObject object which can receive events.",
   type = "class"
  },
- _EventListener = {
-  childs = {
-   addEventListener = {
-    args = "( eventName, listener )",
-    description = "Adds a listener to the object’s list of listeners. When the named event occurs, the listener will be invoked and be supplied with a table representing the event.",
-    returns = "()",
-    type = "method"
-   }
-  },
-  description = "",
-  type = "class"
- },
  _File = {
   childs = {
    close = {
@@ -519,7 +507,7 @@ local api = {
    },
    read = {
     args = "( [fmt1] [, fmt2] [, ...] )",
-    description = "Reads a file, according to the given formats which specify what to read. For each format, the function returns a String) with the characters read, or `nil` if it cannot read data with the specified format. When called without formats, it uses a default format that reads the entire next line.",
+    description = "Reads a file, according to the given formats which specify what to read. For each format, the function returns a string with the characters read, or `nil` if it cannot read data with the specified format. When called without formats, it uses a default format that reads the entire next line.",
     returns = "(String)",
     type = "method",
     valuetype = "string"
@@ -956,6 +944,7 @@ local api = {
    },
    getAddressLocation = {
     args = "()",
+    description = "This function has been replaced by object:requestLocation().",
     returns = "()",
     type = "method"
    },
@@ -1107,8 +1096,8 @@ local api = {
    },
    destroyParticles = {
     args = "( params )",
-    description = "This function is used to remove all particles within a region.",
-    returns = "()",
+    description = "This function is used to remove all particles within a region. It will return a number indicating how many particles were destroyed.",
+    returns = "(Number)",
     type = "method"
    },
    imageRadius = {
@@ -1157,14 +1146,14 @@ local api = {
    },
    queryRegion = {
     args = "( upperLeftX, upperLeftY, lowerRightX, lowerRightY, hitProperties )",
-    description = "This function is used to find the particles that intersect with an axis-aligned (non-rotated) box. This box is defined by an <nobr>upper-left</nobr> coordinate and a <nobr>lower-right</nobr> coordinate.",
-    returns = "()",
+    description = "This function is used to find the particles that intersect with an <nobr>axis-aligned</nobr> <nobr>(non-rotated)</nobr> box. This box is defined by an <nobr>upper-left</nobr> coordinate and a <nobr>lower-right</nobr> coordinate.",
+    returns = "(Array)",
     type = "method"
    },
    rayCast = {
     args = "( from_x, from_y, to_x, to_y, behavior )",
-    description = "This function is used to find the particles that collide with a line.",
-    returns = "()",
+    description = "This function is used to find the particles that collide with a line. It returns an array of tables describing each hit.",
+    returns = "(Array)",
     type = "method"
    }
   },
@@ -1199,42 +1188,48 @@ local api = {
   description = "Physics contacts are created by Box2D to manage/override collision behavior in special cases.",
   type = "class"
  },
- _PickerWidget = {
+ _PickerWheelWidget = {
   childs = {
    getValues = {
     args = "()",
-    description = "Returns a table with the currently selected value/index of each column in the picker wheel.",
+    description = "Returns a table with the currently selected value/index of each column in the PickerWheelWidget.",
     returns = "(Table)",
+    type = "method"
+   },
+   selectValue = {
+    args = "( targetColumn, targetIndex [, snapToIndex] )",
+    description = "Selects a specific row within a specific column of the PickerWheelWidget. Optionally allows you to snap directly/instantly to the row instead of via default scrolling motion.",
+    returns = "()",
     type = "method"
    }
   },
-  description = "PickerWheel objects are created using widget.newPickerWheel().",
-  inherits = "_EventDispatcher",
+  description = "PickerWheelWidget objects are created using widget.newPickerWheel().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _ProgressViewWidget = {
   childs = {
    getProgress = {
     args = "()",
-    description = "Returns the current progress value of a ProgressView.",
+    description = "Returns the current progress value of a ProgressViewWidget.",
     returns = "(Number)",
     type = "method"
    },
    resizeView = {
     args = "( newWidth )",
-    description = "Resizes the width of a ProgressView after creation.",
+    description = "Resizes the width of a ProgressViewWidget after creation.",
     returns = "()",
     type = "method"
    },
    setProgress = {
     args = "( progress )",
-    description = "Sets the current progress of a ProgressView.",
+    description = "Sets the current progress of a ProgressViewWidget.",
     returns = "()",
     type = "method"
    }
   },
-  description = "ProgressView objects are created using widget.newProgressView().",
-  inherits = "_EventDispatcher",
+  description = "ProgressViewWidget objects are created using widget.newProgressView().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _Recording = {
@@ -1320,75 +1315,76 @@ local api = {
   childs = {
    getContentPosition = {
     args = "()",
-    description = "Returns the __x__ and __y__ coordinates of the ScrollView content.",
+    description = "Returns the __x__ and __y__ coordinates of the ScrollViewWidget content.",
     returns = "(Numbers)",
     type = "method"
    },
    getView = {
     args = "()",
-    description = "Returns a reference to the ScrollView object's view.",
+    description = "Returns a reference to the ScrollViewWidget object's view.",
     returns = "(Table)",
     type = "method"
    },
    scrollTo = {
     args = "( position, options )",
-    description = "Makes a ScrollView scroll to a specified position constant.",
+    description = "Makes a ScrollViewWidget scroll to a specified position constant.",
     returns = "()",
     type = "method"
    },
    scrollToPosition = {
     args = "( options )",
-    description = "Makes a ScrollView scroll to a specific __x__ or __y__ position.",
+    description = "Makes a ScrollViewWidget scroll to a specific __x__ or __y__ position.",
     returns = "()",
     type = "method"
    },
    setIsLocked = {
     args = "( isLocked [, axis] )",
-    description = "Sets a ScrollView to either locked (does not scroll) or unlocked (default behavior). Optionally, you can lock or unlock the scroll view on a specific directional axis.",
+    description = "Sets a ScrollViewWidget to either locked (does not scroll) or unlocked (default behavior). Optionally, you can lock or unlock the scroll view on a specific directional axis.",
     returns = "()",
     type = "method"
    },
    setScrollHeight = {
     args = "( newHeight )",
-    description = "Updates the scrollable content height of a ScrollView, meaning the total amount that the user can scroll the view in the vertical direction.",
+    description = "Updates the scrollable content height of a ScrollViewWidget, meaning the total amount that the user can scroll the view in the vertical direction.",
     returns = "(Number)",
     type = "method"
    },
    setScrollWidth = {
     args = "( newWidth )",
-    description = "Updates the scrollable content width of a ScrollView, meaning the total amount that the user can scroll the view in the horizontal direction.",
+    description = "Updates the scrollable content width of a ScrollViewWidget, meaning the total amount that the user can scroll the view in the horizontal direction.",
     returns = "(Number)",
     type = "method"
    },
    takeFocus = {
     args = "( event )",
-    description = "If you have an object with a touch listener inside a scroll view, such as a Button widget, you should call this method within the `\"moved\"` phase of that object's touch listener and pass the touch event's `event` table as the sole parameter of this method. This will give focus back to the scroll view, enabling it to continue to scroll.",
+    description = "If you have an object with a touch listener inside a scroll view such as a ButtonWidget, you should call this method within the `\"moved\"` phase of that object's touch listener and pass the touch event's `event` table as the sole parameter of this method. This will give focus back to the scroll view, enabling it to continue to scroll.",
     returns = "(Number)",
     type = "method"
    }
   },
-  description = "ScrollView objects are created using widget.newScrollView().",
+  description = "ScrollViewWidget objects are created using widget.newScrollView().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _SegmentedControlWidget = {
   childs = {
    segmentLabel = {
-    description = "The read-only label of the currently-selected segment on a Segmented Control object.",
+    description = "A read-only value indicating the label of the currently selected segment on a SegmentedControlWidget.",
     type = "value"
    },
    segmentNumber = {
-    description = "The read-only segment number of the currently-selected segment on a Segmented Control object.",
+    description = "A read-only value indicating the segment number of the currently selected segment on a SegmentedControlWidget.",
     type = "value"
    },
    setActiveSegment = {
     args = "( segmentNumber )",
-    description = "Sets the active segment for a Segmented Control widget.",
+    description = "Sets the active segment for a SegmentedControlWidget.",
     returns = "()",
     type = "method"
    }
   },
-  description = "SegmentedControl objects are created using widget.newSegmentedControl().",
-  inherits = "_EventDispatcher",
+  description = "SegmentedControlWidget objects are created using widget.newSegmentedControl().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _ShapeObject = {
@@ -1430,17 +1426,17 @@ local api = {
   childs = {
    setValue = {
     args = "( percent )",
-    description = "Changes the Slider property.",
+    description = "Changes the SliderWidget property.",
     returns = "()",
     type = "method"
    },
    value = {
-    description = "A read-only property that represents the current value of the Slider. This is a number between `0` and `100`, representing the percentage at which the slider handle is located.",
+    description = "A read-only property that represents the current value of the SliderWidget. This is a number between `0` and `100`, representing the percentage at which the slider handle is located.",
     type = "value"
    }
   },
   description = "Slider objects are created using widget.newSlider().",
-  inherits = "_EventDispatcher",
+  inherits = "_GroupObject",
   type = "class"
  },
  _SnapshotObject = {
@@ -1488,19 +1484,19 @@ local api = {
   childs = {
    start = {
     args = "()",
-    description = "This method is used to start the animation or rotation of a Spinner object.",
+    description = "This method is used to start the animation or rotation of a SpinnerWidget object.",
     returns = "()",
     type = "method"
    },
    stop = {
     args = "()",
-    description = "This method is used to stop the animation or rotation of a Spinner object.",
+    description = "This method is used to stop the animation or rotation of a SpinnerWidget object.",
     returns = "()",
     type = "method"
    }
   },
-  description = "Spinner objects are created using widget.newSpinner().",
-  inherits = "_EventDispatcher",
+  description = "SpinnerWidget objects are created using widget.newSpinner().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _SpriteObject = {
@@ -1558,7 +1554,7 @@ local api = {
   childs = {
    setFocus = {
     args = "( displayObject [, touchID] )",
-    description = "Sets a specific display object as the target for all future hit events (`\"touch\"` and `\"tap\"`). Pass `nil` to restore default behavior for touch/tap event dispatches.",
+    description = "Sets a specific display object events. Pass `nil` to restore default behavior for touch event dispatches.",
     returns = "()",
     type = "method"
    }
@@ -1571,134 +1567,135 @@ local api = {
   childs = {
    getValue = {
     args = "()",
-    description = "This method gets the current value of a stepper, this is not restricted to usage within the stepper's listener function.",
+    description = "This method gets the current value of a StepperWidget, this is not restricted to usage within the stepper's listener function.",
     returns = "(Number)",
     type = "method"
    },
    maximumValue = {
-    description = "A read-only property that represents the maximum value of the stepper.",
+    description = "A read-only property that represents the maximum value of the StepperWidget.",
     type = "value"
    },
    minimumValue = {
-    description = "A read-only property that represents the minimum value of the stepper.",
+    description = "A read-only property that represents the minimum value of the StepperWidget.",
     type = "value"
    },
    setValue = {
     args = "( value )",
-    description = "This method sets the current value of a stepper widget. Note that the value passed to this function will not adhere to the stepper's minimum or maximum value. For example, if the stepper has a maximum value of `10` and you pass `20` as the `value` parameter, the stepper's value will be `20`. Thus, you should only pass in a `value` integer that is within range of your stepper's minimum and maximum values, if defined.",
+    description = "This method sets the current value of a StepperWidget. Note that the value passed to this function will not adhere to the stepper's minimum or maximum value. For example, if the stepper has a maximum value of `10` and you pass `20` as the `value` parameter, the stepper's value will be `20`. Thus, you should only pass in a `value` integer that is within range of your stepper's minimum and maximum values, if defined.",
     returns = "()",
     type = "method"
    },
    value = {
-    description = "A read-only property that represents the current value of the stepper.",
+    description = "A read-only property that represents the current value of the StepperWidget.",
     type = "value"
    }
   },
-  description = "Stepper.",
-  inherits = "_EventDispatcher",
+  description = "StepperWidget objects are created using widget.newStepper().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _SwitchWidget = {
   childs = {
    isOn = {
-    description = "The read-only state of a switch, either `true` or `false`.",
+    description = "The read-only state of a SwitchWidget, either `true` or `false`.",
     type = "value"
    },
    setState = {
     args = "( options )",
-    description = "Used to programatically set the state of a Switch. This also changes the state of the switch visually.",
+    description = "Used to programatically set the state of a SwitchWidget. This also changes the state of the switch visually.",
     returns = "()",
     type = "method"
    }
   },
-  description = "Switch objects are created using widget.newSwitch().",
-  inherits = "_EventDispatcher",
+  description = "SwitchWidget objects are created using widget.newSwitch().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _TabBarWidget = {
   childs = {
    setSelected = {
     args = "( buttonIndex )",
-    description = "Use this method to set a specific TabBar button to its \"selected\" state. Optionally, you can invoke the `onPress` listener for the button at the same time.",
+    description = "Use this method to set a specific TabBarWidget button to its \"selected\" state. Optionally, you can invoke the `onPress` listener for the button at the same time.",
     returns = "()",
     type = "method"
    }
   },
-  description = "TabBar objects are created using widget.newTabBar().",
-  inherits = "_EventDispatcher",
+  description = "TabBarWidget objects are created using widget.newTabBar().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _TableViewWidget = {
   childs = {
    deleteAllRows = {
     args = "()",
-    description = "This method is used to delete __all__ rows contained inside a TableView.",
+    description = "This method is used to delete __all__ rows contained inside a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    deleteRow = {
     args = "( rowIndex )",
-    description = "This method is used to delete a row contained inside a TableView.",
+    description = "This method is used to delete a row contained inside a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    deleteRows = {
     args = "( rowArray [, animationOptions] )",
-    description = "This method is used to delete rows contained inside a TableView.",
+    description = "This method is used to delete rows contained inside a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    getContentPosition = {
     args = "()",
-    description = "Returns the __y__ coordinate of the TableView content.",
+    description = "Returns the __y__ coordinate of the TableViewWidget content.",
     returns = "(Number)",
     type = "method"
    },
    getNumRows = {
     args = "()",
-    description = "Returns the number of rows contained in a TableView.",
+    description = "Returns the number of rows contained in a TableViewWidget.",
     returns = "(Number)",
     type = "method"
    },
    getRowAtIndex = {
     args = "( rowIndex )",
-    description = "Returns the row group reference to a specific visible row in a TableView.",
+    description = "Returns the row group reference to a specific __visible__ row in a TableViewWidget.",
     returns = "(GroupObject)",
     type = "method",
     valuetype = "_GroupObject"
    },
    insertRow = {
     args = "( options )",
-    description = "This method is used for inserting rows into a TableView.",
+    description = "This method is used for inserting rows into a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    reloadData = {
     args = "()",
-    description = "This method is used to reload (re-render) the visible rows of a TableView.",
+    description = "This method is used to reload <nobr>(re-render)</nobr> the visible rows of a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    scrollToIndex = {
     args = "( rowIndex, time, onComplete )",
-    description = "Makes a TableView scroll to a specific row.",
+    description = "Makes a TableViewWidget scroll to a specific row.",
     returns = "()",
     type = "method"
    },
    scrollToY = {
     args = "( options )",
-    description = "Makes a TableView.",
+    description = "Makes a TableViewWidget.",
     returns = "()",
     type = "method"
    },
    setIsLocked = {
     args = "( isLocked )",
-    description = "Sets a TableView to either locked (does not scroll) or unlocked (default behavior).",
+    description = "Sets a TableViewWidget to either locked (does not scroll) or unlocked (default behavior).",
     returns = "()",
     type = "method"
    }
   },
-  description = "Table views - sometimes referred to as list views - are created using widget.newTableView().",
+  description = "TableViewWidget objects are created using widget.newTableView().",
+  inherits = "_GroupObject",
   type = "class"
  },
  _TextBox = {
@@ -1958,6 +1955,27 @@ local api = {
   inherits = "_TextureResource",
   type = "class"
  },
+ _TextureResourceExternal = {
+  childs = {
+   height = {
+    description = "This read-only property indicates the vertical pixel dimensions of the texture.",
+    type = "value"
+   },
+   invalidate = {
+    args = "()",
+    description = "Calling this function will update the texture from the source provided by a plugin.",
+    returns = "()",
+    type = "method"
+   },
+   width = {
+    description = "This read-only property indicates the horizontal pixel dimensions of the texture.",
+    type = "value"
+   }
+  },
+  description = "The object created by various plugins, with a type property of `\"external\"`.",
+  inherits = "_TextureResource",
+  type = "class"
+ },
  _Video = {
   childs = {
    currentTime = {
@@ -1993,7 +2011,7 @@ local api = {
     type = "method"
    },
    totalTime = {
-    description = "The read-only length of the currently loaded video, in seconds. This should be called after the video is ready to play or an inaccurate value might be returned.",
+    description = "The read-only length of the currently loaded video, in seconds.",
     type = "value"
    }
   },
@@ -2061,16 +2079,11 @@ local api = {
   description = "Corona supports a variety of ad provider plugins for <nobr>in-app</nobr> advertising. Please see __Ads/Monetization__ in the Plugins directory for options.",
   type = "lib"
  },
- analytics = {
-  childs = {},
-  description = "Analytics allows you to log interesting events in your application. Please click the respective provider for details on analytics implementation.",
-  type = "lib"
- },
  audio = {
   childs = {
    dispose = {
     args = "( audioHandle )",
-    description = "Releases audio memory associated with the handle.",
+    description = "Releases audio memory associated with a handle.",
     returns = "()",
     type = "function"
    },
@@ -2146,7 +2159,7 @@ local api = {
    },
    loadStream = {
     args = "( audioFileName [, baseDir ]  )",
-    description = "Loads (opens) a file to be read as a stream. Streamed files are read in little chunks at a time to minimize memory use. These are intended for large/long files like background music and speech. Unlike files loaded with audio.loadSound(), these cannot be shared simultaneously across multiple channels. If you need to play multiple simulataneous instances of the same file, you must load multiple instances of the file.",
+    description = "Loads (opens) a file to be read as streaming audio. Streamed files are read in little chunks at a time to minimize memory use. These are intended for large/long files like background music and speech. Unlike files loaded with audio.loadSound(), these cannot be shared simultaneously across multiple channels. If you need to play multiple simulataneous instances of the same file, you must load multiple instances of the file.",
     returns = "(Object)",
     type = "function"
    },
@@ -2204,13 +2217,13 @@ local api = {
    },
    setVolume = {
     args = "( volume [, options ] )",
-    description = "Sets the volume either for a specific channel or sets the master volume.",
+    description = "Sets the volume either for a specific channel, or sets the master volume.",
     returns = "(Boolean)",
     type = "function"
    },
    stop = {
     args = "( [channel] )",
-    description = "Stops playback on a channel (or all channels) and clears the channel(s) so they can be played on again. Callbacks will still be invoked, but the completed flag will be set to `false`.",
+    description = "Stops playback on a channel <nobr>(or all channels)</nobr> and clears the channel(s) so they can be played on again. Callbacks will still be invoked, but the completed flag will be set to `false`.",
     returns = "(Number)",
     type = "function"
    },
@@ -2283,13 +2296,9 @@ local api = {
     returns = "()",
     type = "function"
    },
-   migration = {
-    description = "This guide aims to ease your migration from Storyboard to Composer.",
-    type = "value"
-   },
    newScene = {
-    args = "( ccscene )",
-    description = "This function creates new scene objects which can be used with the Composer library, or references scenes created within the Composer GUI.",
+    args = "()",
+    description = "This function creates new scene objects which can be used with the Composer Library.",
     returns = "(Table)",
     type = "function"
    },
@@ -2334,7 +2343,7 @@ local api = {
     type = "value"
    }
   },
-  description = "Composer is the official scene (screen) creation and management library in Corona SDK. This library provides developers with an easy way to create and transition between individual scenes.",
+  description = "Composer is the official scene (screen) creation and management library in CORONA_CORE_PRODUCT. This library provides developers with an easy way to create and transition between individual scenes.",
   type = "lib"
  },
  crypto = {
@@ -2403,14 +2412,14 @@ local api = {
     valuetype = "_DisplayObject"
    },
    captureBounds = {
-    args = "( screenBounds [, saveToAlbum ] )",
+    args = "( screenBounds [, saveToPhotoLibrary] )",
     description = "Captures a portion of the screen and returns it as a new DisplayObject. You can specify what portion of the screen to capture by passing in rectangular bounds. You can optionally save the capture image as a file to the device's photo library.",
     returns = "(DisplayObject)",
     type = "function",
     valuetype = "_DisplayObject"
    },
    captureScreen = {
-    args = "( [saveToAlbum] )",
+    args = "( [saveToPhotoLibrary] )",
     description = "Captures the contents of the screen and returns it as a new display object. You can optionally save the capture as a file to the device's photo library.",
     returns = "(DisplayObject)",
     type = "function",
@@ -3077,7 +3086,7 @@ local api = {
    },
    playEventSound = {
     args = "( sound [, baseDir] [, completionListener] )",
-    description = "Plays an event sound (1-3 seconds). The first argument may be either an event sound ID or a filename for the event sound. Recommended for short sounds, especially to avoid performance hiccups.",
+    description = "Plays an event sound (1-3 seconds). The first argument may be either an event sound ID or a filename for the event sound. This is recommended for short sounds, especially to avoid performance hiccups.",
     returns = "()",
     type = "function"
    },
@@ -3119,6 +3128,7 @@ local api = {
    },
    show = {
     args = "()",
+    description = "This function is deprecated. Use media.selectPhoto() instead.",
     returns = "()",
     type = "function"
    },
@@ -3166,7 +3176,7 @@ local api = {
    },
    getSync = {
     args = "( filename, params )",
-    description = "Gets the iCloud automatic backup settings for files in the `system.DocumentsDirectory` on OS X and iOS systems.",
+    description = "Gets the iCloud automatic backup settings for files in the `system.DocumentsDirectory` and `system.ApplicationSupportDirectory` on macOS and iOS systems.",
     returns = "(Boolean)",
     type = "function"
    },
@@ -3206,14 +3216,14 @@ local api = {
    },
    newWebView = {
     args = "( centerX, centerY, width, height )",
-    description = "Loads a web page in a web view container. Native web views differ from web popups in that you can move them (via `x`/`y` properties) or rotate them (via the `rotation` property) in the same manner as other display objects.",
+    description = "Loads a web page in a web view container. This native web view can be moved via `x`/`y` properties in the same manner as other display objects. On iOS, you can also rotate it via the `rotation` property.",
     returns = "(WebView)",
     type = "function",
     valuetype = "_WebView"
    },
    requestExit = {
     args = "()",
-    description = "Closes the application window on Android or Windows Phone gracefully without terminating the process.",
+    description = "On Android or Windows Phone, this closes the application window gracefully without terminating the process. On macOS and Windows, this closes the application.",
     returns = "()",
     type = "function"
    },
@@ -3237,7 +3247,7 @@ local api = {
    },
    setSync = {
     args = "( filename, params )",
-    description = "Sets the iCloud automatic backup flag for files in the `system.DocumentsDirectory` on OS X and iOS systems.",
+    description = "Sets the iCloud automatic backup flag for files in the `system.DocumentsDirectory` and `system.ApplicationSupportDirectory` on macOS and iOS systems.",
     returns = "(Boolean)",
     type = "function"
    },
@@ -3339,7 +3349,7 @@ local api = {
    },
    exit = {
     args = "( [ exit ] )",
-    description = "<div class=\"guide-notebox-imp\">",
+    description = "Calls the C function `exit()`, with an optional code, to terminate the host program. The default value for code is the success code.",
     returns = "()",
     type = "function"
    },
@@ -3378,7 +3388,7 @@ local api = {
    },
    module = {
     args = "( name [, ...] )",
-    description = "Creates a module. If there is a table in `package.loadedname`, this table is the module. Otherwise creates a new table `t` and sets it as the value of the global name and the value of `package.loadedname`. This function also initializes `t._NAME` with the given name, `t._M` with the module (`t` itself), and `t._PACKAGE` with the package name (the full module name minus last component; see below). Finally, `module()` sets `t` as the new environment of the current function and the new value of `package.loadedname`, so that require returns `t`.",
+    description = "This function has been deprecated and should not be used.",
     returns = "()",
     type = "function"
    },
@@ -3389,7 +3399,7 @@ local api = {
     type = "function"
    },
    seeall = {
-    description = "Sets a metatable for the specified module with its `__index` field referring to the global environment, so that this module inherits values from the global environment. To be used as an option to function module.",
+    description = "This function is deprecated. Please refer to require() instead.",
     type = "value"
    }
   },
@@ -3596,12 +3606,7 @@ local api = {
  },
  socket = {
   childs = {},
-  description = "Corona currently includes the version 2.02 of the LuaSocket libraries. These Lua modules implement common network protocols such as SMTP, HTTP, and FTP. Also included are features to support MIME (common encodings), URL manipulation, and LTN12 for transferring and filtering data.",
-  type = "lib"
- },
- sprite = {
-  childs = {},
-  description = "The old sprite library is only available in legacy versions of Corona. It has been removed from production builds of Corona.",
+  description = "The `socket` library provides low-level access to the network stack on the host device. It is __not__ intended for general networking usage (the network APIs will generally continue to work because it is directly supported by device vendors.",
   type = "lib"
  },
  sqlite3 = {
@@ -3749,7 +3754,7 @@ local api = {
    },
    match = {
     args = "( s, pattern [, init] )",
-    description = "Extract substrings by matching a pattern in a string. If a match is found, the captures from the pattern; otherwise it returns `nil`. If pattern specifies no captures, then the whole match is returned.",
+    description = "Extract substrings by matching a pattern in a string. If a match is found, returns the captures from the pattern; otherwise returns `nil`. If pattern specifies no captures, then the whole match is returned.",
     returns = "(String)",
     type = "function",
     valuetype = "string"
@@ -3794,6 +3799,10 @@ local api = {
  },
  system = {
   childs = {
+   ApplicationSupportDirectory = {
+    description = "Used with system.pathForFile() to create a path for storing and retrieving files that need to persist between application sessions but are not visible to users. For example, this might be used for storing downloadable levels for a game.",
+    type = "value"
+   },
    CachesDirectory = {
     description = "Used with system.pathForFile() to create a path for storing and retrieving files that are available across application launches. This is ideal for saving state information. ",
     type = "value"
@@ -3803,7 +3812,7 @@ local api = {
     type = "value"
    },
    ResourceDirectory = {
-    description = "Used with system.pathForFile() to create a path for retrieving files where all the application assets exist (for example, image and sound files). This is often called the \"app bundle.\"",
+    description = "Used with system.pathForFile() to create a path for retrieving files where all the application assets exist, for example image and sound files. This is often called the \"app bundle.\"",
     type = "value"
    },
    TemporaryDirectory = {
@@ -3812,7 +3821,7 @@ local api = {
    },
    activate = {
     args = "( feature )",
-    description = "Activates a system level feature, such as `\"multitouch\"`. Use system.deactivate() to disable a feature.",
+    description = "Activates a system-level feature such as `\"multitouch\"`. Similarly, you can use system.deactivate() to disable a feature.",
     returns = "()",
     type = "function"
    },
@@ -3824,13 +3833,20 @@ local api = {
    },
    cancelNotification = {
     args = "()",
+    description = "Local/push notifications have been moved to the Notifications plugin. Please see the documentation for usage details.",
     returns = "()",
     type = "function"
    },
    deactivate = {
     args = "( feature )",
-    description = "Deactivates a system level feature, such as `\"multitouch\"`.",
+    description = "Deactivates a system-level feature such as `\"multitouch\"`.",
     returns = "()",
+    type = "function"
+   },
+   deletePreferences = {
+    args = "( category, preferenceNames )",
+    description = "Deletes preferences from storage.",
+    returns = "(Boolean)",
     type = "function"
    },
    getIdleTimer = {
@@ -3853,11 +3869,10 @@ local api = {
     valuetype = "_InputDevice"
    },
    getPreference = {
-    args = "( category, name )",
-    description = "Returns a preference value as a string.",
-    returns = "(String)",
-    type = "function",
-    valuetype = "string"
+    args = "( category, name [, type] )",
+    description = "Returns the requested preference's value.",
+    returns = "()",
+    type = "function"
    },
    getTimer = {
     args = "()",
@@ -3897,12 +3912,13 @@ local api = {
    },
    scheduleNotification = {
     args = "()",
+    description = "Local/push notifications have been moved to the Notifications plugin. Please see the documentation for usage details.",
     returns = "(Userdata)",
     type = "function"
    },
    setAccelerometerInterval = {
     args = "( frequency )",
-    description = "Sets the frequency of accelerometer events. On the iPhone, the minimum frequency is 10 Hz and the maximum is 100 Hz. Accelerometer events are a significant drain on battery, so only increase the frequency when you need faster responses.",
+    description = "Sets the frequency of accelerometer events.",
     returns = "()",
     type = "function"
    },
@@ -3930,6 +3946,12 @@ local api = {
     returns = "()",
     type = "function"
    },
+   setPreferences = {
+    args = "( category, preferences )",
+    description = "Writes a table of preference values to storage. If any of the given preferences do not exist in storage, they will be inserted. If any of the given preferences already exist in storage, they will be overwritten.",
+    returns = "(Boolean)",
+    type = "function"
+   },
    setTapDelay = {
     args = "( delayTime )",
     description = "The delay time between when a tap is detected and when the tap event is delivered. By default, this time is 0.",
@@ -3938,7 +3960,7 @@ local api = {
    },
    vibrate = {
     args = "()",
-    description = "Vibrates the phone. On the Corona simulator this will sound a system beep (OS X only).",
+    description = "Vibrates the phone. In the Corona Simulator, this will sound a system beep (macOS only).",
     returns = "()",
     type = "function"
    }
@@ -3986,7 +4008,7 @@ local api = {
     type = "function"
    },
    sort = {
-    args = "( t )",
+    args = "( array [, compare] )",
     description = "Sorts table elements in a given order, in-place, from `table1` to `tablen`, where `n` is the length of the table. It receives the table (array) to be sorted plus an optional `compare` function. This `compare` function receives two arguments and must return `true` if the first argument should come first in the sorted array. If `compare` is __not__ given, then the standard Lua operator `<` is used instead.",
     returns = "()",
     type = "function"
@@ -4060,9 +4082,8 @@ local api = {
    from = {
     args = "( target, params )",
     description = "Similar to transition.to() except that the starting property values are specified in the parameters table and the final values are the corresponding property values of the object prior to the call.",
-    returns = "(Reference)",
-    type = "function",
-    valuetype = "_Reference"
+    returns = "(Table)",
+    type = "function"
    },
    moveBy = {
     args = "( target, params )",
@@ -4114,83 +4135,83 @@ local api = {
   childs = {
    newButton = {
     args = "( options )",
-    description = "Creates a Button object.",
+    description = "Creates a ButtonWidget object.",
     returns = "(ButtonWidget)",
     type = "function",
     valuetype = "_ButtonWidget"
    },
    newPickerWheel = {
     args = "( options )",
-    description = "Creates a Picker Wheel object.",
-    returns = "(PickerWidget)",
+    description = "Creates a PickerWheelWidget object.",
+    returns = "(PickerWheelWidget)",
     type = "function",
-    valuetype = "_PickerWidget"
+    valuetype = "_PickerWheelWidget"
    },
    newProgressView = {
     args = "( options )",
-    description = "Creates a ProgressView object.",
+    description = "Creates a ProgressViewWidget object.",
     returns = "(ProgressViewWidget)",
     type = "function",
     valuetype = "_ProgressViewWidget"
    },
    newScrollView = {
     args = "( options )",
-    description = "Creates a ScrollView object.",
+    description = "Creates a ScrollViewWidget object.",
     returns = "(ScrollViewWidget)",
     type = "function",
     valuetype = "_ScrollViewWidget"
    },
    newSegmentedControl = {
     args = "( options )",
-    description = "Creates a Segmented Control object.",
+    description = "Creates a SegmentedControlWidget object.",
     returns = "(SegmentedControlWidget)",
     type = "function",
     valuetype = "_SegmentedControlWidget"
    },
    newSlider = {
     args = "( options )",
-    description = "Creates a Slider object.",
+    description = "Creates a SliderWidget object.",
     returns = "(SliderWidget)",
     type = "function",
     valuetype = "_SliderWidget"
    },
    newSpinner = {
     args = "( options )",
-    description = "Creates a Spinner object.",
+    description = "Creates a SpinnerWidget object.",
     returns = "(SpinnerWidget)",
     type = "function",
     valuetype = "_SpinnerWidget"
    },
    newStepper = {
     args = "( options )",
-    description = "Creates a Stepper object. The stepper consists of a minus and plus button which can be tapped or held down to decrement/increment a value, for example, the music or sound volume setting in a game.",
+    description = "Creates a StepperWidget object. The stepper consists of a minus and plus button which can be tapped or held down to decrement/increment a value, for example, the music or sound volume setting in a game.",
     returns = "(StepperWidget)",
     type = "function",
     valuetype = "_StepperWidget"
    },
    newSwitch = {
     args = "( options )",
-    description = "Creates a Switch object.",
+    description = "Creates a SwitchWidget object.",
     returns = "(SwitchWidget)",
     type = "function",
     valuetype = "_SwitchWidget"
    },
    newTabBar = {
     args = "( options )",
-    description = "Creates a TabBar object.",
+    description = "Creates a TabBarWidget object.",
     returns = "(TabBarWidget)",
     type = "function",
     valuetype = "_TabBarWidget"
    },
    newTableView = {
     args = "( options )",
-    description = "Creates a TableView object.",
-    returns = "(TableView)",
+    description = "Creates a TableViewWidget object.",
+    returns = "(TableViewWidget)",
     type = "function",
-    valuetype = "_TableView"
+    valuetype = "_TableViewWidget"
    },
    setTheme = {
-    args = "( themeFile )",
+    args = "( theme )",
     description = "Use this function to set the overall theme of the widget library. This should be called immediately after you `require()` the widget library.",
     returns = "()",
     type = "function"
