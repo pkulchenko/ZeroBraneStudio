@@ -6,8 +6,8 @@
 -- 1. extract `CoronaSDK-APIDOC-year-build.zip`
 -- 2. copy `library`, `type`, and `event` folders to `ZBS/api/lua` folder
 -- 3. run "../../bin/lua corona.lua >newapi" from ZBS/api/lua folder
--- 4. copy the content of "newapi" file to replace "love" table in love2d.lua
--- 4. launch the IDE and switch to love2d to confirm that it's loading without issues
+-- 4. copy the content of "newapi" file to replace "api" table in corona.lua
+-- 4. launch the IDE and switch to `corona` interpreter to confirm it's loading without issues
 
 local api = {
  _BitmapPaint = {
@@ -4244,7 +4244,7 @@ local function extractOverview(filename)
   local f = io.open(filename, 'r')
   for l in f:lines() do
     i = i + 1
-    if l == '## Overview' then
+    if l == '## Overview' or l:sub(1, 1) == '<' then
       overviewInd = i + 2
     elseif l:find("^> __Parent__") then
       parent = l:match("%[(.-)%]")
