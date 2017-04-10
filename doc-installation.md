@@ -35,5 +35,9 @@ As an alternative, you can **move those system settings to user settings** (`Edi
 The installation using the setup script requires **administrative privileges**.
 If you want to install the IDE into a user directory, use the second or third option.
 
+If you don't have `sudo` installed on your system, or the installation fails for some other reason, run the installer with the `--keep` option, and move the resulting extracted files to the desired directory.
+Then update the `cd` (change directory) command in the `zbstudio.sh` script to match the directory where you moved the program.
+You may need to adjust permissions and create desktop entries manually.
+
 If you are using a server version of Ubuntu, you may need to run `sudo apt-get install libgtk2.0-0 xdg-utils`.
 If you are using RedHat Enterprise Linux version, you may need to run `sudo yum install xdg-utils dejavu-lgc-sans-fonts`.
