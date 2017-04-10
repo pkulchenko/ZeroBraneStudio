@@ -28,6 +28,8 @@ and others).
 
 * Small, portable, and **cross-platform** (Windows, Mac OSX, and Linux).
 * Written in Lua and is extensible with Lua packages.
+* **Syntax highlighting** and folding for 100+ languages and file formats.
+* **Project view** with auto-refresh and ability to hide files and directories from the list.
 * Bundled with several of **the most popular Lua modules**
 ([luasocket](https://github.com/diegonehab/luasocket),
 [luafilesystem](https://github.com/keplerproject/luafilesystem),
@@ -35,14 +37,14 @@ and others).
 and [luasec](https://github.com/brunoos/luasec))
 compiled for all supported Lua versions.
 * **Auto-complete** for functions, keywords, and custom APIs with **scope-aware completion** for variables.
-* **Syntax highlighting** and [scope-aware variable indicators](http://notebook.kulchenko.com/zerobrane/scope-aware-variable-indicators-zerobrane-studio).
-* **Interactive console** to directly test code snippets with local and remote execution.
+* [Scope-aware variable indicators](http://notebook.kulchenko.com/zerobrane/scope-aware-variable-indicators-zerobrane-studio) for Lua code.
 * **Integrated debugger** with local and [remote debugging](http://studio.zerobrane.com/doc-remote-debugging)
 for [Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
 [Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
 and [other Lua engines](http://studio.zerobrane.com/documentation#debugging).
+* **Interactive console** to directly test code snippets with local and remote execution.
 * [Live coding](http://studio.zerobrane.com/documentation#live_coding)
 with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
@@ -50,7 +52,6 @@ with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victo
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 [Corona SDK](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 GSL-shell, and other engines.
-* **Project view** with auto-refresh and ability to hide files and directories from the list.
 * **Static analysis** to catch errors and typos during development.
 * **Function outline**.
 * **Go to definition** navigation.
