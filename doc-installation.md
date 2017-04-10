@@ -9,7 +9,7 @@ ZeroBrane Studio can be **installed** in three different ways:
 
 1. Download and install one of the packages provided on the [download](download) page.
 2. Download the [snapshot of the repository](https://github.com/pkulchenko/ZeroBraneStudio/releases).
-3. Close [the repository](https://github.com/pkulchenko/ZeroBraneStudio).
+3. Clone [the repository](https://github.com/pkulchenko/ZeroBraneStudio).
 
 The IDE can be installed into and **run from any directory**.
 No additional installation steps are needed for repository clones and snapshots (you only need to unpack the files into a destination folder).
