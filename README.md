@@ -84,6 +84,8 @@ The IDE can be **installed into and run from any directory**. There are three op
 
 **No compilation is needed** for any of the installation options, although the scripts to compile required libraries for all supported platforms are available in the `build/` directory.
 
+See the [installation section](https://studio.zerobrane.com/doc-installation) in the documentation for further details.
+
 ## Usage
 
 The IDE can be launched by using the `zbstudio` command with slight variations depending on whether a packaged installation or a repository copy is used:
