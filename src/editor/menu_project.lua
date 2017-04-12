@@ -207,7 +207,7 @@ local function runInterpreter(wfilename, withdebugger)
   ide:GetOutput():Activate()
 
   ClearAllCurrentLineMarkers()
-  if not wfilename then return end
+  if not wfilename or not ide.interpreter.frun then return end
   local pid = ide.interpreter:frun(wfilename, withdebugger)
   if pid then OutputEnableInput() end
   ide:SetLaunchedProcess(pid)
@@ -294,7 +294,10 @@ frame:Connect(ID_COMPILE, wx.wxEVT_UPDATE_UI,
 frame:Connect(ID_RUN, wx.wxEVT_COMMAND_MENU_SELECTED, function () ProjectRun() end)
 frame:Connect(ID_RUN, wx.wxEVT_UPDATE_UI,
   function (event)
-    event:Enable(ide:GetDebugger():IsConnected() == nil and ide:GetLaunchedProcess() == nil and ide:GetEditor() ~= nil)
+    event:Enable(ide:GetDebugger():IsConnected() == nil and
+                 ide:GetLaunchedProcess() == nil and
+                 (ide.interpreter.frun ~= nil) and -- nil == no running from this interpreter
+                 ide:GetEditor() ~= nil)
   end)
 
 frame:Connect(ID_RUNNOW, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -313,6 +316,7 @@ frame:Connect(ID_RUNNOW, wx.wxEVT_UPDATE_UI,
     -- allow scratchpad if there is no server or (there is a server and it is
     -- allowed to turn it into a scratchpad) and we are not debugging anything
     event:Enable((ide.interpreter) and (ide.interpreter.hasdebugger) and
+                 (ide.interpreter.frun ~= nil) and -- nil == no running from this interpreter
                  (ide.interpreter.scratchextloop ~= nil) and -- nil == no scratchpad support
                  (editor ~= nil) and ((debugger:IsConnected() == nil or debugger.scratchable)
                  and ide:GetLaunchedProcess() == nil or debugger.scratchpad ~= nil))
@@ -342,6 +346,7 @@ frame:Connect(ID_STARTDEBUG, wx.wxEVT_UPDATE_UI,
     local editor = GetEditor()
     local debugger = ide:GetDebugger()
     event:Enable((ide.interpreter) and (ide.interpreter.hasdebugger) and
+                 (ide.interpreter.frun ~= nil) and -- nil == no running from this interpreter
       ((debugger:IsConnected() == nil and ide:GetLaunchedProcess() == nil and editor ~= nil) or
        (debugger:IsConnected() ~= nil and not debugger:IsRunning())) and
       (not debugger.scratchpad or debugger.scratchpad.paused))
