@@ -194,3 +194,7 @@ To display values from your program while it is running, you can use [real-time 
 ## Project settings (plugin)
 
 To set project-specific settings, you can use [project settings plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/projectsettings.lua).
+
+## Auto-start debugger (plugin)
+
+To start the debugger server automatically when the IDE is started, you can use [autostart debugger plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/autostartdebug.lua).
