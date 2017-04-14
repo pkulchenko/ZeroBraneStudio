@@ -7,7 +7,7 @@ title: Features
 Written in Lua. Extensible and open.
 
 **Cross-platform**
-[Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png): your choice.
+[Windows](images/debugging.png), [MacOS](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png): your choice.
 
 **Portable**
 Run it from any folder. No installation required.
@@ -28,7 +28,7 @@ Review and navigate all functions (and their parameters) defined in the current 
 Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
 **Small**
-With the Windows and OSX installation packages being less than 5MB, it is one of the smallest if not _the smallest_ fully featured IDE.
+With the Windows and MacOS installation packages being around 6MB, it is one of the smallest if not _the smallest_ fully featured IDE.
 
 **Configurable**
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.

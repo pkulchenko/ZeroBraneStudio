@@ -135,9 +135,9 @@ See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issu
 (**1.40+**) HiDPI awareness has also been enabled for Lua executables for all supported versions.
 You may still need to enable it for other executables (not included with the IDE) as needed to make the applications you start from the IDE dpi-aware as well.
 
-## Why is the text blurry in the editor when running on retina display (OSX)?
+## Why is the text blurry in the editor when running on retina display (MacOS)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on OSX starting from v0.60.
+You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on MacOS starting from v0.60.
 
 (**1.30 and earlier**) Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
@@ -197,7 +197,7 @@ You can start multiple instances if you disable "single instance" check
 either by adding `singleinstance=false` to the configuration file
 or by starting the second instance with the following command: `zbstudio -cfg "singleinstance=false"`.
 
-The single instance check is disabled on OSX by default.
+The single instance check is disabled on MacOS by default.
 
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 
@@ -205,7 +205,7 @@ You can start one instance as you normally do and then start the second instance
 This command disables a singleinstance check for the second instance and configures it to use port 8173 for debugging.
 You can then use `require('mobdebug').start("domain-name", 8173)` in your application to connect to the second instance for debugging.
 
-If you use Mac OSX, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
+If you use MacOS, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
 
 ## How do I restore default configuration for UI elements?
 
@@ -244,7 +244,7 @@ Upvalues shown in watch/console/stack windows will only include those **upvalues
 For example, if you step into function `abc` from the following fragment -- `local a, b = 1, 2; function abc() print(a) end` -- then only `a` variable will be listed as the upvalue.
 If you try to access the value of `b` in the Watch or the Console window, you'll get `nil` as that **upvalue is not present in the scope** of that function.
 
-## Why am I getting `mach-o, but wrong architecture` error on OSX?
+## Why am I getting `mach-o, but wrong architecture` error on MacOS?
 
 You may be trying to load a 64bit module using Lua executable that is included with the IDE.
 Since the Lua executable is 32bit, you get the error about incompatible architectures.
