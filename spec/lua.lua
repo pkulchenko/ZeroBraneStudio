@@ -53,6 +53,7 @@ return {
   isdecindent = function(str)
     str = (str
       :gsub('%[=*%[.-%]=*%]','') -- remove long strings
+      :gsub("%b[]","") -- remove all table indexes
       :gsub('%[=*%[.*',''):gsub('.*%]=*%]','') -- remove partial long strings
       :gsub('%-%-.*','') -- strip comments after strings are processed
       :gsub("%b()","()") -- remove all function calls
@@ -85,6 +86,7 @@ return {
     end
     str = (str
       :gsub('%[=*%[.-%]=*%]','') -- remove long strings
+      :gsub("%b[]","") -- remove all table indexes
       :gsub('%[=*%[.*',''):gsub('.*%]=*%]','') -- remove partial long strings
       :gsub('%-%-.*','') -- strip comments after strings are processed
       :gsub("%b()","()") -- remove all function calls
