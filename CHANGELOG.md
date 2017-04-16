@@ -12,8 +12,8 @@
 
 ### Special thanks
   - To [Christoph Kubisch](https://github.com/pixeljetstream) for luxinia cleanup and [GraphicsCodePack](https://github.com/pixeljetstream/zbstudio-graphicscodepack) integration.
-  - To deining for German translation updates and fixes.
-  - To snisioi for adding configuration file with Eclipse shortcuts.
+  - To [deining](https://github.com/deining) for German translation updates and fixes.
+  - To [senisioi](https://github.com/senisioi) for adding configuration file with Eclipse shortcuts.
 
 ### Improvements
   - Added clearing breakpoints and bookmarks in a file to the main menu.
