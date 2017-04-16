@@ -161,7 +161,7 @@ To change the default order, add the following to the [configuration](doc-config
 To copy a value from the Watch window to the clipboard (which may be useful if the string representation of the value doesn't fit in the window),
 access the context menu (right click on the mouse while pointing to the value to copy) and select `Copy Value`.
 
-## Show numeric values in Watch/Console in hexadecimal format
+## Show numeric values in Console in hexadecimal format
 
 To change the format of numeric values, add the following fragment to the [configuration](doc-configuration) file or execute it in the Local Console (in which case it will only be active for the current session):
 
@@ -174,6 +174,16 @@ debugger.init = [[
 
 This will affect all the numbers shown in the Watch, Stack, tooltips, and Remote Console windows.
 To switch back either remove the configuration setting or reset `debugger.init` back to an empty value.
+
+## Change format for numeric values in Stack/Watch windows
+
+(1.51+) To change the format of numeric values shown in Stack/Watch windows, set `debugger.numformat` contiguration setting to the desired value.
+For example, to show  the values in the hexadecimal format, add the following fragment to the [configuration](doc-configuration) file:
+
+```lua
+debugger.numformat = "0x%x"
+```
+This will affect all the numbers shown in the Watch, Stack, and tooltips, but will *not* affect Local/Remote Console windows.
 
 ## Adding custom API
 
