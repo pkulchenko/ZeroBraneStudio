@@ -88,6 +88,9 @@ To print complex elements on multiple lines, you can prepend the expression with
 
 To limit the number of levels shown during pretty printing, instead of `val`, use `return require('mobdebug').line(val, {maxlevel = 1})`, and instead of `=val`, use `return require('mobdebug').line(a, {indent = ' ', maxlevel = 1})`.
 
+(1.51+) Another option to limit the number of levels shown during pretty printing, is to add a comment with serializer options, so instead of `val`, use `val -- {maxlevel = 2}`.
+You can use any [option supported by the Serpent serializer](https://github.com/pkulchenko/serpent#options), for example, you can change the format for the results of the expression using `numformat` option: `val --{numformat = "%x"}`.
+
 ## Quick jump to the source of the error
 
 To **jump to the position referred to in the error message** shown in the `Output` window, you can double click on the line showing the error message.
