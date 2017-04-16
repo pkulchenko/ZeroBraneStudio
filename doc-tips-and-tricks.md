@@ -30,7 +30,9 @@ The menu item will also show how many instances will be selected ([screenshot an
 
 ## Quick search
 
-To **quickly search for selected string** or previously searched word, you can use `Find Next` (`F3`) and `Find Previous` (`Shift-F3`).
+To **quickly search for previously searched word**, you can use `Find Next` (`F3`) and `Find Previous` (`Shift-F3`).
+
+To **quickly search for selected string** (when it's different from the previous search string), you can use `Select and Find Next` (`Ctrl/Cmd-F3`) and `Select and Find Previous` (`Ctrl/Cmd-Shift-F3`).
 
 ## Navigate selected instances of a variable
 
