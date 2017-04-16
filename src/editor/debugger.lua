@@ -1494,7 +1494,7 @@ local function debuggerCreateWatchWindow()
             self:Expand(item)
             local name = self:GetItemName(item)
             if not name then
-              self:SetItemText(item, (self:GetItemText(item):gsub("%{%.%.%.%}", "{}")))
+              self:SetItemText(item, (self:GetItemText(item):gsub(q(MORE), "{}")))
               return
             end
 
