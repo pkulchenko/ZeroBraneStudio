@@ -2,9 +2,6 @@ CHANGELOG.md
 LICENSE
 README.md
 api/lua/*.lua
-api/opencl/*.lua
-api/glsl/*.lua
-api/cg/*.lua
 cfg/*.lua
 cfg/i18n/*.lua
 interpreters/*.lua
@@ -40,7 +37,6 @@ src/editor/*.lua
 src/main.lua
 src/util.lua
 src/version.lua
-tools/*.lua
 zbstudio/app.lua
 zbstudio/config.lua
 zbstudio/res/16/LICENSE
