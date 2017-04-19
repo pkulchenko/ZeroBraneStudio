@@ -114,6 +114,11 @@ Running a script with this escape sequence under LuaJIT will trigger an error: `
 
 The solution in this case is to **"fix" the escape sequence** and replace `\/` with `/`, which will have the same effect in Lua 5.1, LuaJIT, and Lua 5.2.
 
+## How to open file and position cursor to a specific line or position in the file?
+
+When launching the IDE and passing a filename as a parameter, it's possible to include the line number (using `filename:<line>`) and position (using `filename:p<pos>`) in the file.
+After the file is opened, the cursor will be moved to the specified position or the beginning of the specified line.
+
 ## How to search or replace with regular expressions?
 
 To **search or replace using regular expressions**, you can toggle `Regular expression` icon on the search panel toolbar.
