@@ -1,12 +1,13 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Mar 29 2017)
+## v1.60 (Apr 19 2017)
 
 ### Highlights
   - Added syntax highlighting and folding for 110+ languages and file formats.
   - Added dynamic table expansion to Stack and Watch windows.
   - Added clearing breakpoints and bookmarks in a file.
   - Improved handling of valid and invalid UTF8 strings in copy/paste operations (#729, #556).
+  - Updated Corona API for v2017.3068.
   - Fixed showing and copying invalid UTF-8 values in the Watch window (fixes #734).
   - Fixed style conflict in HTML with embedded lexers, which caused disappearance of text fragments.
 
@@ -16,6 +17,8 @@
   - To [senisioi](https://github.com/senisioi) for adding configuration file with Eclipse shortcuts.
 
 ### Improvements
+  - Added checks to Outline to make handling of cached data more robust.
+  - Added check for `LoadLexerLibrary` as it's not present in older wxwidgets versions (#260).
   - Added clearing breakpoints and bookmarks in a file to the main menu.
   - Added clearing breakpoints and bookmarks in a file to the Markers menu.
   - Added `moonscript` and other lexers to the extension mapping.
@@ -43,6 +46,7 @@
   - Added `LoadTool` package method (#166).
   - Added `LoadSpec` package method (#166).
   - Added `toolbar.iconsize` default setting.
+  - Disabled running/debugging for interpreters that don't support it.
   - Improved expansion of values that can't be evaluated.
   - Improved handling of valid and invalid UTF8 strings in copy/paste (#729, #556).
   - Minor corrections in de.lua (closes #723).
@@ -53,6 +57,9 @@
   - Removed top level comments from the Stack view results.
   - Removed graphics-related APIs to move to plugins.
   - Removed load filters, tools, and graphics-related specs to move to plugins.
+  - Updated Corona API for v2017.3068.
+  - Updated toolbar icon size check to allow for large (48x48+) custom icons.
+  - Upgraded Mobdebug (0.648) to add traceback handling improvements.
   - Updated MacOS build scripts to strip binaries and update install_name.
   - Updated build scripts for more consistent usage of lua/lib folders.
   - Updated tests to use `ID` table instead of individual values.
@@ -77,6 +84,9 @@
   - Updated debugger to request further socket processing when needed.
 
 ### Fixes
+  - Fixed indentation of functional calls with multi-bracket expressions (fixes #758).
+  - Fixed showing Outline on MacOS with `outline.showonefile` enabled (fixes #749).
+  - Fixed assertion in Outline when `outline.showonefile` is specified.
   - Fixed enabling `Set as Start File` for all known extensions (fixes #747).
   - Fixed LexLPeg loading on MacOS.
   - Fixed copying text with accented characters on OSX (closes #729).
