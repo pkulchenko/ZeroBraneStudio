@@ -19,7 +19,7 @@ immediate feedback, **Markdown formatting** in comments for providing
 instructions with minimal context switching, and **integrated interactive
 materials** for those learning Lua or getting familiar with programming.
 
-The installation package includes some of the **most popular libraries** ([luasocket](https://github.com/diegonehab/luasocket),
+The installation package includes some of the **most popular Lua libraries** ([luasocket](https://github.com/diegonehab/luasocket),
 [luafilesystem](https://github.com/keplerproject/luafilesystem),
 [luasec](https://github.com/brunoos/luasec),
 and [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg/)) compiled for Lua 5.1, 5.2, and 5.3 versions on all supported platforms.
@@ -48,8 +48,10 @@ and [more](documentation#debugging).
 
 * Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
 * **Auto-completion** for functions, keywords, and custom APIs;
-* **Interactive console** to test code snippets with local and remote execution;
-* **Integrated debugger** (with support for local and remote debugging, including **cross-platform** and **on-device** debugging);
+* **Syntax highlighting** and folding for 110+ languages and file formats;
+* **Project view** with auto-refresh and ability to hide files and directories from the list;
+* **Interactive console** to test Lua code snippets with local and remote execution;
+* **Integrated debugger** with support for local and remote debugging, including **cross-platform** and **on-device** debugging;
 * [Live coding](documentation#live-coding) with [Lua](http://notebook.kulchenko.com/zerobrane/live-coding-in-lua-bret-victor-style),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/live-coding-with-love),
 [Gideros](http://notebook.kulchenko.com/zerobrane/gideros-live-coding-with-zerobrane-studio-ide),
