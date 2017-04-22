@@ -12,7 +12,7 @@ yet **simple and instantly usable** for beginners (as tested with middle and
 high school students with no programming experience).
 Unlike&nbsp;Eclipse and IntelliJ, it has a **small footprint** and is **full customizable with Lua**.
 Unlike&nbsp;TextMate and Sublime Text, it includes a **remote debugger** and a **full IDE feature set**.
-Unlike&nbsp;Decoda, it runs on **Windows, Mac OSX, and Linux** and supports various Lua versions with **on-device debugging**.
+Unlike&nbsp;Decoda, it runs on **Windows, MacOS, and Linux** and supports various Lua versions with **on-device debugging**.
 
 ZeroBrane Studio also provides several unique features: **live coding** for
 immediate feedback, **Markdown formatting** in comments for providing
@@ -46,7 +46,7 @@ and [more](documentation#debugging).
 
 ## Feature highlights
 
-* Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [Mac OSX](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
+* Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [MacOS](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
 * **Auto-completion** for functions, keywords, and custom APIs;
 * **Syntax highlighting** and folding for 110+ languages and file formats;
 * **Project view** with auto-refresh and ability to hide files and directories from the list;
