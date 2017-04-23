@@ -28,7 +28,7 @@ and others).
 
 * Small, portable, and **cross-platform** (Windows, Mac OSX, and Linux).
 * Written in Lua and is extensible with Lua packages.
-* **Syntax highlighting** and folding for 100+ languages and file formats.
+* **Syntax highlighting** and folding for 110+ languages and file formats.
 * **Project view** with auto-refresh and ability to hide files and directories from the list.
 * Bundled with several of **the most popular Lua modules**
 ([luasocket](https://github.com/diegonehab/luasocket),
@@ -80,7 +80,7 @@ The IDE can be **installed into and run from any directory**. There are three op
 
 * Download [installation package for the latest release](https://studio.zerobrane.com/) for individual platforms (Windows, OSX, or Linux);
 * Download [snapshot of the repository for each of the releases](releases), which works for all platforms;
-* Clone the repository to access the current development version.
+* Clone the repository to access the current development version; this option also works for all platforms.
 
 **No compilation is needed** for any of the installation options, although the scripts to compile required libraries for all supported platforms are available in the `build/` directory.
 
