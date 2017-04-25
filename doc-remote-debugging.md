@@ -44,6 +44,15 @@ Note that these instructions are for **Lua 5.1**- and **LuaJIT**-based systems.
 If your application is using **Lua 5.2** or **Lua 5.3** interpreters, then replace `clibs` in `LUA_CPATH`
 values with `clibs52` or `clibs53`, respectively, to load proper versions of the required modules.
 
+## Debugging of 64bit applications
+
+If you are debugging a **64bit application on Windows**, you need to make the 64bit luasocket library available to your application
+and set `package.cpath` appropriately (to make sure it references 64bit libraries before any other library that may be referenced there)
+as the libraries included with the IDE are compiled for 32bit architecture and will not work with 64bit applications.
+
+MacOS and Linux don't require any special handling for 64bit applications as Linux version are available for both 32bit and 64bit architectures
+and MacOS libraries are compiled as universal libraries (and can be loaded from 32bit and 64bit applications).
+
 ## Configure path for debugging
 
 In a similar way, instead of specifying `LUA_PATH` and `LUA_CPATH`, you can set `package.path` and `package.cpath` (if needed) directly from your script:
