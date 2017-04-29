@@ -297,9 +297,9 @@ if [ $BUILD_LUASOCKET ]; then
   unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" src/mime.c \
+  gcc $BUILD_FLAGS -install_name core.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" src/mime.c \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" \
+  gcc $BUILD_FLAGS -install_name core.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" \
     src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
@@ -308,8 +308,6 @@ if [ $BUILD_LUASOCKET ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" ] || { echo "Error: mime/core.dylib isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" ] || { echo "Error: socket/core.dylib isn't found"; exit 1; }
   strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
-  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
-  install_name_tool -id core.dylib "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
