@@ -110,6 +110,7 @@ for ARG in "$@"; do
   debug)
     WXWIDGETSDEBUG="--enable-debug=max --enable-debug_gdb"
     WXLUABUILD="Debug"
+    DEBUGBUILD=true
     ;;
   all)
     BUILD_WXWIDGETS=true
@@ -267,7 +268,7 @@ if [ $BUILD_WXLUA ]; then
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
   (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/lib/libwx.so" ] || { echo "Error: libwx.so isn't found"; exit 1; }
-  [ "$WXLUABUILD" != "Debug" ] && strip --strip-unneeded "$INSTALL_DIR/lib/libwx.so"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/libwx.so"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
 fi
@@ -335,7 +336,7 @@ if [ $BUILD_LUASEC ]; then
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/ssl"
   cp src/https.lua "$INSTALL_DIR/share/lua/$LUAV/ssl"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" ] || { echo "Error: ssl.so isn't found"; exit 1; }
-  strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/ssl.so"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/ssl.so"
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi

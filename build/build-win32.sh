@@ -104,6 +104,7 @@ for ARG in "$@"; do
   debug)
     WXWIDGETSDEBUG="--enable-debug=max --enable-debug_gdb"
     WXLUABUILD="Debug"
+    DEBUGBUILD=true
     ;;
   all)
     BUILD_WXWIDGETS=true
@@ -288,7 +289,7 @@ if [ $BUILD_WXLUA ]; then
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
   (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/bin/libwx.dll" ] || { echo "Error: libwx.dll isn't found"; exit 1; }
-  [ "$WXLUABUILD" != "Debug" ] && strip --strip-unneeded "$INSTALL_DIR/bin/libwx.dll"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libwx.dll"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
 fi
@@ -309,6 +310,7 @@ if [ $BUILD_LUASOCKET ]; then
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dll" ] || { echo "Error: mime/core.dll isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dll" ] || { echo "Error: socket/core.dll isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dll" "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dll"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
@@ -350,7 +352,7 @@ if [ $BUILD_LUASEC ]; then
   RANLIB="$(which ranlib)" bash Configure mingw shared
   make
   make install_sw INSTALLTOP="$INSTALL_DIR"
-  strip --strip-unneeded "$INSTALL_DIR/bin/libeay32.dll" "$INSTALL_DIR/bin/ssleay32.dll"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libeay32.dll" "$INSTALL_DIR/bin/ssleay32.dll"
   cd ..
   rm -rf "$OPENSSL_FILENAME" "$OPENSSL_BASENAME"
 
@@ -368,7 +370,7 @@ if [ $BUILD_LUASEC ]; then
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/ssl"
   cp src/https.lua "$INSTALL_DIR/share/lua/$LUAV/ssl"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll" ] || { echo "Error: ssl.dll isn't found"; exit 1; }
-  strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll"
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi

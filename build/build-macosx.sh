@@ -101,6 +101,7 @@ for ARG in "$@"; do
   debug)
     WXWIDGETSDEBUG="--enable-debug=max"
     WXLUABUILD="Debug"
+    DEBUGBUILD=true
     ;;
   all)
     BUILD_WXWIDGETS=true
@@ -200,7 +201,7 @@ if [ $BUILD_LUA ]; then
     mv "$INSTALL_DIR/bin/lua" "$INSTALL_DIR/bin/lua$LUAS"
     cp src/liblua$LUAS.dylib "$INSTALL_DIR/lib"
   fi
-  strip -u -r "$INSTALL_DIR/bin/lua$LUAS"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/bin/lua$LUAS"
   [ -f "$INSTALL_DIR/lib/liblua$LUAS.dylib" ] || { echo "Error: liblua$LUAS.dylib isn't found"; exit 1; }
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
@@ -225,7 +226,7 @@ if [ $BUILD_LEXLPEG ]; then
     LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx}
 
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib" ] || { echo "Error: LexLPeg.dylib isn't found"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib"
 
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
@@ -286,7 +287,7 @@ if [ $BUILD_WXLUA ]; then
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
   (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/lib/libwx.dylib" ] || { echo "Error: libwx.dylib isn't found"; exit 1; }
-  [ "$WXLUABUILD" != "Debug" ] && strip -u -r "$INSTALL_DIR/lib/libwx.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/libwx.dylib"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
 fi
@@ -307,7 +308,7 @@ if [ $BUILD_LUASOCKET ]; then
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" ] || { echo "Error: mime/core.dylib isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib" ] || { echo "Error: socket/core.dylib isn't found"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/mime/core.dylib" "$INSTALL_DIR/lib/lua/$LUAV/socket/core.dylib"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
@@ -322,7 +323,7 @@ if [ $BUILD_LFS ]; then
   gcc $BUILD_FLAGS -install_name lfs.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib" ] || { echo "Error: lfs.dylib isn't found"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lfs.dylib"
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
@@ -336,7 +337,7 @@ if [ $BUILD_LPEG ]; then
   gcc $BUILD_FLAGS -install_name lpeg.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
     || { echo "Error: failed to build lpeg"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib" ] || { echo "Error: lpeg.dylib isn't found"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dylib"
   cd ..
   rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
@@ -357,7 +358,7 @@ if [ $BUILD_LUASEC ]; then
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/ssl"
   cp src/https.lua "$INSTALL_DIR/share/lua/$LUAV/ssl"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" ] || { echo "Error: ssl.dylib isn't found"; exit 1; }
-  strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi
