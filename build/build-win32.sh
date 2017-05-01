@@ -210,6 +210,7 @@ EOF
   cp src/lua$LUAV.dll "$INSTALL_DIR/lib"
   cp "$INSTALL_DIR/bin/lua.exe" "$INSTALL_DIR/bin/lua$LUAV.exe"
   [ -f "$INSTALL_DIR/lib/lua$LUAV.dll" ] || { echo "Error: lua$LUAV.dll isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua$LUAV.dll"
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
 fi
@@ -233,7 +234,7 @@ if [ $BUILD_LEXLPEG ]; then
     "$INSTALL_DIR/lib/lua$LUAV.dll" "$BIN_DIR/clibs$LUAS/lpeg.dll"
 
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dll" ] || { echo "Error: LexLPeg.dll isn't found"; exit 1; }
-
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dll"
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
 fi
@@ -325,6 +326,7 @@ if [ $BUILD_LFS ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.dll" lfs.c -llua$LUAV \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.dll" ] || { echo "Error: lfs.dll isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lfs.dll"
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
@@ -339,6 +341,7 @@ if [ $BUILD_LPEG ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dll" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c -llua$LUAV \
     || { echo "Error: failed to build lpeg"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dll" ] || { echo "Error: lpeg.dll isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lpeg.dll"
   cd ..
   rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
@@ -382,6 +385,7 @@ if [ $BUILD_WINAPI ]; then
   gcc $BUILD_FLAGS -DPSAPI_VERSION=1 -o "$INSTALL_DIR/lib/lua/$LUAV/winapi.dll" winapi.c wutils.c -lpsapi -lmpr -llua$LUAV \
     || { echo "Error: failed to build winapi"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/winapi.dll" ] || { echo "Error: winapi.dll isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/winapi.dll"
   cd ..
   rm -rf "$WINAPI_BASENAME"
 fi

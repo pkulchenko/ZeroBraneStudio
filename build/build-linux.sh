@@ -204,6 +204,7 @@ if [ $BUILD_LUA ]; then
     make install INSTALL_TOP="$INSTALL_DIR"
   fi
   cp "$INSTALL_DIR/bin/lua" "$INSTALL_DIR/bin/lua$LUAV"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua$LUAV"
 
   cd ..
   rm -rf "$LUA_FILENAME" "$LUA_BASENAME"
@@ -225,6 +226,7 @@ if [ $BUILD_LEXLPEG ]; then
     "$BIN_DIR/clibs$LUAS/lpeg.so"
 
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" ] || { echo "Error: LexLPeg.so isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/lexlpeg.so"
 
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
@@ -289,6 +291,7 @@ if [ $BUILD_LUASOCKET ]; then
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" ] || { echo "Error: mime/core.so isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" ] || { echo "Error: socket/core.so isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/socket/core.so" "$INSTALL_DIR/bin/lua/$LUAV/mime/core.so"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
@@ -303,6 +306,7 @@ if [ $BUILD_LFS ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" ] || { echo "Error: lfs.so isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/lfs.so"
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
@@ -316,6 +320,7 @@ if [ $BUILD_LPEG ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lpeg.so" lptree.c lpvm.c lpcap.c lpcode.c lpprint.c \
     || { echo "Error: failed to build lpeg"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lpeg.so" ] || { echo "Error: lpeg.so isn't found"; exit 1; }
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/lpeg.so"
   cd ..
   rm -rf "$LPEG_FILENAME" "$LPEG_BASENAME"
 fi
