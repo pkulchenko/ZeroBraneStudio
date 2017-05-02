@@ -1,5 +1,5 @@
--- Documentation for Moai SDK 1.5 revision 1 (interim version by MoaiEdition) (http://getmoai.com/)
--- Generated on 2014-04-01 by DocExport v2.1.
+-- Documentation for Moai SDK 1.8 (interim version by feserr) (http://getmoai.com/)
+-- Generated on 2017-03-31 by DocExport v2.2.
 -- DocExport is part of MoaiUtils (https://github.com/DanielSWolf/MoaiUtils).
 
 return {
@@ -13,26 +13,34 @@ return {
         inherits = "MOAILuaObject",
         childs = {}
     },
+    JniUtils = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
     MOAIAction = {
         type = "class",
         inherits = "MOAIBlocker MOAIInstanceEventSource",
         description = "Base class for actions.",
         childs = {
+            EVENT_START = {
+                type = "value"
+            },
             EVENT_STOP = {
                 type = "value",
                 description = "ID of event stop callback. Signature is: nil onStop ()"
             },
             addChild = {
                 type = "method",
-                description = "Attaches a child action for updating.\n\n–> MOAIAction self\n–> MOAIAction child\n<– MOAIAction self",
-                args = "(MOAIAction self, MOAIAction child)",
+                description = "Attaches a child action for updating.\n\n–> MOAIAction self\n–> MOAIAction child\n[–> boolean defer: Default value is 'false.']\n<– MOAIAction self",
+                args = "(MOAIAction self, MOAIAction child, [boolean defer])",
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
             },
             attach = {
                 type = "method",
-                description = "Attaches a child to a parent action. The child will receive updates from the parent only if the parent is in the action tree.\n\n–> MOAIAction self\n[–> MOAIAction parent: Default value is nil; same effect as calling detach ().]\n<– MOAIAction self",
-                args = "(MOAIAction self, [MOAIAction parent])",
+                description = "Attaches a child to a parent action. The child will receive updates from the parent only if the parent is in the action tree.\n\n–> MOAIAction self\n[–> MOAIAction parent: Default value is nil; same effect as calling detach ().]\n[–> boolean defer: Default value is 'false.']\n<– MOAIAction self",
+                args = "(MOAIAction self, [MOAIAction parent, [boolean defer]])",
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
             },
@@ -43,12 +51,32 @@ return {
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
             },
+            defer = {
+                type = "method",
+                description = "Defers action's update until the next time the action tree is processed.\n\n–> MOAIAction self\n<– nil",
+                args = "MOAIAction self",
+                returns = "nil"
+            },
             detach = {
                 type = "method",
                 description = "Detaches an action from its parent (if any) thereby removing it from the action tree. Same effect as calling stop ().\n\n–> MOAIAction self\n<– MOAIAction self",
                 args = "MOAIAction self",
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
+            },
+            getChildren = {
+                type = "method",
+                description = "Get action's children (if any).\n\n–> MOAIAction self\n<– ... Child: actions (returned as multiple values).",
+                args = "MOAIAction self",
+                returns = "... Child",
+                valuetype = "..."
+            },
+            hasChildren = {
+                type = "method",
+                description = "Returns 'true; if action has children and the number of children.\n\n–> MOAIAction self\n<– boolean hasChildren\n<– number nChildren",
+                args = "MOAIAction self",
+                returns = "(boolean hasChildren, number nChildren)",
+                valuetype = "boolean"
             },
             isActive = {
                 type = "method",
@@ -71,16 +99,29 @@ return {
                 returns = "boolean isDone",
                 valuetype = "boolean"
             },
+            isPaused = {
+                type = "method",
+                description = "Checks to see if an action is 'paused.'\n\n–> MOAIAction self\n<– bool isPaused",
+                args = "MOAIAction self",
+                returns = "bool isPaused",
+                valuetype = "bool"
+            },
             pause = {
                 type = "method",
                 description = "Leaves the action in the action tree but prevents it from receiving updates. Call pause ( false ) or start () to unpause.\n\n–> MOAIAction self\n[–> boolean pause: Default value is 'true.']\n<– nil",
                 args = "(MOAIAction self, [boolean pause])",
                 returns = "nil"
             },
+            setAutoStop = {
+                type = "method",
+                description = "Flag action to automatically stop (and be removed from action tree) when no longer busy.\n\n–> MOAIAction self\n<– nil",
+                args = "MOAIAction self",
+                returns = "nil"
+            },
             start = {
                 type = "method",
-                description = "Adds the action to a parent action or the root of the action tree.\n\n–> MOAIAction self\n[–> MOAIAction parent: Default value is MOAIActionMgr.getRoot ()]\n<– MOAIAction self",
-                args = "(MOAIAction self, [MOAIAction parent])",
+                description = "Adds the action to a parent action or the root of the action tree.\n\n–> MOAIAction self\n[–> MOAIAction parent: Default value is MOAIActionMgr.getRoot ()]\n[–> boolean defer: Action will first run during the next sim step, even if it visited during the current sim step. Default value is 'false.']\n<– MOAIAction self",
+                args = "(MOAIAction self, [MOAIAction parent, [boolean defer]])",
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
             },
@@ -97,13 +138,20 @@ return {
                 args = "(MOAIAction self, [number throttle])",
                 returns = "MOAIAction self",
                 valuetype = "MOAIAction"
+            },
+            update = {
+                type = "method",
+                description = "Update action manually. This call will not update child actions.\n\n–> MOAIAction self\n[–> number step: Default value is sim step]\n<– MOAIAction self",
+                args = "(MOAIAction self, [number step])",
+                returns = "MOAIAction self",
+                valuetype = "MOAIAction"
             }
         }
     },
-    MOAIActionMgr = {
+    MOAIActionTree = {
         type = "class",
-        inherits = "MOAILuaObject",
-        description = "Manager class for MOAIActions.",
+        inherits = "MOAIAction",
+        description = "Tree of MOAIAction objects. Formerly a singleton; not yet ready for general purpose use.",
         childs = {
             getRoot = {
                 type = "function",
@@ -136,13 +184,6 @@ return {
         type = "class",
         inherits = "MOAILuaObject",
         childs = {
-            getDeviceID = {
-                type = "function",
-                description = "Request a unique ID for the device.\n\n<– string id: The device ID.",
-                args = "()",
-                returns = "string id",
-                valuetype = "string"
-            },
             init = {
                 type = "function",
                 description = "Initialize AdColony.\n\n–> string appId: Available in AdColony dashboard settings.\n–> table zones: A list of zones to configure. Available in AdColony dashboard settings.\n<– nil",
@@ -151,16 +192,16 @@ return {
             },
             playVideo = {
                 type = "function",
-                description = "Play an AdColony video ad.\n\n–> string zone: The zone from which to play a video ad.\n[–> boolean prompt: Determines whether the user is asked whether they want to play a video ad or not. Default is true.]\n[–> boolean confirm: Determines whether the user is presented with a confirmation dialog after video ad playback completes. Default is true.]\n<– nil",
-                args = "(string zone, [boolean prompt, [boolean confirm]])",
+                description = "Play an AdColony video ad.\n\n–> string zone: The zone from which to play a video ad.\n[–> bool prompt: Determines whether the user is asked whether they want to play a video ad or not. Default is true.]\n[–> bool confirm: Determines whether the user is presented with a confirmation dialog after video ad playback completes. Default is true.]\n<– nil",
+                args = "(string zone, [bool prompt, [bool confirm]])",
                 returns = "nil"
             },
             videoReadyForZone = {
                 type = "function",
-                description = "Check the readiness of a video ad for a given zone.\n\n–> string zone: The zone from which to check for a video ad.\n<– boolean isReady: True, if a video ad is ready to play.",
+                description = "Check the readiness of a video ad for a given zone.\n\n–> string zone: The zone from which to check for a video ad.\n<– bool True,: if a video ad is ready to play.",
                 args = "string zone",
-                returns = "boolean isReady",
-                valuetype = "boolean"
+                returns = "bool True,",
+                valuetype = "bool"
             }
         }
     },
@@ -206,6 +247,13 @@ return {
                 description = "Return the interpolated value given a point in time along the curve. This does not change the curve's built in TIME attribute (it simply performs the requisite computation on demand).\n\n–> MOAIAnimCurve self\n–> number time\n<– number value: The interpolated value",
                 args = "(MOAIAnimCurve self, number time)",
                 returns = "number value",
+                valuetype = "number"
+            },
+            getValueRange = {
+                type = "method",
+                description = "Returns the minimum and maximum values in the given time range.\n\n–> MOAIAnimCurve self\n–> number start: time\n–> number end: time\n<– number min: value\n<– number max: value",
+                args = "(MOAIAnimCurve self, number start, number end)",
+                returns = "(number min, number max)",
                 valuetype = "number"
             },
             setKey = {
@@ -374,6 +422,13 @@ return {
                 returns = "number height",
                 valuetype = "number"
             },
+            getSystemUptime = {
+                type = "function",
+                description = "Returns device uptime in seconds.\n\n<– number uptime",
+                args = "()",
+                returns = "number uptime",
+                valuetype = "number"
+            },
             getUTCTime = {
                 type = "function",
                 description = "Gets the UTC time.\n\n<– number time: UTC Time",
@@ -400,9 +455,8 @@ return {
         inherits = "MOAILuaObject",
         description = "Wrapper for base application class on iOS devices. Exposed to Lua via MOAIApp on all mobile platforms.",
         childs = {
-            APP_OPENED_FROM_URL = {
-                type = "value",
-                description = "Event code indicating that the app was stared via a URL click."
+            DID_BECOME_ACTIVE = {
+                type = "value"
             },
             DOMAIN_APP_SUPPORT = {
                 type = "value",
@@ -432,19 +486,20 @@ return {
                 type = "value",
                 description = "Interface orientation UIInterfaceOrientationPortraitUpsideDown."
             },
-            SESSION_END = {
-                type = "value",
-                description = "Event code indicating the end of an app sessions."
+            OPEN_URL = {
+                type = "value"
             },
-            SESSION_START = {
-                type = "value",
-                description = "Event code indicating the beginning of an app session."
+            WILL_RESIGN_ACTIVE = {
+                type = "value"
+            },
+            WILL_TERMINATE = {
+                type = "value"
             }
         }
     },
-    MOAIAudioSampler = {
+    MOAIAudioSamplerCocoa = {
         type = "class",
-        inherits = "MOAINode",
+        inherits = "MOAIInstanceEventSource",
         description = "Audio sampler singleton",
         childs = {}
     },
@@ -567,6 +622,12 @@ return {
                 args = "(string sku, number type, [string devPayload])",
                 returns = "nil"
             },
+            purchaseProductFortumo = {
+                type = "function",
+                description = "Starts a purchase intent for the desired product\n\n–> string sku\n–> int type\n[–> string devPayload]\n<– nil",
+                args = "(string sku, int type, [string devPayload])",
+                returns = "nil"
+            },
             requestProductsSync = {
                 type = "function",
                 description = "Gets the products from Google Play for the current app\n\n–> table skus\n–> number type\n<– string products: JSON string of products",
@@ -666,7 +727,7 @@ return {
     },
     MOAIBoundsDeck = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Deck of bounding boxes. Bounding boxes are allocated in a separate array from that used for box indices. The index array is used to map deck indices onto bounding boxes. In other words there may be more indices then boxes thus allowing for re-use of boxes over multiple indices.\nThe main purpose of the bounds deck is to override the default bounds of elements inside of another deck. The bounds deck may be attached to any other type of deck by using MOAIDeck's setBoundsDeck () method.",
         childs = {
             reserveBounds = {
@@ -720,6 +781,13 @@ return {
                 description = "Returns the normal for the contact.\n\n–> MOAIBox2DArbiter self\n<– number normal.x\n<– number normal.y",
                 args = "MOAIBox2DArbiter self",
                 returns = "(number normal.x, number normal.y)",
+                valuetype = "number"
+            },
+            getContactPoints = {
+                type = "method",
+                description = "Returns the contact points in world space. There can be 0, 1 or 2 points (see box2d manual section 4.11)\n\n–> MOAIBox2DArbiter self\n<– number p1.x: in units, world coordinates, converted from meters\n<– number p1.y: in units, world coordinates, converted from meters\n<– number p2.x\n<– number p2.y",
+                args = "MOAIBox2DArbiter self",
+                returns = "(number p1.x, number p1.y, number p2.x, number p2.y)",
                 valuetype = "number"
             },
             getNormalImpulse = {
@@ -795,26 +863,26 @@ return {
             },
             applyAngularImpulse = {
                 type = "method",
-                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number angularImpulse: in kg * units / s, converted to kg * m / s\n<– nil",
-                args = "(MOAIBox2DBody self, number angularImpulse)",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number angularImpulse: in kg * units / s, converted to kg * m / s\n[–> boolean wake: wake this body. Default is true]\n<– nil",
+                args = "(MOAIBox2DBody self, number angularImpulse, [boolean wake])",
                 returns = "nil"
             },
             applyForce = {
                 type = "method",
-                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number forceX: in kg * units / s^2, converted to N [kg * m / s^2]\n–> number forceY: in kg * units / s^2, converted to N [kg * m / s^2]\n[–> number pointX: in units, world coordinates, converted to meters]\n[–> number pointY: in units, world coordinates, converted to meters]\n<– nil",
-                args = "(MOAIBox2DBody self, number forceX, number forceY, [number pointX, [number pointY]])",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number forceX: in kg * units / s^2, converted to N [kg * m / s^2]\n–> number forceY: in kg * units / s^2, converted to N [kg * m / s^2]\n[–> number pointX: in units, world coordinates, converted to meters]\n[–> number pointY: in units, world coordinates, converted to meters]\n[–> boolean wake: wake this body. Default is true]\n<– nil",
+                args = "(MOAIBox2DBody self, number forceX, number forceY, [number pointX, [number pointY, [boolean wake]]])",
                 returns = "nil"
             },
             applyLinearImpulse = {
                 type = "method",
-                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number impulseX: in kg * units / s, converted to kg * m / s\n–> number impulseY: in kg * units / s, converted to kg * m / s\n[–> number pointX: in units, world coordinates, converted to meters]\n[–> number pointY: in units, world coordinates, converted to meters]\n<– nil",
-                args = "(MOAIBox2DBody self, number impulseX, number impulseY, [number pointX, [number pointY]])",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n–> number impulseX: in kg * units / s, converted to kg * m / s\n–> number impulseY: in kg * units / s, converted to kg * m / s\n[–> number pointX: in units, world coordinates, converted to meters]\n[–> number pointY: in units, world coordinates, converted to meters]\n[–> boolean wake: wake this body. Default is true]\n<– nil",
+                args = "(MOAIBox2DBody self, number impulseX, number impulseY, [number pointX, [number pointY, [boolean wake]]])",
                 returns = "nil"
             },
             applyTorque = {
                 type = "method",
-                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n[–> number torque: in (kg * units / s^2) * units, converted to N-m. Default value is 0.]\n<– nil",
-                args = "(MOAIBox2DBody self, [number torque])",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n[–> number torque: in (kg * units / s^2) * units, converted to N-m. Default value is 0.]\n[–> boolean wake: wake this body. Default is true]\n<– nil",
+                args = "(MOAIBox2DBody self, [number torque, [boolean wake]])",
                 returns = "nil"
             },
             destroy = {
@@ -835,6 +903,20 @@ return {
                 description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n<– number omega: Angular velocity in degrees/s, converted from radians/s",
                 args = "MOAIBox2DBody self",
                 returns = "number omega",
+                valuetype = "number"
+            },
+            getContactList = {
+                type = "method",
+                description = "Returns list of MOAIBox2DBody that are in contact with this body\n\n–> MOAIBox2DBody self\n–> boolean touching\n<– ... bodies",
+                args = "(MOAIBox2DBody self, boolean touching)",
+                returns = "... bodies",
+                valuetype = "..."
+            },
+            getGravityScale = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n<– number gravityScale",
+                args = "MOAIBox2DBody self",
+                returns = "number gravityScale",
                 valuetype = "number"
             },
             getInertia = {
@@ -947,6 +1029,12 @@ return {
                 type = "method",
                 description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n[–> boolean fixedRotation: Default value is true.]\n<– nil",
                 args = "(MOAIBox2DBody self, [boolean fixedRotation])",
+                returns = "nil"
+            },
+            setGravityScale = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DBody self\n[–> number gravityScale.]\n<– nil",
+                args = "(MOAIBox2DBody self, [number gravityScale.])",
                 returns = "nil"
             },
             setLinearDamping = {
@@ -1547,7 +1635,34 @@ return {
         type = "class",
         inherits = "MOAIBox2DJoint",
         description = "Box2D weld joint.",
-        childs = {}
+        childs = {
+            getDampingRatio = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DDistanceJoint self\n<– number dampingRatio",
+                args = "MOAIBox2DDistanceJoint self",
+                returns = "number dampingRatio",
+                valuetype = "number"
+            },
+            getFrequency = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DDistanceJoint self\n<– number frequency: In Hz.",
+                args = "MOAIBox2DDistanceJoint self",
+                returns = "number frequency",
+                valuetype = "number"
+            },
+            setDampingRatio = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DDistanceJoint self\n[–> number dampingRatio: Default value is 0.]\n<– nil",
+                args = "(MOAIBox2DDistanceJoint self, [number dampingRatio])",
+                returns = "nil"
+            },
+            setFrequency = {
+                type = "method",
+                description = "See Box2D documentation.\n\n–> MOAIBox2DDistanceJoint self\n[–> number frequency: In Hz. Default value is 0.]\n<– nil",
+                args = "(MOAIBox2DDistanceJoint self, [number frequency])",
+                returns = "nil"
+            }
+        }
     },
     MOAIBox2DWheelJoint = {
         type = "class",
@@ -1650,7 +1765,7 @@ return {
     },
     MOAIBox2DWorld = {
         type = "class",
-        inherits = "MOAIAction b2DestructionListener",
+        inherits = "MOAIAction MOAIRenderable b2DestructionListener",
         description = "Box2D world.",
         childs = {
             DEBUG_DRAW_BOUNDS = {
@@ -1687,43 +1802,57 @@ return {
             },
             addFrictionJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n[–> number maxForce: in kg * units / s^2, converted to N [kg * m / s^2]. Default value determined by Box2D]\n[–> number maxTorque: in kg * units / s^2 * units, converted to N-m [kg * m / s^2 * m]. Default value determined by Box2D]\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, [number maxForce, [number maxTorque]])",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n[–> number maxForce: in kg * units / s^2, converted to N [kg * m / s^2]. Default value determined by Box2D]\n[–> number maxTorque: in kg * units / s^2 * units, converted to N-m [kg * m / s^2 * m]. Default value determined by Box2D]\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, [number maxForce, [number maxTorque, [boolean collideConnected]]])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addGearJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DJoint jointA\n–> MOAIBox2DJoint jointB\n–> number ratio\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DJoint jointA, MOAIBox2DJoint jointB, number ratio)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DJoint jointA\n–> MOAIBox2DJoint jointB\n–> number ratio\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DJoint jointA, MOAIBox2DJoint jointB, number ratio, [boolean collideConnected])",
+                returns = "MOAIBox2DJoint joint",
+                valuetype = "MOAIBox2DJoint"
+            },
+            addMotorJoint = {
+                type = "method",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, [boolean collideConnected])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addMouseJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number targetX: in units, in world coordinates, converted to meters\n–> number targetY: in units, in world coordinates, converted to meters\n–> number maxForce: in kg * units / s^2, converted to N [kg * m / s^2].\n[–> number frequencyHz: in Hz. Default value determined by Box2D]\n[–> number dampingRatio: Default value determined by Box2D]\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number targetX, number targetY, number maxForce, [number frequencyHz, [number dampingRatio]])",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number targetX: in units, in world coordinates, converted to meters\n–> number targetY: in units, in world coordinates, converted to meters\n–> number maxForce: in kg * units / s^2, converted to N [kg * m / s^2].\n[–> number frequencyHz: in Hz. Default value determined by Box2D]\n[–> number dampingRatio: Default value determined by Box2D]\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number targetX, number targetY, number maxForce, [number frequencyHz, [number dampingRatio, [boolean collideConnected]]])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addPrismaticJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorA: in units, in world coordinates, converted to meters\n–> number anchorB: in units, in world coordinates, converted to meters\n–> number axisA: translation axis vector X component (no units)\n–> number axisB: translation axis vector Y component (no units)\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorA, number anchorB, number axisA, number axisB)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorA: in units, in world coordinates, converted to meters\n–> number anchorB: in units, in world coordinates, converted to meters\n–> number axisA: translation axis vector X component (no units)\n–> number axisB: translation axis vector Y component (no units)\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorA, number anchorB, number axisA, number axisB, [boolean collideConnected])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addPulleyJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number groundAnchorA_X: in units, in world coordinates, converted to meters\n–> number groundAnchorA_Y: in units, in world coordinates, converted to meters\n–> number groundAnchorB_X: in units, in world coordinates, converted to meters\n–> number groundAnchorB_Y: in units, in world coordinates, converted to meters\n–> number anchorA_X: in units, in world coordinates, converted to meters\n–> number anchorA_Y: in units, in world coordinates, converted to meters\n–> number anchorB_X: in units, in world coordinates, converted to meters\n–> number anchorB_Y: in units, in world coordinates, converted to meters\n–> number ratio\n–> number maxLengthA: in units, converted to meters\n–> number maxLengthB: in units, converted to meters\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number groundAnchorA_X, number groundAnchorA_Y, number groundAnchorB_X, number groundAnchorB_Y, number anchorA_X, number anchorA_Y, number anchorB_X, number anchorB_Y, number ratio, number maxLengthA, number maxLengthB)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number groundAnchorA_X: in units, in world coordinates, converted to meters\n–> number groundAnchorA_Y: in units, in world coordinates, converted to meters\n–> number groundAnchorB_X: in units, in world coordinates, converted to meters\n–> number groundAnchorB_Y: in units, in world coordinates, converted to meters\n–> number anchorA_X: in units, in world coordinates, converted to meters\n–> number anchorA_Y: in units, in world coordinates, converted to meters\n–> number anchorB_X: in units, in world coordinates, converted to meters\n–> number anchorB_Y: in units, in world coordinates, converted to meters\n–> number ratio\n–> number maxLengthA: in units, converted to meters\n–> number maxLengthB: in units, converted to meters\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number groundAnchorA_X, number groundAnchorA_Y, number groundAnchorB_X, number groundAnchorB_Y, number anchorA_X, number anchorA_Y, number anchorB_X, number anchorB_Y, number ratio, number maxLengthA, number maxLengthB, [boolean collideConnected])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addRevoluteJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, [boolean collideConnected])",
+                returns = "MOAIBox2DJoint joint",
+                valuetype = "MOAIBox2DJoint"
+            },
+            addRevoluteJointLocal = {
+                type = "method",
+                description = "Create and add a joint to the world, using local anchors. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorA_X: in units, in world coordinates, converted to meters\n–> number anchorA_Y: in units, in world coordinates, converted to meters\n–> number anchorB_X: in units, in world coordinates, converted to meters\n–> number anchorB_Y: in units, in world coordinates, converted to meters\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorA_X, number anchorA_Y, number anchorB_X, number anchorB_Y)",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
@@ -1736,15 +1865,15 @@ return {
             },
             addWeldJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, [boolean collideConnected])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
             addWheelJoint = {
                 type = "method",
-                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n–> number axisX: translation axis vector X component (no units)\n–> number axisY: translation axis vector Y component (no units)\n<– MOAIBox2DJoint joint",
-                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, number axisX, number axisY)",
+                description = "Create and add a joint to the world. See Box2D documentation.\n\n–> MOAIBox2DWorld self\n–> MOAIBox2DBody bodyA\n–> MOAIBox2DBody bodyB\n–> number anchorX: in units, in world coordinates, converted to meters\n–> number anchorY: in units, in world coordinates, converted to meters\n–> number axisX: translation axis vector X component (no units)\n–> number axisY: translation axis vector Y component (no units)\n[–> boolean collideConnected: Default value is false]\n<– MOAIBox2DJoint joint",
+                args = "(MOAIBox2DWorld self, MOAIBox2DBody bodyA, MOAIBox2DBody bodyB, number anchorX, number anchorY, number axisX, number axisY, [boolean collideConnected])",
                 returns = "MOAIBox2DJoint joint",
                 valuetype = "MOAIBox2DJoint"
             },
@@ -1774,6 +1903,13 @@ return {
                 description = "See Box2D documentation.\n\n–> MOAIBox2DWorld self\n<– number linearSleepTolerance: in units/s, converted from m/s",
                 args = "MOAIBox2DWorld self",
                 returns = "number linearSleepTolerance",
+                valuetype = "number"
+            },
+            getPerformace = {
+                type = "method",
+                description = "Returns profiler numbers from box2d\n\n–> MOAIBox2DWorld self\n<– number step\n<– number collide\n<– number solve\n<– number solveInit\n<– number solveVelocity\n<– number solvePosition\n<– number broadphase\n<– number solveTOI",
+                args = "MOAIBox2DWorld self",
+                returns = "(number step, number collide, number solve, number solveInit, number solveVelocity, number solvePosition, number broadphase, number solveTOI)",
                 valuetype = "number"
             },
             getRayCast = {
@@ -1848,7 +1984,7 @@ return {
     },
     MOAIBrowserAndroid = {
         type = "class",
-        inherits = "MOAILuaObject",
+        inherits = "JniUtils",
         description = "Wrapper for access to the native web browser. Exposed to Lua via MOAIBrowser on all mobile platforms.",
         childs = {
             canOpenURL = {
@@ -1871,12 +2007,6 @@ return {
                 returns = "nil"
             }
         }
-    },
-    MOAIBrowserIOS = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        description = "Wrapper for access to the native web browser. Exposed to Lua via MOAIBrowser on all mobile platforms.",
-        childs = {}
     },
     MOAIButtonSensor = {
         type = "class",
@@ -1919,6 +2049,25 @@ return {
             }
         }
     },
+    MOAIByteStream = {
+        type = "class",
+        inherits = "ZLByteStream MOAIStream",
+        description = "MOAIByteStream implements a stream with a fixed-size internal buffer.",
+        childs = {
+            close = {
+                type = "method",
+                description = "Release the byte stream's internal buffer.\n\n–> MOAIByteStream self\n<– nil",
+                args = "MOAIByteStream self",
+                returns = "nil"
+            },
+            open = {
+                type = "method",
+                description = "Allocate and initialize the byte stream's internal buffer.\n\nOverload:\n–> MOAIByteStream self\n–> string buffer: Initialize the stream's buffer as a copy of provided string.\n<– nil\n\nOverload:\n–> MOAIByteStream self\n–> number size: Initialize the stream with a buffer of the given size. Buffer will be filled with zero.\n<– nil",
+                args = "(MOAIByteStream self, (string buffer | number size))",
+                returns = "nil"
+            }
+        }
+    },
     MOAICamera = {
         type = "class",
         inherits = "MOAITransform",
@@ -1938,6 +2087,13 @@ return {
                 returns = "number hfov",
                 valuetype = "number"
             },
+            getFloorMove = {
+                type = "method",
+                description = "Project the given X, Y offset onto the floor (XY plane). Projected X, Y will be rotated to match camera's orientation. This is for implementing a truck along the floor plane relative to the camera's orientation.\n\n–> MOAICamera self\n–> number x\n–> number y\n<– number x\n<– number y",
+                args = "(MOAICamera self, number x, number y)",
+                returns = "(number x, number y)",
+                valuetype = "number"
+            },
             getFocalLength = {
                 type = "method",
                 description = "Returns the camera's focal length given the width of the view plane.\n\n–> MOAICamera self\n–> number width\n<– number length",
@@ -1951,6 +2107,31 @@ return {
                 args = "MOAICamera self",
                 returns = "number near",
                 valuetype = "number"
+            },
+            getViewVector = {
+                type = "method",
+                description = "Get the camera's normalized view vector (i.e. the Z axis).\n\n–> MOAICamera self\n<– number xN\n<– number yN\n<– number zN",
+                args = "MOAICamera self",
+                returns = "(number xN, number yN, number zN)",
+                valuetype = "number"
+            },
+            lookAt = {
+                type = "method",
+                description = "Point the camera at a given point in space.\n\n–> MOAICamera self\n–> number x\n–> number y\n–> number z\n<– nil",
+                args = "(MOAICamera self, number x, number y, number z)",
+                returns = "nil"
+            },
+            moveFieldOfView = {
+                type = "method",
+                description = "Animate the camera's FOV.\n\n–> MOAICamera self\n–> number fov\n–> number delay\n<– nil",
+                args = "(MOAICamera self, number fov, number delay)",
+                returns = "nil"
+            },
+            seekFieldOfView = {
+                type = "method",
+                description = "Animate the camera's FOV.\n\n–> MOAICamera self\n–> number fov\n–> number delay\n<– nil",
+                args = "(MOAICamera self, number fov, number delay)",
+                returns = "nil"
             },
             setFarPlane = {
                 type = "method",
@@ -1974,6 +2155,12 @@ return {
                 type = "method",
                 description = "Sets orthographic mode.\n\n–> MOAICamera self\n[–> boolean ortho: Default value is true.]\n<– nil",
                 args = "(MOAICamera self, [boolean ortho])",
+                returns = "nil"
+            },
+            setType = {
+                type = "method",
+                description = "Directly set the camera's type to one of CAMERA_TYPE_WINDOW, CAMERA_TYPE_ORTHO, CAMERA_TYPE_3D.\n\n–> MOAICamera self\n–> number type\n<– nil",
+                args = "(MOAICamera self, number type)",
                 returns = "nil"
             }
         }
@@ -2051,6 +2238,9 @@ return {
                 type = "value"
             },
             FITTING_MODE_SEEK_SCALE = {
+                type = "value"
+            },
+            FITTING_MODE_TRACK_NODE = {
                 type = "value"
             },
             clearAnchors = {
@@ -2172,36 +2362,17 @@ return {
                 description = "Snap the camera to the target fitting.\n\nOverload:\n–> MOAICameraFitter2D self\n<– nil\n\nOverload:\n–> MOAICameraFitter2D self\n–> MOAITransform transform\n<– nil",
                 args = "(MOAICameraFitter2D self, [MOAITransform transform])",
                 returns = "nil"
-            }
-        }
-    },
-    MOAIChartBoostAndroid = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        childs = {
-            hasCachedInterstitial = {
-                type = "function",
-                description = "Determine whether or not a cached interstitial is available.\n\n<– boolean hasCached",
-                args = "()",
-                returns = "boolean hasCached",
-                valuetype = "boolean"
             },
-            init = {
-                type = "function",
-                description = "Initialize ChartBoost.\n\n–> string appId: Available in ChartBoost dashboard settings.\n–> string appSignature: Available in ChartBoost dashboard settings.\n<– nil",
-                args = "(string appId, string appSignature)",
+            startTrackingNode = {
+                type = "method",
+                description = "Track a MOAITransform's position by setting the fit location. Works best with FITTING_MODE_APPLY_BOUNDS.\n\n–> MOAICameraFitter2D self\n–> MOAITransform node\n<– nil",
+                args = "(MOAICameraFitter2D self, MOAITransform node)",
                 returns = "nil"
             },
-            loadInterstitial = {
-                type = "function",
-                description = "Request that an interstitial ad be cached for later display.\n\n[–> string locationId: Optional location ID.]\n<– nil",
-                args = "[string locationId]",
-                returns = "nil"
-            },
-            showInterstitial = {
-                type = "function",
-                description = "Request an interstitial ad display if a cached ad is available.\n\n[–> string locationId: Optional location ID.]\n<– nil",
-                args = "[string locationId]",
+            stopTrackingNode = {
+                type = "method",
+                description = "Stop tracking the node if one was tracked\n\n–> MOAICameraFitter2D self\n<– nil",
+                args = "MOAICameraFitter2D self",
                 returns = "nil"
             }
         }
@@ -2230,22 +2401,33 @@ return {
         description = "Color vector with animation helper methods.",
         childs = {
             ATTR_A_COL = {
-                type = "value"
+                type = "value",
+                description = "The A (alpha) channel"
             },
             ATTR_B_COL = {
-                type = "value"
+                type = "value",
+                description = "The B (blue) channel"
             },
             ATTR_G_COL = {
-                type = "value"
+                type = "value",
+                description = "The G (green) channel"
             },
             ATTR_R_COL = {
-                type = "value"
+                type = "value",
+                description = "The R (red) channel"
             },
             COLOR_TRAIT = {
                 type = "value"
             },
             INHERIT_COLOR = {
                 type = "value"
+            },
+            getColor = {
+                type = "method",
+                description = "Return the color.\n\n–> MOAIProp self\n<– number rDelta\n<– number gDelta\n<– number bDelta\n<– number aDelta",
+                args = "MOAIProp self",
+                returns = "(number rDelta, number gDelta, number bDelta, number aDelta)",
+                valuetype = "number"
             },
             moveColor = {
                 type = "method",
@@ -2318,820 +2500,18 @@ return {
                 description = "Starts a thread with a function and passes parameters to it.\n\n–> MOAICoroutine self\n–> function threadFunc\n–> ... parameters\n<– nil",
                 args = "(MOAICoroutine self, function threadFunc, ... parameters)",
                 returns = "nil"
-            }
-        }
-    },
-    MOAICp = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        description = "Singleton for Chipmunk global configuration.",
-        childs = {
-            getBiasCoefficient = {
+            },
+            setDefaultParent = {
                 type = "function",
-                description = "Returns the current bias coefficient.\n\n<– number bias: The bias coefficient.",
-                args = "()",
-                returns = "number bias",
-                valuetype = "number"
+                description = "This coroutine will be used as the default parent for any actions launched from within this coroutine.\n\n–> MOAICoroutine coroutine\n<– nil",
+                args = "MOAICoroutine coroutine",
+                returns = "nil"
             },
-            getCollisionSlop = {
+            step = {
                 type = "function",
-                description = "Returns the current collision slop.\n\n<– number slop",
-                args = "()",
-                returns = "number slop",
-                valuetype = "number"
-            },
-            getContactPersistence = {
-                type = "function",
-                description = "Returns the current contact persistence.\n\n<– number persistence",
-                args = "()",
-                returns = "number persistence",
-                valuetype = "number"
-            },
-            setBiasCoefficient = {
-                type = "function",
-                description = "Sets the bias coefficient.\n\n–> number bias\n<– nil",
-                args = "number bias",
+                description = "Resume the coroutine (run until the next call to coroutine.yield () or until the coroutine's main method returns).\n\n–> MOAICoroutine coroutine\n<– nil",
+                args = "MOAICoroutine coroutine",
                 returns = "nil"
-            },
-            setCollisionSlop = {
-                type = "function",
-                description = "Sets the collision slop.\n\n–> number slop\n<– nil",
-                args = "number slop",
-                returns = "nil"
-            },
-            setContactPersistence = {
-                type = "function",
-                description = "Sets the contact persistance.\n\n–> number persistance\n<– nil",
-                args = "number persistance",
-                returns = "nil"
-            }
-        }
-    },
-    MOAICpArbiter = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        description = "Chipmunk Arbiter.",
-        childs = {
-            countContacts = {
-                type = "method",
-                description = "Returns the number of contacts occurring with this arbiter.\n\n–> MOAICpArbiter self\n<– number count: The number of contacts occurring.",
-                args = "MOAICpArbiter self",
-                returns = "number count",
-                valuetype = "number"
-            },
-            getContactDepth = {
-                type = "method",
-                description = "Returns the depth of a contact point between two objects.\n\n–> MOAICpArbiter self\n–> number id: The ID of the contact.\n<– number depth: The depth of the contact in pixels (i.e. how far it overlaps).",
-                args = "(MOAICpArbiter self, number id)",
-                returns = "number depth",
-                valuetype = "number"
-            },
-            getContactNormal = {
-                type = "method",
-                description = "Returns the normal of a contact point between two objects.\n\n–> MOAICpArbiter self\n–> number id: The ID of the contact.\n<– boolean x: The X component of the normal vector.\n<– boolean y: The Y component of the normal vector.",
-                args = "(MOAICpArbiter self, number id)",
-                returns = "(boolean x, boolean y)",
-                valuetype = "boolean"
-            },
-            getContactPoint = {
-                type = "method",
-                description = "Returns the position of a contact point between two objects.\n\n–> MOAICpArbiter self\n–> number id: The ID of the contact.\n<– boolean x: The X component of the position vector.\n<– boolean y: The Y component of the position vector.",
-                args = "(MOAICpArbiter self, number id)",
-                returns = "(boolean x, boolean y)",
-                valuetype = "boolean"
-            },
-            getTotalImpulse = {
-                type = "method",
-                description = "Returns the total impulse of a contact point between two objects.\n\n–> MOAICpArbiter self\n<– boolean x: The X component of the force involved in the contact.\n<– boolean y: The Y component of the force involved in the contact.",
-                args = "MOAICpArbiter self",
-                returns = "(boolean x, boolean y)",
-                valuetype = "boolean"
-            },
-            getTotalImpulseWithFriction = {
-                type = "method",
-                description = "Returns the total impulse of a contact point between two objects, also including frictional forces.\n\n–> MOAICpArbiter self\n<– boolean x: The X component of the force involved in the contact.\n<– boolean y: The Y component of the force involved in the contact.",
-                args = "MOAICpArbiter self",
-                returns = "(boolean x, boolean y)",
-                valuetype = "boolean"
-            },
-            isFirstContact = {
-                type = "method",
-                description = "Returns whether this is the first time that these two objects have contacted.\n\n–> MOAICpArbiter self\n<– boolean first: Whether this is the first instance of a collision.",
-                args = "MOAICpArbiter self",
-                returns = "boolean first",
-                valuetype = "boolean"
-            }
-        }
-    },
-    MOAICpBody = {
-        type = "class",
-        inherits = "MOAITransformBase MOAICpPrim",
-        description = "Chipmunk Body.",
-        childs = {
-            NONE = {
-                type = "value"
-            },
-            REMOVE_BODY = {
-                type = "value"
-            },
-            REMOVE_BODY_AND_SHAPES = {
-                type = "value"
-            },
-            activate = {
-                type = "method",
-                description = "Activates a body after it has been put to sleep (physics will now be processed for this body again).\n\n–> MOAICpBody self\n<– nil",
-                args = "MOAICpBody self",
-                returns = "nil"
-            },
-            addCircle = {
-                type = "method",
-                description = "Adds a circle to the body.\n\n–> MOAICpBody self\n–> number radius\n–> number x\n–> number y\n<– MOAICpShape circle",
-                args = "(MOAICpBody self, number radius, number x, number y)",
-                returns = "MOAICpShape circle",
-                valuetype = "MOAICpShape"
-            },
-            addPolygon = {
-                type = "method",
-                description = "Adds a polygon to the body.\n\n–> MOAICpBody self\n–> table polygon\n<– MOAICpShape polygon",
-                args = "(MOAICpBody self, table polygon)",
-                returns = "MOAICpShape polygon",
-                valuetype = "MOAICpShape"
-            },
-            addRect = {
-                type = "method",
-                description = "Adds a rectangle to the body.\n\n–> MOAICpBody self\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n<– MOAICpShape rectangle",
-                args = "(MOAICpBody self, number x1, number y1, number x2, number y2)",
-                returns = "MOAICpShape rectangle",
-                valuetype = "MOAICpShape"
-            },
-            addSegment = {
-                type = "method",
-                description = "Adds a segment to the body.\n\n–> MOAICpBody self\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n[–> number radius]\n<– MOAICpShape segment",
-                args = "(MOAICpBody self, number x1, number y1, number x2, number y2, [number radius])",
-                returns = "MOAICpShape segment",
-                valuetype = "MOAICpShape"
-            },
-            applyForce = {
-                type = "method",
-                description = "Applies force to the body, taking into account any existing forces being applied.\n\n–> MOAICpBody self\n–> number fx\n–> number fy\n–> number rx\n–> number ry\n<– nil",
-                args = "(MOAICpBody self, number fx, number fy, number rx, number ry)",
-                returns = "nil"
-            },
-            applyImpulse = {
-                type = "method",
-                description = "Applies impulse to the body, taking into account any existing impulses being applied.\n\n–> MOAICpBody self\n–> number jx\n–> number jy\n–> number rx\n–> number ry\n<– nil",
-                args = "(MOAICpBody self, number jx, number jy, number rx, number ry)",
-                returns = "nil"
-            },
-            getAngle = {
-                type = "method",
-                description = "Returns the angle of the body.\n\n–> MOAICpBody self\n<– number angle: The current angle.",
-                args = "MOAICpBody self",
-                returns = "number angle",
-                valuetype = "number"
-            },
-            getAngVel = {
-                type = "method",
-                description = "Returns the angular velocity of the body.\n\n–> MOAICpBody self\n<– number angle: The current angular velocity.",
-                args = "MOAICpBody self",
-                returns = "number angle",
-                valuetype = "number"
-            },
-            getForce = {
-                type = "method",
-                description = "Returns the force of the body.\n\n–> MOAICpBody self\n<– number x: The X component of the current force being applied.\n<– number y: The Y component of the current force being applied.",
-                args = "MOAICpBody self",
-                returns = "(number x, number y)",
-                valuetype = "number"
-            },
-            getMass = {
-                type = "method",
-                description = "Returns the mass of the body.\n\n–> MOAICpBody self\n<– number mass: The current mass.",
-                args = "MOAICpBody self",
-                returns = "number mass",
-                valuetype = "number"
-            },
-            getMoment = {
-                type = "method",
-                description = "Returns the moment of the body.\n\n–> MOAICpBody self\n<– number moment: The current moment.",
-                args = "MOAICpBody self",
-                returns = "number moment",
-                valuetype = "number"
-            },
-            getPos = {
-                type = "method",
-                description = "Returns the position of the body.\n\n–> MOAICpBody self\n<– number x: The X position.\n<– number y: The Y position.",
-                args = "MOAICpBody self",
-                returns = "(number x, number y)",
-                valuetype = "number"
-            },
-            getRot = {
-                type = "method",
-                description = "Returns the rotation of the body.\n\n–> MOAICpBody self\n<– number x: The X position.\n<– number y: The Y position.",
-                args = "MOAICpBody self",
-                returns = "(number x, number y)",
-                valuetype = "number"
-            },
-            getTorque = {
-                type = "method",
-                description = "Returns the torque of the body.\n\n–> MOAICpBody self\n<– number torque: The current torque.",
-                args = "MOAICpBody self",
-                returns = "number torque",
-                valuetype = "number"
-            },
-            getVel = {
-                type = "method",
-                description = "Returns the velocity of the body.\n\n–> MOAICpBody self\n<– number x: The X component of the current velocity.\n<– number y: The Y component of the current velocity.",
-                args = "MOAICpBody self",
-                returns = "(number x, number y)",
-                valuetype = "number"
-            },
-            isRogue = {
-                type = "method",
-                description = "Returns whether the body is not yet currently associated with a space.\n\n–> MOAICpBody self\n<– boolean static: Whether the body is not associated with a space.",
-                args = "MOAICpBody self",
-                returns = "boolean static",
-                valuetype = "boolean"
-            },
-            isSleeping = {
-                type = "method",
-                description = "Returns whether the body is currently sleeping.\n\n–> MOAICpBody self\n<– boolean sleeping: Whether the body is sleeping.",
-                args = "MOAICpBody self",
-                returns = "boolean sleeping",
-                valuetype = "boolean"
-            },
-            isStatic = {
-                type = "method",
-                description = "Returns whether the body is static.\n\n–> MOAICpBody self\n<– boolean static: Whether the body static.",
-                args = "MOAICpBody self",
-                returns = "boolean static",
-                valuetype = "boolean"
-            },
-            localToWorld = {
-                type = "method",
-                description = "Converts the relative position to an absolute position based on position of the object being (0, 0) for the relative position.\n\n–> MOAICpBody self\n–> number rx: The relative X position.\n–> number ry: The relative Y position.\n<– number ax: The absolute X position.\n<– number ay: The absolute Y position.",
-                args = "(MOAICpBody self, number rx, number ry)",
-                returns = "(number ax, number ay)",
-                valuetype = "number"
-            },
-            new = {
-                type = "function",
-                description = "Creates a new body with the specified mass and moment.\n\n–> number m: The mass of the new body.\n–> number i: The moment of the new body.\n<– MOAICpBody body: The new body.",
-                args = "(number m, number i)",
-                returns = "MOAICpBody body",
-                valuetype = "MOAICpBody"
-            },
-            newStatic = {
-                type = "function",
-                description = "Creates a new static body.\n\n<– MOAICpBody body: The new static body.",
-                args = "()",
-                returns = "MOAICpBody body",
-                valuetype = "MOAICpBody"
-            },
-            resetForces = {
-                type = "method",
-                description = "Resets all forces on the body.\n\n–> MOAICpBody self\n<– nil",
-                args = "MOAICpBody self",
-                returns = "nil"
-            },
-            setAngle = {
-                type = "method",
-                description = "Sets the angle of the body.\n\n–> MOAICpBody self\n–> number angle: The angle of the body.\n<– nil",
-                args = "(MOAICpBody self, number angle)",
-                returns = "nil"
-            },
-            setAngVel = {
-                type = "method",
-                description = "Sets the angular velocity of the body.\n\n–> MOAICpBody self\n–> number angvel: The angular velocity of the body.\n<– nil",
-                args = "(MOAICpBody self, number angvel)",
-                returns = "nil"
-            },
-            setForce = {
-                type = "method",
-                description = "Sets the force on the body.\n\n–> MOAICpBody self\n–> number forcex: The X force being applied to the body.\n–> number forcey: The Y force being applied to the body.\n<– nil",
-                args = "(MOAICpBody self, number forcex, number forcey)",
-                returns = "nil"
-            },
-            setMass = {
-                type = "method",
-                description = "Sets the mass of the body.\n\n–> MOAICpBody self\n–> number mass: The mass of the body.\n<– nil",
-                args = "(MOAICpBody self, number mass)",
-                returns = "nil"
-            },
-            setMoment = {
-                type = "method",
-                description = "Sets the moment of the body.\n\n–> MOAICpBody self\n–> number moment: The moment of the body.\n<– nil",
-                args = "(MOAICpBody self, number moment)",
-                returns = "nil"
-            },
-            setPos = {
-                type = "method",
-                description = "Sets the position of the body.\n\n–> MOAICpBody self\n–> number x: The X position of the body.\n–> number y: The Y position of the body.\n<– nil",
-                args = "(MOAICpBody self, number x, number y)",
-                returns = "nil"
-            },
-            setRemoveFlag = {
-                type = "method",
-                description = "Sets the removal flag on the body.\n\n–> MOAICpBody self\n–> number flag: The removal flag.\n<– nil",
-                args = "(MOAICpBody self, number flag)",
-                returns = "nil"
-            },
-            setTorque = {
-                type = "method",
-                description = "Sets the torque of the body.\n\n–> MOAICpBody self\n–> number torque: The torque of the body.\n<– nil",
-                args = "(MOAICpBody self, number torque)",
-                returns = "nil"
-            },
-            setVel = {
-                type = "method",
-                description = "Sets the velocity of the body.\n\n–> MOAICpBody self\n–> number x: The horizontal velocity.\n–> number y: The vertical velocity.\n<– nil",
-                args = "(MOAICpBody self, number x, number y)",
-                returns = "nil"
-            },
-            sleep = {
-                type = "method",
-                description = "Puts the body to sleep (physics will no longer be processed for it until it is activated).\n\n–> MOAICpBody self\n<– nil",
-                args = "MOAICpBody self",
-                returns = "nil"
-            },
-            sleepWithGroup = {
-                type = "method",
-                description = "Forces an object to sleep. Pass in another sleeping body to add the object to the sleeping body's existing group.\n\n–> MOAICpBody self\n–> MOAICpBody group\n<– nil",
-                args = "(MOAICpBody self, MOAICpBody group)",
-                returns = "nil"
-            },
-            worldToLocal = {
-                type = "method",
-                description = "Converts the absolute position to a relative position based on position of the object being (0, 0) for the relative position.\n\n–> MOAICpBody self\n–> number ax: The absolute X position.\n–> number ay: The absolute Y position.\n<– number rx: The relative X position.\n<– number ry: The relative Y position.",
-                args = "(MOAICpBody self, number ax, number ay)",
-                returns = "(number rx, number ry)",
-                valuetype = "number"
-            }
-        }
-    },
-    MOAICpConstraint = {
-        type = "class",
-        inherits = "MOAILuaObject MOAICpPrim",
-        description = "Chipmunk Constraint.",
-        childs = {
-            getBiasCoef = {
-                type = "method",
-                description = "Returns the current bias coefficient.\n\n–> MOAICpConstraint self\n<– number bias: The bias coefficient.",
-                args = "MOAICpConstraint self",
-                returns = "number bias",
-                valuetype = "number"
-            },
-            getMaxBias = {
-                type = "method",
-                description = "Returns the maximum bias coefficient.\n\n–> MOAICpConstraint self\n<– number bias: The maximum bias coefficient.",
-                args = "MOAICpConstraint self",
-                returns = "number bias",
-                valuetype = "number"
-            },
-            getMaxForce = {
-                type = "method",
-                description = "Returns the maximum force allowed.\n\n–> MOAICpConstraint self\n<– number bias: The maximum force allowed.",
-                args = "MOAICpConstraint self",
-                returns = "number bias",
-                valuetype = "number"
-            },
-            newDampedRotarySpring = {
-                type = "function",
-                description = "Creates a new damped rotary string between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number restAngle: The angle at which the spring is at rest.\n–> number stiffness: The stiffness of the spring.\n–> number damping: The damping applied to the spring.\n<– MOAICpConstraint spring: The new spring.",
-                args = "(MOAICpBody first, MOAICpBody second, number restAngle, number stiffness, number damping)",
-                returns = "MOAICpConstraint spring",
-                valuetype = "MOAICpConstraint"
-            },
-            newDampedSpring = {
-                type = "function",
-                description = "Creates a new damped string between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number x1: The X position of the first anchor.\n–> number y1: The Y position of the first anchor.\n–> number x2: The X position of the second anchor.\n–> number y2: The Y position of the second anchor.\n–> number restAngle: The angle at which the spring is at rest.\n–> number stiffness: The stiffness of the spring.\n–> number damping: The damping applied to the spring.\n<– MOAICpConstraint spring: The new spring.",
-                args = "(MOAICpBody first, MOAICpBody second, number x1, number y1, number x2, number y2, number restAngle, number stiffness, number damping)",
-                returns = "MOAICpConstraint spring",
-                valuetype = "MOAICpConstraint"
-            },
-            newGearJoint = {
-                type = "function",
-                description = "Creates a new gear joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number phase: The phase of the gear.\n–> number ratio: The gear ratio.\n<– MOAICpConstraint gear: The new gear joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number phase, number ratio)",
-                returns = "MOAICpConstraint gear",
-                valuetype = "MOAICpConstraint"
-            },
-            newGrooveJoint = {
-                type = "function",
-                description = "Creates a new groove joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number gx1\n–> number gy1\n–> number gx2\n–> number gy2\n–> number ax\n–> number ay\n<– MOAICpConstraint groove: The new groove joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number gx1, number gy1, number gx2, number gy2, number ax, number ay)",
-                returns = "MOAICpConstraint groove",
-                valuetype = "MOAICpConstraint"
-            },
-            newPinJoint = {
-                type = "function",
-                description = "Creates a new pin joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number ax1\n–> number ay1\n–> number ax2\n–> number ay2\n<– MOAICpConstraint pin: The new pin joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number ax1, number ay1, number ax2, number ay2)",
-                returns = "MOAICpConstraint pin",
-                valuetype = "MOAICpConstraint"
-            },
-            newPivotJoint = {
-                type = "function",
-                description = "Creates a new pivot joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number x\n–> number y\n[–> number ax]\n[–> number ay]\n<– MOAICpConstraint pivot: The new pivot joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number x, number y, [number ax, [number ay]])",
-                returns = "MOAICpConstraint pivot",
-                valuetype = "MOAICpConstraint"
-            },
-            newRatchetJoint = {
-                type = "function",
-                description = "Creates a new ratchet joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number phase: The phase of the gear.\n–> number ratchet: The ratchet value.\n<– MOAICpConstraint ratchet: The new pivot joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number phase, number ratchet)",
-                returns = "MOAICpConstraint ratchet",
-                valuetype = "MOAICpConstraint"
-            },
-            newRotaryLimitJoint = {
-                type = "function",
-                description = "Creates a new rotary limit joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number min: The minimum rotary value.\n–> number max: The maximum rotary value.\n<– MOAICpConstraint limit: The new rotary limit joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number min, number max)",
-                returns = "MOAICpConstraint limit",
-                valuetype = "MOAICpConstraint"
-            },
-            newSimpleMotor = {
-                type = "function",
-                description = "Creates a new simple motor joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number rate: The rotation rate of the simple motor.\n<– MOAICpConstraint motor: The new simple motor joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number rate)",
-                returns = "MOAICpConstraint motor",
-                valuetype = "MOAICpConstraint"
-            },
-            newSlideJoint = {
-                type = "function",
-                description = "Creates a new slide joint between the two specified bodies.\n\n–> MOAICpBody first\n–> MOAICpBody second\n–> number ax1\n–> number ay1\n–> number ax2\n–> number ay2\n–> number min\n–> number max\n<– MOAICpConstraint motor: The new slide joint.",
-                args = "(MOAICpBody first, MOAICpBody second, number ax1, number ay1, number ax2, number ay2, number min, number max)",
-                returns = "MOAICpConstraint motor",
-                valuetype = "MOAICpConstraint"
-            },
-            setBiasCoef = {
-                type = "method",
-                description = "Sets the current bias coefficient.\n\n–> MOAICpConstraint self\n–> number bias: The bias coefficient.\n<– nil",
-                args = "(MOAICpConstraint self, number bias)",
-                returns = "nil"
-            },
-            setMaxBias = {
-                type = "method",
-                description = "Sets the maximum bias coefficient.\n\n–> MOAICpConstraint self\n–> number bias: The maximum bias coefficient.\n<– nil",
-                args = "(MOAICpConstraint self, number bias)",
-                returns = "nil"
-            },
-            setMaxForce = {
-                type = "method",
-                description = "Sets the maximum force allowed.\n\n–> MOAICpConstraint self\n–> number bias: The maximum force allowed.\n<– nil",
-                args = "(MOAICpConstraint self, number bias)",
-                returns = "nil"
-            }
-        }
-    },
-    MOAICpPrim = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        childs = {}
-    },
-    MOAICpShape = {
-        type = "class",
-        inherits = "MOAILuaObject MOAICpPrim",
-        description = "Chipmunk Shape.",
-        childs = {
-            areaForCircle = {
-                type = "function",
-                description = "Returns the area for a ring or circle.\n\nOverload:\n–> number radius\n<– number area\n\nOverload:\n–> number innerRadius\n–> number outerRadius\n<– number area",
-                args = "(number radius | (number innerRadius, number outerRadius))",
-                returns = "number area",
-                valuetype = "number"
-            },
-            areaForPolygon = {
-                type = "function",
-                description = "Returns the area for a polygon.\n\n–> table vertices: Array containing vertex coordinate components ( t[1] = x0, t[2] = y0, t[3] = x1, t[4] = y1... )\n<– number area",
-                args = "table vertices",
-                returns = "number area",
-                valuetype = "number"
-            },
-            areaForRect = {
-                type = "function",
-                description = "Returns the area for the specified rectangle.\n\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n<– number area: The calculated area.",
-                args = "(number x1, number y1, number x2, number y2)",
-                returns = "number area",
-                valuetype = "number"
-            },
-            areaForSegment = {
-                type = "function",
-                description = "Returns the area for the specified segment.\n\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n–> number r\n<– number area: The calculated area.",
-                args = "(number x1, number y1, number x2, number y2, number r)",
-                returns = "number area",
-                valuetype = "number"
-            },
-            getBody = {
-                type = "method",
-                description = "Returns the current body for the shape.\n\n–> MOAICpShape self\n<– MOAICpBody body: The body.",
-                args = "MOAICpShape self",
-                returns = "MOAICpBody body",
-                valuetype = "MOAICpBody"
-            },
-            getElasticity = {
-                type = "method",
-                description = "Returns the current elasticity.\n\n–> MOAICpShape self\n<– number elasticity: The elasticity.",
-                args = "MOAICpShape self",
-                returns = "number elasticity",
-                valuetype = "number"
-            },
-            getFriction = {
-                type = "method",
-                description = "Returns the current friction.\n\n–> MOAICpShape self\n<– number friction: The friction.",
-                args = "MOAICpShape self",
-                returns = "number friction",
-                valuetype = "number"
-            },
-            getGroup = {
-                type = "method",
-                description = "Returns the current group ID.\n\n–> MOAICpShape self\n<– number group: The group ID.",
-                args = "MOAICpShape self",
-                returns = "number group",
-                valuetype = "number"
-            },
-            getLayers = {
-                type = "method",
-                description = "Returns the current layer ID.\n\n–> MOAICpShape self\n<– number layer: The layer ID.",
-                args = "MOAICpShape self",
-                returns = "number layer",
-                valuetype = "number"
-            },
-            getSurfaceVel = {
-                type = "method",
-                description = "Returns the current surface velocity?\n\n–> MOAICpShape self\n<– number x: The X component of the surface velocity.\n<– number y: The Y component of the surface velocity.",
-                args = "MOAICpShape self",
-                returns = "(number x, number y)",
-                valuetype = "number"
-            },
-            getType = {
-                type = "method",
-                description = "Returns the current collision type.\n\n–> MOAICpShape self\n<– number type: The collision type.",
-                args = "MOAICpShape self",
-                returns = "number type",
-                valuetype = "number"
-            },
-            inside = {
-                type = "method",
-                description = "Returns whether the specified point is inside the shape.\n\n–> MOAICpShape self\n–> number x\n–> number y\n<– boolean inside: Whether the point is inside the shape.",
-                args = "(MOAICpShape self, number x, number y)",
-                returns = "boolean inside",
-                valuetype = "boolean"
-            },
-            isSensor = {
-                type = "method",
-                description = "Returns whether the current shape is a sensor.\n\n–> MOAICpShape self\n<– boolean sensor: Whether the shape is a sensor.",
-                args = "MOAICpShape self",
-                returns = "boolean sensor",
-                valuetype = "boolean"
-            },
-            momentForCircle = {
-                type = "function",
-                description = "Return the moment of inertia for the circle.\n\n–> number m\n–> number r1\n–> number r2\n–> number ox\n–> number oy\n<– number moment",
-                args = "(number m, number r1, number r2, number ox, number oy)",
-                returns = "number moment",
-                valuetype = "number"
-            },
-            momentForPolygon = {
-                type = "function",
-                description = "Returns the moment of intertia for the polygon.\n\n–> number m\n–> table polygon\n<– number moment",
-                args = "(number m, table polygon)",
-                returns = "number moment",
-                valuetype = "number"
-            },
-            momentForRect = {
-                type = "function",
-                description = "Returns the moment of intertia for the rect.\n\n–> number m\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n<– number moment",
-                args = "(number m, number x1, number y1, number x2, number y2)",
-                returns = "number moment",
-                valuetype = "number"
-            },
-            momentForSegment = {
-                type = "function",
-                description = "Returns the moment of intertia for the segment.\n\n–> number m\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n<– number moment",
-                args = "(number m, number x1, number y1, number x2, number y2)",
-                returns = "number moment",
-                valuetype = "number"
-            },
-            setElasticity = {
-                type = "method",
-                description = "Sets the current elasticity.\n\n–> MOAICpShape self\n–> number elasticity: The elasticity.\n<– nil",
-                args = "(MOAICpShape self, number elasticity)",
-                returns = "nil"
-            },
-            setFriction = {
-                type = "method",
-                description = "Sets the current friction.\n\n–> MOAICpShape self\n–> number friction: The friction.\n<– nil",
-                args = "(MOAICpShape self, number friction)",
-                returns = "nil"
-            },
-            setGroup = {
-                type = "method",
-                description = "Sets the current group ID.\n\n–> MOAICpShape self\n–> number group: The group ID.\n<– nil",
-                args = "(MOAICpShape self, number group)",
-                returns = "nil"
-            },
-            setIsSensor = {
-                type = "method",
-                description = "Sets whether this shape is a sensor.\n\n–> MOAICpShape self\n–> boolean sensor: Whether this shape is a sensor.\n<– nil",
-                args = "(MOAICpShape self, boolean sensor)",
-                returns = "nil"
-            },
-            setLayers = {
-                type = "method",
-                description = "Sets the current layer ID.\n\n–> MOAICpShape self\n–> number layer: The layer ID.\n<– nil",
-                args = "(MOAICpShape self, number layer)",
-                returns = "nil"
-            },
-            setSurfaceVel = {
-                type = "method",
-                description = "Sets the current surface velocity.\n\n–> MOAICpShape self\n–> number x: The X component of the surface velocity.\n–> number y: The Y component of the surface velocity.\n<– nil",
-                args = "(MOAICpShape self, number x, number y)",
-                returns = "nil"
-            },
-            setType = {
-                type = "method",
-                description = "Sets the current collision type.\n\n–> MOAICpShape self\n–> number type: The collision type.\n<– nil",
-                args = "(MOAICpShape self, number type)",
-                returns = "nil"
-            }
-        }
-    },
-    MOAICpSpace = {
-        type = "class",
-        inherits = "MOAIAction",
-        description = "Chipmunk Space.",
-        childs = {
-            ALL = {
-                type = "value"
-            },
-            BEGIN = {
-                type = "value"
-            },
-            POST_SOLVE = {
-                type = "value"
-            },
-            PRE_SOLVE = {
-                type = "value"
-            },
-            SEPARATE = {
-                type = "value"
-            },
-            activateShapesTouchingShape = {
-                type = "method",
-                description = "Activates shapes that are currently touching the specified shape.\n\n–> MOAICpSpace self\n–> MOAICpShape shape\n<– nil",
-                args = "(MOAICpSpace self, MOAICpShape shape)",
-                returns = "nil"
-            },
-            getDamping = {
-                type = "method",
-                description = "Returns the current damping in the space.\n\n–> MOAICpSpace self\n<– number damping",
-                args = "MOAICpSpace self",
-                returns = "number damping",
-                valuetype = "number"
-            },
-            getGravity = {
-                type = "method",
-                description = "Returns the current gravity as two return values (x grav, y grav).\n\n–> MOAICpSpace self\n<– number xGrav\n<– number yGrav",
-                args = "MOAICpSpace self",
-                returns = "(number xGrav, number yGrav)",
-                valuetype = "number"
-            },
-            getIdleSpeedThreshold = {
-                type = "method",
-                description = "Returns the speed threshold which indicates whether a body is idle (less than or equal to threshold) or in motion (greater than threshold).\n\n–> MOAICpSpace self\n<– number idleThreshold",
-                args = "MOAICpSpace self",
-                returns = "number idleThreshold",
-                valuetype = "number"
-            },
-            getIterations = {
-                type = "method",
-                description = "Returns the number of iterations the space is configured to perform.\n\n–> MOAICpSpace self\n<– number iterations",
-                args = "MOAICpSpace self",
-                returns = "number iterations",
-                valuetype = "number"
-            },
-            getSleepTimeThreshold = {
-                type = "method",
-                description = "Returns the sleep time threshold.\n\n–> MOAICpSpace self\n<– number sleepTimeThreshold",
-                args = "MOAICpSpace self",
-                returns = "number sleepTimeThreshold",
-                valuetype = "number"
-            },
-            getStaticBody = {
-                type = "method",
-                description = "Returns the static body associated with this space.\n\n–> MOAICpSpace self\n<– MOAICpBody staticBody",
-                args = "MOAICpSpace self",
-                returns = "MOAICpBody staticBody",
-                valuetype = "MOAICpBody"
-            },
-            insertPrim = {
-                type = "method",
-                description = "Inserts a new prim into the world (can be used as a body, joint, etc.)\n\n–> MOAICpSpace self\n–> MOAICpPrim prim\n<– nil",
-                args = "(MOAICpSpace self, MOAICpPrim prim)",
-                returns = "nil"
-            },
-            rehashShape = {
-                type = "method",
-                description = "Updates the shape in the spatial hash.\n\n–> MOAICpSpace self\n–> MOAICpShape shape\n<– nil",
-                args = "(MOAICpSpace self, MOAICpShape shape)",
-                returns = "nil"
-            },
-            rehashStatic = {
-                type = "method",
-                description = "Updates the static shapes in the spatial hash.\n\n–> MOAICpSpace self\n<– nil",
-                args = "MOAICpSpace self",
-                returns = "nil"
-            },
-            removePrim = {
-                type = "method",
-                description = "Removes a prim (body, joint, etc.) from the space.\n\n–> MOAICpSpace self\n–> MOAICpPrim prim\n<– nil",
-                args = "(MOAICpSpace self, MOAICpPrim prim)",
-                returns = "nil"
-            },
-            resizeActiveHash = {
-                type = "method",
-                description = "Sets the dimensions of the active object hash.\n\n–> MOAICpSpace self\n–> number dim\n–> number count\n<– nil",
-                args = "(MOAICpSpace self, number dim, number count)",
-                returns = "nil"
-            },
-            resizeStaticHash = {
-                type = "method",
-                description = "Sets the dimensions of the static object hash.\n\n–> MOAICpSpace self\n–> number dim\n–> number count\n<– nil",
-                args = "(MOAICpSpace self, number dim, number count)",
-                returns = "nil"
-            },
-            setCollisionHandler = {
-                type = "method",
-                description = "Sets a function to handle the specific collision type on this object. If nil is passed as the handler, the collision handler is unset.\n\n–> MOAICpSpace self\n–> number collisionTypeA\n–> number collisionTypeB\n–> number mask\n–> function handler\n<– nil",
-                args = "(MOAICpSpace self, number collisionTypeA, number collisionTypeB, number mask, function handler)",
-                returns = "nil"
-            },
-            setDamping = {
-                type = "method",
-                description = "Sets the current damping in the space.\n\n–> MOAICpSpace self\n–> number damping\n<– nil",
-                args = "(MOAICpSpace self, number damping)",
-                returns = "nil"
-            },
-            setGravity = {
-                type = "method",
-                description = "Sets the current gravity in the space.\n\n–> MOAICpSpace self\n–> number xGrav\n–> number yGrav\n<– nil",
-                args = "(MOAICpSpace self, number xGrav, number yGrav)",
-                returns = "nil"
-            },
-            setIdleSpeedThreshold = {
-                type = "method",
-                description = "Sets the speed threshold which indicates whether a body is idle (less than or equal to threshold) or in motion (greater than threshold).\n\n–> MOAICpSpace self\n–> number threshold\n<– nil",
-                args = "(MOAICpSpace self, number threshold)",
-                returns = "nil"
-            },
-            setIterations = {
-                type = "method",
-                description = "Sets the number of iterations performed each simulation step.\n\n–> MOAICpSpace self\n–> number iterations\n<– nil",
-                args = "(MOAICpSpace self, number iterations)",
-                returns = "nil"
-            },
-            setSleepTimeThreshold = {
-                type = "method",
-                description = "Sets the sleep time threshold. This is the amount of time it takes bodies at rest to fall asleep.\n\n–> MOAICpSpace self\n–> number threshold\n<– nil",
-                args = "(MOAICpSpace self, number threshold)",
-                returns = "nil"
-            },
-            shapeForPoint = {
-                type = "method",
-                description = "Retrieves a shape located at the specified X and Y position, that exists on the specified layer (or any layer if nil) and is part of the specified group (or any group if nil).\n\n–> MOAICpSpace self\n–> number x\n–> number y\n[–> number layers]\n[–> number group]\n<– MOAICpShape shape",
-                args = "(MOAICpSpace self, number x, number y, [number layers, [number group]])",
-                returns = "MOAICpShape shape",
-                valuetype = "MOAICpShape"
-            },
-            shapeForSegment = {
-                type = "method",
-                description = "Retrieves a shape that crosses the segment specified, that exists on the specified layer (or any layer if nil) and is part of the specified group (or any group if nil).\n\n–> MOAICpSpace self\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n[–> number layers]\n[–> number group]\n<– MOAICpShape shape",
-                args = "(MOAICpSpace self, number x1, number y1, number x2, number y2, [number layers, [number group]])",
-                returns = "MOAICpShape shape",
-                valuetype = "MOAICpShape"
-            },
-            shapeListForPoint = {
-                type = "method",
-                description = "Retrieves a list of shapes that overlap the point specified, that exists on the specified layer (or any layer if nil) and is part of the specified group (or any group if nil).\n\n–> MOAICpSpace self\n–> number x\n–> number y\n[–> number layers]\n[–> number group]\n<– MOAICpShape shapes: The shapes that were matched as multiple return values.",
-                args = "(MOAICpSpace self, number x, number y, [number layers, [number group]])",
-                returns = "MOAICpShape shapes",
-                valuetype = "MOAICpShape"
-            },
-            shapeListForRect = {
-                type = "method",
-                description = "Retrieves a list of shapes that overlap the rect specified, that exists on the specified layer (or any layer if nil) and is part of the specified group (or any group if nil).\n\n–> MOAICpSpace self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number layers]\n[–> number group]\n<– MOAICpShape shapes: The shapes that were matched as multiple return values.",
-                args = "(MOAICpSpace self, number xMin, number yMin, number xMax, number yMax, [number layers, [number group]])",
-                returns = "MOAICpShape shapes",
-                valuetype = "MOAICpShape"
-            },
-            shapeListForSegment = {
-                type = "method",
-                description = "Retrieves a list of shapes that overlap the segment specified, that exists on the specified layer (or any layer if nil) and is part of the specified group (or any group if nil).\n\n–> MOAICpSpace self\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n[–> number layers]\n[–> number group]\n<– MOAICpShape shapes: The shapes that were matched as multiple return values.",
-                args = "(MOAICpSpace self, number x1, number y1, number x2, number y2, [number layers, [number group]])",
-                returns = "MOAICpShape shapes",
-                valuetype = "MOAICpShape"
             }
         }
     },
@@ -3191,6 +2571,12 @@ return {
                 returns = "string output",
                 valuetype = "string"
             },
+            clear = {
+                type = "method",
+                description = "Release the data buffer's memory.\n\n–> MOAIDataBuffer self\n<– nil",
+                args = "MOAIDataBuffer self",
+                returns = "nil"
+            },
             deflate = {
                 type = "function",
                 description = "Compresses the string or the current data stored in this object using the DEFLATE algorithm.\n\nOverload:\n–> string data: The string data to deflate.\n[–> number level: The level used in the DEFLATE algorithm.]\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– string output: If passed a string, returns either a string or nil depending on whether it could be compressed. Otherwise the compression occurs inline on the existing data buffer in this object, and nil is returned.\n\nOverload:\n–> MOAIDataBuffer self\n[–> number level: The level used in the DEFLATE algorithm.]\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– string output: If passed a string, returns either a string or nil depending on whether it could be compressed. Otherwise the compression occurs inline on the existing data buffer in this object, and nil is returned.",
@@ -3233,17 +2619,16 @@ return {
             },
             load = {
                 type = "method",
-                description = "Copies the data from the given file into this object. This method is a synchronous operation and will block until the file is loaded.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be loaded from.\n[–> number detectZip: One of MOAIDataBuffer.NO_UNZIP, MOAIDataBuffer.NO_UNZIP, MOAIDataBuffer.NO_UNZIP]\n[–> number windowBits: The window bits used in the DEFLATE algorithm. Pass nil to use the default value.]\n<– boolean success: Whether the file could be loaded into the object.",
+                description = "Copies the data from the given file into this object. This method is a synchronous operation and will block until the file is loaded.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be loaded from.\n[–> number detectZip: One of MOAIDataBuffer.NO_INFLATE, MOAIDataBuffer.FORCE_INFLATE, MOAIDataBuffer.INFLATE_ON_EXT]\n[–> number windowBits: The window bits used in the DEFLATE algorithm. Pass nil to use the default value.]\n<– boolean success: Whether the file could be loaded into the object.",
                 args = "(MOAIDataBuffer self, string filename, [number detectZip, [number windowBits]])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             loadAsync = {
                 type = "method",
-                description = "Asynchronously copies the data from the given file into this object. This method is an asynchronous operation and will return immediately.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be loaded from.\n–> MOAITaskQueue queue: The queue to perform the loading operation.\n[–> function callback: The function to be called when the asynchronous operation is complete. The MOAIDataBuffer is passed as the first parameter.]\n[–> number detectZip: One of MOAIDataBuffer.NO_INFLATE, MOAIDataBuffer.FORCE_INFLATE, MOAIDataBuffer.INFLATE_ON_EXT]\n[–> boolean inflateAsync: 'true' to inflate on task thread. 'false' to inflate on subscriber thread. Default value is 'true.']\n[–> number windowBits: The window bits used in the DEFLATE algorithm. Pass nil to use the default value.]\n<– MOAIDataIOTask task: A new MOAIDataIOTask which indicates the status of the task.",
+                description = "Asynchronously copies the data from the given file into this object. This method is an asynchronous operation and will return immediately.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be loaded from.\n–> MOAITaskQueue queue: The queue to perform the loading operation.\n[–> function callback: The function to be called when the asynchronous operation is complete. The MOAIDataBuffer is passed as the first parameter.]\n[–> number detectZip: One of MOAIDataBuffer.NO_INFLATE, MOAIDataBuffer.FORCE_INFLATE, MOAIDataBuffer.INFLATE_ON_EXT]\n[–> boolean inflateAsync: 'true' to inflate on task thread. 'false' to inflate on subscriber thread. Default value is 'true.']\n[–> number windowBits: The window bits used in the DEFLATE algorithm. Pass nil to use the default value.]\n<– nil",
                 args = "(MOAIDataBuffer self, string filename, MOAITaskQueue queue, [function callback, [number detectZip, [boolean inflateAsync, [number windowBits]]]])",
-                returns = "MOAIDataIOTask task",
-                valuetype = "MOAIDataIOTask"
+                returns = "nil"
             },
             save = {
                 type = "method",
@@ -3254,10 +2639,9 @@ return {
             },
             saveAsync = {
                 type = "method",
-                description = "Asynchronously saves the data in this object to the given file. This method is an asynchronous operation and will return immediately.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be saved to.\n–> MOAITaskQueue queue: The queue to perform the saving operation.\n[–> function callback: The function to be called when the asynchronous operation is complete. The MOAIDataBuffer is passed as the first parameter.]\n<– MOAIDataIOTask task: A new MOAIDataIOTask which indicates the status of the task.",
+                description = "Asynchronously saves the data in this object to the given file. This method is an asynchronous operation and will return immediately.\n\n–> MOAIDataBuffer self\n–> string filename: The path to the file that the data should be saved to.\n–> MOAITaskQueue queue: The queue to perform the saving operation.\n[–> function callback: The function to be called when the asynchronous operation is complete. The MOAIDataBuffer is passed as the first parameter.]\n<– nil",
                 args = "(MOAIDataBuffer self, string filename, MOAITaskQueue queue, [function callback])",
-                returns = "MOAIDataIOTask task",
-                valuetype = "MOAIDataIOTask"
+                returns = "nil"
             },
             setString = {
                 type = "method",
@@ -3276,7 +2660,7 @@ return {
     },
     MOAIDataBufferStream = {
         type = "class",
-        inherits = "MOAIStream",
+        inherits = "ZLByteStream MOAIStream",
         description = "MOAIDataBufferStream locks an associated MOAIDataBuffer for reading and writing.",
         childs = {
             close = {
@@ -3299,13 +2683,31 @@ return {
         inherits = "MOAILuaObject",
         description = "Singleton for managing rendering of world space debug vectors.",
         childs = {
+            COLLISION_ACTIVE_OVERLAP_PROP_BOUNDS = {
+                type = "value"
+            },
+            COLLISION_ACTIVE_PROP_BOUNDS = {
+                type = "value"
+            },
+            COLLISION_ACTIVE_TOUCHED_PROP_BOUNDS = {
+                type = "value"
+            },
+            COLLISION_OVERLAP_PROP_BOUNDS = {
+                type = "value"
+            },
             PARTITION_CELLS = {
                 type = "value"
             },
             PARTITION_PADDED_CELLS = {
                 type = "value"
             },
+            PROP_MODEL_AXIS = {
+                type = "value"
+            },
             PROP_MODEL_BOUNDS = {
+                type = "value"
+            },
+            PROP_MODEL_DIAGONALS = {
                 type = "value"
             },
             PROP_WORLD_BOUNDS = {
@@ -3317,7 +2719,19 @@ return {
             TEXT_BOX_BASELINES = {
                 type = "value"
             },
-            TEXT_BOX_LAYOUT = {
+            TEXT_BOX_GLYPH_BOUNDS = {
+                type = "value"
+            },
+            TEXT_BOX_GLYPHS = {
+                type = "value"
+            },
+            TEXT_BOX_LIMITS = {
+                type = "value"
+            },
+            TEXT_BOX_LINES_GLYPH_BOUNDS = {
+                type = "value"
+            },
+            TEXT_BOX_LINES_LOGICAL_BOUNDS = {
                 type = "value"
             },
             setStyle = {
@@ -3337,26 +2751,20 @@ return {
     MOAIDeck = {
         type = "class",
         inherits = "MOAILuaObject",
-        description = "Base class for decks.",
+        description = "Base class for all decks.",
         childs = {
+            getBounds = {
+                type = "function",
+                description = "Return bounds for an item or the maximum bounds for the deck.\n\nOverload:\n–> number idx\n<– xMin\n<– yMin\n<– zMin\n<– xMax\n<– yMax\n<– zMax <<<<<<<: HEAD\n\nOverload:\n<– xMin\n<– yMin\n<– zMin\n<– xMax\n<– yMax\n<– zMax",
+                args = "[number idx]",
+                returns = "(xMin, yMin, zMin, xMax, yMax, (zMax <<<<<<< | zMax))",
+                valuetype = "xMin"
+            },
             setBoundsDeck = {
                 type = "method",
                 description = "Set or clear the bounds override deck.\n\n–> MOAIDeck self\n[–> MOAIBoundsDeck boundsDeck]\n<– nil",
                 args = "(MOAIDeck self, [MOAIBoundsDeck boundsDeck])",
                 returns = "nil"
-            },
-            setShader = {
-                type = "method",
-                description = "Set the shader to use if neither the deck item nor the prop specifies a shader.\n\n–> MOAIDeck self\n–> MOAIShader shader\n<– nil",
-                args = "(MOAIDeck self, MOAIShader shader)",
-                returns = "nil"
-            },
-            setTexture = {
-                type = "method",
-                description = "Set or load a texture for this deck.\n\n–> MOAIDeck self\n–> variant texture: A MOAITexture, MOAIMultiTexture, MOAIDataBuffer or a path to a texture file\n[–> number transform: Any bitwise combination of MOAITextureBase.QUANTIZE, MOAITextureBase.TRUECOLOR, MOAITextureBase.PREMULTIPLY_ALPHA]\n<– MOAIGfxState texture",
-                args = "(MOAIDeck self, variant texture, [number transform])",
-                returns = "MOAIGfxState texture",
-                valuetype = "MOAIGfxState"
             }
         }
     },
@@ -3382,6 +2790,44 @@ return {
                 description = "Remap a single index to a new value.\n\n–> MOAIDeckRemapper self\n–> number index: Index to remap.\n[–> number remap: New value for index. Default value is index (i.e. remove the remap).]\n<– nil",
                 args = "(MOAIDeckRemapper self, number index, [number remap])",
                 returns = "nil"
+            }
+        }
+    },
+    MOAIDeltaDNAAndroid = {
+        type = "class",
+        inherits = "JniUtils",
+        description = "Wrapper for Facebook integration on Android devices. Facebook provides social integration for sharing on www.facebook.com. Exposed to Lua via MOAIFacebook on all mobile platforms.",
+        childs = {
+            DIALOG_DID_COMPLETE = {
+                type = "value",
+                description = "Event code for a successfully completed Facebook dialog."
+            },
+            DIALOG_DID_NOT_COMPLETE = {
+                type = "value",
+                description = "Event code for a failed (or canceled) Facebook dialog."
+            },
+            REQUEST_RESPONSE = {
+                type = "value",
+                description = "Event code for graph request responses."
+            },
+            REQUEST_RESPONSE_FAILED = {
+                type = "value",
+                description = "Event code for failed graph request responses."
+            },
+            SESSION_DID_LOGIN = {
+                type = "value",
+                description = "Event code for a successfully completed Facebook login."
+            },
+            SESSION_DID_NOT_LOGIN = {
+                type = "value",
+                description = "Event code for a failed (or canceled) Facebook login."
+            },
+            initialize = {
+                type = "function",
+                description = "Initialize DeltaDNA sdk\n\n–> string clientVersion\n–> bool debugMode\n<– void",
+                args = "(string clientVersion, bool debugMode)",
+                returns = "void",
+                valuetype = "void"
             }
         }
     },
@@ -3442,6 +2888,12 @@ return {
         inherits = "MOAILuaObject",
         description = "Singleton for performing immediate mode drawing operations. See MOAIScriptDeck.",
         childs = {
+            drawBezierCurve = {
+                type = "function",
+                description = "Draws a bezier curve.\n\n–> number x0\n–> number y0\n–> number x1\n–> number y1\n–> number x2\n–> number y2\n–> number x3\n–> number y3\n<– nil",
+                args = "(number x0, number y0, number x1, number y1, number x2, number y2, number x3, number y3)",
+                returns = "nil"
+            },
             drawBoxOutline = {
                 type = "function",
                 description = "Draw a box outline.\n\n–> number x0\n–> number y0\n–> number z0\n–> number x1\n–> number y1\n–> number z1\n<– nil",
@@ -3452,6 +2904,18 @@ return {
                 type = "function",
                 description = "Draw a circle.\n\n–> number x\n–> number y\n–> number r\n–> number steps\n<– nil",
                 args = "(number x, number y, number r, number steps)",
+                returns = "nil"
+            },
+            drawCircleSpokes = {
+                type = "function",
+                description = "Draw the spokes of a circle.\n\n–> number x\n–> number y\n–> number r\n–> number steps\n<– nil",
+                args = "(number x, number y, number r, number steps)",
+                returns = "nil"
+            },
+            drawElements = {
+                type = "function",
+                description = "Draw elements.\n\n–> ... vtxBuffer: VertexBuffer\n–> ... format: Vertex Format of vertices in the buffer\n–> number count: Number of indices to be rendered\n<– nil",
+                args = "(... vtxBuffer, ... format, number count)",
                 returns = "nil"
             },
             drawEllipse = {
@@ -3519,6 +2983,31 @@ return {
                 description = "Draw a filled rectangle.\n\n–> number x0\n–> number y0\n–> number x1\n–> number y1\n<– nil",
                 args = "(number x0, number y0, number x1, number y1)",
                 returns = "nil"
+            },
+            setBlendMode = {
+                type = "function",
+                description = "Sets the blend mode for drawing.\n\nOverload:\n–> nil\n<– nil\n\nOverload:\n–> number mode: One of MOAIGraphicsProp.BLEND_NORMAL, MOAIGraphicsProp.BLEND_ADD, MOAIGraphicsProp.BLEND_MULTIPLY.\n<– nil\n\nOverload:\n–> number srcFactor\n–> number dstFactor\n–> number equation\n<– nil",
+                args = "((nil | (number srcFactor, number dstFactor, number equation)) | number mode)",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIDynamicGlyphCache = {
+        type = "class",
+        inherits = "MOAIGlyphCache",
+        description = "This is the default implementation of a dynamic glyph cache. Right now it can only grow but support for reference counting glyphs and garbage collection will be added later.\nThe current implementation is set up in anticipation of garbage collection. If you use MOAIFont's getImage () to inspect the work of this cache you'll see that it is not as efficient in terms of texture use as it could be - glyphs are grouped by size, all glyphs for a given face size are given the same height and layout is orientated around rows. All of this will make it much easier to replace individual glyph slots as the set of glyphs that needs to be in memory changes. That said, we may offer an alternative dynamic cache implementation that attempts a more compact use of texture space, the tradeoff being that there won't be any garbage collection.\nThis implementation of the dynamic glyph cache does not implement setImage ().\nOf course, you can also derive your own implementation from MOAIGlyphCache.",
+        childs = {
+            setColorFormat = {
+                type = "method",
+                description = "The color format may be used by dynamic cache implementations when allocating new textures.\n\n–> MOAIDynamicGlyphCache self\n–> number colorFmt: One of MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, COLOR_FMT_RGBA_8888\n<– nil",
+                args = "(MOAIDynamicGlyphCache self, number colorFmt)",
+                returns = "nil"
+            },
+            setPadding = {
+                type = "method",
+                description = "Add padding to glyphs when ripping from font.\n\nOverload:\n–> MOAIDynamicGlyphCache self\n–> number hPad: glyph xMin -= hPad * 0.5, glyph xMax += hPad * 0.5\n–> number vPad: glyph yMin -= vPad * 0.5, glyph yMax += vPad * 0.5\n<– nil\n\nOverload:\n–> MOAIDynamicGlyphCache self\n–> xMinP glyph: xMin -= xMinP\n–> yMinP glyph: yMin -= yMinP\n–> xMaxP glyph: xMax += xMaxP\n–> yMaxP glyph: yMax += yMaxP\n<– nil",
+                args = "(MOAIDynamicGlyphCache self, ((number hPad, number vPad) | (xMinP glyph, yMinP glyph, xMaxP glyph, yMaxP glyph)))",
+                returns = "nil"
             }
         }
     },
@@ -3544,13 +3033,65 @@ return {
         inherits = "MOAILuaObject",
         description = "Namespace to hold ease modes. Moai ease in/out has opposite meaning of Flash ease in/out.",
         childs = {
+            BACK_EASE_IN = {
+                type = "value"
+            },
+            BACK_EASE_OUT = {
+                type = "value"
+            },
+            BACK_SMOOTH = {
+                type = "value"
+            },
+            BOUNCE_IN = {
+                type = "value"
+            },
+            BOUNCE_OUT = {
+                type = "value"
+            },
+            BOUNCE_SMOOTH = {
+                type = "value"
+            },
+            CIRC_EASE_IN = {
+                type = "value"
+            },
+            CIRC_EASE_OUT = {
+                type = "value"
+            },
+            CIRC_SMOOTH = {
+                type = "value"
+            },
             EASE_IN = {
                 type = "value",
-                description = "Quartic ease in - Fast start then slow when approaching value; ease into position."
+                description = "t ^ 4 - Fast start then slow when approaching value; ease into position."
             },
             EASE_OUT = {
                 type = "value",
-                description = "Quartic ease out - Slow start then fast when approaching value; ease out of position."
+                description = "t ^ 4 - Slow start then fast when approaching value; ease out of position."
+            },
+            ELASTIC_IN = {
+                type = "value"
+            },
+            ELASTIC_OUT = {
+                type = "value"
+            },
+            ELASTIC_SMOOTH = {
+                type = "value"
+            },
+            EXTRA_SHARP_EASE_IN = {
+                type = "value",
+                description = "t ^ 16"
+            },
+            EXTRA_SHARP_EASE_OUT = {
+                type = "value",
+                description = "t ^ 16"
+            },
+            EXTRA_SHARP_SMOOTH = {
+                type = "value",
+                description = "t ^ 16"
+            },
+            EXTRA_SHARP_SMOOTH_EASE_OUT = {
+                type = "value",
+                description = "t ^ 16"
             },
             FLAT = {
                 type = "value",
@@ -3562,38 +3103,59 @@ return {
             },
             SHARP_EASE_IN = {
                 type = "value",
-                description = "Octic ease in."
+                description = "t ^ 8"
             },
             SHARP_EASE_OUT = {
                 type = "value",
-                description = "Octic ease out."
+                description = "t ^ 8"
             },
             SHARP_SMOOTH = {
                 type = "value",
-                description = "Octic smooth."
+                description = "t ^ 8"
+            },
+            SHARP_SMOOTH_EASE_OUT = {
+                type = "value",
+                description = "t ^ 8"
+            },
+            SINE_EASE_IN = {
+                type = "value"
+            },
+            SINE_EASE_OUT = {
+                type = "value"
+            },
+            SINE_SMOOTH = {
+                type = "value"
             },
             SMOOTH = {
                 type = "value",
-                description = "Quartic ease out then ease in."
+                description = "t ^ 4 - Ease out then ease in."
+            },
+            SMOOTH_EASE_OUT = {
+                type = "value",
+                description = "t ^ 4 - Ease out then ease in scaled by ease out."
             },
             SOFT_EASE_IN = {
                 type = "value",
-                description = "Quadratic ease in."
+                description = "t ^ 2"
             },
             SOFT_EASE_OUT = {
                 type = "value",
-                description = "Quadratic ease out."
+                description = "t ^ 2"
             },
             SOFT_SMOOTH = {
                 type = "value",
-                description = "Quadratic smooth."
+                description = "t ^ 2"
+            },
+            SOFT_SMOOTH_EASE_OUT = {
+                type = "value",
+                description = "t ^ 2"
             }
         }
     },
     MOAIEnvironment = {
         type = "class",
         inherits = "MOAILuaObject",
-        description = "Table of key/value pairs containing information about the current environment. Also contains the generateGUID (), which will move to MOAIUnique in a future release.\nIf a given key is not supported in the current environment it will not exist (it's value will be nil).\nThe keys are:\n- appDisplayName\n- appID\n- appVersion\n- cacheDirectory\n- carrierISOCountryCode\n- carrierMobileCountryCode\n- carrierMobileNetworkCode\n- carrierName\n- connectionType\n- countryCode\n- cpuabi\n- devBrand\n- devName\n- devManufacturer\n- devModel\n- devPlatform\n- devProduct\n- documentDirectory\n- iosRetinaDisplay\n- languageCode\n- numProcessors\n- osBrand\n- osVersion\n- resourceDirectory\n- screenDpi\n- verticalResolution\n- horizontalResolution\n- udid\n- openUdid",
+        description = "Table of key/value pairs containing information about the current environment. Also contains the generateGUID (), which will move to MOAIUnique in a future release.\nIf a given key is not supported in the current environment it will not exist (it's value will be nil).\nThe keys are:\n- appDisplayName\n- appID\n- appVersion\n- cacheDirectory\n- carrierISOCountryCode\n- carrierMobileCountryCode\n- carrierMobileNetworkCode\n- carrierName\n- connectionType\n- countryCode\n- cpuabi\n- devBrand\n- devName\n- devManufacturer\n- devModel\n- devPlatform\n- devProduct\n- documentDirectory\n- iosIFA\n- iosIFV\n- iosRetinaDisplay\n- languageCode\n- numProcessors\n- osBrand\n- osVersion\n- resourceDirectory\n- screenDpi\n- verticalResolution\n- horizontalResolution\n- udid\n- openUdid",
         childs = {
             CONNECTION_TYPE_NONE = {
                 type = "value",
@@ -3661,7 +3223,7 @@ return {
     },
     MOAIFacebookAndroid = {
         type = "class",
-        inherits = "MOAILuaObject",
+        inherits = "JniUtils",
         description = "Wrapper for Facebook integration on Android devices. Facebook provides social integration for sharing on www.facebook.com. Exposed to Lua via MOAIFacebook on all mobile platforms.",
         childs = {
             DIALOG_DID_COMPLETE = {
@@ -3688,24 +3250,39 @@ return {
                 type = "value",
                 description = "Event code for a failed (or canceled) Facebook login."
             },
-            extendToken = {
-                type = "function",
-                description = "Extend the token if needed\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            getExpirationDate = {
-                type = "function",
-                description = "Retrieve the Facebook login token expiration date.\n\n<– string expirationDate: token expiration date",
-                args = "()",
-                returns = "string expirationDate",
-                valuetype = "string"
-            },
             getToken = {
                 type = "function",
                 description = "Retrieve the Facebook login token.\n\n<– string token",
                 args = "()",
                 returns = "string token",
+                valuetype = "string"
+            },
+            getTokenExpireTime = {
+                type = "function",
+                description = "Retrieve the Facebook login token.\n\n<– string token",
+                args = "()",
+                returns = "string token",
+                valuetype = "string"
+            },
+            getTokenRefreshTime = {
+                type = "function",
+                description = "Retrieve the Facebook login token.\n\n<– string token",
+                args = "()",
+                returns = "string token",
+                valuetype = "string"
+            },
+            getUserID = {
+                type = "function",
+                description = "Retrieve the Facebook user ID\n\n<– string ID",
+                args = "()",
+                returns = "string ID",
+                valuetype = "string"
+            },
+            getUserName = {
+                type = "function",
+                description = "Retrieve the Facebook user name\n\n<– string name",
+                args = "()",
+                returns = "string name",
                 valuetype = "string"
             },
             graphRequest = {
@@ -3751,17 +3328,12 @@ return {
                 returns = "boolean valid",
                 valuetype = "boolean"
             },
-            setExpirationDate = {
+            showInviteDialog = {
                 type = "function",
-                description = "Set the Facebook login token expiration date.\n\n–> string expirationDate: The login token expiration date. See Facebook documentation.\n<– nil",
-                args = "string expirationDate",
-                returns = "nil"
-            },
-            setToken = {
-                type = "function",
-                description = "Set the Facebook login token.\n\n–> string token: The login token. See Facebook documentation.\n<– nil",
-                args = "string token",
-                returns = "nil"
+                description = "Displays Facebook invite dialog.\n\n<– void",
+                args = "()",
+                returns = "void",
+                valuetype = "void"
             }
         }
     },
@@ -3798,7 +3370,7 @@ return {
     },
     MOAIFileStream = {
         type = "class",
-        inherits = "MOAIStream",
+        inherits = "ZLFileStream MOAIStream",
         description = "MOAIFileStream opens a system file handle for reading or writing.",
         childs = {
             READ = {
@@ -3893,9 +3465,16 @@ return {
             },
             getRelativePath = {
                 type = "function",
-                description = "Given an absolute path returns the relative path in relation to the current working directory.\n\n–> string path\n<– string path: -",
-                args = "string path",
+                description = "Given an absolute path returns the relative path in relation to the current working directory or a user supplied 'base' directory.\n\n–> string path\n[–> string base]\n<– string path",
+                args = "(string path, [string base])",
                 returns = "string path",
+                valuetype = "string"
+            },
+            getVirtualPathInfo = {
+                type = "function",
+                description = "Given a virtual path, return the path to the archive and, if the path is to a file, the offset to the file record within the archive.\n\n–> string path: A virtual path.\n[–> string offsetToHeader: Offset to the file record header in the archive, or nil if not a file path.]\n[–> number uncompressedSize: Uncompressed size of the file or nil if not a file path.]\n[–> number compressedSize: Compressed size of the file or nil if not compressed or not a file path.]\n<– string pathToArchive: The archive to which the path is mapped.\n<– string localPath: The relative portion of the path.",
+                args = "(string path, [string offsetToHeader, [number uncompressedSize, [number compressedSize]]])",
+                returns = "(string pathToArchive, string localPath)",
                 valuetype = "string"
             },
             getWorkingDirectory = {
@@ -3907,9 +3486,9 @@ return {
             },
             listDirectories = {
                 type = "function",
-                description = "Lists the sub-directories contained in a directory.\n\n[–> string path: Path to search. Default is current directory.]\n<– table diresctories: A table of directory names (or nil if the path is invalid)",
+                description = "Lists the sub-directories contained in a directory.\n\n[–> string path: Path to search. Default is current directory.]\n<– table directories: A table of directory names (or nil if the path is invalid)",
                 args = "[string path]",
-                returns = "table diresctories",
+                returns = "table directories",
                 valuetype = "table"
             },
             listFiles = {
@@ -3918,6 +3497,13 @@ return {
                 args = "[string path]",
                 returns = "table files",
                 valuetype = "table"
+            },
+            loadFile = {
+                type = "function",
+                description = "Open and read the entirity of a file into a string.\n\n–> string filename\n<– string contents: Returns empty string if file length is 0. Returns nil is no such file.",
+                args = "string filename",
+                returns = "string contents",
+                valuetype = "string"
             },
             mountVirtualDirectory = {
                 type = "function",
@@ -3933,14 +3519,33 @@ return {
                 returns = "boolean success",
                 valuetype = "boolean"
             },
+            saveFile = {
+                type = "function",
+                description = "Create or overwrite a file to contain the contents of a given string.\n\n–> string filename\n[–> string contents]\n<– nil",
+                args = "(string filename, [string contents])",
+                returns = "nil"
+            },
             setWorkingDirectory = {
                 type = "function",
                 description = "Sets the current working directory.\n\n–> string path\n<– boolean success",
                 args = "string path",
                 returns = "boolean success",
                 valuetype = "boolean"
+            },
+            stripPKZipTimestamps = {
+                type = "function",
+                description = "Strip the timestamp from a pkzip file. Useful in systems where periodically generated pkzip files are compared against each other using hashes. Once timestamps are stripeed, two pkzip files with the same contents should produce identical hashes.\n\n–> string infilename\n–> string outfilename\n<– boolean success",
+                args = "(string infilename, string outfilename)",
+                returns = "boolean success",
+                valuetype = "boolean"
             }
         }
+    },
+    MOAIFlurryIOS = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Wrapper for Flurry interface.",
+        childs = {}
     },
     MOAIFmodEventInstance = {
         type = "class",
@@ -4391,14 +3996,21 @@ return {
     },
     MOAIFont = {
         type = "class",
-        inherits = "MOAILuaObject",
-        description = "MOAIFont is the top level object for managing sets of glyphs associated with a single font face. An instance of MOAIFont may contain glyph sets for multiple sizes of the font. Alternatively, a separate instance of MOAIFont may be used for each font size. Using a single font object for each size of a font face can make it easier to unload font sizes that are no longer needed.\nAn instance of MOAIFont may represent a dynamic or static font. Dynamic fonts are used to retrieve glyphs from a font file format on an as-needed basis. Static fonts have no associated font file format and therefore contain a fixed set of glyphs at runtime. For languages demanding very large character sets (such as Chinese), dynamic fonts are typically used. For languages where it is feasible to pre-render a full set of glyphs to texture (or bitmap fonts), static fonts may be used.\nMOAIFont orchestrates objects derived from MOAIFontReader and MOAIGlyphCacheBase to render glyphs into glyph sets. MOAIFontReader is responsible for interpreting the font file format (if any), retrieving glyph metrics (including kerning) and rendering glyphs to texture. MOAIGlyphCache is responsible for allocating textures to hold glyphs and for managing glyph placement within textures. For dynamic fonts, the typical setup uses MOAIFreeTypeFontReader and MOAIGlyphCache. For static fonts, there is usually no font reader; MOAIStaticGlyphCache is loaded directly from a serialized file and its texture memory is initialized with MOAIFont's setImage () command.\nAs mentioned, a single MOAIFont may be used to render multiple sizes of a font face. When glyphs need to be laid out or rendered, the font object will return a set of glyphs matching whatever size was requested. It is also possible to specify a default size that will be used if no size is requested for rendering or if no matching size is found. If no default size is set by the user, it will be set automatically the first time a specific size is requested.\nMOAIFont can also control how or if kerning tables are loaded when glyphs are being rendered. The default behavior is to load kerning information automatically. It is possible to prevent kerning information from being loaded. In this case, kerning tables may be loaded manually if so desired.",
+        inherits = "MOAILuaObject MOAIInstanceEventSource",
+        description = "MOAIFont is the top level object for managing sets of glyphs associated with a single font face. An instance of MOAIFont may contain glyph sets for multiple sizes of the font. Alternatively, a separate instance of MOAIFont may be used for each font size. Using a single font object for each size of a font face can make it easier to unload font sizes that are no longer needed.\nAn instance of MOAIFont may represent a dynamic or static font. Dynamic fonts are used to retrieve glyphs from a font file format on an as-needed basis. Static fonts have no associated font file format and therefore contain a fixed set of glyphs at runtime. For languages demanding very large character sets (such as Chinese), dynamic fonts are typically used. For languages where it is feasible to pre-render a full set of glyphs to texture (or bitmap fonts), static fonts may be used.\nMOAIFont orchestrates objects derived from MOAIFontReader and MOAIGlyphCache to render glyphs into glyph sets. MOAIFontReader is responsible for interpreting the font file format (if any), retrieving glyph metrics (including kerning) and rendering glyphs to texture. MOAIDynamicGlyphCache is responsible for allocating textures to hold glyphs and for managing glyph placement within textures. For dynamic fonts, the typical setup uses MOAIFreeTypeFontReader and MOAIDynamicGlyphCache. For static fonts, there is usually no font reader; MOAIStaticGlyphCache is loaded directly from a serialized file and its texture memory is initialized with MOAIFont's setImage () command.\nAs mentioned, a single MOAIFont may be used to render multiple sizes of a font face. When glyphs need to be laid out or rendered, the font object will return a set of glyphs matching whatever size was requested. It is also possible to specify a default size that will be used if no size is requested for rendering or if no matching size is found. If no default size is set by the user, it will be set automatically the first time a specific size is requested.\nMOAIFont can also control how or if kerning tables are loaded when glyphs are being rendered. The default behavior is to load kerning information automatically. It is possible to prevent kerning information from being loaded. In this case, kerning tables may be loaded manually if so desired.",
         childs = {
             DEFAULT_FLAGS = {
                 type = "value"
             },
             FONT_AUTOLOAD_KERNING = {
                 type = "value"
+            },
+            getCache = {
+                type = "method",
+                description = "Returns glyph cache.\n\n–> MOAIFont self\n<– MOAILuaObject cache",
+                args = "MOAIFont self",
+                returns = "MOAILuaObject cache",
+                valuetype = "MOAILuaObject"
             },
             getDefaultSize = {
                 type = "method",
@@ -4460,8 +4072,8 @@ return {
             },
             setCache = {
                 type = "method",
-                description = "Attaches or clears the glyph cache associated with the font. The cache is an object derived from MOAIGlyphCacheBase and may be a dynamic cache that can allocate space for new glyphs on an as-needed basis or a static cache that only supports direct loading of glyphs and glyph textures through MOAIFont's setImage () command.\n\n–> MOAIFont self\n[–> MOAIGlyphCacheBase cache: Default value is nil.]\n<– nil",
-                args = "(MOAIFont self, [MOAIGlyphCacheBase cache])",
+                description = "Attaches or clears the glyph cache associated with the font. The cache is an object derived from MOAIGlyphCache and may be a dynamic cache that can allocate space for new glyphs on an as-needed basis or a static cache that only supports direct loading of glyphs and glyph textures through MOAIFont's setImage () command.\n\n–> MOAIFont self\n[–> MOAIGlyphCache cache: Default value is nil.]\n<– nil",
+                args = "(MOAIFont self, [MOAIGlyphCache cache])",
                 returns = "nil"
             },
             setDefaultSize = {
@@ -4469,6 +4081,13 @@ return {
                 description = "Selects a glyph set size to use as the default size when no other size is specified by objects wishing to use MOAIFont to render text.\n\n–> MOAIFont self\n–> number points: The point size to be rendered onto the internal texture.\n[–> number dpi: The device DPI (dots per inch of device screen). Default value is 72 (points same as pixels).]\n<– nil",
                 args = "(MOAIFont self, number points, [number dpi])",
                 returns = "nil"
+            },
+            setFilter = {
+                type = "method",
+                description = "Sets the filtering mode for glyph textures.\n\n–> MOAIFont self\n[–> number minFilter]\n<– number magFilter\n<– MOAILuaObject cache",
+                args = "(MOAIFont self, [number minFilter])",
+                returns = "(number magFilter, MOAILuaObject cache)",
+                valuetype = "number"
             },
             setFlags = {
                 type = "method",
@@ -4487,6 +4106,13 @@ return {
                 description = "Attaches or clears the MOAIFontReader associated with the font. MOAIFontReader is responsible for loading and rendering glyphs from a font file on demand. If you are using a static font and do not need a reader, set this field to nil.\n\n–> MOAIFont self\n[–> MOAIFontReader reader: Default value is nil.]\n<– nil",
                 args = "(MOAIFont self, [MOAIFontReader reader])",
                 returns = "nil"
+            },
+            setShader = {
+                type = "method",
+                description = "Set the preferred shader for the font. (May be overridden by a prop.)\n\n–> MOAIFont self\n–> MOAIShader shader\n<– MOAIShader shader",
+                args = "(MOAIFont self, MOAIShader shader)",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
             }
         }
     },
@@ -4514,11 +4140,117 @@ return {
             }
         }
     },
+    MOAIFourier = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {
+            countBands = {
+                type = "function",
+                description = "Returns the number of bands. Only valid for OUTPUT_AVERAGE or OUTPUT_OCTAVES. If the former, the total number of bands. If the latter, the total number of octaves times the number of bands per octave.\n\n–> MOAIFourier fourier\n<– number nBands",
+                args = "MOAIFourier fourier",
+                returns = "number nBands",
+                valuetype = "number"
+            },
+            countOctaves = {
+                type = "function",
+                description = "Returns the number of octaves. Only valid for OUTPUT_OCTAVES.\n\n–> MOAIFourier fourier\n<– number nOctaves",
+                args = "MOAIFourier fourier",
+                returns = "number nOctaves",
+                valuetype = "number"
+            },
+            getBinForFrequency = {
+                type = "function",
+                description = "Given a frequency, returns the bin index.\n\n–> MOAIFourier fourier\n–> number frequency\n<– number bin",
+                args = "(MOAIFourier fourier, number frequency)",
+                returns = "number bin",
+                valuetype = "number"
+            },
+            getCenterFrequencyForBand = {
+                type = "function",
+                description = "Given a band index, returns the center frequency. Size and placement of bands depends on output mode.\n\n–> MOAIFourier fourier\n–> number band\n<– number centerFrequency",
+                args = "(MOAIFourier fourier, number band)",
+                returns = "number centerFrequency",
+                valuetype = "number"
+            },
+            getCenterFrequencyForOctave = {
+                type = "function",
+                description = "Given an octave index, returns the center frequency.\n\n–> MOAIFourier fourier\n–> number octave\n<– number centerFrequency",
+                args = "(MOAIFourier fourier, number octave)",
+                returns = "number centerFrequency",
+                valuetype = "number"
+            },
+            getFastSize = {
+                type = "function",
+                description = "Return an optimal FFT size equal to or matching the given size.\n\n–> MOAIFourier fourier\n–> number size\n<– number fastSize",
+                args = "(MOAIFourier fourier, number size)",
+                returns = "number fastSize",
+                valuetype = "number"
+            },
+            getFrequencyForBin = {
+                type = "function",
+                description = "Given a bin index, return the frequency.\n\n–> MOAIFourier fourier\n–> number bin\n<– number frequency",
+                args = "(MOAIFourier fourier, number bin)",
+                returns = "number frequency",
+                valuetype = "number"
+            },
+            getWidth = {
+                type = "function",
+                description = "Return the total frequency width of for the FFT size.\n\n–> MOAIFourier fourier\n<– number width",
+                args = "MOAIFourier fourier",
+                returns = "number width",
+                valuetype = "number"
+            },
+            getWidthOfOctave = {
+                type = "function",
+                description = "Return the width of the given octave.\n\n–> MOAIFourier fourier\n–> number octave\n<– number width",
+                args = "(MOAIFourier fourier, number octave)",
+                returns = "number width",
+                valuetype = "number"
+            },
+            init = {
+                type = "function",
+                description = "Initialize the FFT's internal buffers.\n\n–> MOAIFourier fourier\n–> number size: FFT size; number of bins.\n–> bool inverse: 'true' for a inverse FFT.\n<– nil",
+                args = "(MOAIFourier fourier, number size, bool inverse)",
+                returns = "nil"
+            },
+            setOutputType = {
+                type = "function",
+                description = "Set the desired output mode of the FFT. One of MOAIFourier.OUTPUT_COMPLEX, MOAIFourier.OUTPUT_REAL, MOAIFourier.OUTPUT_IMAGINARY, MOAIFourier.OUTPUT_AMPLITUDE, MOAIFourier.OUTPUT_AVERAGE or MOAIFourier.OUTPUT_OCTAVES. The additional two parameters ('bands' and 'minOctaveBandWidth') only apply to OUTPUT_AVERAGE and OUTPUT_OCTAVES. The meaning of the 'bands' is interpreted differently if type is OUTPUT_AVERAGE or OUTPUT_OCTAVES. If OUTPUT_AVERAGE, it is the total number of bands to generate, applied linearly over all bins. If OUTPUT_OCTAVES, it is the total number of bands per octave. As the final number of octaves is computed based on the number of bins, the sample rate and the minimum octave width, the total number of bands will be the given number of bands times the result of countOctaves ().\n\n–> MOAIFourier fourier\n–> number outputType: FFT size.\n–> number bands: Total bands if OUTPUT_AVERAGE. Bands per octave if OUTPUT_OCTAVES.\n–> number sampleRate: Used for octave width calculations.\n–> number minOctaveBandWidth: USed for computing number of octaves.\n<– nil",
+                args = "(MOAIFourier fourier, number outputType, number bands, number sampleRate, number minOctaveBandWidth)",
+                returns = "nil"
+            },
+            setWindowFunction = {
+                type = "function",
+                description = "Set or clear the window function to apply. One of MOAIFourier.BARTLETT, MOAIFourier.BARTLETT_HANN, MOAIFourier.BLACKMAN, MOAIFourier.COSINE, MOAIFourier.GAUSS, MOAIFourier.HAMMING, MOAIFourier.HANN, MOAIFourier.LANCZOS, MOAIFourier.RECTANGULAR, MOAIFourier.WELCH. BLACKMAN and GAUSS both accept an alpha parameter.\n\n–> MOAIFourier fourier\n[–> number windowType: Type of window to apply. Pass 'RECTANGULAR' or nil to clear.]\n[–> number alpha: Alpha parameter for windows that use it (BLACKMAN and GAUSS).]\n<– nil",
+                args = "(MOAIFourier fourier, [number windowType, [number alpha]])",
+                returns = "nil"
+            },
+            transform = {
+                type = "function",
+                description = "Apply the FFT to the input stream and write the result to the output stream. Stream types ('inStreamType' and 'outStreamType') define the sample type held in the stream. One of MOAIFourier.SAMPLE_S8, MOAIFourier.SAMPLE_U8, MOAIFourier.SAMPLE_S16, MOAIFourier.SAMPLE_U16, MOAIFourier.SAMPLE_S32, MOAIFourier.SAMPLE_U32, MOAIFourier.SAMPLE_FLOAT. For audio processing, input stream sample type will typically be SAMPLE_S16 and output stream sample type will be SAMPLE_FLOAT.\n\n–> MOAIFourier fourier\n–> MOAIStream inStream\n–> number inStreamType\n–> boolean complexIn: 'true' is input stream contains both real and imaginary samples.\n–> MOAIStream outStream\n–> number outStreamType\n[–> number inputStreamStride: Number of samples to advance input stream when reading.]\n[–> number inputStreamAverage: Number of samples to average when reading input stream.]\n<– nil",
+                args = "(MOAIFourier fourier, MOAIStream inStream, number inStreamType, boolean complexIn, MOAIStream outStream, number outStreamType, [number inputStreamStride, [number inputStreamAverage]])",
+                returns = "nil"
+            },
+            window = {
+                type = "function",
+                description = "Given a window function and an FFT length, returns the value of the window given a bin index. See the documentation for setWindowFunction () for a list of valid window types.\n\n–> number windowType\n–> number index\n–> number length\n[–> number alpha]\n<– nil",
+                args = "(number windowType, number index, number length, [number alpha])",
+                returns = "nil"
+            }
+        }
+    },
     MOAIFrameBuffer = {
         type = "class",
-        inherits = "MOAIClearableView",
+        inherits = "MOAIClearableView ZLGfxListener",
         description = "MOAIFrameBuffer is responsible for drawing a list of MOAIRenderable objects. MOAIRenderable is the base class for any object that can be drawn. This includes MOAIProp and MOAILayer. To use MOAIFrameBuffer pass a table of MOAIRenderable objects to setRenderTable (). The table will usually be a stack of MOAILayer objects. The contents of the table will be rendered the next time a frame is drawn. Note that the table must be an array starting with index 1. Objects will be rendered counting from the base index until 'nil' is encountered. The render table may include other tables as entries. These must also be arrays indexed from 1.",
         childs = {
+            getGrabbedImage = {
+                type = "method",
+                description = "Returns the image into which frame(s) will be (or were) grabbed (if any).\n\n–> MOAIFrameBuffer self\n[–> boolean discard: If true, image will be discarded from the frame buffer.]\n<– MOAIImage image: The frame grab image, or nil if none exists.",
+                args = "(MOAIFrameBuffer self, [boolean discard])",
+                returns = "MOAIImage image",
+                valuetype = "MOAIImage"
+            },
             getPerformanceDrawCount = {
                 type = "method",
                 description = 'Returns the number of draw calls last frame.\n\n–> MOAIFrameBuffer self\n<– number count: Number of underlying graphics "draw" calls last frame.',
@@ -4535,9 +4267,16 @@ return {
             },
             grabNextFrame = {
                 type = "method",
-                description = "Save the next frame rendered to\n\n–> MOAIFrameBuffer self\n–> MOAIImage image: Image to save the backbuffer to\n–> function callback: The function to execute when the frame has been saved into the image specified\n<– nil",
-                args = "(MOAIFrameBuffer self, MOAIImage image, function callback)",
+                description = "Save the next frame rendered to an image. If no image is provided, one will be created tp match the size of the frame buffer.\n\n–> MOAIFrameBuffer self\n[–> MOAIImage image: Image to save the backbuffer to]\n[–> function callback: The function to execute when the frame has been saved into the image specified]\n<– nil",
+                args = "(MOAIFrameBuffer self, [MOAIImage image, [function callback]])",
                 returns = "nil"
+            },
+            isPendingGrab = {
+                type = "method",
+                description = "True if a frame grab has been requested but not yet grabbed.\n\n–> MOAIFrameBuffer self\n<– table renderTable",
+                args = "MOAIFrameBuffer self",
+                returns = "table renderTable",
+                valuetype = "table"
             },
             setRenderTable = {
                 type = "method",
@@ -4549,7 +4288,7 @@ return {
     },
     MOAIFrameBufferTexture = {
         type = "class",
-        inherits = "MOAIFrameBuffer MOAITextureBase",
+        inherits = "MOAIFrameBuffer MOAISingleTexture",
         description = "This is an implementation of a frame buffer that may be attached to a MOAILayer for offscreen rendering. It is also a texture that may be bound and used like any other.",
         childs = {
             init = {
@@ -4593,7 +4332,97 @@ return {
             }
         }
     },
-    MOAIGfxDevice = {
+    MOAIGeometryWriter = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Interface for writing and manipulating procedural geometry. Geometry is written as vertices to a stream. Vertex layout is given by a MOAIVertexFormat. Stream cursor is reset to starting location after each write (to make writing multiple passes easier). Operations that affect every vertex of a mesh affect all vertices between the stream cursor and the end of the stream. Once all vertices have been written, stream may be converted into a mesh with an index buffer that is calculated by finding redundant vertices.",
+        childs = {
+            applyColor = {
+                type = "function",
+                description = "Apply a color to every vertex in a mesh. A MOAIRegion and/or a blending mode may optionally be provided. Blending mode is one of COLOR_ADD, COLOR_MULTIPLY, COLOR_OVERWRITE, COLOR_SUBTRACT.\n\nOverload:\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> ZLColorVec color\n[–> number blendMode]\n<– nil\n\nOverload:\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> ZLColorVec color\n–> MOAIRegion region\n[–> number pad]\n[–> number blendMode]\n<– nil"
+            },
+            applyLightFromImage = {
+                type = "function",
+                description = "Apply vertex colors from an image as a sperical map indexed by vertex normals. Middle of image is the equator, with the poles at image top and bottom. (Resolution diminishes as sample approaches poles.) An optional linear alpha gradient may be also be applied. Blending mode is one of COLOR_ADD, COLOR_MULTIPLY, COLOR_OVERWRITE, COLOR_SUBTRACT.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> MOAIImage image\n[–> number blendMode]\n[–> number a0]\n[–> number a1]\n[–> number x0]\n[–> number y0]\n[–> number z0]\n[–> number x1]\n[–> number y1]\n[–> number z1]\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, MOAIImage image, [number blendMode, [number a0, [number a1, [number x0, [number y0, [number z0, [number x1, [number y1, [number z1]]]]]]]]])",
+                returns = "nil"
+            },
+            applyLinearGradient = {
+                type = "function",
+                description = "Apply a linear color gradient. Blending mode is one of COLOR_ADD, COLOR_MULTIPLY, COLOR_OVERWRITE, COLOR_SUBTRACT.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n[–> number x0]\n[–> number y0]\n[–> number z0]\n[–> number x1]\n[–> number y1]\n[–> number z1]\n[–> number r0]\n[–> number g0]\n[–> number b0]\n[–> number a0]\n[–> number r1]\n[–> number g1]\n[–> number b1]\n[–> number a1]\n[–> boolean cap0]\n[–> boolean cap1]\n[–> number blendMode]\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, [number x0, [number y0, [number z0, [number x1, [number y1, [number z1, [number r0, [number g0, [number b0, [number a0, [number r1, [number g1, [number b1, [number a1, [boolean cap0, [boolean cap1, [number blendMode]]]]]]]]]]]]]]]]])",
+                returns = "nil"
+            },
+            getMesh = {
+                type = "function",
+                description = "Return the vertices as an MOAIVertexBuffer and MOAIIndexBuffer, or as a ready-to-render MOAIMesh.\n\nOverload:\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> MOAIStream idxStream\n–> MOAIVertexBuffer vtxBuffer\n–> MOAIIndexBuffer idxBuffer\n[–> number idxSizeInBytes]\n<– number totalElements\n\nOverload:\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> MOAIStream idxStream\n[–> number idxSizeInBytes]\n<– MOAIMesh mesh",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, MOAIStream idxStream, [MOAIVertexBuffer vtxBuffer, MOAIIndexBuffer idxBuffer], [number idxSizeInBytes])",
+                returns = "(number totalElements | MOAIMesh mesh)"
+            },
+            pruneVertices = {
+                type = "function",
+                description = "Remove duplicate vertices from the vertex stream and update or create the index stream. Index stream is assuming to be 4 bytes.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> MOAIStream idxStream\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, MOAIStream idxStream)",
+                returns = "nil"
+            },
+            snapCoords = {
+                type = "function",
+                description = "Snap vertex coordinates to a give resolution.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> number xSnap\n[–> number ySnap: Default value is xSnap.]\n[–> number zSnap: Default valie is ySnap.]\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, number xSnap, [number ySnap, [number zSnap]])",
+                returns = "nil"
+            },
+            writeBox = {
+                type = "function",
+                description = "Writes the vertices of a box.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n–> number xMin\n–> number yMin\n–> number zMin\n–> number xMax\n–> number yMax\n–> number zMax\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, number xMin, number yMin, number zMin, number xMax, number yMax, number zMax)",
+                returns = "nil"
+            },
+            writeCube = {
+                type = "function",
+                description = "Writes the vertices of a cube.\n\n–> MOAIVertexFormat format\n–> MOAIStream vtxStream\n[–> number size: Default value is 1.]\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number z: Default value is 0.]\n<– nil",
+                args = "(MOAIVertexFormat format, MOAIStream vtxStream, [number size, [number x, [number y, [number z]]]])",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIGfxBuffer = {
+        type = "class",
+        inherits = "MOAIGfxResource MOAIStream ZLCopyOnWrite",
+        description = "Base class for MOAIVertexBuffer and MOAIIndexBuffer.",
+        childs = {
+            copyFromStream = {
+                type = "method",
+                description = "Copies buffer contents from a stream.\n\n–> MOAIGfxBuffer self\n–> MOAIStream stream\n<– nil",
+                args = "(MOAIGfxBuffer self, MOAIStream stream)",
+                returns = "nil"
+            },
+            release = {
+                type = "method",
+                description = "Releases any memory associated with buffer.\n\n–> MOAIGfxBuffer self\n<– nil",
+                args = "MOAIGfxBuffer self",
+                returns = "nil"
+            },
+            reserve = {
+                type = "method",
+                description = "Sets capacity of buffer in bytes.\n\n–> MOAIGfxBuffer self\n–> number size\n<– nil",
+                args = "(MOAIGfxBuffer self, number size)",
+                returns = "nil"
+            },
+            reserveVBOs = {
+                type = "method",
+                description = "Reserves one or more VBO objects. Multi-buffering is supported via multiple VBOs.\n\n–> MOAIGfxBuffer self\n–> number count\n<– nil",
+                args = "(MOAIGfxBuffer self, number count)",
+                returns = "nil"
+            },
+            scheduleFlush = {
+                type = "method",
+                description = "Trigger an update of the GPU-side buffer. Call this when the backing buffer has been altered.\n\n–> MOAIGfxBuffer self\n<– nil",
+                args = "MOAIGfxBuffer self",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIGfxMgr = {
         type = "class",
         inherits = "MOAILuaObject",
         description = "Interface to the graphics singleton.",
@@ -4607,6 +4436,13 @@ return {
                 args = "()",
                 returns = "MOAIFrameBuffer frameBuffer",
                 valuetype = "MOAIFrameBuffer"
+            },
+            getMaxTextureSize = {
+                type = "function",
+                description = "Returns the maximum texture size supported by device\n\n<– number maxTextureSize",
+                args = "()",
+                returns = "number maxTextureSize",
+                valuetype = "number"
             },
             getMaxTextureUnits = {
                 type = "function",
@@ -4622,12 +4458,24 @@ return {
                 returns = "(number width, number height)",
                 valuetype = "number"
             },
-            isProgrammable = {
+            purgeResources = {
                 type = "function",
-                description = "Returns a boolean indicating whether or not Moai is running under the programmable pipeline.\n\n<– boolean isProgrammable",
+                description = "Purges all resources older that a given age (in render cycles). If age is 0 then all resources are purged.\n\n[–> number age: Default value is 0.]\n<– nil",
+                args = "[number age]",
+                returns = "nil"
+            },
+            renewResources = {
+                type = "function",
+                description = "Renews all resources.\n\n<– nil",
                 args = "()",
-                returns = "boolean isProgrammable",
-                valuetype = "boolean"
+                returns = "nil"
+            },
+            setDefaultTexture = {
+                type = "function",
+                description = "Specify a fallback texture to use when textures are unavailable (pending load, missing or in error state).\n\n–> MOAITexture texture\n<– MOAITexture texture: Texture that was passed in or created.",
+                args = "MOAITexture texture",
+                returns = "MOAITexture texture",
+                valuetype = "MOAITexture"
             },
             setPenColor = {
                 type = "function",
@@ -4640,18 +4488,12 @@ return {
                 description = "–> number width\n<– nil",
                 args = "number width",
                 returns = "nil"
-            },
-            setPointSize = {
-                type = "function",
-                description = "–> number size\n<– nil",
-                args = "number size",
-                returns = "nil"
             }
         }
     },
     MOAIGfxQuad2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Single textured quad.",
         childs = {
             setQuad = {
@@ -4694,13 +4536,47 @@ return {
     },
     MOAIGfxQuadDeck2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Deck of textured quads.",
         childs = {
+            getQuad = {
+                type = "method",
+                description = "Get model space quad given a deck index. Vertex order is clockwiese from upper left.\n\n–> MOAIGfxQuadDeck2D self\n–> number idx: Index of the quad.\n<– number x0\n<– number y0\n<– number x1\n<– number y1\n<– number x2\n<– number y2\n<– number x3\n<– number y3",
+                args = "(MOAIGfxQuadDeck2D self, number idx)",
+                returns = "(number x0, number y0, number x1, number y1, number x2, number y2, number x3, number y3)",
+                valuetype = "number"
+            },
+            getRect = {
+                type = "method",
+                description = "Set model space quad given a valid deck index and a rect.\n\n–> MOAIGfxQuadDeck2D self\n–> number idx: Index of the quad.\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
+                args = "(MOAIGfxQuadDeck2D self, number idx)",
+                returns = "(number xMin, number yMin, number xMax, number yMax)",
+                valuetype = "number"
+            },
+            getUVQuad = {
+                type = "method",
+                description = "Get UV model space quad given a valid deck index. Vertex order is clockwise from upper left.\n\n–> MOAIGfxQuadDeck2D self\n–> number idx: Index of the quad.\n<– number u0\n<– number v0\n<– number u1\n<– number v1\n<– number u2\n<– number v2\n<– number u3\n<– number v3",
+                args = "(MOAIGfxQuadDeck2D self, number idx)",
+                returns = "(number u0, number v0, number u1, number v1, number u2, number v2, number u3, number v3)",
+                valuetype = "number"
+            },
+            getUVRect = {
+                type = "method",
+                description = "Get UV model space quad given a valid deck index.\n\n–> MOAIGfxQuadDeck2D self\n–> number idx: Index of the quad.\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
+                args = "(MOAIGfxQuadDeck2D self, number idx)",
+                returns = "(number xMin, number yMin, number xMax, number yMax)",
+                valuetype = "number"
+            },
             reserve = {
                 type = "method",
                 description = "Set capacity of quad deck.\n\n–> MOAIGfxQuadDeck2D self\n–> number nQuads\n<– nil",
                 args = "(MOAIGfxQuadDeck2D self, number nQuads)",
+                returns = "nil"
+            },
+            setMaterialID = {
+                type = "method",
+                description = "Specify an optional material ID for a quad.\n\n–> MOAIGfxQuadDeck2D self\n–> number idx\n–> number id\n<– nil",
+                args = "(MOAIGfxQuadDeck2D self, number idx, number id)",
                 returns = "nil"
             },
             setQuad = {
@@ -4743,7 +4619,7 @@ return {
     },
     MOAIGfxQuadListDeck2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Deck of lists of textured quads. UV and model space quads are specified independently and associated via pairs. Pairs are referenced by lists sequentially. There may be multiple pairs with the same UV/model quad indices if geometry is used in multiple lists.",
         childs = {
             reserveLists = {
@@ -4778,8 +4654,8 @@ return {
             },
             setPair = {
                 type = "method",
-                description = "Associates a quad with its UV coordinates.\n\n–> MOAIGfxQuadListDeck2D self\n–> number idx\n–> number uvQuadID\n–> number quadID\n<– nil",
-                args = "(MOAIGfxQuadListDeck2D self, number idx, number uvQuadID, number quadID)",
+                description = "Associates a quad with its UV coordinates.\n\n–> MOAIGfxQuadListDeck2D self\n–> number idx\n–> number uvQuadID\n–> number quadID\n[–> number materialID]\n<– nil",
+                args = "(MOAIGfxQuadListDeck2D self, number idx, number uvQuadID, number quadID, [number materialID])",
                 returns = "nil"
             },
             setQuad = {
@@ -4822,7 +4698,7 @@ return {
     },
     MOAIGfxResource = {
         type = "class",
-        inherits = "MOAIGfxState",
+        inherits = "MOAIInstanceEventSource ZLGfxListener",
         description = "Base class for graphics resources owned by OpenGL. Implements resource lifecycle including restoration from a lost graphics context (if possible).",
         childs = {
             getAge = {
@@ -4832,20 +4708,20 @@ return {
                 returns = "number age",
                 valuetype = "number"
             },
-            softRelease = {
+            purge = {
                 type = "method",
                 description = "Attempt to release the resource. Generally this is used when responding to a memory warning from the system. A resource will only be released if it is renewable (i.e. has a renew callback or contains all information needed to reload the resources on demand). Using soft release can save an app in extreme memory circumstances, but may trigger reloads of resources during runtime which can significantly degrade performance.\n\n–> MOAIGfxResource self\n[–> number age: Release only if the texture hasn't been used in X frames.]\n<– boolean released: True if the texture was actually released.",
                 args = "(MOAIGfxResource self, [number age])",
                 returns = "boolean released",
                 valuetype = "boolean"
+            },
+            setReloader = {
+                type = "method",
+                description = "The reloaded is called prior to recreating the resource. It should in turn call the resources regular load or init methods.\n\n–> MOAIGfxResource self\n[–> function reloader]\n<– nil",
+                args = "(MOAIGfxResource self, [function reloader])",
+                returns = "nil"
             }
         }
-    },
-    MOAIGfxState = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        description = "Abstract base class for objects that represent changes to graphics state.",
-        childs = {}
     },
     MOAIGlobalEventSource = {
         type = "class",
@@ -4855,19 +4731,434 @@ return {
     },
     MOAIGlyphCache = {
         type = "class",
-        inherits = "MOAIGlyphCacheBase",
-        description = "This is the default implementation of a dynamic glyph cache. Right now it can only grow but support for reference counting glyphs and garbage collection will be added later.\nThe current implementation is set up in anticipation of garbage collection. If you use MOAIFont's getImage () to inspect the work of this cache you'll see that it is not as efficient in terms of texture use as it could be - glyphs are grouped by size, all glyphs for a given face size are given the same height and layout is orientated around rows. All of this will make it much easier to replace individual glyph slots as the set of glyphs that needs to be in memory changes. That said, we may offer an alternative dynamic cache implementation that attempts a more compact use of texture space, the tradeoff being that there won't be any garbage collection.\nThis implementation of the dynamic glyph cache does not implement setImage ().\nOf course, you can also derive your own implementation from MOAIGlyphCacheBase.",
-        childs = {}
-    },
-    MOAIGlyphCacheBase = {
-        type = "class",
         inherits = "MOAILuaObject",
         description = "Base class for implementations of glyph caches. A glyph cache is responsible for allocating textures to hold rendered glyphs and for placing individuals glyphs on those textures.\nEven though the glyph cache is responsible for placing glyphs on textures, the glyph cache does not have to keep track of glyph metrics. Glyph metrics are stored independently by the font. This means that glyph caches with equivalent textures may be swapped out for use with the same font.",
+        childs = {}
+    },
+    MOAIGooglePlayServicesAndroid = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Wrapper for Google Play services.",
         childs = {
-            setColorFormat = {
+            connect = {
+                type = "function",
+                description = "Connects to the Google Play Game Services\n\n<– nil",
+                args = "()",
+                returns = "nil"
+            },
+            isConnected = {
+                type = "function",
+                description = "Connects to the Google Play Game Services\n\n<– nil",
+                args = "()",
+                returns = "nil"
+            },
+            showAchievements = {
+                type = "function",
+                description = "Shows the achievements\n\n<– nil",
+                args = "()",
+                returns = "nil"
+            },
+            showLeaderboard = {
+                type = "function",
+                description = "Shows the desired leaderboard\n\n–> string leaderboardID\n<– nil",
+                args = "string leaderboardID",
+                returns = "nil"
+            },
+            submitScore = {
+                type = "function",
+                description = "Submits a score for the passed in leaderboard\n\n–> string leaderboardID\n–> number score\n<– nil",
+                args = "(string leaderboardID, number score)",
+                returns = "nil"
+            },
+            unlockAchievement = {
+                type = "function",
+                description = "Grants an achievement to the player\n\n–> string achievementID\n<– nil",
+                args = "string achievementID",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIGraphicsProp = {
+        type = "class",
+        inherits = "MOAIProp MOAIColor MOAIRenderable",
+        description = "Base class for graphics props.",
+        childs = {
+            BLEND_ADD = {
+                type = "value"
+            },
+            BLEND_MULTIPLY = {
+                type = "value"
+            },
+            BLEND_NORMAL = {
+                type = "value"
+            },
+            CULL_ALL = {
+                type = "value"
+            },
+            CULL_BACK = {
+                type = "value"
+            },
+            CULL_FRONT = {
+                type = "value"
+            },
+            CULL_NONE = {
+                type = "value"
+            },
+            DEPTH_TEST_ALWAYS = {
+                type = "value"
+            },
+            DEPTH_TEST_DISABLE = {
+                type = "value"
+            },
+            DEPTH_TEST_EQUAL = {
+                type = "value"
+            },
+            DEPTH_TEST_GREATER = {
+                type = "value"
+            },
+            DEPTH_TEST_GREATER_EQUAL = {
+                type = "value"
+            },
+            DEPTH_TEST_LESS = {
+                type = "value"
+            },
+            DEPTH_TEST_LESS_EQUAL = {
+                type = "value"
+            },
+            DEPTH_TEST_NEVER = {
+                type = "value"
+            },
+            DEPTH_TEST_NOTEQUAL = {
+                type = "value"
+            },
+            FRAME_FROM_DECK = {
+                type = "value"
+            },
+            FRAME_FROM_PARENT = {
+                type = "value"
+            },
+            FRAME_FROM_SELF = {
+                type = "value"
+            },
+            GL_DST_ALPHA = {
+                type = "value"
+            },
+            GL_DST_COLOR = {
+                type = "value"
+            },
+            GL_FUNC_ADD = {
+                type = "value"
+            },
+            GL_FUNC_REVERSE_SUBTRACT = {
+                type = "value"
+            },
+            GL_FUNC_SUBTRACT = {
+                type = "value"
+            },
+            GL_ONE = {
+                type = "value"
+            },
+            GL_ONE_MINUS_DST_ALPHA = {
+                type = "value"
+            },
+            GL_ONE_MINUS_DST_COLOR = {
+                type = "value"
+            },
+            GL_ONE_MINUS_SRC_ALPHA = {
+                type = "value"
+            },
+            GL_ONE_MINUS_SRC_COLOR = {
+                type = "value"
+            },
+            GL_SRC_ALPHA = {
+                type = "value"
+            },
+            GL_SRC_ALPHA_SATURATE = {
+                type = "value"
+            },
+            GL_SRC_COLOR = {
+                type = "value"
+            },
+            GL_ZERO = {
+                type = "value"
+            },
+            getIndexBatchSize = {
                 type = "method",
-                description = "The color format may be used by dynamic cache implementations when allocating new textures.\n\n–> MOAIGlyphCacheBase self\n–> number colorFmt: One of MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, COLOR_FMT_RGBA_8888\n<– nil",
-                args = "(MOAIGlyphCacheBase self, number colorFmt)",
+                description = "Return the index batch size of the material batch attached to the prop.\n\n–> MOAIGraphicsProp self\n<– number indexBatchSize: Returns nil if no material batch is attached.",
+                args = "MOAIGraphicsProp self",
+                returns = "number indexBatchSize",
+                valuetype = "number"
+            },
+            getMaterialBatch = {
+                type = "method",
+                description = "Return the material batch attached to the prop.\n\n–> MOAIGraphicsProp self\n<– MOAIMaterialBatch materialBatch",
+                args = "MOAIGraphicsProp self",
+                returns = "MOAIMaterialBatch materialBatch",
+                valuetype = "MOAIMaterialBatch"
+            },
+            getScissorRect = {
+                type = "method",
+                description = "Retrieve the prop's scissor rect.\n\n–> MOAIGraphicsProp self\n<– MOAIScissorRect scissorRect: Or nil if none exists.",
+                args = "MOAIGraphicsProp self",
+                returns = "MOAIScissorRect scissorRect",
+                valuetype = "MOAIScissorRect"
+            },
+            getShader = {
+                type = "method",
+                description = "Get the shader at the given index in the prop's material batch, ignoring the material's index batch size. If no material batch is attached to the prop then nil will be returned.\n\n–> MOAIGraphicsProp self\n[–> number idx: Default value is 1.]\n<– MOAIShader shader: Or nil if none exists.",
+                args = "(MOAIGraphicsProp self, [number idx])",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
+            },
+            getTexture = {
+                type = "method",
+                description = "Get the texture at the given index in the prop's material batch, ignoring the material's index batch size. If no material batch is attached to the prop then nil will be returned.\n\n–> MOAIGraphicsProp self\n[–> number idx: Default value is 1.]\n<– MOAITexture texture: Or nil if none exists.",
+                args = "(MOAIGraphicsProp self, [number idx])",
+                returns = "MOAITexture texture",
+                valuetype = "MOAITexture"
+            },
+            isVisible = {
+                type = "method",
+                description = "Returns true if the given prop is visible. An optional LOD factor may be passed in to test the prop's LOD settings.\n\n–> MOAIGraphicsProp self\n[–> number lod]\n<– boolean isVisible: Indicates whether the prop is visible.",
+                args = "(MOAIGraphicsProp self, [number lod])",
+                returns = "boolean isVisible",
+                valuetype = "boolean"
+            },
+            reserveMaterials = {
+                type = "method",
+                description = "Reserve materials in the prop's material batch (and creates a material batch if none exists).\n\n–> MOAIGraphicsProp self\n–> number count\n<– nil",
+                args = "(MOAIGraphicsProp self, number count)",
+                returns = "nil"
+            },
+            setBillboard = {
+                type = "method",
+                description = "Sets the prop's billboarding mode. One of BILLBOARD_NORMAL, BILLBOARD_ORTHO, BILLBOARD_COMPASS, BILLBOARD_SCREEN, BILLBOARD_NONE.\n\nOverload:\n–> MOAIGraphicsProp self\n–> boolean billboard: true == BILLBOARD_NORMAL, false == BILLBOARD_NONE\n<– nil\n\nOverload:\n–> MOAIGraphicsProp self\n–> number mode\n<– nil",
+                args = "(MOAIGraphicsProp self, (boolean billboard | number mode))",
+                returns = "nil"
+            },
+            setBlendEquation = {
+                type = "method",
+                description = "Set the blend equation. This determines how the srcFactor and dstFactor values set with setBlendMode are interpreted.\n\nOverload:\n–> MOAIGraphicsProp self\n<– nil\n\nOverload:\n–> MOAIGraphicsProp self\n–> number equation: One of GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT.\n<– nil",
+                args = "(MOAIGraphicsProp self, [number equation])",
+                returns = "nil"
+            },
+            setBlendMode = {
+                type = "method",
+                description = "Set the blend mode.\n\nOverload:\n–> MOAIGraphicsProp self\n<– nil\n\nOverload:\n–> MOAIGraphicsProp self\n–> number mode: One of MOAIGraphicsProp.BLEND_NORMAL, MOAIGraphicsProp.BLEND_ADD, MOAIGraphicsProp.BLEND_MULTIPLY.\n<– nil\n\nOverload:\n–> MOAIGraphicsProp self\n–> number srcFactor\n–> number dstFactor\n<– nil",
+                args = "(MOAIGraphicsProp self, [number mode | (number srcFactor, number dstFactor)])",
+                returns = "nil"
+            },
+            setCullMode = {
+                type = "method",
+                description = "Sets and enables face culling.\n\n–> MOAIGraphicsProp self\n[–> number cullMode: Default value is MOAIGraphicsProp.CULL_NONE.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [number cullMode])",
+                returns = "nil"
+            },
+            setDepthMask = {
+                type = "method",
+                description = "Disables or enables depth writing.\n\n–> MOAIGraphicsProp self\n[–> boolean depthMask: Default value is true.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [boolean depthMask])",
+                returns = "nil"
+            },
+            setDepthTest = {
+                type = "method",
+                description = "Sets and enables depth testing (assuming depth buffer is present).\n\n–> MOAIGraphicsProp self\n[–> number depthFunc: Default value is MOAIGraphicsProp.DEPTH_TEST_DISABLE.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [number depthFunc])",
+                returns = "nil"
+            },
+            setIndexBatchSize = {
+                type = "method",
+                description = "Sets and index batch size of the associated matrial batch (and creates a material batch if none exists).\n\n–> MOAIGraphicsProp self\n[–> number indexBatchSize]\n<– nil",
+                args = "(MOAIGraphicsProp self, [number indexBatchSize])",
+                returns = "nil"
+            },
+            setMaterialBatch = {
+                type = "method",
+                description = "Sets the prop's material batch.\n\n–> MOAIGraphicsProp self\n[–> MOAIMaterialBatch materialBatch]\n<– nil",
+                args = "(MOAIGraphicsProp self, [MOAIMaterialBatch materialBatch])",
+                returns = "nil"
+            },
+            setParent = {
+                type = "method",
+                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAIGraphicsProp self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [MOAINode parent])",
+                returns = "nil"
+            },
+            setScissorRect = {
+                type = "method",
+                description = "Set or clear the prop's scissor rect.\n\n–> MOAIGraphicsProp self\n[–> MOAIScissorRect scissorRect: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [MOAIScissorRect scissorRect])",
+                returns = "nil"
+            },
+            setShader = {
+                type = "method",
+                description = "Sets a shader in the associated material batch. Creates a material batch is none exists. Index batch size is ignored. If no value for 'idx' is provided, then the shader or shader preset is expected as the first paramater, and idx defaults to 1.\n\nOverload:\n–> MOAIGraphicsProp self\n–> number idx\n–> variant shader: Overloaded to accept a MOAIShader or a shader preset.\n<– MOAIShader shader: The shader that was set or created.\n\nOverload:\n–> MOAIGraphicsProp self\n–> variant shader: Overloaded to accept a MOAIShader or a shader preset.\n<– MOAIShader shader: The shader that was set or created.",
+                args = "(MOAIGraphicsProp self, [number idx])",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
+            },
+            setTexture = {
+                type = "method",
+                description = "Sets a texture in the associated material batch. Creates a material batch is none exists. Index batch size is ignored. If no value for 'idx' is provided, then the texture or filename is expected as the first paramater, and idx defaults to 1.\n\nOverload:\n–> MOAIGraphicsProp self\n–> number idx\n–> variant texture: Overloaded to accept a filename, MOAITexture, MOAIImage, MOAIStream or MOAIDataBuffer.\n<– MOAITexture texture: The texture that was set or created.\n\nOverload:\n–> MOAIGraphicsProp self\n–> variant texture: Overloaded to accept a filename, MOAITexture, MOAIImage, MOAIStream or MOAIDataBuffer.\n<– MOAITexture texture: The texture that was set or created.",
+                args = "(MOAIGraphicsProp self, [number idx])",
+                returns = "MOAITexture texture",
+                valuetype = "MOAITexture"
+            },
+            setUVTransform = {
+                type = "method",
+                description = "Sets or clears the prop's UV transform.\n\n–> MOAIGraphicsProp self\n[–> MOAITransformBase transform: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [MOAITransformBase transform])",
+                returns = "nil"
+            },
+            setVisible = {
+                type = "method",
+                description = "Sets or clears the prop's visibility.\n\n–> MOAIGraphicsProp self\n[–> boolean visible: Default value is true.]\n<– nil",
+                args = "(MOAIGraphicsProp self, [boolean visible])",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIGraphicsProp2D = {
+        type = "class",
+        inherits = "MOAITransform2D MOAIColor MOAIRenderable",
+        description = "2D prop.",
+        childs = {
+            getBounds = {
+                type = "method",
+                description = "Return the prop's local bounds or 'nil' if prop bounds is global or missing. The bounds are in model space and will be overridden by the prop's frame if it's been set (using setFrame ())\n\n–> MOAIGraphicsProp2D self\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
+                args = "MOAIGraphicsProp2D self",
+                returns = "(number xMin, number yMin, number xMax, number yMax)",
+                valuetype = "number"
+            },
+            getGrid = {
+                type = "method",
+                description = "Get the grid currently connected to the prop.\n\n–> MOAIGraphicsProp2D self\n<– MOAIGrid grid: Current grid or nil.",
+                args = "MOAIGraphicsProp2D self",
+                returns = "MOAIGrid grid",
+                valuetype = "MOAIGrid"
+            },
+            getIndex = {
+                type = "method",
+                description = "Gets the value of the deck indexer.\n\n–> MOAIGraphicsProp2D self\n<– number index",
+                args = "MOAIGraphicsProp2D self",
+                returns = "number index",
+                valuetype = "number"
+            },
+            getPriority = {
+                type = "method",
+                description = "Returns the current priority of the node or 'nil' if the priority is uninitialized.\n\n–> MOAIGraphicsProp2D self\n<– number priority: The node's priority or nil.",
+                args = "MOAIGraphicsProp2D self",
+                returns = "number priority",
+                valuetype = "number"
+            },
+            inside = {
+                type = "method",
+                description = "Returns true if the given world space point falls inside the prop's bounds.\n\n–> MOAIGraphicsProp2D self\n–> number x\n–> number y\n–> number z\n[–> number pad: Pad the hit bounds (in the prop's local space)]\n<– boolean isInside",
+                args = "(MOAIGraphicsProp2D self, number x, number y, number z, [number pad])",
+                returns = "boolean isInside",
+                valuetype = "boolean"
+            },
+            setBlendMode = {
+                type = "method",
+                description = "Set the blend mode.\n\nOverload:\n–> MOAIGraphicsProp2D self\n<– nil\n\nOverload:\n–> MOAIGraphicsProp2D self\n–> number mode: One of MOAIGraphicsProp2D.BLEND_NORMAL, MOAIGraphicsProp2D.BLEND_ADD, MOAIGraphicsProp2D.BLEND_MULTIPLY.\n<– nil\n\nOverload:\n–> MOAIGraphicsProp2D self\n–> number srcFactor\n–> number dstFactor\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number mode | (number srcFactor, number dstFactor)])",
+                returns = "nil"
+            },
+            setCullMode = {
+                type = "method",
+                description = "Sets and enables face culling.\n\n–> MOAIGraphicsProp2D self\n[–> number cullMode: Default value is MOAIGraphicsProp2D.CULL_NONE.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number cullMode])",
+                returns = "nil"
+            },
+            setDeck = {
+                type = "method",
+                description = "Sets or clears the deck to be indexed by the prop.\n\n–> MOAIGraphicsProp2D self\n[–> MOAIDeck deck: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAIDeck deck])",
+                returns = "nil"
+            },
+            setDepthMask = {
+                type = "method",
+                description = "Disables or enables depth writing.\n\n–> MOAIGraphicsProp2D self\n[–> boolean depthMask: Default value is true.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [boolean depthMask])",
+                returns = "nil"
+            },
+            setDepthTest = {
+                type = "method",
+                description = "Sets and enables depth testing (assuming depth buffer is present).\n\n–> MOAIGraphicsProp2D self\n[–> number depthFunc: Default value is MOAIGraphicsProp2D.DEPTH_TEST_DISABLE.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number depthFunc])",
+                returns = "nil"
+            },
+            setExpandForSort = {
+                type = "method",
+                description = "Used when drawing with a layout scheme (i.e. MOAIGrid). Expanding for sort causes the prop to emit a sub-prim for each component of the layout. For example, when attaching a MOAIGrid to a prop, each cell of the grid will be added to the render queue for sorting against all other props and sub-prims. This is obviously less efficient, but still more efficient then using an separate prop for each cell or object.\n\n–> MOAIGraphicsProp2D self\n–> boolean expandForSort: Default value is false.\n<– nil",
+                args = "(MOAIGraphicsProp2D self, boolean expandForSort)",
+                returns = "nil"
+            },
+            setFrame = {
+                type = "method",
+                description = "Sets the fitting frame of the prop.\n\nOverload:\n–> MOAIGraphicsProp2D self\n<– nil\n\nOverload:\n–> MOAIGraphicsProp2D self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number xMin, number yMin, number xMax, number yMax])",
+                returns = "nil"
+            },
+            setGrid = {
+                type = "method",
+                description = "Sets or clears the prop's grid indexer. The grid indexer (if any) will override the standard indexer.\n\n–> MOAIGraphicsProp2D self\n[–> MOAIGrid grid: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAIGrid grid])",
+                returns = "nil"
+            },
+            setGridScale = {
+                type = "method",
+                description = "Scale applied to deck items before rendering to grid cell.\n\n–> MOAIGraphicsProp2D self\n[–> number xScale: Default value is 1.]\n[–> number yScale: Default value is 1.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number xScale, [number yScale]])",
+                returns = "nil"
+            },
+            setIndex = {
+                type = "method",
+                description = "Set the prop's index into its deck.\n\n–> MOAIGraphicsProp2D self\n[–> number index: Default value is 1.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number index])",
+                returns = "nil"
+            },
+            setParent = {
+                type = "method",
+                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAIGraphicsProp2D self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAINode parent])",
+                returns = "nil"
+            },
+            setPriority = {
+                type = "method",
+                description = "Sets or clears the node's priority. Clear the priority to have MOAIPartition automatically assign a priority to a node when it is added.\n\n–> MOAIGraphicsProp2D self\n[–> number priority: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [number priority])",
+                returns = "nil"
+            },
+            setRemapper = {
+                type = "method",
+                description = "Set a remapper for this prop to use when drawing deck members.\n\n–> MOAIGraphicsProp2D self\n[–> MOAIDeckRemapper remapper: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAIDeckRemapper remapper])",
+                returns = "nil"
+            },
+            setShader = {
+                type = "method",
+                description = "Sets or clears the prop's shader. The prop's shader takes precedence over any shader specified by the deck or its elements.\n\n–> MOAIGraphicsProp2D self\n[–> MOAIShader shader: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAIShader shader])",
+                returns = "nil"
+            },
+            setTexture = {
+                type = "method",
+                description = "Set or load a texture for this prop. The prop's texture will override the deck's texture.\n\n–> MOAIGraphicsProp2D self\n–> variant texture: A MOAITexture, MOAIMultiTexture, MOAIDataBuffer or a path to a texture file\n[–> number transform: Any bitwise combination of MOAISingleTexture.QUANTIZE, MOAISingleTexture.TRUECOLOR, MOAISingleTexture.PREMULTIPLY_ALPHA]\n<– MOAIGfxState texture",
+                args = "(MOAIGraphicsProp2D self, variant texture, [number transform])",
+                returns = "MOAIGfxState texture",
+                valuetype = "MOAIGfxState"
+            },
+            setUVTransform = {
+                type = "method",
+                description = "Sets or clears the prop's UV transform.\n\n–> MOAIGraphicsProp2D self\n[–> MOAITransformBase transform: Default value is nil.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [MOAITransformBase transform])",
+                returns = "nil"
+            },
+            setVisible = {
+                type = "method",
+                description = "Sets or clears the prop's visibility.\n\n–> MOAIGraphicsProp2D self\n[–> boolean visible: Default value is true.]\n<– nil",
+                args = "(MOAIGraphicsProp2D self, [boolean visible])",
                 returns = "nil"
             }
         }
@@ -4945,7 +5236,7 @@ return {
     },
     MOAIGridDeck2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "This deck renders 'brushes' which are sampled from a tile map. The tile map is specified by the attached grid, deck and remapper. Each 'brush' defines a rectangle of tiles to draw and an offset.",
         childs = {
             reserveBrushes = {
@@ -4980,6 +5271,101 @@ return {
             }
         }
     },
+    MOAIGridFancy = {
+        type = "class",
+        inherits = "MOAIGrid",
+        description = "Fancier grid which supports color/scale alterations",
+        childs = {
+            fillAlpha = {
+                type = "method",
+                description = "Set all tiles to a single alpha\n\n–> MOAIGridFancy self\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number value)",
+                returns = "nil"
+            },
+            fillColor = {
+                type = "method",
+                description = "Set all tiles to a single color\n\n–> MOAIGridFancy self\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number value)",
+                returns = "nil"
+            },
+            fillScale = {
+                type = "method",
+                description = "Set all tiles to a single scale\n\n–> MOAIGridFancy self\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number value)",
+                returns = "nil"
+            },
+            getAlpha = {
+                type = "method",
+                description = "Returns the alpha channel of a given tile.\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n<– number alpha",
+                args = "(MOAIGridFancy self, number xTile, number yTile)",
+                returns = "number alpha",
+                valuetype = "number"
+            },
+            getColor = {
+                type = "method",
+                description = "Returns the color index of a given tile.\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n<– number color: index into palette",
+                args = "(MOAIGridFancy self, number xTile, number yTile)",
+                returns = "number color",
+                valuetype = "number"
+            },
+            getPalette = {
+                type = "method",
+                description = "Returns the color components of a given palette index\n\n–> MOAIGridFancy self\n–> number index\n<– number r\n<– number g\n<– number b\n<– number a",
+                args = "(MOAIGridFancy self, number index)",
+                returns = "(number r, number g, number b, number a)",
+                valuetype = "number"
+            },
+            getScale = {
+                type = "method",
+                description = "Returns the scale multiplier of a given tile.\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n<– number scale",
+                args = "(MOAIGridFancy self, number xTile, number yTile)",
+                returns = "number scale",
+                valuetype = "number"
+            },
+            setAlpha = {
+                type = "method",
+                description = "Sets the alpha of a given tile\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number xTile, number yTile, number value)",
+                returns = "nil"
+            },
+            setColor = {
+                type = "method",
+                description = "Sets the color index of a given tile\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number xTile, number yTile, number value)",
+                returns = "nil"
+            },
+            setPalette = {
+                type = "method",
+                description = "Sets the color components for a given palette entry\n\n–> MOAIGridFancy self\n–> number idx\n–> number r\n–> number g\n–> number b\n[–> number a: Default is 1]\n<– nil",
+                args = "(MOAIGridFancy self, number idx, number r, number g, number b, [number a])",
+                returns = "nil"
+            },
+            setRowAlpha = {
+                type = "method",
+                description = "Initializes a grid row's alpha values given a variable argument list of values.\n\n–> MOAIGridFancy self\n–> number row\n–> ...\n<– nil",
+                args = "(MOAIGridFancy self, number row, ...)",
+                returns = "nil"
+            },
+            setRowColor = {
+                type = "method",
+                description = "Initializes a grid row's color values given a variable argument list of values.\n\n–> MOAIGridFancy self\n–> number row\n–> ... indexes: palette indexes\n<– nil",
+                args = "(MOAIGridFancy self, number row, ... indexes)",
+                returns = "nil"
+            },
+            setRowScale = {
+                type = "method",
+                description = "Initializes a grid row's scale values given a variable argument list of values.\n\n–> MOAIGridFancy self\n–> number row\n–> ...\n<– nil",
+                args = "(MOAIGridFancy self, number row, ...)",
+                returns = "nil"
+            },
+            setScale = {
+                type = "method",
+                description = "Sets the scale of a given tile\n\n–> MOAIGridFancy self\n–> number xTile\n–> number yTile\n–> number value\n<– nil",
+                args = "(MOAIGridFancy self, number xTile, number yTile, number value)",
+                returns = "nil"
+            }
+        }
+    },
     MOAIGridPathGraph = {
         type = "class",
         inherits = "MOAIPathGraph MOAILuaObject",
@@ -4998,6 +5384,9 @@ return {
         inherits = "MOAILuaObject",
         description = "Represents spatial configuration of a grid. The grid is made up of cells. Inside of each cell is a tile. The tile can be larger or smaller than the cell and also offset from the cell. By default, tiles are the same size of their cells and are no offset.",
         childs = {
+            AXIAL_HEX_SHAPE = {
+                type = "value"
+            },
             DIAMOND_SHAPE = {
                 type = "value"
             },
@@ -5098,9 +5487,15 @@ return {
                 returns = "(number width, number height)",
                 valuetype = "number"
             },
+            initAxialHexGrid = {
+                type = "method",
+                description = "Initialize a grid with hex tiles, using an axial coordinate system. The axial grid assumes that the flat sides of hexes are on the sides, and the points are up/down.\n\n–> MOAIGridSpace self\n–> number width\n–> number height\n[–> number tileWidth: Default value is 1.]\n[–> number tileHeight: Default value is 1.]\n[–> number xGutter: Default value is 0.]\n[–> number yGutter: Default value is 0.]\n<– nil",
+                args = "(MOAIGridSpace self, number width, number height, [number tileWidth, [number tileHeight, [number xGutter, [number yGutter]]]])",
+                returns = "nil"
+            },
             initDiamondGrid = {
                 type = "method",
-                description = "Initialize a grid with hexagonal tiles.\n\n–> MOAIGridSpace self\n–> number width\n–> number height\n[–> number tileWidth: Default value is 1.]\n[–> number tileHeight: Default value is 1.]\n[–> number xGutter: Default value is 0.]\n[–> number yGutter: Default value is 0.]\n<– nil",
+                description = "Initialize a grid with diamond tiles.\n\n–> MOAIGridSpace self\n–> number width\n–> number height\n[–> number tileWidth: Default value is 1.]\n[–> number tileHeight: Default value is 1.]\n[–> number xGutter: Default value is 0.]\n[–> number yGutter: Default value is 0.]\n<– nil",
                 args = "(MOAIGridSpace self, number width, number height, [number tileWidth, [number tileHeight, [number xGutter, [number yGutter]]]])",
                 returns = "nil"
             },
@@ -5144,7 +5539,7 @@ return {
             },
             setShape = {
                 type = "method",
-                description = "Set the shape of the grid tiles.\n\n–> MOAIGridSpace self\n[–> number shape: One of MOAIGridSpace.RECT_SHAPE, MOAIGridSpace.DIAMOND_SHAPE, MOAIGridSpace.OBLIQUE_SHAPE, MOAIGridSpace.HEX_SHAPE. Default value is MOAIGridSpace.RECT_SHAPE.]\n<– nil",
+                description = "Set the shape of the grid tiles.\n\n–> MOAIGridSpace self\n[–> number shape: One of MOAIGridSpace.RECT_SHAPE, MOAIGridSpace.DIAMOND_SHAPE, MOAIGridSpace.OBLIQUE_SHAPE, MOAIGridSpace.HEX_SHAPE, MOAIGridSpace.AXIAL_HEX_SHAPE. Default value is MOAIGridSpace.RECT_SHAPE.]\n<– nil",
                 args = "(MOAIGridSpace self, [number shape])",
                 returns = "nil"
             },
@@ -5163,22 +5558,30 @@ return {
             }
         }
     },
-    MOAIHarness = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        description = "Internal debugging and hooking class.",
-        childs = {}
-    },
     MOAIHashWriter = {
         type = "class",
-        inherits = "MOAIStream",
-        description = "MOAIHashWriter may be attached to another stream for the purpose of computing a hash while writing data to the other stream. Currently only MD5 and SHA256 are available.",
+        inherits = "MOAIStreamAdapter",
+        description = "MOAIHashWriter may be attached to another stream for the purpose of computing a hash while writing data to the other stream.",
         childs = {
-            close = {
+            getChecksum = {
                 type = "method",
-                description = "Flush any remaining buffered data and detach the target stream. (This only detaches the target from the formatter; it does not also close the target stream). Return the hash as a hex string.\n\n–> MOAIHashWriter self\n<– string hash",
+                description = "Return the checksum (if supported).\n\n–> MOAIHashWriter self\n<– number checksum",
+                args = "MOAIHashWriter self",
+                returns = "number checksum",
+                valuetype = "number"
+            },
+            getHash = {
+                type = "method",
+                description = "Return the hash (if supported).\n\n–> MOAIHashWriter self\n<– string hash",
                 args = "MOAIHashWriter self",
                 returns = "string hash",
+                valuetype = "string"
+            },
+            getHashBase64 = {
+                type = "method",
+                description = "Return the hash, converted to base64.\n\n–> MOAIHashWriter self\n<– string hash64",
+                args = "MOAIHashWriter self",
+                returns = "string hash64",
                 valuetype = "string"
             },
             openAdler32 = {
@@ -5202,52 +5605,65 @@ return {
                 returns = "boolean success",
                 valuetype = "boolean"
             },
+            openWhirlpool = {
+                type = "method",
+                description = "Open a Whirlpool hash stream for writing. (i.e. compute Whirlpool hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIHashWriter self, [MOAIStream target])",
+                returns = "boolean success",
+                valuetype = "boolean"
+            },
+            setHMACKey = {
+                type = "method",
+                description = "Set the HMAC key (if supported).\n\n–> MOAIHashWriter self\n–> string hmac\n<– nil",
+                args = "(MOAIHashWriter self, string hmac)",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIHashWriterCrypto = {
+        type = "class",
+        inherits = "MOAIHashWriter",
+        description = "MOAIHashWriterCrypto may be attached to another stream for the purpose of computing a hash while writing data to the other stream. Currently only MD5 and SHA are available.",
+        childs = {
             openMD5 = {
                 type = "method",
-                description = "Open a MD5 hash stream for writing. (i.e. compute MD5 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a MD5 hash stream for writing. (i.e. compute MD5 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openSHA1 = {
                 type = "method",
-                description = "Open a SHA1 hash stream for writing. (i.e. compute SHA1 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a SHA1 hash stream for writing. (i.e. compute SHA1 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openSHA224 = {
                 type = "method",
-                description = "Open a SHA224 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a SHA224 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openSHA256 = {
                 type = "method",
-                description = "Open a SHA256 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a SHA256 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openSHA384 = {
                 type = "method",
-                description = "Open a SHA384 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a SHA384 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openSHA512 = {
                 type = "method",
-                description = "Open a SHA512 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
-                returns = "boolean success",
-                valuetype = "boolean"
-            },
-            openWhirlpool = {
-                type = "method",
-                description = "Open a Whirlpool hash stream for writing. (i.e. compute Whirlpool hash of data while writing)\n\n–> MOAIHashWriter self\n[–> MOAIStream target]\n<– boolean success",
-                args = "(MOAIHashWriter self, [MOAIStream target])",
+                description = "Open a SHA512 hash stream for writing. (i.e. compute SHA256 hash of data while writing)\n\n–> MOAIStreamWriter self\n[–> MOAIStream target]\n<– boolean success",
+                args = "(MOAIStreamWriter self, [MOAIStream target])",
                 returns = "boolean success",
                 valuetype = "boolean"
             }
@@ -5342,7 +5758,7 @@ return {
             },
             performSync = {
                 type = "method",
-                description = "Perform the HTTP task synchronously ( blocking).\n\n–> MOAIHttpTaskBase self\n<– nil",
+                description = "Perform the HTTP task synchronously (blocking).\n\n–> MOAIHttpTaskBase self\n<– nil",
                 args = "MOAIHttpTaskBase self",
                 returns = "nil"
             },
@@ -5386,6 +5802,12 @@ return {
                 type = "method",
                 description = 'Sets a custom header field. May be used to override default headers.\n\n–> MOAIHttpTaskBase self\n–> string key\n[–> string value: Default is "".]\n<– nil',
                 args = "(MOAIHttpTaskBase self, string key, [string value])",
+                returns = "nil"
+            },
+            setSSLOptions = {
+                type = "method",
+                description = "SSL options for peer verification.\n\n–> MOAIHttpTaskBase self\n–> boolean verifyPeer\n–> boolean verifyHost\n–> string path: to ca-cert bundle (.crt)\n<– nil",
+                args = "(MOAIHttpTaskBase self, boolean verifyPeer, boolean verifyHost, string path)",
                 returns = "nil"
             },
             setStream = {
@@ -5455,23 +5877,41 @@ return {
             FILTER_NEAREST = {
                 type = "value"
             },
+            COLOR_FMT_A_1 = {
+                type = "value",
+                description = "Alpha only, 1 bit per pixel"
+            },
+            COLOR_FMT_A_4 = {
+                type = "value",
+                description = "Alpha only, 4 bits per pixel"
+            },
             COLOR_FMT_A_8 = {
-                type = "value"
+                type = "value",
+                description = "Alpha only, 8 bits per pixel"
+            },
+            COLOR_FMT_LA_8 = {
+                type = "value",
+                description = "Grayscale + alpha, 16 bits per pixel"
             },
             COLOR_FMT_RGB_565 = {
-                type = "value"
+                type = "value",
+                description = "RGB, 16 bits per pixel"
             },
             COLOR_FMT_RGB_888 = {
-                type = "value"
+                type = "value",
+                description = "RGB, 24 bits per pixel"
             },
             COLOR_FMT_RGBA_4444 = {
-                type = "value"
+                type = "value",
+                description = "RGBA, 16 bits per pixel (4 bits per channel)"
             },
             COLOR_FMT_RGBA_5551 = {
-                type = "value"
+                type = "value",
+                description = "RGBA, 16 bits per pixel (1 bit alpha)"
             },
             COLOR_FMT_RGBA_8888 = {
-                type = "value"
+                type = "value",
+                description = "RGBA, 32 bits per pixel"
             },
             PIXEL_FMT_INDEX_4 = {
                 type = "value"
@@ -5483,21 +5923,38 @@ return {
                 type = "value"
             },
             POW_TWO = {
-                type = "value"
+                type = "value",
+                description = "Adds padding at the right and bottom to make the image dimensions powers of 2."
             },
             PREMULTIPLY_ALPHA = {
-                type = "value"
+                type = "value",
+                description = "Premultiplies the pixel colors with their alpha values."
             },
             QUANTIZE = {
-                type = "value"
+                type = "value",
+                description = "Uses less than 8 bits per channel to reduce memory consumption."
             },
             TRUECOLOR = {
-                type = "value"
+                type = "value",
+                description = "Converts palettized color formats to true color."
+            },
+            average = {
+                type = "method",
+                description = "Calculates the average of each color channel.\n\n–> MOAIImage self\n<– number averageR\n<– number averageG\n<– number averageB\n<– number averageA",
+                args = "MOAIImage self",
+                returns = "(number averageR, number averageG, number averageB, number averageA)",
+                valuetype = "number"
             },
             bleedRect = {
                 type = "method",
                 description = "'Bleeds' the interior of the rectangle out by one pixel.\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
                 args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax)",
+                returns = "nil"
+            },
+            calculateGaussianKernel = {
+                type = "method",
+                description = "Calculate a one dimensional gaussian kernel suitable for blurring.\n\n–> MOAIImage self\n[–> number radius: Default valus is 1.0.]\n[–> number sigma: Default valie is radius / 3 (https://en.wikipedia.org/wiki/Gaussian_blur)]\n<– nil",
+                args = "(MOAIImage self, [number radius, [number sigma]])",
                 returns = "nil"
             },
             compare = {
@@ -5507,18 +5964,26 @@ return {
                 returns = "boolean areEqual",
                 valuetype = "boolean"
             },
-            convertColors = {
+            convert = {
                 type = "method",
-                description = "Return a copy of the image with a new color format. Not all provided formats are supported by OpenGL.\n\n–> MOAIImage self\n–> number colorFmt: One of MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, COLOR_FMT_RGBA_8888\n<– MOAIImage image: Copy of the image initialized with given format.",
-                args = "(MOAIImage self, number colorFmt)",
+                description = "Return a copy of the image with a new color format. Not all provided formats are supported by OpenGL. 'nil' may be passed for either value, in which case the format will match the original.\n\n–> MOAIImage self\n[–> number colorFmt: One of MOAIImage.COLOR_FMT_A_1, MOAIImage.COLOR_FMT_A_4, MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, COLOR_FMT_RGBA_8888]\n[–> number pixelFmt: One of MOAIImage.PIXEL_FMT_TRUECOLOR, MOAIImage.PIXEL_FMT_INDEX_4, MOAIImage.PIXEL_FMT_INDEX_8]\n<– MOAIImage image: Copy of the image initialized with given format.",
+                args = "(MOAIImage self, [number colorFmt, [number pixelFmt]])",
                 returns = "MOAIImage image",
                 valuetype = "MOAIImage"
             },
-            convertToGrayScale = {
+            convolve = {
                 type = "method",
-                description = "Convert image to grayscale.\n\n–> MOAIImage self\n<– nil",
-                args = "MOAIImage self",
-                returns = "nil"
+                description = "Convolve the image using a one or two dimensional kernel. If a one-dimensional kernel is provided, the image will be convolved in two passes: first horizonally and then vertically using the same kernel.\n\n–> MOAIImage self\n–> table kernel: A one or two dimensional array of coefficients.\n[–> boolean normalize: If true, the kernel will be normalized prior to the convolution. Default value is true.]\n<– MOAIImage image: The resulting image.",
+                args = "(MOAIImage self, table kernel, [boolean normalize])",
+                returns = "MOAIImage image",
+                valuetype = "MOAIImage"
+            },
+            convolve1D = {
+                type = "method",
+                description = "Convolve the image using a one dimensional kernel.\n\n–> MOAIImage self\n–> table kernel: A one dimensional array of coefficients.\n[–> boolean horizontal: If true, the image will be convolved horizontally. Otherwise the image will be convolved vertically. Devault value is true.]\n[–> boolean normalize: If true, the kernel will be normalized prior to the convolution. Default value is true.]\n<– MOAIImage image: The resulting image.",
+                args = "(MOAIImage self, table kernel, [boolean horizontal, [boolean normalize]])",
+                returns = "MOAIImage image",
+                valuetype = "MOAIImage"
             },
             copy = {
                 type = "method",
@@ -5535,8 +6000,14 @@ return {
             },
             copyRect = {
                 type = "method",
-                description = "Copy a section of one image to another. Accepts two rectangles. Rectangles may be of different size and proportion. Section of image may also be flipped horizontally or vertically by reversing min/max of either rectangle.\n\n–> MOAIImage self\n–> MOAIImage source: Source image.\n–> number srcXMin\n–> number srcYMin\n–> number srcXMax\n–> number srcYMax\n–> number destXMin\n–> number destYMin\n[–> number destXMax: Default value is destXMin + srcXMax - srcXMin;]\n[–> number destYMax: Default value is destYMin + srcYMax - srcYMin;]\n[–> number filter: One of MOAIImage.FILTER_LINEAR, MOAIImage.FILTER_NEAREST. Default value is MOAIImage.FILTER_LINEAR.]\n<– nil",
-                args = "(MOAIImage self, MOAIImage source, number srcXMin, number srcYMin, number srcXMax, number srcYMax, number destXMin, number destYMin, [number destXMax, [number destYMax, [number filter]]])",
+                description = "Copy a section of one image to another. Accepts two rectangles. Rectangles may be of different size and proportion. Section of image may also be flipped horizontally or vertically by reversing min/max of either rectangle.\n\n–> MOAIImage self\n–> MOAIImage source: Source image.\n–> number srcXMin\n–> number srcYMin\n–> number srcXMax\n–> number srcYMax\n–> number destXMin\n–> number destYMin\n[–> number destXMax: Default value is destXMin + srcXMax - srcXMin;]\n[–> number destYMax: Default value is destYMin + srcYMax - srcYMin;]\n[–> number filter: One of MOAIImage.FILTER_LINEAR, MOAIImage.FILTER_NEAREST. Default value is MOAIImage.FILTER_LINEAR.]\n[–> number srcFactor: Default value is BLEND_FACTOR_SRC_ALPHA]\n[–> number dstFactor: Default value is BLEND_FACTOR_ONE_MINUS_SRC_ALPHA]\n[–> number equation: Default value is BLEND_EQ_ADD]\n<– nil",
+                args = "(MOAIImage self, MOAIImage source, number srcXMin, number srcYMin, number srcXMax, number srcYMax, number destXMin, number destYMin, [number destXMax, [number destYMax, [number filter, [number srcFactor, [number dstFactor, [number equation]]]]]])",
+                returns = "nil"
+            },
+            desaturate = {
+                type = "method",
+                description = "Convert image to grayscale.\n\n–> MOAIImage self\n[–> rY]\n[–> gY]\n[–> bY]\n[–> K]\n<– nil",
+                args = "(MOAIImage self, [rY, [gY, [bY, [K]]]])",
                 returns = "nil"
             },
             fillCircle = {
@@ -5545,10 +6016,46 @@ return {
                 args = "(number x, number y, number radius, [number r, [number g, [number b, [number a]]]])",
                 returns = "nil"
             },
+            fillEllipse = {
+                type = "function",
+                description = "Draw a filled ellipse.\n\n–> number x\n–> number y\n–> number radiusX\n–> number radiusY\n[–> number r: Default value is 0.]\n[–> number g: Default value is 0.]\n[–> number b: Default value is 0.]\n[–> number a: Default value is 0.]\n<– nil",
+                args = "(number x, number y, number radiusX, number radiusY, [number r, [number g, [number b, [number a]]]])",
+                returns = "nil"
+            },
             fillRect = {
                 type = "method",
                 description = "Fill a rectangle in the image with a solid color.\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number r: Default value is 0.]\n[–> number g: Default value is 0.]\n[–> number b: Default value is 0.]\n[–> number a: Default value is 0.]\n<– nil",
                 args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax, [number r, [number g, [number b, [number a]]]])",
+                returns = "nil"
+            },
+            gammaCorrection = {
+                type = "method",
+                description = "Apply gamma correction.\n\n–> MOAIImage self\n[–> number gamma: Default value is 1.]\n<– nil",
+                args = "(MOAIImage self, [number gamma])",
+                returns = "nil"
+            },
+            generateOutlineFromSDF = {
+                type = "method",
+                description = "Given a rect, and min and max distance values, transform to a binary image where 0 means not on the outline and 1 means part of the outline\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number distMin]\n[–> number distMax]\n[–> number r: Default value is 1.]\n[–> number g: Default value is 1.]\n[–> number b: Default value is 1.]\n[–> number a: Default value is 1.]\n<– nil",
+                args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax, [number distMin, [number distMax, [number r, [number g, [number b, [number a]]]]]])",
+                returns = "nil"
+            },
+            generateSDF = {
+                type = "method",
+                description = "Given a rect, creates a signed distance field from it\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
+                args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax)",
+                returns = "nil"
+            },
+            generateSDFAA = {
+                type = "method",
+                description = "Given a rect, creates a signed distance field (using alpha as a mask) taking into account antialiased edges. The size of the SDF (distance from edges) is specified in pixels. Resulting SDF is stored in the image's alpha channel. Distances are normalized to the given size, inverted and scaled so that 0.5 is at an edge with 1 at full interior and 0 at full exterior (edge plus size).\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number sizeInPixels: Default is 5]\n<– nil",
+                args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax, [number sizeInPixels])",
+                returns = "nil"
+            },
+            generateSDFDeadReckoning = {
+                type = "method",
+                description = "Given a rect, creates a signed distance field from it using dead reckoning technique\n\n–> MOAIImage self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number threshold: Default is 256]\n<– nil",
+                args = "(MOAIImage self, number xMin, number yMin, number xMax, number yMax, [number threshold])",
                 returns = "nil"
             },
             getColor32 = {
@@ -5557,6 +6064,20 @@ return {
                 args = "(MOAIImage self, number x, number y)",
                 returns = "number color",
                 valuetype = "number"
+            },
+            getContentRect = {
+                type = "method",
+                description = "computes the content rect, not taking in account any boundary transparency\n\n–> MOAIImage self\n<– rect",
+                args = "MOAIImage self",
+                returns = "rect",
+                valuetype = "rect"
+            },
+            getData = {
+                type = "method",
+                description = "returns the bitmap data\n\n–> MOAIImage self\n<– byte array: string",
+                args = "MOAIImage self",
+                returns = "byte array",
+                valuetype = "byte"
             },
             getFormat = {
                 type = "method",
@@ -5574,21 +6095,34 @@ return {
             },
             getSize = {
                 type = "method",
-                description = "Returns the width and height of the image.\n\n–> MOAIImage self\n<– number width\n<– number height",
-                args = "MOAIImage self",
+                description = "Returns the width and height of the image.\n\n–> MOAIImage self\n[–> number scale]\n<– number width\n<– number height",
+                args = "(MOAIImage self, [number scale])",
                 returns = "(number width, number height)",
                 valuetype = "number"
             },
             init = {
                 type = "method",
-                description = "Initializes the image with a width, height and color format.\n\n–> MOAIImage self\n–> number width\n–> number height\n[–> number colorFmt: One of MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, MOAIImage.COLOR_FMT_RGBA_8888. Default value is MOAIImage.COLOR_FMT_RGBA_8888.]\n<– nil",
+                description = "Initializes the image with a width, height and color format.\n\n–> MOAIImage self\n–> number width\n–> number height\n[–> number colorFmt: One of MOAIImage.COLOR_FMT_A_1, MOAIImage.COLOR_FMT_A_4, MOAIImage.COLOR_FMT_A_8, MOAIImage.COLOR_FMT_RGB_888, MOAIImage.COLOR_FMT_RGB_565, MOAIImage.COLOR_FMT_RGBA_5551, MOAIImage.COLOR_FMT_RGBA_4444, COLOR_FMT_RGBA_8888. Default value is MOAIImage.COLOR_FMT_RGBA_8888.]\n<– nil",
                 args = "(MOAIImage self, number width, number height, [number colorFmt])",
                 returns = "nil"
             },
+            isOpaque = {
+                type = "method",
+                description = "false if at least one pixel is not opaque\n\n–> MOAIImage self\n<– bool",
+                args = "MOAIImage self",
+                returns = "bool",
+                valuetype = "bool"
+            },
             load = {
                 type = "method",
-                description = "Loads an image from a PNG.\n\n–> MOAIImage self\n–> string filename\n[–> number transform: One of MOAIImage.POW_TWO, One of MOAIImage.QUANTIZE, One of MOAIImage.TRUECOLOR, One of MOAIImage.PREMULTIPLY_ALPHA]\n<– nil",
+                description = "Loads an image from an image file. Depending on the build configuration, the following file formats are supported: PNG, JPG, WebP.\n\n–> MOAIImage self\n–> string filename\n[–> number transform: One of MOAIImage.POW_TWO, One of MOAIImage.QUANTIZE, One of MOAIImage.TRUECOLOR, One of MOAIImage.PREMULTIPLY_ALPHA]\n<– nil",
                 args = "(MOAIImage self, string filename, [number transform])",
+                returns = "nil"
+            },
+            loadAsync = {
+                type = "method",
+                description = "Load an image asyncronously. This includes reading the file and decoding compressed data.\n\nOverload:\n–> MOAIImage self\n–> string filename: The path to the image file\n–> MOAITaskQueue queue: The queue to peform operation on\n[–> function callback: Callback that will receive loaded image]\n[–> number transform: One of MOAIImage.POW_TWO, MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n<– nil\n\nOverload:\n–> MOAIImage self\n–> MOAIDataBuffer data: Buffer containing the image data\n–> MOAITaskQueue queue: The queue to peform operation on\n[–> function callback: Callback that will receive loaded image]\n[–> number transform: One of MOAIImage.POW_TWO, MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n<– nil",
+                args = "(MOAIImage self, (string filename | MOAIDataBuffer data), MOAITaskQueue queue, [function callback, [number transform]])",
                 returns = "nil"
             },
             loadFromBuffer = {
@@ -5597,12 +6131,24 @@ return {
                 args = "(MOAIImage self, MOAIDataBuffer buffer, [number transform])",
                 returns = "nil"
             },
+            mix = {
+                type = "method",
+                description = "Transforms each color by a 4x4 matrix. The default value is a 4x4 identity matrix. The transformation 'remixes' the image's channels: each new channel value is given by the sum of channels as weighted by the corresponding row of the matrix. For example, to remix the blue channel: b = r*b1 + g*b2 + b*b3 + a*b4. A row value for b of (0, 0, 1, 0) would be the identity: b = b. A row value for b of (1, 0, 0, 0) would replace b with r: b=r. A row value for b of (0.5, 0.5, 0, 0) would replace b with an even blend of r and g: b = r*05 + b*0.5. In this fashion, all channels of the image may be rearranged or blended.\n\n–> MOAIImage self\n[–> number r1]\n[–> number r2]\n[–> number r3]\n[–> number r4]\n[–> number g1]\n[–> number g2]\n[–> number g3]\n[–> number g4]\n[–> number b1]\n[–> number b2]\n[–> number b3]\n[–> number b4]\n[–> number a1]\n[–> number a2]\n[–> number a3]\n[–> number a4]\n[–> number K: Default value is 1.]\n<– nil",
+                args = "(MOAIImage self, [number r1, [number r2, [number r3, [number r4, [number g1, [number g2, [number g3, [number g4, [number b1, [number b2, [number b3, [number b4, [number a1, [number a2, [number a3, [number a4, [number K]]]]]]]]]]]]]]]]])",
+                returns = "nil"
+            },
             padToPow2 = {
                 type = "method",
                 description = "Copies an image and returns a new image padded to the next power of 2 along each dimension. Original image will be in the upper left hand corner of the new image.\n\n–> MOAIImage self\n<– MOAIImage image: Copy of the image padded to the next nearest power of two along each dimension.",
                 args = "MOAIImage self",
                 returns = "MOAIImage image",
                 valuetype = "MOAIImage"
+            },
+            print = {
+                type = "method",
+                description = "Print the image colors (for debugging purposes).\n\n–> MOAIImage self\n<– nil",
+                args = "MOAIImage self",
+                returns = "nil"
             },
             resize = {
                 type = "method",
@@ -5630,22 +6176,35 @@ return {
                 args = "(MOAIImage self, number x, number y, number r, number g, number b, [number a])",
                 returns = "nil"
             },
-            writePNG = {
+            simpleThreshold = {
                 type = "method",
-                description = "Write image to a PNG file.\n\n–> MOAIImage self\n–> string filename\n<– nil",
-                args = "(MOAIImage self, string filename)",
+                description = "This is a 'naive' threshold implementation that forces image color channels to 0 or 1 based on a per-channel threshold value. The channel value must be entirely greater that the threshold to be promoted to a value of 1. This means a threshold value of 1 will always result in a channel value of 0.\n\n–> MOAIImage self\n[–> number r: Default value is 0.]\n[–> number g: Default value is 0.]\n[–> number b: Default value is 0.]\n[–> number a: Default value is 0.]\n<– nil",
+                args = "(MOAIImage self, [number r, [number g, [number b, [number a]]]])",
                 returns = "nil"
+            },
+            subdivideRect = {
+                type = "function",
+                description = "Convenience method. Here for now as a class method, but maybe should move to MOAIGrid. Subdivides a rectangle given a tile width and height. A table of tile rectangles will be returned. The tiles will be clipped to the original rect.\n\n–> number tileWidth\n–> number tileHeight\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
+                args = "(number tileWidth, number tileHeight, number xMin, number yMin, number xMax, number yMax)",
+                returns = "nil"
+            },
+            write = {
+                type = "method",
+                description = "Write image to a file.\n\n–> MOAIImage self\n–> string filename\n[–> string format]\n<– boolean",
+                args = "(MOAIImage self, string filename, [string format])",
+                returns = "boolean",
+                valuetype = "boolean"
             }
         }
     },
     MOAIImageTexture = {
         type = "class",
-        inherits = "MOAITextureBase MOAIImage",
+        inherits = "MOAISingleTexture MOAIImage",
         description = "Binds an image (CPU memory) to a texture (GPU memory). Regions of the texture (or the entire texture) may be invalidated. Invalidated regions will be reloaded into GPU memory the next time the texture is bound.",
         childs = {
-            invalidate = {
+            updateRegion = {
                 type = "method",
-                description = "Invalidate either a sub-region of the texture or the whole texture. Invalidated regions will be reloaded from the image the next time the texture is bound.\n\n–> MOAIImageTexture self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
+                description = "Update either a sub-region of the texture or the whole texture to match changes in the image. Updated regions will be reloaded from the image the next time the texture is bound.\n\n–> MOAIImageTexture self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
                 args = "(MOAIImageTexture self, number xMin, number yMin, number xMax, number yMax)",
                 returns = "nil"
             }
@@ -5653,25 +6212,32 @@ return {
     },
     MOAIIndexBuffer = {
         type = "class",
-        inherits = "MOAILuaObject MOAIGfxResource",
-        description = "Index buffer class. Unused at this time.",
+        inherits = "MOAIGfxBuffer",
+        description = "Buffer for vertex indices.",
         childs = {
-            release = {
+            copyFromStream = {
                 type = "method",
-                description = "Release any memory held by this index buffer.\n\n–> MOAIIndexBuffer self\n<– nil",
+                description = "Copy the buffer contents from a stream. Optionally convert index size in bytes between streams. Warning: going from 4 bytes to 2 bytes is supported, but use at your own risk; truncations will not be reported.\n\nOverload:\n–> MOAIIndexBuffer self\n–> MOAIStream stream\n[–> number sourceSizeInBytes: Default value is 4.]\n<– nil\n\nOverload:\n–> MOAIIndexBuffer self\n–> MOAIIndexBuffer indexBuffer: Source size in bytes taken from source buffer.\n<– nil",
+                args = "(MOAIIndexBuffer self, ((MOAIStream stream, [number sourceSizeInBytes]) | MOAIIndexBuffer indexBuffer))",
+                returns = "nil"
+            },
+            countElements = {
+                type = "method",
+                description = "Calculates the number of elements given a prim type.\n\n–> MOAIIndexBuffer self\n[–> number primType: Default value is GL_TRIANGLES.]\n<– number totalElements",
+                args = "(MOAIIndexBuffer self, [number primType])",
+                returns = "number totalElements",
+                valuetype = "number"
+            },
+            printIndices = {
+                type = "method",
+                description = "Print the indices (for debugging purposes).\n\n–> MOAIIndexBuffer self\n<– nil",
                 args = "MOAIIndexBuffer self",
                 returns = "nil"
             },
-            reserve = {
+            setIndexSize = {
                 type = "method",
-                description = "Set capacity of buffer.\n\n–> MOAIIndexBuffer self\n–> number nIndices\n<– nil",
-                args = "(MOAIIndexBuffer self, number nIndices)",
-                returns = "nil"
-            },
-            setIndex = {
-                type = "method",
-                description = "Initialize an index.\n\n–> MOAIIndexBuffer self\n–> number idx\n–> number value\n<– nil",
-                args = "(MOAIIndexBuffer self, number idx, number value)",
+                description = "Sets the index size in bytes. NOTE: The current implementation does not convert between sizes; going from 4 to 2 will result in twice as many indices.\n\n–> MOAIIndexBuffer self\n<– nil",
+                args = "MOAIIndexBuffer self",
                 returns = "nil"
             }
         }
@@ -5680,12 +6246,20 @@ return {
         type = "class",
         inherits = "MOAILuaObject",
         description = "Manager class for input bindings. Has no public methods.",
-        childs = {}
+        childs = {
+            getHardwareInfo = {
+                type = "method",
+                description = "Get any hardware metadate string specified by the host.\n\n–> MOAIInputDevice self\n<– string hardwareInfo",
+                args = "MOAIInputDevice self",
+                returns = "string hardwareInfo",
+                valuetype = "string"
+            }
+        }
     },
     MOAIInputMgr = {
         type = "class",
-        inherits = "MOAILuaObject",
-        description = "Input device class. Has no public methods.",
+        inherits = "ZLMemStream MOAILuaObject",
+        description = "Base class for input streams and device sets.",
         childs = {}
     },
     MOAIInstanceEventSource = {
@@ -5844,39 +6418,478 @@ return {
         childs = {
             keyDown = {
                 type = "method",
-                description = "Checks to see if one or more buttons were pressed during the last iteration.\n\nOverload:\n–> MOAIKeyboardSensor self\n–> string keyCodes: Keycode value(s) to be checked against the input table.\n<– boolean... wasPressed\n\nOverload:\n–> MOAIKeyboardSensor self\n–> number keyCode: Keycode value to be checked against the input table.\n<– boolean wasPressed",
-                args = "(MOAIKeyboardSensor self, (string keyCodes | number keyCode))",
-                returns = "(boolean... wasPressed | boolean wasPressed)"
+                description = "Checks to see if one or more keys were pressed during the last iteration.\n\n–> MOAIKeyboardSensor self\n–> ... keys: Keys to be checked against the input table. Each key can be specified using a MOAIKeyboardSensor.* constant or the corresponding string. Multiple strings can be combined: 'wasd' is equivalent to 'w', 'a', 's', 'd'.\n<– boolean... down: For every specified key, indicates whether this key was pressed during the last iteration.",
+                args = "(MOAIKeyboardSensor self, ... keys)",
+                returns = "boolean... down",
+                valuetype = "boolean..."
             },
             keyIsDown = {
                 type = "method",
-                description = "Checks to see if the button is currently down.\n\nOverload:\n–> MOAIKeyboardSensor self\n–> string keyCodes: Keycode value(s) to be checked against the input table.\n<– boolean... isDown\n\nOverload:\n–> MOAIKeyboardSensor self\n–> number keyCode: Keycode value to be checked against the input table.\n<– boolean isDown",
-                args = "(MOAIKeyboardSensor self, (string keyCodes | number keyCode))",
-                returns = "(boolean... isDown | boolean isDown)"
+                description = "Checks to see if one or more keys are currently pressed.\n\n–> MOAIKeyboardSensor self\n–> ... keys: Keys to be checked against the input table. Each key can be specified using a MOAIKeyboardSensor.* constant or the corresponding string. Multiple strings can be combined: 'wasd' is equivalent to 'w', 'a', 's', 'd'.\n<– boolean... isDown: For every specified key, indicates whether this key is currently pressed.",
+                args = "(MOAIKeyboardSensor self, ... keys)",
+                returns = "boolean... isDown",
+                valuetype = "boolean..."
             },
             keyIsUp = {
                 type = "method",
-                description = "Checks to see if the specified key is currently up.\n\nOverload:\n–> MOAIKeyboardSensor self\n–> string keyCodes: Keycode value(s) to be checked against the input table.\n<– boolean... isUp\n\nOverload:\n–> MOAIKeyboardSensor self\n–> number keyCode: Keycode value to be checked against the input table.\n<– boolean isUp",
-                args = "(MOAIKeyboardSensor self, (string keyCodes | number keyCode))",
-                returns = "(boolean... isUp | boolean isUp)"
+                description = "Checks to see if one or more keys are currently up.\n\n–> MOAIKeyboardSensor self\n–> ... keys: Keys to be checked against the input table. Each key can be specified using a MOAIKeyboardSensor.* constant or the corresponding string. Multiple strings can be combined: 'wasd' is equivalent to 'w', 'a', 's', 'd'.\n<– boolean... isUp: For every specified key, indicates whether this key is currently up.",
+                args = "(MOAIKeyboardSensor self, ... keys)",
+                returns = "boolean... isUp",
+                valuetype = "boolean..."
             },
             keyUp = {
                 type = "method",
-                description = "Checks to see if the specified key was released during the last iteration.\n\nOverload:\n–> MOAIKeyboardSensor self\n–> string keyCodes: Keycode value(s) to be checked against the input table.\n<– boolean... wasReleased\n\nOverload:\n–> MOAIKeyboardSensor self\n–> number keyCode: Keycode value to be checked against the input table.\n<– boolean wasReleased",
-                args = "(MOAIKeyboardSensor self, (string keyCodes | number keyCode))",
-                returns = "(boolean... wasReleased | boolean wasReleased)"
+                description = "Checks to see if one or more keys were released during the last iteration.\n\n–> MOAIKeyboardSensor self\n–> ... keys: Keys to be checked against the input table. Each key can be specified using a MOAIKeyboardSensor.* constant or the corresponding string. Multiple strings can be combined: 'wasd' is equivalent to 'w', 'a', 's', 'd'.\n<– boolean... up: For every specified key, indicates whether this key was released during the last iteration.",
+                args = "(MOAIKeyboardSensor self, ... keys)",
+                returns = "boolean... up",
+                valuetype = "boolean..."
             },
             setCallback = {
                 type = "method",
-                description = "Sets or clears the callback to be issued when a key is pressed.\n\n–> MOAIKeyboardSensor self\n[–> function callback: Default value is nil.]\n<– nil",
+                description = 'This method has been deprecated. Use setKeyCallback instead.\n\n–> MOAIKeyboardSensor self\n[–> function callback: A callback function with the signature "void callback(number keyCode, bool down)". Default value is nil.]\n<– nil',
+                args = "(MOAIKeyboardSensor self, [function callback])",
+                returns = "nil"
+            },
+            setCharCallback = {
+                type = "method",
+                description = 'Sets or clears the callback to be issued when a character is typed.\n\n–> MOAIKeyboardSensor self\n[–> function callback: A callback function with the signature "void callback(string character)". Note that for non-ASCII characters, the string argument will be a multibyte UTF-8 character. Default value is nil.]\n<– nil',
+                args = "(MOAIKeyboardSensor self, [function callback])",
+                returns = "nil"
+            },
+            setEditCallback = {
+                type = "method",
+                description = 'Sets or clears the callback to be issued when a character is editing.\n\n–> MOAIKeyboardSensor self\n[–> function callback: A callback function with the signature "void callback(string text, number start, number length)". Note that for non-ASCII characters, the string argument will be a multibyte UTF-8 character. Default value is nil.]\n<– nil',
+                args = "(MOAIKeyboardSensor self, [function callback])",
+                returns = "nil"
+            },
+            setKeyCallback = {
+                type = "method",
+                description = 'Sets or clears the callback to be issued when a key is pressed or released.\n\n–> MOAIKeyboardSensor self\n[–> function callback: A callback function with the signature "void callback(number keyCode, bool down)". Default value is nil.]\n<– nil',
                 args = "(MOAIKeyboardSensor self, [function callback])",
                 returns = "nil"
             }
         }
     },
+    MOAIKeyCode = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Namespace to hold key codes to be used with MOAIKeyboardSensor.",
+        childs = {
+            A = {
+                type = "value",
+                description = 'The [A] key. Most MOAIKeyboardSensor functions will accept the string "a" instead of this constant.'
+            },
+            ALT = {
+                type = "value",
+                description = "The [Alt] key on a PC keyboard; the [Option] key on a Mac keyboard."
+            },
+            APPLICATION = {
+                type = "value",
+                description = "The Windows context menu key."
+            },
+            B = {
+                type = "value",
+                description = 'The [B] key. Most MOAIKeyboardSensor functions will accept the string "b" instead of this constant.'
+            },
+            BACKSPACE = {
+                type = "value",
+                description = "The [Backspace] key."
+            },
+            C = {
+                type = "value",
+                description = 'The [C] key. Most MOAIKeyboardSensor functions will accept the string "c" instead of this constant.'
+            },
+            CAPS_LOCK = {
+                type = "value",
+                description = "The [Caps Lock] key."
+            },
+            CONTROL = {
+                type = "value",
+                description = "The [Ctrl] key."
+            },
+            D = {
+                type = "value",
+                description = 'The [D] key. Most MOAIKeyboardSensor functions will accept the string "d" instead of this constant.'
+            },
+            DELETE = {
+                type = "value",
+                description = "The [Delete] key."
+            },
+            DIGIT_0 = {
+                type = "value",
+                description = 'The [0] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "0" instead of this constant.'
+            },
+            DIGIT_1 = {
+                type = "value",
+                description = 'The [1] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "1" instead of this constant.'
+            },
+            DIGIT_2 = {
+                type = "value",
+                description = 'The [2] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "2" instead of this constant.'
+            },
+            DIGIT_3 = {
+                type = "value",
+                description = 'The [3] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "3" instead of this constant.'
+            },
+            DIGIT_4 = {
+                type = "value",
+                description = 'The [4] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "4" instead of this constant.'
+            },
+            DIGIT_5 = {
+                type = "value",
+                description = 'The [5] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "5" instead of this constant.'
+            },
+            DIGIT_6 = {
+                type = "value",
+                description = 'The [6] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "6" instead of this constant.'
+            },
+            DIGIT_7 = {
+                type = "value",
+                description = 'The [7] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "7" instead of this constant.'
+            },
+            DIGIT_8 = {
+                type = "value",
+                description = 'The [8] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "8" instead of this constant.'
+            },
+            DIGIT_9 = {
+                type = "value",
+                description = 'The [9] key one the main keyboard. Most MOAIKeyboardSensor functions will accept the string "9" instead of this constant.'
+            },
+            DOWN = {
+                type = "value",
+                description = "The down arrow key."
+            },
+            E = {
+                type = "value",
+                description = 'The [E] key. Most MOAIKeyboardSensor functions will accept the string "e" instead of this constant.'
+            },
+            END = {
+                type = "value",
+                description = "The [End] key."
+            },
+            ESCAPE = {
+                type = "value",
+                description = "The [Esc] key."
+            },
+            F = {
+                type = "value",
+                description = 'The [F] key. Most MOAIKeyboardSensor functions will accept the string "f" instead of this constant.'
+            },
+            F1 = {
+                type = "value",
+                description = "The [F1] key."
+            },
+            F10 = {
+                type = "value",
+                description = "The [F10] key."
+            },
+            F11 = {
+                type = "value",
+                description = "The [F11] key."
+            },
+            F12 = {
+                type = "value",
+                description = "The [F12] key."
+            },
+            F2 = {
+                type = "value",
+                description = "The [F2] key."
+            },
+            F3 = {
+                type = "value",
+                description = "The [F3] key."
+            },
+            F4 = {
+                type = "value",
+                description = "The [F4] key."
+            },
+            F5 = {
+                type = "value",
+                description = "The [F5] key."
+            },
+            F6 = {
+                type = "value",
+                description = "The [F6] key."
+            },
+            F7 = {
+                type = "value",
+                description = "The [F7] key."
+            },
+            F8 = {
+                type = "value",
+                description = "The [F8] key."
+            },
+            F9 = {
+                type = "value",
+                description = "The [F9] key."
+            },
+            G = {
+                type = "value",
+                description = 'The [G] key. Most MOAIKeyboardSensor functions will accept the string "g" instead of this constant.'
+            },
+            GUI = {
+                type = "value",
+                description = "The [Windows] key on a PC keyboard; the [Apple] key on a Mac keyboard."
+            },
+            H = {
+                type = "value",
+                description = 'The [H] key. Most MOAIKeyboardSensor functions will accept the string "h" instead of this constant.'
+            },
+            HOME = {
+                type = "value",
+                description = "The [Home] key."
+            },
+            I = {
+                type = "value",
+                description = 'The [I] key. Most MOAIKeyboardSensor functions will accept the string "i" instead of this constant.'
+            },
+            INSERT = {
+                type = "value",
+                description = "The [Insert] key."
+            },
+            J = {
+                type = "value",
+                description = 'The [J] key. Most MOAIKeyboardSensor functions will accept the string "j" instead of this constant.'
+            },
+            K = {
+                type = "value",
+                description = 'The [K] key. Most MOAIKeyboardSensor functions will accept the string "k" instead of this constant.'
+            },
+            L = {
+                type = "value",
+                description = 'The [L] key. Most MOAIKeyboardSensor functions will accept the string "l" instead of this constant.'
+            },
+            LEFT = {
+                type = "value",
+                description = "The left arrow key."
+            },
+            M = {
+                type = "value",
+                description = 'The [M] key. Most MOAIKeyboardSensor functions will accept the string "m" instead of this constant.'
+            },
+            N = {
+                type = "value",
+                description = 'The [N] key. Most MOAIKeyboardSensor functions will accept the string "n" instead of this constant.'
+            },
+            NUM_0 = {
+                type = "value",
+                description = "The [0] key on the numeric keypad."
+            },
+            NUM_1 = {
+                type = "value",
+                description = "The [1] key on the numeric keypad."
+            },
+            NUM_2 = {
+                type = "value",
+                description = "The [2] key on the numeric keypad."
+            },
+            NUM_3 = {
+                type = "value",
+                description = "The [3] key on the numeric keypad."
+            },
+            NUM_4 = {
+                type = "value",
+                description = "The [4] key on the numeric keypad."
+            },
+            NUM_5 = {
+                type = "value",
+                description = "The [5] key on the numeric keypad."
+            },
+            NUM_6 = {
+                type = "value",
+                description = "The [6] key on the numeric keypad."
+            },
+            NUM_7 = {
+                type = "value",
+                description = "The [7] key on the numeric keypad."
+            },
+            NUM_8 = {
+                type = "value",
+                description = "The [8] key on the numeric keypad."
+            },
+            NUM_9 = {
+                type = "value",
+                description = "The [9] key on the numeric keypad."
+            },
+            NUM_DECIMAL = {
+                type = "value",
+                description = "The [.] key on the numeric keypad. Note that on a non-US keyboard, this key may have a different label."
+            },
+            NUM_DIVIDE = {
+                type = "value",
+                description = "The [/] key on the numeric keypad. Note that on a non-US keyboard, this key may have a different label."
+            },
+            NUM_LOCK = {
+                type = "value",
+                description = "The [Num Lock] key."
+            },
+            NUM_MINUS = {
+                type = "value",
+                description = "The [-] key on the numeric keypad."
+            },
+            NUM_MULTIPLY = {
+                type = "value",
+                description = "The [*] key on the numeric keypad."
+            },
+            NUM_PLUS = {
+                type = "value",
+                description = "The [+] key on the numeric keypad."
+            },
+            O = {
+                type = "value",
+                description = 'The [O] key. Most MOAIKeyboardSensor functions will accept the string "o" instead of this constant.'
+            },
+            OEM_1 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the [;] key on a US keyboard; the [Ü] key on a German keyboard; the [$] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string ";" instead of this constant.'
+            },
+            OEM_102 = {
+                type = "value",
+                description = "This is either the [<] key or the [\\] key on the RT 102-key keyboard."
+            },
+            OEM_2 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the [/] key on a US keyboard; the [#] key on a German keyboard; the [:] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string "/" instead of this constant.'
+            },
+            OEM_3 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the [`] key on a US keyboard; the [Ö] key on a German keyboard; the [Ù] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string "`" instead of this constant.'
+            },
+            OEM_4 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the [[] key on a US keyboard; the [ß] key on a German keyboard; the [)] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string "[" instead of this constant.'
+            },
+            OEM_5 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the [\\] key on a US keyboard; the [^] key on a German keyboard; the [*] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string "\\\\" instead of this constant.'
+            },
+            OEM_6 = {
+                type = "value",
+                description = 'This key has different functions depending on the keyboard layout. For instance, this is the []] key on a US keyboard; the [´] key on a German keyboard; the [^] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string "]" instead of this constant.'
+            },
+            OEM_7 = {
+                type = "value",
+                description = "This key has different functions depending on the keyboard layout. For instance, this is the ['] key on a US keyboard; the [Ä] key on a German keyboard; the [²] key on a French keyboard. Most MOAIKeyboardSensor functions will accept the string \"'\" instead of this constant."
+            },
+            OEM_8 = {
+                type = "value",
+                description = "This key has different functions depending on the keyboard layout. For instance, this is the [!] key on a French keyboard."
+            },
+            OEM_COMMA = {
+                type = "value",
+                description = 'This is the key that creates the "," character. On some keyboard layouts, this requires holding the [Shift] key. Most MOAIKeyboardSensor functions will accept the string "," instead of this constant.'
+            },
+            OEM_MINUS = {
+                type = "value",
+                description = 'This is the key that creates the "-" character. On some keyboard layouts, this requires holding the [Shift] key. Most MOAIKeyboardSensor functions will accept the string "-" instead of this constant.'
+            },
+            OEM_PERIOD = {
+                type = "value",
+                description = 'This is the key that creates the "." character. On some keyboard layouts, this requires holding the [Shift] key. Most MOAIKeyboardSensor functions will accept the string "." instead of this constant.'
+            },
+            OEM_PLUS = {
+                type = "value",
+                description = 'This is the key that creates the "+" character. On some keyboard layouts (including US), this requires holding the [Shift] key. Most MOAIKeyboardSensor functions will accept the string "=" instead of this constant.'
+            },
+            P = {
+                type = "value",
+                description = 'The [P] key. Most MOAIKeyboardSensor functions will accept the string "p" instead of this constant.'
+            },
+            PAGE_DOWN = {
+                type = "value",
+                description = "The [Page Down] key."
+            },
+            PAGE_UP = {
+                type = "value",
+                description = "The [Page Up] key."
+            },
+            PAUSE = {
+                type = "value",
+                description = "The [Pause] key."
+            },
+            PRINT_SCREEN = {
+                type = "value",
+                description = "The [Print Screen] key."
+            },
+            Q = {
+                type = "value",
+                description = 'The [Q] key. Most MOAIKeyboardSensor functions will accept the string "q" instead of this constant.'
+            },
+            R = {
+                type = "value",
+                description = 'The [R] key. Most MOAIKeyboardSensor functions will accept the string "r" instead of this constant.'
+            },
+            RETURN = {
+                type = "value",
+                description = "The [Return] key on the main keyboard or the [ENTER] key on the numeric keypad."
+            },
+            RIGHT = {
+                type = "value",
+                description = "The right arrow key."
+            },
+            S = {
+                type = "value",
+                description = 'The [S] key. Most MOAIKeyboardSensor functions will accept the string "s" instead of this constant.'
+            },
+            SCROLL_LOCK = {
+                type = "value",
+                description = "The [Scroll Lock] key."
+            },
+            SHIFT = {
+                type = "value",
+                description = "The [Shift] key."
+            },
+            SPACE = {
+                type = "value",
+                description = 'The spacebar. Most MOAIKeyboardSensor functions will accept the string " " instead of this constant.'
+            },
+            T = {
+                type = "value",
+                description = 'The [T] key. Most MOAIKeyboardSensor functions will accept the string "t" instead of this constant.'
+            },
+            TAB = {
+                type = "value",
+                description = "The [Tab] key."
+            },
+            U = {
+                type = "value",
+                description = 'The [U] key. Most MOAIKeyboardSensor functions will accept the string "u" instead of this constant.'
+            },
+            UP = {
+                type = "value",
+                description = "The up arrow key."
+            },
+            V = {
+                type = "value",
+                description = 'The [V] key. Most MOAIKeyboardSensor functions will accept the string "v" instead of this constant.'
+            },
+            W = {
+                type = "value",
+                description = 'The [W] key. Most MOAIKeyboardSensor functions will accept the string "w" instead of this constant.'
+            },
+            X = {
+                type = "value",
+                description = 'The [X] key. Most MOAIKeyboardSensor functions will accept the string "x" instead of this constant.'
+            },
+            Y = {
+                type = "value",
+                description = 'The [Y] key. Most MOAIKeyboardSensor functions will accept the string "y" instead of this constant.'
+            },
+            Z = {
+                type = "value",
+                description = 'The [Z] key. Most MOAIKeyboardSensor functions will accept the string "z" instead of this constant.'
+            }
+        }
+    },
+    MOAIKontagentIOS = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Wrapper for Mixpanel interface.",
+        childs = {}
+    },
     MOAILayer = {
         type = "class",
-        inherits = "MOAIProp MOAIClearableView",
+        inherits = "MOAIGraphicsProp MOAIClearableView",
         description = "Scene controls class.",
         childs = {
             SORT_ISO = {
@@ -5921,6 +6934,13 @@ return {
                 args = "MOAILayer self",
                 returns = "nil"
             },
+            getCamera = {
+                type = "method",
+                description = "Get the camera associated with the layer.\n\n–> MOAILayer self\n<– MOAICamera camera",
+                args = "MOAILayer self",
+                returns = "MOAICamera camera",
+                valuetype = "MOAICamera"
+            },
             getFitting = {
                 type = "method",
                 description = "Computes a camera fitting for a given world rect along with an optional screen space padding. To do a fitting, compute the world rect based on whatever you are fitting to, use this method to get the fitting, then animate the camera to match.\n\n–> MOAILayer self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number xPad]\n[–> number yPad]\n<– number x: X center of fitting (use for camera location).\n<– number y: Y center of fitting (use for camera location).\n<– number s: Scale of fitting (use for camera scale).",
@@ -5928,12 +6948,26 @@ return {
                 returns = "(number x, number y, number s)",
                 valuetype = "number"
             },
+            getFitting3D = {
+                type = "method",
+                description = "Find a position for the camera where all given locations or props will be visible without changing the camera's orientation (i.e. orient the camera first, then call this to derive the correct position).\n\n–> MOAILayer self\n–> table targets: A table of either props or locations. Locations are tables containing {x, y, z, r}.\n<– number x\n<– number y\n<– number z",
+                args = "(MOAILayer self, table targets)",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
             getPartition = {
                 type = "method",
-                description = "Returns the partition (if any) currently attached to this layer.\n\n–> MOAILayer self\n<– MOAIPartition partition",
+                description = "Returns the partition currently attached to this layer.\n\n–> MOAILayer self\n<– MOAIPartition partition",
                 args = "MOAILayer self",
                 returns = "MOAIPartition partition",
                 valuetype = "MOAIPartition"
+            },
+            getPropViewList = {
+                type = "method",
+                description = "Return a list of props gathered and sorted by layer.\n\n–> MOAILayer self\n[–> number sortMode: Default is layer's current value.]\n[–> boolean sortInViewSpace: Default is layer's current value.]\n[–> number xSortScale: Default is layer's current value.]\n[–> number ySortScale: Default is layer's current value.]\n[–> number zSortScale: Default is layer's current value.]\n[–> number pSortScale: Priority sort scale. Default is layer's current value.]\n<– ... Gathered: props.",
+                args = "(MOAILayer self, [number sortMode, [boolean sortInViewSpace, [number xSortScale, [number ySortScale, [number zSortScale, [number pSortScale]]]]]])",
+                returns = "... Gathered",
+                valuetype = "..."
             },
             getSortMode = {
                 type = "method",
@@ -5949,6 +6983,13 @@ return {
                 returns = "(number x, number y, number priority)",
                 valuetype = "number"
             },
+            getViewport = {
+                type = "method",
+                description = "Return the viewport currently associated with the layer.\n\n–> MOAILayer self\n<– MOAILuaObject viewport",
+                args = "MOAILayer self",
+                returns = "MOAILuaObject viewport",
+                valuetype = "MOAILuaObject"
+            },
             insertProp = {
                 type = "method",
                 description = "Adds a prop to the layer's partition.\n\n–> MOAILayer self\n–> MOAIProp prop\n<– nil",
@@ -5961,22 +7002,16 @@ return {
                 args = "(MOAILayer self, MOAIProp prop)",
                 returns = "nil"
             },
-            setBox2DWorld = {
-                type = "method",
-                description = "Sets a Box2D world for debug drawing.\n\n–> MOAILayer self\n–> MOAIBox2DWorld world\n<– nil",
-                args = "(MOAILayer self, MOAIBox2DWorld world)",
-                returns = "nil"
-            },
             setCamera = {
                 type = "method",
                 description = "Sets a camera for the layer. If no camera is supplied, layer will render using the identity matrix as view/proj.\n\nOverload:\n–> MOAILayer self\n[–> MOAICamera camera: Default value is nil.]\n<– nil\n\nOverload:\n–> MOAILayer self\n[–> MOAICamera2D camera: Default value is nil.]\n<– nil",
                 args = "(MOAILayer self, [MOAICamera camera | MOAICamera2D camera])",
                 returns = "nil"
             },
-            setCpSpace = {
+            setOverlayTable = {
                 type = "method",
-                description = "Sets a Chipmunk space for debug drawing.\n\n–> MOAILayer self\n–> MOAICpSpace space\n<– nil",
-                args = "(MOAILayer self, MOAICpSpace space)",
+                description = "Set or clear the table of renderables to be drawn on top of the layer.\n\n–> MOAILayer self\n[–> table overlayTable]\n<– nil",
+                args = "(MOAILayer self, [table overlayTable])",
                 returns = "nil"
             },
             setParallax = {
@@ -5999,8 +7034,8 @@ return {
             },
             setSortMode = {
                 type = "method",
-                description = "Set the sort mode for rendering.\n\n–> MOAILayer self\n–> number sortMode: One of MOAILayer.SORT_NONE, MOAILayer.SORT_PRIORITY_ASCENDING, MOAILayer.SORT_PRIORITY_DESCENDING, MOAILayer.SORT_X_ASCENDING, MOAILayer.SORT_X_DESCENDING, MOAILayer.SORT_Y_ASCENDING, MOAILayer.SORT_Y_DESCENDING, MOAILayer.SORT_Z_ASCENDING, MOAILayer.SORT_Z_DESCENDING\n<– nil",
-                args = "(MOAILayer self, number sortMode)",
+                description = "Set the sort mode for rendering.\n\n–> MOAILayer self\n–> number sortMode: One of MOAILayer.SORT_NONE, MOAILayer.SORT_PRIORITY_ASCENDING, MOAILayer.SORT_PRIORITY_DESCENDING, MOAILayer.SORT_X_ASCENDING, MOAILayer.SORT_X_DESCENDING, MOAILayer.SORT_Y_ASCENDING, MOAILayer.SORT_Y_DESCENDING, MOAILayer.SORT_Z_ASCENDING, MOAILayer.SORT_Z_DESCENDING\n–> boolean sortInViewSpace: Default value is 'false'.\n<– nil",
+                args = "(MOAILayer self, number sortMode, boolean sortInViewSpace)",
                 returns = "nil"
             },
             setSortScale = {
@@ -6023,8 +7058,15 @@ return {
             },
             wndToWorld = {
                 type = "method",
-                description = "Project a point from window space into world space and return a normal vector representing a ray cast from the point into the world away from the camera (suitable for 3D picking).\n\n–> MOAILayer self\n–> number x\n–> number y\n–> number z\n<– number x\n<– number y\n<– number z\n<– number xn\n<– number yn\n<– number zn",
-                args = "(MOAILayer self, number x, number y, number z)",
+                description = "Project a point from window space into world space.\n\n–> MOAILayer self\n–> number x\n–> number y\n<– number x\n<– number y\n<– number z",
+                args = "(MOAILayer self, number x, number y)",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
+            wndToWorldRay = {
+                type = "method",
+                description = "Project a point from window space into world space and return a normal vector representing a ray cast from the point into the world away from the camera (suitable for 3D picking).\n\n–> MOAILayer self\n–> number x\n–> number y\n–> number d: If non-zero, scale normal by dist to plane d units away from camera. Default is zero.\n<– number x\n<– number y\n<– number z\n<– number xn\n<– number yn\n<– number zn",
+                args = "(MOAILayer self, number x, number y, number d)",
                 returns = "(number x, number y, number z, number xn, number yn, number zn)",
                 valuetype = "number"
             },
@@ -6039,7 +7081,7 @@ return {
     },
     MOAILayer2D = {
         type = "class",
-        inherits = "MOAIProp2D",
+        inherits = "MOAIProp2D MOAILuaObject",
         description = "2D layer.",
         childs = {
             SORT_NONE = {
@@ -6191,19 +7233,6 @@ return {
             }
         }
     },
-    MOAILayerBridge = {
-        type = "class",
-        inherits = "MOAITransform",
-        description = "2D transform for connecting transforms across scenes. Useful for HUD overlay items and map pins.",
-        childs = {
-            init = {
-                type = "method",
-                description = "Initialize the bridge transform (map coordinates in one layer onto another; useful for rendering screen space objects tied to world space coordinates - map pins, for example).\n\n–> MOAILayerBridge self\n–> MOAITransformBase sourceTransform\n–> MOAILayer sourceLayer\n–> MOAILayer destLayer\n<– nil",
-                args = "(MOAILayerBridge self, MOAITransformBase sourceTransform, MOAILayer sourceLayer, MOAILayer destLayer)",
-                returns = "nil"
-            }
-        }
-    },
     MOAILocationSensor = {
         type = "class",
         inherits = "MOAISensor",
@@ -6229,17 +7258,25 @@ return {
         inherits = "MOAILuaObject",
         description = "Singleton for managing debug log messages and log level.",
         childs = {
+            LOG_DEBUG = {
+                type = "value",
+                description = "Debug level"
+            },
             LOG_ERROR = {
-                type = "value"
+                type = "value",
+                description = "Error level"
             },
             LOG_NONE = {
-                type = "value"
+                type = "value",
+                description = "No logging"
             },
             LOG_STATUS = {
-                type = "value"
+                type = "value",
+                description = "Status level"
             },
             LOG_WARNING = {
-                type = "value"
+                type = "value",
+                description = "Warning level"
             },
             closeFile = {
                 type = "function",
@@ -6256,8 +7293,8 @@ return {
             },
             log = {
                 type = "function",
-                description = "Alias for print.\n\n–> string message\n<– nil",
-                args = "string message",
+                description = "Alias for print.\n\nOverload:\n–> string message\n<– nil\n\nOverload:\n–> number level: Default: LOG_STATUS\n–> string message\n<– nil\n\nOverload:\n–> number level: Default: LOG_STATUS\n–> string token\n–> string message\n<– nil",
+                args = "[number level, [string token]]",
                 returns = "nil"
             },
             openFile = {
@@ -6311,9 +7348,140 @@ return {
             }
         }
     },
+    MOAILuaRuntime = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {
+            forceGC = {
+                type = "function",
+                description = "Runs the garbage collector repeatedly until no more MOAIObjects can be collected.\n\n<– nil",
+                args = "()",
+                returns = "nil"
+            },
+            getHistogram = {
+                type = "function",
+                description = "Generates a histogram of active MOAIObjects and returns it in a table containing object tallies indexed by object class names.\n\n[–> string trackingGroup]\n<– table histogram",
+                args = "[string trackingGroup]",
+                returns = "table histogram",
+                valuetype = "table"
+            },
+            reportHistogram = {
+                type = "function",
+                description = "Generates a histogram of active MOAIObjects.\n\n[–> string filename]\n[–> string trackingGroup]\n<– nil",
+                args = "[string filename, [string trackingGroup]]",
+                returns = "nil"
+            },
+            reportLeaks = {
+                type = "function",
+                description = 'Analyze the currently allocated MOAI objects and create a textual report of where they were declared, and what Lua references (if any) can be found. NOTE: This is incredibly slow, so only use to debug leaking memory issues. This will also trigger a full garbage collection before performing the required report. (Equivalent of collectgarbage("collect").)\n\n[–> string filename]\n[–> string trackingGroup]\n<– nil',
+                args = "[string filename, [string trackingGroup]]",
+                returns = "nil"
+            },
+            setTrackingFlags = {
+                type = "function",
+                description = "Enable extra memory book-keeping measures that allow all MOAI objects to be tracked back to their point of allocation (in Lua). Use together with MOAILuaRuntime.reportLeaks() to determine exactly where your memory usage is being created. NOTE: This is expensive in terms of both CPU and the extra memory associated with the stack info book-keeping. Use only when tracking down leaks.\n\n[–> number flags: Bitwise combination of TRACK_OBJECTS and TRACK_OBJECTS_STACK_TRACE. Default value is 0.]\n<– nil",
+                args = "[number flags]",
+                returns = "nil"
+            }
+        }
+    },
+    MOAILuaUtil = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Methods for reading and converting Lua bytecode.",
+        childs = {
+            convert = {
+                type = "function",
+                description = "Convert 32-bit Lua bytecode to 64-bit Lua bytecode.\n\n–> string bytecode: 32-bit bytecode\n<– string bytecode: 64-bit bytecode",
+                args = "string bytecode",
+                returns = "string bytecode",
+                valuetype = "string"
+            },
+            getHeader = {
+                type = "function",
+                description = "Read the Lua bytecode header.\n\n–> string bytecode\n<– table header: Returns 'nil' is no valid signature is found.",
+                args = "string bytecode",
+                returns = "table header",
+                valuetype = "table"
+            }
+        }
+    },
+    MOAIMaterialBatch = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "This is an indexed set of materials. A material is a shader, a texture and an optional hit mask. A material batch may be attached to a prop or a deck to change the materials used when rendering deck indices. Some decks also allow multiple material batch indicies to be specified per deck item. This is useful when rendering compound objects that need elements form multiple shaders and textures.",
+        childs = {
+            getIndexBatchSize = {
+                type = "method",
+                description = "Get the index batch size.\n\n–> MOAIMaterialBatch self\n<– number indexBatchSize",
+                args = "MOAIMaterialBatch self",
+                returns = "number indexBatchSize",
+                valuetype = "number"
+            },
+            getShader = {
+                type = "method",
+                description = "Get the shader for the given index. Index batch size is ignored.\n\n–> MOAIMaterialBatch self\n[–> number idx: Default value is 1.]\n<– MOAIShader shader",
+                args = "(MOAIMaterialBatch self, [number idx])",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
+            },
+            getTexture = {
+                type = "method",
+                description = "Get the texture for the given index. Index batch size is ignored.\n\n–> MOAIMaterialBatch self\n[–> number idx: Default value is 1.]\n<– MOAITexture shader",
+                args = "(MOAIMaterialBatch self, [number idx])",
+                returns = "MOAITexture shader",
+                valuetype = "MOAITexture"
+            },
+            reserveMaterials = {
+                type = "method",
+                description = "Reserve material indices.\n\n–> MOAIMaterialBatch self\n[–> number count]\n<– nil",
+                args = "(MOAIMaterialBatch self, [number count])",
+                returns = "nil"
+            },
+            setHitMask = {
+                type = "method",
+                description = "Set or load an image to act as the hit mask for this deck.\n\n–> MOAIDeck self\n–> variant mask: A MOAIImage or a path to an image file\n<– MOAIImage mask",
+                args = "(MOAIDeck self, variant mask)",
+                returns = "MOAIImage mask",
+                valuetype = "MOAIImage"
+            },
+            setHitMaskScalar = {
+                type = "method",
+                description = "Set a color to modulate hit mask samples. If no value for 'idx' is provided, the value of index is 1.\n\nOverload:\n–> MOAIDeck self\n–> number idx\n–> number r\n–> number g\n–> number b\n–> number a\n<– nil\n\nOverload:\n–> MOAIDeck self\n–> number r\n–> number g\n–> number b\n–> number a\n<– nil",
+                args = "(MOAIDeck self, [number idx])",
+                returns = "nil"
+            },
+            setHitMaskThreshold = {
+                type = "method",
+                description = "Set a color to act as a threshold for hit mask samples. If no value for 'idx' is provided, the value of index is 1.\n\nOverload:\n–> MOAIDeck self\n–> number idx\n–> number r\n–> number g\n–> number b\n–> number a\n<– nil\n\nOverload:\n–> MOAIDeck self\n–> number r\n–> number g\n–> number b\n–> number a\n<– nil",
+                args = "(MOAIDeck self, [number idx])",
+                returns = "nil"
+            },
+            setIndexBatchSize = {
+                type = "method",
+                description = "Set the index batch size. When a prop or deck is drawing, the index is divided by the material batch's index batch size to get the material index. In this way sets of deck indices may be assigned to material indices. For example, an index batch size of 256 for a set of 4 materials would distribute 1024 deck indices across materials 1 though 4. An index batch size of 1 would create a 1 to 1 mapping between deck indices and materials.\n\n–> MOAIMaterialBatch self\n[–> number indexBatchSize: Default value is 1.]\n<– nil",
+                args = "(MOAIMaterialBatch self, [number indexBatchSize])",
+                returns = "nil"
+            },
+            setShader = {
+                type = "method",
+                description = "Sets a shader in the material batch. Index batch size is ignored. If no value for 'idx' is provided, then the shader or shader preset is expected as the first paramater, and idx defaults to 1.\n\nOverload:\n–> MOAIMaterialBatch self\n–> number idx\n–> variant shader: Overloaded to accept a MOAIShader or a shader preset.\n<– MOAIShader shader: The shader that was set or created.\n\nOverload:\n–> MOAIMaterialBatch self\n–> variant shader: Overloaded to accept a MOAIShader or a shader preset.\n<– MOAIShader shader: The shader that was set or created.",
+                args = "(MOAIMaterialBatch self, [number idx])",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
+            },
+            setTexture = {
+                type = "method",
+                description = "Sets a texture in material batch. Index batch size is ignored. If no value for 'idx' is provided, then the texture or filename is expected as the first paramater, and idx defaults to 1.\n\nOverload:\n–> MOAIMaterialBatch self\n–> number idx\n–> variant texture: Overloaded to accept a filename, MOAITexture, MOAIImage, MOAIStream or MOAIDataBuffer.\n<– MOAITexture texture: The texture that was set or created.\n\nOverload:\n–> MOAIMaterialBatch self\n–> variant texture: Overloaded to accept a filename, MOAITexture, MOAIImage, MOAIStream or MOAIDataBuffer.\n<– MOAITexture texture: The texture that was set or created.",
+                args = "(MOAIMaterialBatch self, [number idx])",
+                returns = "MOAITexture texture",
+                valuetype = "MOAITexture"
+            }
+        }
+    },
     MOAIMemStream = {
         type = "class",
-        inherits = "MOAIStream",
+        inherits = "ZLMemStream MOAIStream",
         description = "MOAIMemStream implements an in-memory stream and grows as needed. The memory stream expands on demands by allocating additional 'chunks' or memory. The chunk size may be configured by the user. Note that the chunks are not guaranteed to be contiguous in memory.",
         childs = {
             close = {
@@ -6333,7 +7501,7 @@ return {
     },
     MOAIMesh = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck MOAIVertexArray",
         description = "Loads a texture and renders the contents of a vertex buffer. Grid drawing not supported.",
         childs = {
             GL_LINE_LOOP = {
@@ -6359,8 +7527,8 @@ return {
             },
             setIndexBuffer = {
                 type = "method",
-                description = "Set the index buffer to render.\n\n–> MOAIMesh self\n–> MOAIIndexBuffer indexBuffer\n<– nil",
-                args = "(MOAIMesh self, MOAIIndexBuffer indexBuffer)",
+                description = "Set the index buffer to render.\n\n–> MOAIMesh self\n–> MOAIGfxBuffer indexBuffer\n<– nil",
+                args = "(MOAIMesh self, MOAIGfxBuffer indexBuffer)",
                 returns = "nil"
             },
             setPenWidth = {
@@ -6369,25 +7537,19 @@ return {
                 args = "(MOAIMesh self, number penWidth)",
                 returns = "nil"
             },
-            setPointSize = {
-                type = "method",
-                description = "Sets the point size for drawing prims in this vertex buffer. Only valid with prim types GL_POINTS.\n\n–> MOAIMesh self\n–> number pointSize\n<– nil",
-                args = "(MOAIMesh self, number pointSize)",
-                returns = "nil"
-            },
             setPrimType = {
                 type = "method",
                 description = "Sets the prim type the buffer represents.\n\n–> MOAIMesh self\n–> number primType: One of MOAIMesh GL_POINTS, GL_LINES, GL_TRIANGLES, GL_LINE_LOOP, GL_LINE_STRIP, GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP\n<– nil",
                 args = "(MOAIMesh self, number primType)",
                 returns = "nil"
-            },
-            setVertexBuffer = {
-                type = "method",
-                description = "Set the vertex buffer to render.\n\n–> MOAIMesh self\n–> MOAIVertexBuffer vertexBuffer\n<– nil",
-                args = "(MOAIMesh self, MOAIVertexBuffer vertexBuffer)",
-                returns = "nil"
             }
         }
+    },
+    MOAIMixpanelIOS = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Wrapper for Mixpanel interface.",
+        childs = {}
     },
     MOAIMobileAppTrackerIOS = {
         type = "class",
@@ -6454,9 +7616,15 @@ return {
     },
     MOAIMultiTexture = {
         type = "class",
-        inherits = "MOAILuaObject MOAIGfxState",
+        inherits = "MOAITextureBase MOAILuaObject",
         description = "Array of textures for multi-texturing.",
         childs = {
+            release = {
+                type = "method",
+                description = "Releases any memory associated with the texture.\n\n–> MOAIMultiTexture self\n<– nil",
+                args = "MOAIMultiTexture self",
+                returns = "nil"
+            },
             reserve = {
                 type = "method",
                 description = "Reserve or clears indices for textures.\n\n–> MOAIMultiTexture self\n[–> number total: Default value is 0.]\n<– nil",
@@ -6465,8 +7633,8 @@ return {
             },
             setTexture = {
                 type = "method",
-                description = "Sets of clears a texture for the given index.\n\n–> MOAIMultiTexture self\n–> number index\n[–> MOAITextureBase texture: Default value is nil.]\n<– nil",
-                args = "(MOAIMultiTexture self, number index, [MOAITextureBase texture])",
+                description = "Sets of clears a texture for the given index.\n\n–> MOAIMultiTexture self\n–> number index\n[–> MOAISingleTexture texture: Default value is nil.]\n<– nil",
+                args = "(MOAIMultiTexture self, number index, [MOAISingleTexture texture])",
                 returns = "nil"
             }
         }
@@ -6507,6 +7675,13 @@ return {
                 args = "(MOAINode self, number attrID)",
                 returns = "(MOAINode sourceNode, number sourceAttrID)",
                 valuetype = "MOAINode"
+            },
+            getNodeState = {
+                type = "method",
+                description = "Returns the current state of the node (for debugging purposes).\n\n–> MOAINode self\n<– number state: One of MOAINode.STATE_IDLE, MOAINode.STATE_ACTIVE, MOAINode.STATE_SCHEDULED, MOAINode.STATE_UPDATING.",
+                args = "MOAINode self",
+                returns = "number state",
+                valuetype = "number"
             },
             moveAttr = {
                 type = "method",
@@ -6768,6 +7943,12 @@ return {
                 args = "(MOAIParticleEmitter self, number xMin, number yMin, number xMax, number yMax)",
                 returns = "nil"
             },
+            setState = {
+                type = "method",
+                description = "Set initial state index for new particles.\n\n–> MOAIParticleEmitter self\n–> number state: index of MOAIParticleState in attached MOAIParticleSystem\n<– nil",
+                args = "(MOAIParticleEmitter self, number state)",
+                returns = "nil"
+            },
             setSystem = {
                 type = "method",
                 description = "Attaches the emitter to a particle system.\n\n–> MOAIParticleEmitter self\n–> MOAIParticleSystem system\n<– nil",
@@ -6866,7 +8047,7 @@ return {
     MOAIParticleScript = {
         type = "class",
         inherits = "MOAILuaObject",
-        description = "Particle script.",
+        description = 'Particle script. A particle script contains a series of operations, which can perform simple computations on values. Values can be hard-coded using packConst to create constant values, or stored in registers. There is a set of innate registers, accessed through the packReg() function, and a second set of "live" registers which allow setting values from external code using the setReg() function.',
         childs = {
             PARTICLE_DX = {
                 type = "value"
@@ -6913,6 +8094,12 @@ return {
             SPRITE_Y_SCL = {
                 type = "value"
             },
+            abs = {
+                type = "method",
+                description = "r0 = abs(v0)\n\n–> MOAIParticleScript self\n–> number r0\n–> number v0\n<– nil",
+                args = "(MOAIParticleScript self, number r0, number v0)",
+                returns = "nil"
+            },
             add = {
                 type = "method",
                 description = "r0 = v0 + v1\n\n–> MOAIParticleScript self\n–> number r0\n–> number v0\n–> number v1\n<– nil",
@@ -6923,6 +8110,12 @@ return {
                 type = "method",
                 description = "Load two registers with the X and Y components of a unit vector with a given angle.\n\n–> MOAIParticleScript self\n–> number r0: Register to store result X.\n–> number r1: Register to store result Y.\n–> number v0: Angle of vector (in degrees).\n<– nil",
                 args = "(MOAIParticleScript self, number r0, number r1, number v0)",
+                returns = "nil"
+            },
+            color = {
+                type = "method",
+                description = "r0, r1, r2, r3 = color (of the MOAIParticleSystem) Note that if you do not specify SPRITE_RED and related values, sprites are rendered with the current values. This function is useful to store the values when the initialization script is run in registers.\n\n–> MOAIParticleScript self\n–> number r0: r\n–> number r1: g\n–> number r2: b\n[–> number r3: a]\n<– nil",
+                args = "(MOAIParticleScript self, number r0, number r1, number r2, [number r3])",
                 returns = "nil"
             },
             cos = {
@@ -6974,6 +8167,13 @@ return {
                 returns = "number packed",
                 valuetype = "number"
             },
+            packLiveReg = {
+                type = "function",
+                description = "Pack a live register index into a particle script param.\n\n–> number regIdx: Register index to pack.\n<– number packed: The packed value.",
+                args = "number regIdx",
+                returns = "number packed",
+                valuetype = "number"
+            },
             packReg = {
                 type = "function",
                 description = "Pack a register index into a particle script param.\n\n–> number regIdx: Register index to pack.\n<– number packed: The packed value.",
@@ -6984,6 +8184,12 @@ return {
             rand = {
                 type = "method",
                 description = "Load a register with a random number from a range.\n\n–> MOAIParticleScript self\n–> number r0: Register to store result.\n–> number v0: Range minimum.\n–> number v1: Range maximum.\n<– nil",
+                args = "(MOAIParticleScript self, number r0, number v0, number v1)",
+                returns = "nil"
+            },
+            randInt = {
+                type = "method",
+                description = "Load a register with a random integer from a range.\n\n–> MOAIParticleScript self\n–> number r0: Register to store result.\n–> number v0: Range minimum.\n–> number v1: Range maximum.\n<– nil",
                 args = "(MOAIParticleScript self, number r0, number v0, number v1)",
                 returns = "nil"
             },
@@ -6999,6 +8205,12 @@ return {
                 args = "(MOAIParticleScript self, number r0, number v0)",
                 returns = "nil"
             },
+            setLiveReg = {
+                type = "method",
+                description = "Load a value into a live register. Live registers can be updated by additional calls to setReg, which does not alter the compiled particle script. Live registers are a distinct register set from the normal register set; use load () to load live register data into registers in an initialize or render script.\n\n–> MOAIParticleScript self\n–> number r0: Register to store result.\n–> number v0: Value to load.\n<– nil",
+                args = "(MOAIParticleScript self, number r0, number v0)",
+                returns = "nil"
+            },
             sin = {
                 type = "method",
                 description = "r0 = sin(v0)\n\n–> MOAIParticleScript self\n–> number r0\n–> number v0\n<– nil",
@@ -7009,6 +8221,12 @@ return {
                 type = "method",
                 description = "Push a new sprite for rendering. To render a particle, first call 'sprite' to create a new sprite at the particle's location. Then modify the sprite's registers to create animated effects based on the age of the particle (normalized to its term).\n\n–> MOAIParticleScript self\n<– nil",
                 args = "MOAIParticleScript self",
+                returns = "nil"
+            },
+            step = {
+                type = "method",
+                description = "r0 = 0 if v0 < v1; 1 if v0 >= v1\n\n–> MOAIParticleScript self\n–> number r0\n–> number v0\n–> number v1\n<– nil",
+                args = "(MOAIParticleScript self, number r0, number v0, number v1)",
                 returns = "nil"
             },
             sub = {
@@ -7106,7 +8324,7 @@ return {
     },
     MOAIParticleSystem = {
         type = "class",
-        inherits = "MOAIProp MOAIAction",
+        inherits = "MOAIGraphicsProp MOAIAction",
         description = "Particle system.",
         childs = {
             capParticles = {
@@ -7143,8 +8361,8 @@ return {
             },
             pushParticle = {
                 type = "method",
-                description = "Adds a particle to the system.\n\n–> MOAIParticleSystem self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number dx: Default value is 0.]\n[–> number dy: Default value is 0.]\n<– boolean result: true if particle was added, false if not.",
-                args = "(MOAIParticleSystem self, [number x, [number y, [number dx, [number dy]]]])",
+                description = "Adds a particle to the system.\n\n–> MOAIParticleSystem self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number dx: Default value is 0.]\n[–> number dy: Default value is 0.]\n[–> number state: Index of initial particle state.]\n<– boolean result: true if particle was added, false if not.",
+                args = "(MOAIParticleSystem self, [number x, [number y, [number dx, [number dy, [number state]]]]])",
                 returns = "boolean result",
                 valuetype = "boolean"
             },
@@ -7177,6 +8395,12 @@ return {
                 type = "method",
                 description = "Set the a flag controlling whether the particle system re-computes its bounds every frame.\n\n–> MOAIParticleSystem self\n[–> boolean computBounds: Default value is false.]\n<– nil",
                 args = "(MOAIParticleSystem self, [boolean computBounds])",
+                returns = "nil"
+            },
+            setDrawOrder = {
+                type = "method",
+                description = "Set draw order of sprites in particle system\n\n–> MOAIParticleSystem self\n–> number order: MOAIParticleSystem.ORDER_NORMAL or MOAIParticleSystem.ORDER_REVERSE\n<– nil",
+                args = "(MOAIParticleSystem self, number order)",
                 returns = "nil"
             },
             setSpriteColor = {
@@ -7246,36 +8470,43 @@ return {
             },
             propForPoint = {
                 type = "method",
-                description = "Returns the prop with the highest priority that contains the given world space point.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_PRIORITY_ASCENDING.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n<– MOAIProp prop: The prop under the point or nil if no prop found.",
-                args = "(MOAIPartition self, number x, number y, number z, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale]]]]])",
+                description = "Returns the prop with the highest priority that contains the given world space point.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_PRIORITY_ASCENDING.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n[–> number interfaceMask]\n[–> number queryMask]\n<– MOAIProp prop: The prop under the point or nil if no prop found.",
+                args = "(MOAIPartition self, number x, number y, number z, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale, [number interfaceMask, [number queryMask]]]]]]])",
                 returns = "MOAIProp prop",
                 valuetype = "MOAIProp"
             },
             propForRay = {
                 type = "method",
-                description = "Returns the prop closest to the camera that intersects the given ray\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n–> number xdirection\n–> number ydirection\n–> number zdirection\n<– MOAIProp prop: The prop under the point in order of depth or nil if no prop found.",
-                args = "(MOAIPartition self, number x, number y, number z, number xdirection, number ydirection, number zdirection)",
+                description = "Returns the first prop that intersects the given ray\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n–> number xdirection\n–> number ydirection\n–> number zdirection\n[–> number interfaceMask]\n[–> number queryMask]\n<– MOAIProp prop: The prop under the point in order of depth or nil if no prop found.",
+                args = "(MOAIPartition self, number x, number y, number z, number xdirection, number ydirection, number zdirection, [number interfaceMask, [number queryMask]])",
                 returns = "MOAIProp prop",
                 valuetype = "MOAIProp"
             },
+            propList = {
+                type = "method",
+                description = "Returns all props.\n\n–> MOAIPartition self\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_NONE.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n[–> number interfaceMask]\n[–> number queryMask]\n<– ... props: The props pushed onto the stack.",
+                args = "(MOAIPartition self, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale, [number interfaceMask, [number queryMask]]]]]]])",
+                returns = "... props",
+                valuetype = "..."
+            },
             propListForPoint = {
                 type = "method",
-                description = "Returns all props under a given world space point.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_NONE.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n<– ... props: The props under the point, all pushed onto the stack.",
-                args = "(MOAIPartition self, number x, number y, number z, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale]]]]])",
+                description = "Returns all props under a given world space point.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_NONE.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n[–> number interfaceMask]\n[–> number queryMask]\n<– ... props: The props under the point, all pushed onto the stack.",
+                args = "(MOAIPartition self, number x, number y, number z, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale, [number interfaceMask, [number queryMask]]]]]]])",
                 returns = "... props",
                 valuetype = "..."
             },
             propListForRay = {
                 type = "method",
-                description = "Returns all props under a given world space point.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n–> number xdirection\n–> number ydirection\n–> number zdirection\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_KEY_ASCENDING.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n<– ... props: The props under the point in order of depth, all pushed onto the stack.",
-                args = "(MOAIPartition self, number x, number y, number z, number xdirection, number ydirection, number zdirection, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale]]]]])",
+                description = "Returns all props that intersect the given ray.\n\n–> MOAIPartition self\n–> number x\n–> number y\n–> number z\n–> number xdirection\n–> number ydirection\n–> number zdirection\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_KEY_ASCENDING.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n[–> number interfaceMask]\n[–> number queryMask]\n<– ... props: The props under the point in order of depth, all pushed onto the stack.",
+                args = "(MOAIPartition self, number x, number y, number z, number xdirection, number ydirection, number zdirection, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale, [number interfaceMask, [number queryMask]]]]]]])",
                 returns = "... props",
                 valuetype = "..."
             },
             propListForRect = {
                 type = "method",
-                description = "Returns all props under a given world space rect.\n\n–> MOAIPartition self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_NONE.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n<– ... props: The props under the rect, all pushed onto the stack.",
-                args = "(MOAIPartition self, number xMin, number yMin, number xMax, number yMax, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale]]]]])",
+                description = "Returns all props under a given world space rect.\n\n–> MOAIPartition self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n[–> number sortMode: One of the MOAILayer sort modes. Default value is SORT_NONE.]\n[–> number xScale: X scale for vector sort. Default value is 0.]\n[–> number yScale: Y scale for vector sort. Default value is 0.]\n[–> number zScale: Z scale for vector sort. Default value is 0.]\n[–> number priorityScale: Priority scale for vector sort. Default value is 1.]\n[–> number interfaceMask]\n[–> number queryMask]\n<– ... props: The props under the rect, all pushed onto the stack.",
+                args = "(MOAIPartition self, number xMin, number yMin, number xMax, number yMax, [number sortMode, [number xScale, [number yScale, [number zScale, [number priorityScale, [number interfaceMask, [number queryMask]]]]]]])",
                 returns = "... props",
                 valuetype = "..."
             },
@@ -7293,7 +8524,7 @@ return {
             },
             setLevel = {
                 type = "method",
-                description = "Initializes a level previously created by reserveLevels (). This will trigger a full rebuild of the partition if it contains any props. Each level is a loose grid. Props of a given size may be placed by the system into any level with cells large enough to accommodate them. The dimensions of a level control how many cells the level contains. If an object goes off of the edge of a level, it will wrap around to the other side. It is possible to model a quad tree by initializing levels correctly, but for some simulations better structures may be possible.\n\n–> MOAIPartition self\n–> number levelID\n–> number cellSize: Dimensions of the layer's cells.\n–> number xCells: Width of layer in cells.\n–> number yCells: Height of layer in cells.\n<– nil",
+                description = "Initializes a level previously created by reserveLevels (). This will trigger a full rebuild of the partition if it contains any props. Each level is a loose grid. Props of a given size may be placed by the system into any level with cells large enough to accommodate them. The dimensions of a level control how many cells the level contains. If an object goes off of the edge of a level, it will wrap around to the other side. It is possible to model a quad tree by initializing levels correctly, but for some simulations better structures may be possible.\n\n–> MOAIPartition self\n–> number levelID\n–> number cellSize: Dimensions of the level's cells.\n–> number xCells: Width of level in cells.\n–> number yCells: Height of level in cells.\n<– nil",
                 args = "(MOAIPartition self, number levelID, number cellSize, number xCells, number yCells)",
                 returns = "nil"
             },
@@ -7438,6 +8669,19 @@ return {
             }
         }
     },
+    MOAIPinTransform = {
+        type = "class",
+        inherits = "MOAITransform",
+        description = "2D transform for connecting transforms across layers. Useful for HUD overlay items and map pins.",
+        childs = {
+            init = {
+                type = "method",
+                description = "Initialize the bridge transform (map coordinates in one layer onto another; useful for rendering screen space objects tied to world space coordinates - map pins, for example).\n\n–> MOAIPinTransform self\n–> MOAITransformBase sourceTransform\n–> MOAILayer sourceLayer\n–> MOAILayer destLayer\n<– nil",
+                args = "(MOAIPinTransform self, MOAITransformBase sourceTransform, MOAILayer sourceLayer, MOAILayer destLayer)",
+                returns = "nil"
+            }
+        }
+    },
     MOAIPointerSensor = {
         type = "class",
         inherits = "MOAISensor",
@@ -7460,109 +8704,13 @@ return {
     },
     MOAIProp = {
         type = "class",
-        inherits = "MOAITransform MOAIColor MOAIRenderable",
+        inherits = "MOAITransform",
         description = "Base class for props.",
         childs = {
             ATTR_INDEX = {
                 type = "value"
             },
-            BLEND_ADD = {
-                type = "value"
-            },
-            BLEND_MULTIPLY = {
-                type = "value"
-            },
-            BLEND_NORMAL = {
-                type = "value"
-            },
-            CULL_ALL = {
-                type = "value"
-            },
-            CULL_BACK = {
-                type = "value"
-            },
-            CULL_FRONT = {
-                type = "value"
-            },
-            CULL_NONE = {
-                type = "value"
-            },
-            DEPTH_TEST_ALWAYS = {
-                type = "value"
-            },
-            DEPTH_TEST_DISABLE = {
-                type = "value"
-            },
-            DEPTH_TEST_EQUAL = {
-                type = "value"
-            },
-            DEPTH_TEST_GREATER = {
-                type = "value"
-            },
-            DEPTH_TEST_GREATER_EQUAL = {
-                type = "value"
-            },
-            DEPTH_TEST_LESS = {
-                type = "value"
-            },
-            DEPTH_TEST_LESS_EQUAL = {
-                type = "value"
-            },
-            DEPTH_TEST_NEVER = {
-                type = "value"
-            },
-            DEPTH_TEST_NOTEQUAL = {
-                type = "value"
-            },
-            FRAME_FROM_DECK = {
-                type = "value"
-            },
-            FRAME_FROM_PARENT = {
-                type = "value"
-            },
-            FRAME_FROM_SELF = {
-                type = "value"
-            },
-            GL_DST_ALPHA = {
-                type = "value"
-            },
-            GL_DST_COLOR = {
-                type = "value"
-            },
-            GL_FUNC_ADD = {
-                type = "value"
-            },
-            GL_FUNC_REVERSE_SUBTRACT = {
-                type = "value"
-            },
-            GL_FUNC_SUBTRACT = {
-                type = "value"
-            },
-            GL_ONE = {
-                type = "value"
-            },
-            GL_ONE_MINUS_DST_ALPHA = {
-                type = "value"
-            },
-            GL_ONE_MINUS_DST_COLOR = {
-                type = "value"
-            },
-            GL_ONE_MINUS_SRC_ALPHA = {
-                type = "value"
-            },
-            GL_ONE_MINUS_SRC_COLOR = {
-                type = "value"
-            },
-            GL_SRC_ALPHA = {
-                type = "value"
-            },
-            GL_SRC_ALPHA_SATURATE = {
-                type = "value"
-            },
-            GL_SRC_COLOR = {
-                type = "value"
-            },
-            GL_ZERO = {
+            ATTR_PARTITION = {
                 type = "value"
             },
             getBounds = {
@@ -7571,6 +8719,13 @@ return {
                 args = "MOAIProp self",
                 returns = "(number xMin, number yMin, number zMin, number xMax, number yMax, number zMax)",
                 valuetype = "number"
+            },
+            getDeck = {
+                type = "method",
+                description = "Get the deck.\n\n–> MOAIProp self\n<– MOAIDeck deck",
+                args = "MOAIProp self",
+                returns = "MOAIDeck deck",
+                valuetype = "MOAIDeck"
             },
             getDims = {
                 type = "method",
@@ -7593,6 +8748,13 @@ return {
                 returns = "number index",
                 valuetype = "number"
             },
+            getPartition = {
+                type = "method",
+                description = "Returns the partition prop is currently held in.\n\n–> MOAILayer self\n<– MOAIPartition partition",
+                args = "MOAILayer self",
+                returns = "MOAIPartition partition",
+                valuetype = "MOAIPartition"
+            },
             getPriority = {
                 type = "method",
                 description = "Returns the current priority of the node or 'nil' if the priority is uninitialized.\n\n–> MOAIProp self\n<– number priority: The node's priority or nil.",
@@ -7614,59 +8776,16 @@ return {
                 returns = "boolean isInside",
                 valuetype = "boolean"
             },
-            isVisible = {
-                type = "method",
-                description = "Returns true if the given prop is visible.\n\n–> MOAIProp self\n<– boolean isVisible",
-                args = "MOAIProp self",
-                returns = "boolean isVisible",
-                valuetype = "boolean"
-            },
-            setBillboard = {
-                type = "method",
-                description = "If set, prop will face camera when rendering.\n\n–> MOAIProp self\n[–> boolean billboard: Default value is false.]\n<– nil",
-                args = "(MOAIProp self, [boolean billboard])",
-                returns = "nil"
-            },
-            setBlendEquation = {
-                type = "method",
-                description = "Set the blend equation. This determines how the srcFactor and dstFactor values set with setBlendMode are interpreted.\n\nOverload:\n–> MOAIProp self\n<– nil\n\nOverload:\n–> MOAIProp self\n–> number equation: One of GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT.\n<– nil",
-                args = "(MOAIProp self, [number equation])",
-                returns = "nil"
-            },
-            setBlendMode = {
-                type = "method",
-                description = "Set the blend mode.\n\nOverload:\n–> MOAIProp self\n<– nil\n\nOverload:\n–> MOAIProp self\n–> number mode: One of MOAIProp.BLEND_NORMAL, MOAIProp.BLEND_ADD, MOAIProp.BLEND_MULTIPLY.\n<– nil\n\nOverload:\n–> MOAIProp self\n–> number srcFactor\n–> number dstFactor\n<– nil",
-                args = "(MOAIProp self, [number mode | (number srcFactor, number dstFactor)])",
-                returns = "nil"
-            },
             setBounds = {
                 type = "method",
                 description = "Sets or clears the partition bounds override.\n\nOverload:\n–> MOAIProp self\n<– nil\n\nOverload:\n–> MOAIProp self\n–> number xMin\n–> number yMin\n–> number zMin\n–> number xMax\n–> number yMax\n–> number zMax\n<– nil",
                 args = "(MOAIProp self, [number xMin, number yMin, number zMin, number xMax, number yMax, number zMax])",
                 returns = "nil"
             },
-            setCullMode = {
-                type = "method",
-                description = "Sets and enables face culling.\n\n–> MOAIProp self\n[–> number cullMode: Default value is MOAIProp.CULL_NONE.]\n<– nil",
-                args = "(MOAIProp self, [number cullMode])",
-                returns = "nil"
-            },
             setDeck = {
                 type = "method",
                 description = "Sets or clears the deck to be indexed by the prop.\n\n–> MOAIProp self\n[–> MOAIDeck deck: Default value is nil.]\n<– nil",
                 args = "(MOAIProp self, [MOAIDeck deck])",
-                returns = "nil"
-            },
-            setDepthMask = {
-                type = "method",
-                description = "Disables or enables depth writing.\n\n–> MOAIProp self\n[–> boolean depthMask: Default value is true.]\n<– nil",
-                args = "(MOAIProp self, [boolean depthMask])",
-                returns = "nil"
-            },
-            setDepthTest = {
-                type = "method",
-                description = "Sets and enables depth testing (assuming depth buffer is present).\n\n–> MOAIProp self\n[–> number depthFunc: Default value is MOAIProp.DEPTH_TEST_DISABLE.]\n<– nil",
-                args = "(MOAIProp self, [number depthFunc])",
                 returns = "nil"
             },
             setExpandForSort = {
@@ -7687,16 +8806,16 @@ return {
                 args = "(MOAIProp self, [number xScale, [number yScale]])",
                 returns = "nil"
             },
+            setHitGranularity = {
+                type = "method",
+                description = "Specify the granularity to use when performing a hit test. This is a hint to the implementation as to how much processing to allocate to a given test. The default value is MOAIProp.HIT_TEST_COARSE, which will cause only the deck or prop bounds to be used. A setting of MOAIProp.HIT_TEST_MEDIUM or MOAIProp.HIT_TEST_FINE is implementation dependent on the deck, but 'medium' usually means to test against the geometry of the deck and 'fine' means to test against both the geometry and the pixels of the hit mask (if any).\n\n–> MOAIProp self\n[–> int granularity: One of MOAIProp.HIT_TEST_COARSE, MOAIProp.HIT_TEST_MEDIUM, MOAIProp.HIT_TEST_FINE. Default is MOAIProp.HIT_TEST_COARSE.]\n<– nil",
+                args = "(MOAIProp self, [int granularity])",
+                returns = "nil"
+            },
             setIndex = {
                 type = "method",
                 description = "Set the prop's index into its deck.\n\n–> MOAIProp self\n[–> number index: Default value is 1.]\n<– nil",
                 args = "(MOAIProp self, [number index])",
-                returns = "nil"
-            },
-            setParent = {
-                type = "method",
-                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAIProp self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
-                args = "(MOAIProp self, [MOAINode parent])",
                 returns = "nil"
             },
             setPriority = {
@@ -7710,184 +8829,13 @@ return {
                 description = "Set a remapper for this prop to use when drawing deck members.\n\n–> MOAIProp self\n[–> MOAIDeckRemapper remapper: Default value is nil.]\n<– nil",
                 args = "(MOAIProp self, [MOAIDeckRemapper remapper])",
                 returns = "nil"
-            },
-            setScissorRect = {
-                type = "method",
-                description = "Set or clear the prop's scissor rect.\n\n–> MOAIProp self\n[–> MOAIScissorRect scissorRect: Default value is nil.]\n<– nil",
-                args = "(MOAIProp self, [MOAIScissorRect scissorRect])",
-                returns = "nil"
-            },
-            setShader = {
-                type = "method",
-                description = "Sets or clears the prop's shader. The prop's shader takes precedence over any shader specified by the deck or its elements.\n\n–> MOAIProp self\n[–> MOAIShader shader: Default value is nil.]\n<– nil",
-                args = "(MOAIProp self, [MOAIShader shader])",
-                returns = "nil"
-            },
-            setTexture = {
-                type = "method",
-                description = "Set or load a texture for this prop. The prop's texture will override the deck's texture.\n\n–> MOAIProp self\n–> variant texture: A MOAITexture, MOAIMultiTexture, MOAIDataBuffer or a path to a texture file\n[–> number transform: Any bitwise combination of MOAITextureBase.QUANTIZE, MOAITextureBase.TRUECOLOR, MOAITextureBase.PREMULTIPLY_ALPHA]\n<– MOAIGfxState texture",
-                args = "(MOAIProp self, variant texture, [number transform])",
-                returns = "MOAIGfxState texture",
-                valuetype = "MOAIGfxState"
-            },
-            setUVTransform = {
-                type = "method",
-                description = "Sets or clears the prop's UV transform.\n\n–> MOAIProp self\n[–> MOAITransformBase transform: Default value is nil.]\n<– nil",
-                args = "(MOAIProp self, [MOAITransformBase transform])",
-                returns = "nil"
-            },
-            setVisible = {
-                type = "method",
-                description = "Sets or clears the prop's visibility.\n\n–> MOAIProp self\n[–> boolean visible: Default value is true.]\n<– nil",
-                args = "(MOAIProp self, [boolean visible])",
-                returns = "nil"
             }
         }
     },
     MOAIProp2D = {
         type = "class",
-        inherits = "MOAITransform2D MOAIColor MOAIRenderable",
-        description = "2D prop.",
-        childs = {
-            getBounds = {
-                type = "method",
-                description = "Return the prop's local bounds or 'nil' if prop bounds is global or missing. The bounds are in model space and will be overridden by the prop's frame if it's been set (using setFrame ())\n\n–> MOAIProp2D self\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
-                args = "MOAIProp2D self",
-                returns = "(number xMin, number yMin, number xMax, number yMax)",
-                valuetype = "number"
-            },
-            getGrid = {
-                type = "method",
-                description = "Get the grid currently connected to the prop.\n\n–> MOAIProp2D self\n<– MOAIGrid grid: Current grid or nil.",
-                args = "MOAIProp2D self",
-                returns = "MOAIGrid grid",
-                valuetype = "MOAIGrid"
-            },
-            getIndex = {
-                type = "method",
-                description = "Gets the value of the deck indexer.\n\n–> MOAIProp2D self\n<– number index",
-                args = "MOAIProp2D self",
-                returns = "number index",
-                valuetype = "number"
-            },
-            getPriority = {
-                type = "method",
-                description = "Returns the current priority of the node or 'nil' if the priority is uninitialized.\n\n–> MOAIProp2D self\n<– number priority: The node's priority or nil.",
-                args = "MOAIProp2D self",
-                returns = "number priority",
-                valuetype = "number"
-            },
-            inside = {
-                type = "method",
-                description = "Returns true if the given world space point falls inside the prop's bounds.\n\n–> MOAIProp2D self\n–> number x\n–> number y\n–> number z\n[–> number pad: Pad the hit bounds (in the prop's local space)]\n<– boolean isInside",
-                args = "(MOAIProp2D self, number x, number y, number z, [number pad])",
-                returns = "boolean isInside",
-                valuetype = "boolean"
-            },
-            setBlendMode = {
-                type = "method",
-                description = "Set the blend mode.\n\nOverload:\n–> MOAIProp2D self\n<– nil\n\nOverload:\n–> MOAIProp2D self\n–> number mode: One of MOAIProp2D.BLEND_NORMAL, MOAIProp2D.BLEND_ADD, MOAIProp2D.BLEND_MULTIPLY.\n<– nil\n\nOverload:\n–> MOAIProp2D self\n–> number srcFactor\n–> number dstFactor\n<– nil",
-                args = "(MOAIProp2D self, [number mode | (number srcFactor, number dstFactor)])",
-                returns = "nil"
-            },
-            setCullMode = {
-                type = "method",
-                description = "Sets and enables face culling.\n\n–> MOAIProp2D self\n[–> number cullMode: Default value is MOAIProp2D.CULL_NONE.]\n<– nil",
-                args = "(MOAIProp2D self, [number cullMode])",
-                returns = "nil"
-            },
-            setDeck = {
-                type = "method",
-                description = "Sets or clears the deck to be indexed by the prop.\n\n–> MOAIProp2D self\n[–> MOAIDeck deck: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAIDeck deck])",
-                returns = "nil"
-            },
-            setDepthMask = {
-                type = "method",
-                description = "Disables or enables depth writing.\n\n–> MOAIProp2D self\n[–> boolean depthMask: Default value is true.]\n<– nil",
-                args = "(MOAIProp2D self, [boolean depthMask])",
-                returns = "nil"
-            },
-            setDepthTest = {
-                type = "method",
-                description = "Sets and enables depth testing (assuming depth buffer is present).\n\n–> MOAIProp2D self\n[–> number depthFunc: Default value is MOAIProp2D.DEPTH_TEST_DISABLE.]\n<– nil",
-                args = "(MOAIProp2D self, [number depthFunc])",
-                returns = "nil"
-            },
-            setExpandForSort = {
-                type = "method",
-                description = "Used when drawing with a layout scheme (i.e. MOAIGrid). Expanding for sort causes the prop to emit a sub-prim for each component of the layout. For example, when attaching a MOAIGrid to a prop, each cell of the grid will be added to the render queue for sorting against all other props and sub-prims. This is obviously less efficient, but still more efficient then using an separate prop for each cell or object.\n\n–> MOAIProp2D self\n–> boolean expandForSort: Default value is false.\n<– nil",
-                args = "(MOAIProp2D self, boolean expandForSort)",
-                returns = "nil"
-            },
-            setFrame = {
-                type = "method",
-                description = "Sets the fitting frame of the prop.\n\nOverload:\n–> MOAIProp2D self\n<– nil\n\nOverload:\n–> MOAIProp2D self\n–> number xMin\n–> number yMin\n–> number xMax\n–> number yMax\n<– nil",
-                args = "(MOAIProp2D self, [number xMin, number yMin, number xMax, number yMax])",
-                returns = "nil"
-            },
-            setGrid = {
-                type = "method",
-                description = "Sets or clears the prop's grid indexer. The grid indexer (if any) will override the standard indexer.\n\n–> MOAIProp2D self\n[–> MOAIGrid grid: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAIGrid grid])",
-                returns = "nil"
-            },
-            setGridScale = {
-                type = "method",
-                description = "Scale applied to deck items before rendering to grid cell.\n\n–> MOAIProp2D self\n[–> number xScale: Default value is 1.]\n[–> number yScale: Default value is 1.]\n<– nil",
-                args = "(MOAIProp2D self, [number xScale, [number yScale]])",
-                returns = "nil"
-            },
-            setIndex = {
-                type = "method",
-                description = "Set the prop's index into its deck.\n\n–> MOAIProp2D self\n[–> number index: Default value is 1.]\n<– nil",
-                args = "(MOAIProp2D self, [number index])",
-                returns = "nil"
-            },
-            setParent = {
-                type = "method",
-                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAIProp2D self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAINode parent])",
-                returns = "nil"
-            },
-            setPriority = {
-                type = "method",
-                description = "Sets or clears the node's priority. Clear the priority to have MOAIPartition automatically assign a priority to a node when it is added.\n\n–> MOAIProp2D self\n[–> number priority: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [number priority])",
-                returns = "nil"
-            },
-            setRemapper = {
-                type = "method",
-                description = "Set a remapper for this prop to use when drawing deck members.\n\n–> MOAIProp2D self\n[–> MOAIDeckRemapper remapper: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAIDeckRemapper remapper])",
-                returns = "nil"
-            },
-            setShader = {
-                type = "method",
-                description = "Sets or clears the prop's shader. The prop's shader takes precedence over any shader specified by the deck or its elements.\n\n–> MOAIProp2D self\n[–> MOAIShader shader: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAIShader shader])",
-                returns = "nil"
-            },
-            setTexture = {
-                type = "method",
-                description = "Set or load a texture for this prop. The prop's texture will override the deck's texture.\n\n–> MOAIProp2D self\n–> variant texture: A MOAITexture, MOAIMultiTexture, MOAIDataBuffer or a path to a texture file\n[–> number transform: Any bitwise combination of MOAITextureBase.QUANTIZE, MOAITextureBase.TRUECOLOR, MOAITextureBase.PREMULTIPLY_ALPHA]\n<– MOAIGfxState texture",
-                args = "(MOAIProp2D self, variant texture, [number transform])",
-                returns = "MOAIGfxState texture",
-                valuetype = "MOAIGfxState"
-            },
-            setUVTransform = {
-                type = "method",
-                description = "Sets or clears the prop's UV transform.\n\n–> MOAIProp2D self\n[–> MOAITransformBase transform: Default value is nil.]\n<– nil",
-                args = "(MOAIProp2D self, [MOAITransformBase transform])",
-                returns = "nil"
-            },
-            setVisible = {
-                type = "method",
-                description = "Sets or clears the prop's visibility.\n\n–> MOAIProp2D self\n[–> boolean visible: Default value is true.]\n<– nil",
-                args = "(MOAIProp2D self, [boolean visible])",
-                returns = "nil"
-            }
-        }
+        inherits = "MOAILuaObject",
+        childs = {}
     },
     MOAIRenderable = {
         type = "class",
@@ -7981,7 +8929,7 @@ return {
     },
     MOAIScriptDeck = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Scriptable deck object.",
         childs = {
             setDrawCallback = {
@@ -8040,36 +8988,15 @@ return {
         inherits = "MOAISerializerBase",
         description = "Manages serialization state of Lua tables and Moai objects. The serializer will produce a Lua script that, when executed, will return the ordered list of objects added to it using the serialize () function.",
         childs = {
-            exportToFile = {
-                type = "method",
-                description = "Exports the contents of the serializer to a file.\n\n–> MOAISerializer self\n–> string filename\n<– nil",
-                args = "(MOAISerializer self, string filename)",
-                returns = "nil"
-            },
-            exportToString = {
-                type = "method",
-                description = "Exports the contents of the serializer to a string.\n\n–> MOAISerializer self\n<– string result",
-                args = "MOAISerializer self",
-                returns = "string result",
-                valuetype = "string"
-            },
-            serialize = {
-                type = "method",
-                description = "Adds a table or object to the serializer.\n\nOverload:\n–> MOAISerializer self\n–> table data: The table to serialize.\n<– nil\n\nOverload:\n–> MOAISerializer self\n–> MOAILuaObject data: The object to serialize.\n<– nil",
-                args = "(MOAISerializer self, (table data | MOAILuaObject data))",
-                returns = "nil"
-            },
             serializeToFile = {
                 type = "function",
-                description = "Serializes the specified table or object to a file.\n\nOverload:\n–> string filename: The file to create.\n–> table data: The table to serialize.\n<– nil\n\nOverload:\n–> string filename: The file to create.\n–> MOAILuaObject data: The object to serialize.\n<– nil",
-                args = "(string filename, (table data | MOAILuaObject data))",
+                description = "Serializes the specified table or object to a file.\n\nOverload:\n–> string filename: The file to create.\n–> table data: The table to serialize.\n<– nil\n\nOverload:\n–> string filename: The file to create.\n–> MOAILuaObject data: The object to serialize.\n<– nil\n\nOverload:\n–> MOAISerializer self\n–> string filename: The file to create.\n–> table data: The table to serialize.\n<– nil\n\nOverload:\n–> MOAISerializer self\n–> string filename: The file to create.\n–> MOAILuaObject data: The object to serialize.\n<– nil",
+                args = "([MOAISerializer self], string filename, (table data | MOAILuaObject data))",
                 returns = "nil"
             },
             serializeToString = {
                 type = "function",
-                description = "Serializes the specified table or object to a string.\n\nOverload:\n–> table data: The table to serialize.\n<– string serialized: The serialized string.\n\nOverload:\n–> MOAILuaObject data: The object to serialize.\n<– string serialized: The serialized string.",
-                args = "(table data | MOAILuaObject data)",
-                returns = "string serialized",
+                description = "Serializes the specified table or object to a string.\n\nOverload:\n–> table data: The table to serialize.\n<– string serialized: The serialized string.\n\nOverload:\n–> MOAILuaObject data: The object to serialize.\n<– string serialized: The serialized string.\n\nOverload:\n–> MOAISerializer self\n–> table data: The table to serialize.\n<– string serialized: The serialized string.\n\nOverload:\n–> MOAISerializer self\n–> MOAILuaObject data: The object to serialize.\n<– string serialized: The serialized string.",
                 valuetype = "string"
             }
         }
@@ -8081,88 +9008,9 @@ return {
     },
     MOAIShader = {
         type = "class",
-        inherits = "MOAINode MOAIGfxResource",
-        description = "Programmable shader class.",
-        childs = {
-            UNIFORM_COLOR = {
-                type = "value"
-            },
-            UNIFORM_FLOAT = {
-                type = "value"
-            },
-            UNIFORM_INT = {
-                type = "value"
-            },
-            UNIFORM_PEN_COLOR = {
-                type = "value"
-            },
-            UNIFORM_SAMPLER = {
-                type = "value"
-            },
-            UNIFORM_TRANSFORM = {
-                type = "value"
-            },
-            UNIFORM_VIEW_PROJ = {
-                type = "value"
-            },
-            UNIFORM_WORLD = {
-                type = "value"
-            },
-            UNIFORM_WORLD_VIEW = {
-                type = "value"
-            },
-            UNIFORM_WORLD_VIEW_PROJ = {
-                type = "value"
-            },
-            clearUniform = {
-                type = "method",
-                description = "Clears a uniform mapping.\n\n–> MOAIShader self\n–> number idx\n<– nil",
-                args = "(MOAIShader self, number idx)",
-                returns = "nil"
-            },
-            declareUniform = {
-                type = "method",
-                description = "Declares a uniform mapping.\n\n–> MOAIShader self\n–> number idx\n–> string name\n[–> number type: One of MOAIShader.UNIFORM_COLOR, MOAIShader.UNIFORM_FLOAT, MOAIShader.UNIFORM_INT, MOAIShader.UNIFORM_TRANSFORM, MOAIShader.UNIFORM_PEN_COLOR, MOAIShader.UNIFORM_VIEW_PROJ, MOAIShader.UNIFORM_WORLD, MOAIShader.UNIFORM_WORLD_VIEW, MOAIShader.UNIFORM_WORLD_VIEW_PROJ]\n<– nil",
-                args = "(MOAIShader self, number idx, string name, [number type])",
-                returns = "nil"
-            },
-            declareUniformFloat = {
-                type = "method",
-                description = "Declares an float uniform.\n\n–> MOAIShader self\n–> number idx\n–> string name\n[–> number value: Default value is 0.]\n<– nil",
-                args = "(MOAIShader self, number idx, string name, [number value])",
-                returns = "nil"
-            },
-            declareUniformInt = {
-                type = "method",
-                description = "Declares an integer uniform.\n\n–> MOAIShader self\n–> number idx\n–> string name\n[–> number value: Default value is 0.]\n<– nil",
-                args = "(MOAIShader self, number idx, string name, [number value])",
-                returns = "nil"
-            },
-            declareUniformSampler = {
-                type = "method",
-                description = "Declares an uniform to be used as a texture unit index. This uniform is internally an int, but when loaded into the shader the number one subtracted from its value. This allows the user to maintain consistency with Lua's convention of indexing from one.\n\n–> MOAIShader self\n–> number idx\n–> string name\n[–> number textureUnit: Default value is 1.]\n<– nil",
-                args = "(MOAIShader self, number idx, string name, [number textureUnit])",
-                returns = "nil"
-            },
-            load = {
-                type = "method",
-                description = "Load a shader program.\n\n–> MOAIShader self\n–> string vertexShaderSource\n–> string fragmentShaderSource\n<– nil",
-                args = "(MOAIShader self, string vertexShaderSource, string fragmentShaderSource)",
-                returns = "nil"
-            },
-            reserveUniforms = {
-                type = "method",
-                description = "Reserve shader uniforms.\n\n–> MOAIShader self\n[–> number nUniforms: Default value is 0.]\n<– nil",
-                args = "(MOAIShader self, [number nUniforms])",
-                returns = "nil"
-            },
-            setVertexAttribute = {
-                type = "method",
-                description = "Names a shader vertex attribute.\n\n–> MOAIShader self\n–> number index: Default value is 1.\n–> string name: Name of attribute.\n<– nil",
-                args = "(MOAIShader self, number index, string name)",
-                returns = "nil"
-            }
-        }
+        inherits = "MOAINode",
+        description = 'This represents the "instance" of a shader program. Its purpose is to enable sharing of a single program across multiple sets of uniform values and to expose uniform values as MOAINode attributes. As uniform values change, they will "dirty" the underlying shader program and cause its values to re-bind prior to drawing. If minimal re-binds are desired, simply create one shader program per shader instance.',
+        childs = {}
     },
     MOAIShaderMgr = {
         type = "class",
@@ -8172,22 +9020,131 @@ return {
             DECK2D_SHADER = {
                 type = "value"
             },
+            DECK2D_SNAPPING_SHADER = {
+                type = "value"
+            },
             DECK2D_TEX_ONLY_SHADER = {
+                type = "value"
+            },
+            FONT_EFFECTS_SHADER = {
                 type = "value"
             },
             FONT_SHADER = {
                 type = "value"
             },
+            FONT_SNAPPING_SHADER = {
+                type = "value"
+            },
             LINE_SHADER = {
+                type = "value"
+            },
+            LINE_SHADER_3D = {
                 type = "value"
             },
             MESH_SHADER = {
                 type = "value"
             },
-            getShader = {
+            getProgram = {
                 type = "function",
-                description = "Return one of the built-in shaders.\n\n–> number shaderID: One of MOAIShaderMgr.DECK2D_SHADER, MOAIShaderMgr.FONT_SHADER, MOAIShaderMgr.LINE_SHADER, MOAIShaderMgr.MESH_SHADER\n<– nil",
+                description = "Return one of the built-in shader programs.\n\n–> number shaderID: One of MOAIShaderMgr.DECK2D_SHADER, MOAIShaderMgr.FONT_SHADER, MOAIShaderMgr.LINE_SHADER, MOAIShaderMgr.MESH_SHADER\n<– nil",
                 args = "number shaderID",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIShaderProgram = {
+        type = "class",
+        inherits = "MOAIGfxResource",
+        description = "Programmable shader class. This represents the shader program itself, which may be shared by one or more MOAIShader instances. The shader program holds the graphics resource, and the shader instances apply the (non-global) uniform values.",
+        childs = {
+            GLOBAL_VIEW_HEIGHT = {
+                type = "value"
+            },
+            GLOBAL_VIEW_PROJ = {
+                type = "value"
+            },
+            GLOBAL_VIEW_WIDTH = {
+                type = "value"
+            },
+            GLOBAL_WORLD = {
+                type = "value"
+            },
+            GLOBAL_WORLD_INVERSE = {
+                type = "value"
+            },
+            GLOBAL_WORLD_VIEW = {
+                type = "value"
+            },
+            GLOBAL_WORLD_VIEW_INVERSE = {
+                type = "value"
+            },
+            GLOBAL_WORLD_VIEW_PROJ = {
+                type = "value"
+            },
+            UNIFORM_FLOAT = {
+                type = "value"
+            },
+            UNIFORM_INDEX = {
+                type = "value"
+            },
+            UNIFORM_INT = {
+                type = "value"
+            },
+            UNIFORM_MATRIX_F3 = {
+                type = "value"
+            },
+            UNIFORM_MATRIX_F4 = {
+                type = "value"
+            },
+            UNIFORM_VECTOR_F4 = {
+                type = "value"
+            },
+            clearUniform = {
+                type = "method",
+                description = "Clears a uniform mapping.\n\n–> MOAIShaderProgram self\n–> number idx\n<– nil",
+                args = "(MOAIShaderProgram self, number idx)",
+                returns = "nil"
+            },
+            declareUniform = {
+                type = "method",
+                description = "Declares a uniform mapping.\n\n–> MOAIShaderProgram self\n–> number idx\n–> string name\n[–> number type: One of MOAIShaderProgram.UNIFORM_FLOAT, MOAIShaderProgram.UNIFORM_INDEX, MOAIShaderProgram.UNIFORM_INT, MOAIShaderProgram.UNIFORM_MATRIX_F3, MOAIShaderProgram.UNIFORM_MATRIX_F4, MOAIShaderProgram.UNIFORM_VECTOR_F4]\n<– nil",
+                args = "(MOAIShaderProgram self, number idx, string name, [number type])",
+                returns = "nil"
+            },
+            declareUniformFloat = {
+                type = "method",
+                description = "Declares an float uniform.\n\n–> MOAIShaderProgram self\n–> number idx\n–> string name\n[–> number value: Default value is 0.]\n<– nil",
+                args = "(MOAIShaderProgram self, number idx, string name, [number value])",
+                returns = "nil"
+            },
+            declareUniformInt = {
+                type = "method",
+                description = "Declares an integer uniform.\n\n–> MOAIShaderProgram self\n–> number idx\n–> string name\n[–> number value: Default value is 0.]\n<– nil",
+                args = "(MOAIShaderProgram self, number idx, string name, [number value])",
+                returns = "nil"
+            },
+            declareUniformSampler = {
+                type = "method",
+                description = "Declares an uniform to be used as a texture unit index. This uniform is internally an int, but when loaded into the shader the number one is subtracted from its value. This allows the user to maintain consistency with Lua's convention of indexing from one.\n\n–> MOAIShaderProgram self\n–> number idx\n–> string name\n[–> number textureUnit: Default value is 1.]\n<– nil",
+                args = "(MOAIShaderProgram self, number idx, string name, [number textureUnit])",
+                returns = "nil"
+            },
+            load = {
+                type = "method",
+                description = "Load a shader program.\n\n–> MOAIShaderProgram self\n–> string vertexShaderSource\n–> string fragmentShaderSource\n<– nil",
+                args = "(MOAIShaderProgram self, string vertexShaderSource, string fragmentShaderSource)",
+                returns = "nil"
+            },
+            reserveUniforms = {
+                type = "method",
+                description = "Reserve shader uniforms.\n\n–> MOAIShaderProgram self\n[–> number nUniforms: Default value is 0.]\n<– nil",
+                args = "(MOAIShaderProgram self, [number nUniforms])",
+                returns = "nil"
+            },
+            setVertexAttribute = {
+                type = "method",
+                description = "Names a shader vertex attribute.\n\n–> MOAIShaderProgram self\n–> number index: Default value is 1.\n–> string name: Name of attribute.\n<– nil",
+                args = "(MOAIShaderProgram self, number index, string name)",
                 returns = "nil"
             }
         }
@@ -8286,18 +9243,19 @@ return {
                 args = "()",
                 returns = "nil"
             },
-            forceGC = {
-                type = "function",
-                description = "Runs the garbage collector repeatedly until no more MOAIObjects can be collected.\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
             framesToTime = {
                 type = "function",
                 description = "Converts the number of frames to time passed in seconds.\n\n–> number frames: The number of frames.\n<– number time: The equivalent number of seconds for the specified number of frames.",
                 args = "number frames",
                 returns = "number time",
                 valuetype = "number"
+            },
+            getActionMgr = {
+                type = "function",
+                description = "Get the sim's action tree. This is the 'global' action tree that all newly started actions are automatically added.\n\n<– MOAIActionTree actionMgr",
+                args = "()",
+                returns = "MOAIActionTree actionMgr",
+                valuetype = "MOAIActionTree"
             },
             getDeviceTime = {
                 type = "function",
@@ -8306,26 +9264,12 @@ return {
                 returns = "number time",
                 valuetype = "number"
             },
-            getElapsedFrames = {
-                type = "function",
-                description = "Gets the number of frames elapsed since the application was started.\n\n<– number frames: The number of elapsed frames.",
-                args = "()",
-                returns = "number frames",
-                valuetype = "number"
-            },
             getElapsedTime = {
                 type = "function",
                 description = "Gets the number of seconds elapsed since the application was started.\n\n<– number time: The number of elapsed seconds.",
                 args = "()",
                 returns = "number time",
                 valuetype = "number"
-            },
-            getHistogram = {
-                type = "function",
-                description = "Generates a histogram of active MOAIObjects and returns it in a table containing object tallies indexed by object class names.\n\n<– table histogram",
-                args = "()",
-                returns = "table histogram",
-                valuetype = "table"
             },
             getLoopFlags = {
                 type = "function",
@@ -8348,11 +9292,17 @@ return {
                 returns = "table usage",
                 valuetype = "table"
             },
+            getMemoryUsagePlain = {
+                type = "function",
+                description = "Returns lua and texture memory usage measured by MOAI subsystems. This function tries to avoid allocations to minimize skewing the results. Suitable for realtime memory monitoring.\n\n<– number lua: memory usage in bytes\n<– number texture: memory usage in bytes",
+                args = "()",
+                returns = "(number lua, number texture)",
+                valuetype = "number"
+            },
             getPerformance = {
                 type = "function",
-                description = "Returns an estimated frames per second based on measurements taken at every render.\n\n<– number fps: Estimated frames per second.",
+                description = "Returns an estimated frames per second and other performance counters based on measurements taken at every render.\n\n<– number fps: Estimated frames per second.\n<– number seconds: Last ActionTree update duration\n<– number seconds: Last NodeMgr update duration\n<– number seconds: Last sim duration\n<– number seconds: Last render duration",
                 args = "()",
-                returns = "number fps",
                 valuetype = "number"
             },
             getStep = {
@@ -8360,6 +9310,13 @@ return {
                 description = "Gets the amount of time (in seconds) that it takes for one frame to pass.\n\n<– number size: The size of the frame; the time it takes for one frame to pass.",
                 args = "()",
                 returns = "number size",
+                valuetype = "number"
+            },
+            getStepCount = {
+                type = "function",
+                description = "Gets the number of times the sim was stepped since the application was started.\n\n<– number steps: The number of times the sim was stepped.",
+                args = "()",
+                returns = "number steps",
                 valuetype = "number"
             },
             hideCursor = {
@@ -8398,18 +9355,6 @@ return {
                 args = "MOAIRenderable renderable",
                 returns = "nil"
             },
-            reportHistogram = {
-                type = "function",
-                description = "Generates a histogram of active MOAIObjects.\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            reportLeaks = {
-                type = "function",
-                description = 'Analyze the currently allocated MOAI objects and create a textual report of where they were declared, and what Lua references (if any) can be found. NOTE: This is incredibly slow, so only use to debug leaking memory issues. This will also trigger a full garbage collection before performing the required report. (Equivalent of collectgarbage("collect").)\n\n–> boolean clearAfter: If true, it will reset the allocation tables (without freeing the underlying objects). This allows this method to be called after a known operation and get only those allocations created since the last call to this function.\n<– nil',
-                args = "boolean clearAfter",
-                returns = "nil"
-            },
             setBoostThreshold = {
                 type = "function",
                 description = "Sets the boost threshold, a scalar applied to step. If the gap between simulation time and device time is greater than the step size multiplied by the boost threshold and MOAISim.SIM_LOOP_ALLOW_BOOST is set in the loop flags, then the simulation is updated once with a large, variable step to make up the entire gap.\n\n[–> number boostThreshold: Default value is DEFAULT_BOOST_THRESHOLD.]\n<– nil",
@@ -8422,16 +9367,16 @@ return {
                 args = "number budget",
                 returns = "nil"
             },
-            setHistogramEnabled = {
+            setGCActive = {
                 type = "function",
-                description = "Enable tracking of every MOAILuaObject so that an object count histogram may be generated.\n\n[–> boolean enable: Default value is false.]\n<– nil",
-                args = "[boolean enable]",
+                description = "Enable incremental garbage collection.\n\n–> boolean active: Default value is false.\n<– nil",
+                args = "boolean active",
                 returns = "nil"
             },
-            setLeakTrackingEnabled = {
+            setGCStep = {
                 type = "function",
-                description = "Enable extra memory book-keeping measures that allow all MOAI objects to be tracked back to their point of allocation (in Lua). Use together with MOAISim.reportLeaks() to determine exactly where your memory usage is being created. NOTE: This is very expensive in terms of both CPU and the extra memory associated with the stack info book-keeping. Use only when tracking down leaks.\n\n[–> boolean enable: Default value is false.]\n<– nil",
-                args = "[boolean enable]",
+                description = "Sets a step to use when running the incremental gc each frame.\n\n–> number step\n<– nil",
+                args = "number step",
                 returns = "nil"
             },
             setLongDelayThreshold = {
@@ -8464,6 +9409,18 @@ return {
                 args = "number count",
                 returns = "nil"
             },
+            setStepSmoothing = {
+                type = "function",
+                description = "Average delta time over N last frames. This is useful to filter out momentary single-frame spikes. Can make difference even in fixed step setup (helps to avoids double steps).\n\n–> number count: Number of frames. Default is 0 (no smoothing).\n<– nil",
+                args = "number count",
+                returns = "nil"
+            },
+            setTextInputRect = {
+                type = "function",
+                description = "Sets text input rect.\n\n<– nil",
+                args = "()",
+                returns = "nil"
+            },
             setTimerError = {
                 type = "function",
                 description = "Sets the tolerance for timer error. This is a multiplier of step. Timer error tolerance is step * timerError.\n\n–> number timerError: Default value is 0.0.\n<– nil",
@@ -8491,15 +9448,65 @@ return {
             }
         }
     },
+    MOAISingleTexture = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {
+            getSize = {
+                type = "method",
+                description = "Returns the width and height of the texture's source image. Avoid using the texture width and height to compute UV coordinates from pixels, as this will prevent texture resolution swapping.\n\n–> MOAISingleTexture self\n<– number width\n<– number height",
+                args = "MOAISingleTexture self",
+                returns = "(number width, number height)",
+                valuetype = "number"
+            },
+            release = {
+                type = "method",
+                description = "Releases any memory associated with the texture.\n\n–> MOAISingleTexture self\n<– nil",
+                args = "MOAISingleTexture self",
+                returns = "nil"
+            },
+            setDebugName = {
+                type = "method",
+                description = "Set a name for the texture to use during memory logging.\n\n–> MOAISingleTexture self\n–> string debugName\n<– nil",
+                args = "(MOAISingleTexture self, string debugName)",
+                returns = "nil"
+            },
+            setFilter = {
+                type = "method",
+                description = "Set default filtering mode for texture.\n\n–> MOAISingleTexture self\n–> number min: One of MOAISingleTexture.GL_LINEAR, MOAISingleTexture.GL_LINEAR_MIPMAP_LINEAR, MOAISingleTexture.GL_LINEAR_MIPMAP_NEAREST, MOAISingleTexture.GL_NEAREST, MOAISingleTexture.GL_NEAREST_MIPMAP_LINEAR, MOAISingleTexture.GL_NEAREST_MIPMAP_NEAREST\n[–> number mag: Defaults to value passed to 'min'.]\n<– nil",
+                args = "(MOAISingleTexture self, number min, [number mag])",
+                returns = "nil"
+            },
+            setWrap = {
+                type = "method",
+                description = "Set wrapping mode for texture.\n\n–> MOAISingleTexture self\n–> boolean wrap: Texture will wrap if true, clamp if not.\n<– nil",
+                args = "(MOAISingleTexture self, boolean wrap)",
+                returns = "nil"
+            }
+        }
+    },
+    MOAIStandardDeck = {
+        type = "class",
+        inherits = "MOAIDeck MOAIMaterialBatch",
+        description = "Base class for decks with standard capabilities (materials, bounds override).",
+        childs = {
+            setBoundsDeck = {
+                type = "method",
+                description = "Set or clear the bounds override deck.\n\n–> MOAIStandardDeck self\n[–> MOAIBoundsDeck boundsDeck]\n<– nil",
+                args = "(MOAIStandardDeck self, [MOAIBoundsDeck boundsDeck])",
+                returns = "nil"
+            }
+        }
+    },
     MOAIStaticGlyphCache = {
         type = "class",
-        inherits = "MOAIGlyphCacheBase",
+        inherits = "MOAIGlyphCache",
         description = "This is the default implementation of a static glyph cache. All is does is accept an image via setImage () and create a set of textures from that image. It does not implement getImage ().",
         childs = {}
     },
     MOAIStream = {
         type = "class",
-        inherits = "MOAILuaObject",
+        inherits = "ZLStream MOAILuaObject",
         description = "Interface for reading/writing binary data.",
         childs = {
             SEEK_CUR = {
@@ -8510,6 +9517,20 @@ return {
             },
             SEEK_SET = {
                 type = "value"
+            },
+            collapse = {
+                type = "method",
+                description = 'Removes a series of spans from the stream and "collapses" the remainder. Used to remove a series of regularly repeating bytes. For example, if the stream contains vertices and user wishes to remove the vertex normals.\n\n–> MOAIStream self\n–> number clipBase: Offset from the cursot to the first clip to remove.\n–> number clipSize: Size of the clip to remove.\n–> number chunkSize: The stride: the next clip will begin at clipBase + chunkSize.\n[–> number size: The amount of the stream to process. Default is stream.getLength () - stream.getCursor ()]\n[–> boolean invert: Inverts the clip. Default value is false.]\n<– number result: The new size in bytes of the collapsed section of the stream.',
+                args = "(MOAIStream self, number clipBase, number clipSize, number chunkSize, [number size, [boolean invert]])",
+                returns = "number result",
+                valuetype = "number"
+            },
+            compact = {
+                type = "method",
+                description = "If the stream is backed by an internal buffer, and the buffer may be reallocated by the stream, compact () causes the buffer to be reallocated so that it more closely matches the current length of the stream. For streams that are not buffer backer or that may not be reallocated, compact () has no effect.\n\n–> MOAIStream self\n<– number",
+                args = "MOAIStream self",
+                returns = "number",
+                valuetype = "number"
             },
             flush = {
                 type = "method",
@@ -8575,7 +9596,7 @@ return {
             },
             readFormat = {
                 type = "method",
-                description = "Reads a series of values from the stream given a format string. Valid tokens for the format string are: u8 u16 u32 f d s8 s16 s32. Tokens may be optionally separated by spaces of commas.\n\n–> MOAIStream self\n–> string format\n<– ... values: Values read from the stream or 'nil'.\n<– number size: Number of bytes successfully read.",
+                description = "Reads a series of values from the stream given a format string. Valid tokens for the format string are: u8 u16 u32 f d s8 s16 s32. Tokens may be optionally separated by spaces or commas.\n\n–> MOAIStream self\n–> string format\n<– ... values: Values read from the stream or 'nil'.\n<– number size: Number of bytes successfully read.",
                 args = "(MOAIStream self, string format)",
                 returns = "(... values, number size)",
                 valuetype = "..."
@@ -8603,8 +9624,8 @@ return {
             },
             seek = {
                 type = "method",
-                description = "Repositions the cursor in the stream.\n\n–> MOAIStream self\n–> number offset: Value from the stream.\n[–> number mode: One of MOAIStream.SEEK_CUR, MOAIStream.SEEK_END, MOAIStream.SEEK_SET. Default value is MOAIStream.SEEK_SET.]\n<– nil",
-                args = "(MOAIStream self, number offset, [number mode])",
+                description = "Repositions the cursor in the stream.\n\n–> MOAIStream self\n[–> number offset: Value from the stream. Default value is 0.]\n[–> number mode: One of MOAIStream.SEEK_CUR, MOAIStream.SEEK_END, MOAIStream.SEEK_SET. Default value is MOAIStream.SEEK_SET.]\n<– nil",
+                args = "(MOAIStream self, [number offset, [number mode]])",
                 returns = "nil"
             },
             write = {
@@ -8634,6 +9655,12 @@ return {
                 args = "(MOAIStream self, number value)",
                 returns = "number size",
                 valuetype = "number"
+            },
+            writeColor32 = {
+                type = "method",
+                description = "Write a packed 32-bit color to the vertex buffer.\n\n–> MOAIStream self\n[–> number r: Default value is 1.]\n[–> number g: Default value is 1.]\n[–> number b: Default value is 1.]\n[–> number a: Default value is 1.]\n<– nil",
+                args = "(MOAIStream self, [number r, [number g, [number b, [number a]]]])",
+                returns = "nil"
             },
             writeDouble = {
                 type = "method",
@@ -8686,55 +9713,49 @@ return {
             }
         }
     },
-    MOAIStreamReader = {
+    MOAIStreamAdapter = {
         type = "class",
-        inherits = "MOAIStream",
-        description = "MOAIStreamReader may be attached to another stream for the purpose of decoding and/or decompressing bytes read from that stream using a given algorithm (such as base64 or 'deflate').",
+        inherits = "ZLStreamProxy MOAIStream",
+        description = "MOAIStreamAdapter may be attached to another stream for the purpose of encoding/decoding and/or compressing/decompressing bytes read in that stream using a given algorithm (such as base64 or 'deflate').",
         childs = {
             close = {
                 type = "method",
-                description = "Detach the target stream. (This only detaches the target from the formatter; it does not also close the target stream).\n\n–> MOAIStreamReader self\n<– nil",
-                args = "MOAIStreamReader self",
-                returns = "nil"
-            },
-            openBase64 = {
-                type = "method",
-                description = "Open a base 64 formatted stream for reading (i.e. decode bytes from base64).\n\n–> MOAIStreamReader self\n–> MOAIStream target\n<– boolean success",
-                args = "(MOAIStreamReader self, MOAIStream target)",
-                returns = "boolean success",
-                valuetype = "boolean"
-            },
-            openDeflate = {
-                type = "method",
-                description = "Open a 'deflate' formatted stream for reading (i.e. decompress bytes using the 'deflate' algorithm).\n\n–> MOAIStreamReader self\n–> MOAIStream target\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– boolean success",
-                args = "(MOAIStreamReader self, MOAIStream target, [number windowBits])",
-                returns = "boolean success",
-                valuetype = "boolean"
-            }
-        }
-    },
-    MOAIStreamWriter = {
-        type = "class",
-        inherits = "MOAIStream",
-        description = "MOAIStreamWriter may be attached to another stream for the purpose of encoding and/or compressing bytes written to that stream using a given algorithm (such as base64 or 'deflate').",
-        childs = {
-            close = {
-                type = "method",
-                description = "Flush any remaining buffered data and detach the target stream. (This only detaches the target from the formatter; it does not also close the target stream).\n\n–> MOAIStreamWriter self\n<– nil",
+                description = "Flush any remaining buffered data (if a write) and detach the target stream. (This only detaches the target from the formatter; it does not also close the target stream).\n\n–> MOAIStreamWriter self\n<– nil",
                 args = "MOAIStreamWriter self",
                 returns = "nil"
             },
             openBase64 = {
                 type = "method",
-                description = "Open a base 64 formatted stream for writing (i.e. encode bytes to base64).\n\n–> MOAIStreamWriter self\n–> MOAIStream target\n<– boolean success",
-                args = "(MOAIStreamWriter self, MOAIStream target)",
+                description = "Open a base 64 formatted stream for reading (i.e. decode bytes from base64).\n\n–> MOAIStreamAdapter self\n–> MOAIStream target\n<– boolean success",
+                args = "(MOAIStreamAdapter self, MOAIStream target)",
+                returns = "boolean success",
+                valuetype = "boolean"
+            },
+            openBase64Writer = {
+                type = "method",
+                description = "Open a base 64 formatted stream for writing (i.e. encode bytes to base64).\n\n–> MOAIStreamAdapter self\n–> MOAIStream target\n<– boolean success",
+                args = "(MOAIStreamAdapter self, MOAIStream target)",
                 returns = "boolean success",
                 valuetype = "boolean"
             },
             openDeflate = {
                 type = "method",
-                description = "Open a 'deflate' formatted stream for writing (i.e. compress bytes using the 'deflate' algorithm).\n\n–> MOAIStreamWriter self\n–> MOAIStream target\n[–> number level: The level used in the DEFLATE algorithm.]\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– boolean success",
-                args = "(MOAIStreamWriter self, MOAIStream target, [number level, [number windowBits]])",
+                description = "Open a 'deflate' formatted stream for reading (i.e. decompress bytes using the 'deflate' algorithm).\n\n–> MOAIStreamAdapter self\n–> MOAIStream target\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– boolean success",
+                args = "(MOAIStreamAdapter self, MOAIStream target, [number windowBits])",
+                returns = "boolean success",
+                valuetype = "boolean"
+            },
+            openDeflateWriter = {
+                type = "method",
+                description = "Open a 'deflate' formatted stream for writing (i.e. compress bytes using the 'deflate' algorithm).\n\n–> MOAIStreamAdapter self\n–> MOAIStream target\n[–> number level: The level used in the DEFLATE algorithm.]\n[–> number windowBits: The window bits used in the DEFLATE algorithm.]\n<– boolean success",
+                args = "(MOAIStreamAdapter self, MOAIStream target, [number level, [number windowBits]])",
+                returns = "boolean success",
+                valuetype = "boolean"
+            },
+            openHex = {
+                type = "method",
+                description = "Open a hex formatted stream for reading and writing (i.e. decode and encode bytes to and from hex).\n\n–> MOAIStreamReader self\n–> MOAIStream target\n<– boolean success",
+                args = "(MOAIStreamReader self, MOAIStream target)",
                 returns = "boolean success",
                 valuetype = "boolean"
             }
@@ -8742,7 +9763,7 @@ return {
     },
     MOAIStretchPatch2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Moai implementation of a 9-patch. Textured quad with any number of stretchable and non-stretchable 'bands.' Grid drawing not supported.",
         childs = {
             reserveColumns = {
@@ -8765,8 +9786,8 @@ return {
             },
             setColumn = {
                 type = "method",
-                description = "Set the stretch properties of a patch column.\n\n–> MOAIStretchPatch2D self\n–> number idx\n–> number weight\n–> boolean conStretch\n<– nil",
-                args = "(MOAIStretchPatch2D self, number idx, number weight, boolean conStretch)",
+                description = "Set the stretch properties of a patch column.\n\n–> MOAIStretchPatch2D self\n–> number idx\n–> number percent\n–> boolean canStretch\n<– nil",
+                args = "(MOAIStretchPatch2D self, number idx, number percent, boolean canStretch)",
                 returns = "nil"
             },
             setRect = {
@@ -8777,8 +9798,8 @@ return {
             },
             setRow = {
                 type = "method",
-                description = "Set the stretch properties of a patch row.\n\n–> MOAIStretchPatch2D self\n–> number idx\n–> number weight\n–> boolean conStretch\n<– nil",
-                args = "(MOAIStretchPatch2D self, number idx, number weight, boolean conStretch)",
+                description = "Set the stretch properties of a patch row.\n\n–> MOAIStretchPatch2D self\n–> number idx\n–> number percent\n–> boolean canStretch\n<– nil",
+                args = "(MOAIStretchPatch2D self, number idx, number percent, boolean canStretch)",
                 returns = "nil"
             },
             setUVRect = {
@@ -8791,7 +9812,7 @@ return {
     },
     MOAISurfaceDeck2D = {
         type = "class",
-        inherits = "MOAIDeck",
+        inherits = "MOAIStandardDeck",
         description = "Deck of surface edge lists. Unused in this version of Moai.",
         childs = {
             reserveSurfaceLists = {
@@ -8817,58 +9838,18 @@ return {
     MOAITapjoyAndroid = {
         type = "class",
         inherits = "MOAILuaObject",
-        description = "Wrapper for Tapjoy integration on Android devices. Tapjoy provides a turnkey advertising platform that delivers cost-effective, high-value new users and helps apps make money. Exposed to Lua via MOAITapjoy on all mobile platforms.",
         childs = {
-            TAPJOY_VIDEO_AD_BEGIN = {
-                type = "value",
-                description = "Event code for Tapjoy video ad playback begin. Unused."
-            },
-            TAPJOY_VIDEO_AD_CLOSE = {
-                type = "value",
-                description = "Event code for Tapjoy video ad playback completion."
-            },
-            TAPJOY_VIDEO_AD_ERROR = {
-                type = "value",
-                description = "Event code for Tapjoy video ad playback errors."
-            },
-            TAPJOY_VIDEO_AD_READY = {
-                type = "value",
-                description = "Event code for Tapjoy video ad playback availability."
-            },
-            TAPJOY_VIDEO_STATUS_MEDIA_STORAGE_UNAVAILABLE = {
-                type = "value",
-                description = "Error code for inadequate storage for video ad."
-            },
-            TAPJOY_VIDEO_STATUS_NETWORK_ERROR_ON_INIT_VIDEOS = {
-                type = "value",
-                description = "Error code for network error."
-            },
-            TAPJOY_VIDEO_STATUS_NO_ERROR = {
-                type = "value",
-                description = "Error code for success."
-            },
-            TAPJOY_VIDEO_STATUS_UNABLE_TO_PLAY_VIDEO = {
-                type = "value",
-                description = "Error code for playback error."
-            },
-            getUserId = {
-                type = "function",
-                description = "Gets the Tapjoy user ID.\n\n<– string userId",
-                args = "()",
-                returns = "string userId",
-                valuetype = "string"
-            },
             init = {
                 type = "function",
-                description = "Initializes Tapjoy.\n\n–> string appId: Available in Tapjoy dashboard settings.\n–> string secretKey: Available in Tapjoy dashboard settings.\n<– nil",
-                args = "(string appId, string secretKey)",
+                description = "Initializes Tapjoy.\n\n–> string appId: Available in Tapjoy dashboard settings.\n–> string secretKey: Available in Tapjoy dashboard settings.\n–> number videoCacheCount\n<– nil",
+                args = "(string appId, string secretKey, number videoCacheCount)",
                 returns = "nil"
             },
-            initVideoAds = {
+            setUserId = {
                 type = "function",
-                description = "Initializes Tapjoy to display video ads.\n\n[–> number count: The optional number of ads to cache. Default is Tapjoy dependent.]\n<– nil",
-                args = "[number count]",
-                returns = "nil"
+                description = "Sets the tapjoy user ID.\n\n–> string userId",
+                args = "string userId",
+                returns = "()"
             },
             showOffers = {
                 type = "function",
@@ -8917,200 +9898,6 @@ return {
             }
         }
     },
-    MOAITextBox = {
-        type = "class",
-        inherits = "MOAIProp MOAIAction",
-        description = "The text box manages styling, laying out and displaying text. You can attach named styles to the text box to be applied to the text using style escapes. You can also inline style escapes to control color. Style escapes may be nested.\nTo attach a style to a text box use setStyle (). If you provide a name for the style then the style may be applied by name using a style escape. If you do not provide a name then the style will be used as the default style for the text box. The default style is the style that will be used when no style escapes are in effect.\nThe setFont () and setSize () methods are helpers that operate on the text box's default style. If no default style exists when these methods are called, one will be created.\nThere are three kinds of text escapes. The first takes the form of <styleName> where 'styleName' is the name of the style you provided via setStyle (). If there is no match for the name then the default style will be used.\nThe second form of style escape sets text color. It takes the form of <c:XXX> where 'XXX' is a hexadecimal number representing a color value. The hexadecimal number may be have from one up to eight digits, excluding five digit numbers. One and two digit numbers correspond to grayscale values of 4 and 8 bits of precision (16 or 256 levels) respectively. Three and four digit numbers represent RGB and RGBA colors at 4 bit precision. Six digits is RGB at 8 bits of precision. Seven digits is RGBA with 8 bits for RGB and 4 bits for A. Eight digits is RGBA with 8 bits for each component.\nThe final text escapes ends the current escape. It takes the form of </>. Including any additional text in this kind of escape is an error.\nYou may escape the '<' symbol itself by using an additional '<'. For example, '<<' will output '<'. '<<test>' will short circuit the style escape and output '<test>' in the displayed text.\nWhen using MOAITextBox with MOAIFont it's important to understand how and when glyphs are rendered. When you call setText () the text box's style goes to work. The entire string you provide is scanned and a 'style span' is created for each uniquely styled block of text. If you do not use any styles then there will be only one style span.\nOnce the text style has created style spans for your text, the spans themselves are scanned. Each span must specify a font to be used. All of the characters in the span are 'affirmed' by the font: if the glyphs for the characters have already been ripped then nothing happens. If not, the characters are enqueued by the font to have their glyphs ripped.\nFinally, we iterate through all of the fonts used by the text and instruct them to load and render any pending glyphs. If the font is dynamic and has a valid implementation of MOAIFontReader and MOAIGlyphCache attached to it then the glyphs will be rendered and placed in the cache.\nOnce the glyphs have been rendered, we know their metrics and (hopefully) have valid textures for them. We can now lay out an actual page of text. This is done by a separate subsystem known as the text designer. The text designer reads the style spans and uses the associated font, color and size information to place the glyphs into a layout.\nIf the text associated with the textbox doesn't fit, then the textbox will have multiple pages. The only method that deals with pages at this time is nextPage (). Additional methods giving finer control over multi-page text boxes will be provided in a future release.\nThere are some additional ways you can use the text box to style your text. The current implementation supports left, center and right positioning as well as top, center and bottom positioning. A future implementation will include justification in which words and lines of text will be spaced out to align with the edges of the text box.\nYou can also attach MOAIAnimCurves to the text box. The animation curves may be used to offset characters in lines of text. Each curve may have any number of keyframes, but only the span between t0 and t1 is used by the text box, regardless of its width. Curves correspond to lines of text. If there are more lines of text than curves, the curves will simply repeat.\nOnce you've loaded text into the text box you can apply highlight colors. These colors will override any colors specified by style escapes. Highlight spans may be set or cleared using setHighlight (). clearHighlights () will remove all highlights from the text. Highlights will persists from page to page of text, but will be lost if new text is loaded by calling setText ().",
-        childs = {
-            CENTER_JUSTIFY = {
-                type = "value"
-            },
-            LEFT_JUSTIFY = {
-                type = "value"
-            },
-            RIGHT_JUSTIFY = {
-                type = "value"
-            },
-            affirmStyle = {
-                type = "method",
-                description = "Returns the textbox's default style. If no default style exists, creates an empty style, sets it as the default and returns it.\n\n–> MOAITextBox self\n<– MOAITextStyle style",
-                args = "MOAITextBox self",
-                returns = "MOAITextStyle style",
-                valuetype = "MOAITextStyle"
-            },
-            clearHighlights = {
-                type = "method",
-                description = "Removes all highlights currently associated with the text box.\n\n–> MOAITextBox self\n<– nil",
-                args = "MOAITextBox self",
-                returns = "nil"
-            },
-            getAlignment = {
-                type = "method",
-                description = "Returns the alignment of the text\n\n–> MOAITextBox self\n<– number hAlign: horizontal alignment\n<– number vAlign: vertical alignment",
-                args = "MOAITextBox self",
-                returns = "(number hAlign, number vAlign)",
-                valuetype = "number"
-            },
-            getGlyphScale = {
-                type = "method",
-                description = "Returns the current glyph scale.\n\n–> MOAITextBox self\n<– number glyphScale",
-                args = "MOAITextBox self",
-                returns = "number glyphScale",
-                valuetype = "number"
-            },
-            getLineSpacing = {
-                type = "method",
-                description = "Returns the spacing between lines (in pixels).\n\n–> MOAITextBox self\n<– number lineScale: The size of the spacing in pixels.",
-                args = "MOAITextBox self",
-                returns = "number lineScale",
-                valuetype = "number"
-            },
-            getRect = {
-                type = "method",
-                description = "Returns the two-dimensional boundary of the text box.\n\n–> MOAITextBox self\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
-                args = "MOAITextBox self",
-                returns = "(number xMin, number yMin, number xMax, number yMax)",
-                valuetype = "number"
-            },
-            getStringBounds = {
-                type = "method",
-                description = "Returns the bounding rectangle of a given substring on a single line in the local space of the text box.\n\n–> MOAITextBox self\n–> number index: Index of the first character in the substring.\n–> number size: Length of the substring.\n<– number xMin: Edge of rect or 'nil' is no match found.\n<– number yMin: Edge of rect or 'nil' is no match found.\n<– number xMax: Edge of rect or 'nil' is no match found.\n<– number yMax: Edge of rect or 'nil' is no match found.",
-                args = "(MOAITextBox self, number index, number size)",
-                returns = "(number xMin, number yMin, number xMax, number yMax)",
-                valuetype = "number"
-            },
-            getStyle = {
-                type = "method",
-                description = "Returns the style associated with a name or, if no name is given, returns the default style.\n\nOverload:\n–> MOAITextBox self\n<– MOAITextStyle defaultStyle\n\nOverload:\n–> MOAITextBox self\n–> string styleName\n<– MOAITextStyle style",
-                args = "(MOAITextBox self, [string styleName])",
-                returns = "(MOAITextStyle defaultStyle | MOAITextStyle style)",
-                valuetype = "MOAITextStyle"
-            },
-            more = {
-                type = "method",
-                description = "Returns whether there are additional pages of text below the cursor position that are not visible on the screen.\n\n–> MOAITextBox self\n<– boolean isMore: If there is additional text below the cursor that is not visible on the screen due to clipping.",
-                args = "MOAITextBox self",
-                returns = "boolean isMore",
-                valuetype = "boolean"
-            },
-            nextPage = {
-                type = "method",
-                description = "Advances to the next page of text (if any) or wraps to the start of the text (if at end).\n\n–> MOAITextBox self\n[–> boolean reveal: Default is true]\n<– nil",
-                args = "(MOAITextBox self, [boolean reveal])",
-                returns = "nil"
-            },
-            reserveCurves = {
-                type = "method",
-                description = "Reserves a set of IDs for animation curves to be binding to this text object. See setCurves.\n\n–> MOAITextBox self\n–> number nCurves\n<– nil",
-                args = "(MOAITextBox self, number nCurves)",
-                returns = "nil"
-            },
-            revealAll = {
-                type = "method",
-                description = "Displays as much text as will fit in the text box.\n\n–> MOAITextBox self\n<– nil",
-                args = "MOAITextBox self",
-                returns = "nil"
-            },
-            setAlignment = {
-                type = "method",
-                description = "Sets the horizontal and/or vertical alignment of the text in the text box.\n\n–> MOAITextBox self\n–> number hAlignment: Can be one of LEFT_JUSTIFY, CENTER_JUSTIFY or RIGHT_JUSTIFY.\n–> number vAlignment: Can be one of LEFT_JUSTIFY, CENTER_JUSTIFY or RIGHT_JUSTIFY.\n<– nil",
-                args = "(MOAITextBox self, number hAlignment, number vAlignment)",
-                returns = "nil"
-            },
-            setCurve = {
-                type = "method",
-                description = "Binds an animation curve to the text, where the Y value of the curve indicates the text offset, or clears the curves.\n\nOverload:\n–> MOAITextBox self\n–> number curveID: The ID of the curve within this text object.\n–> MOAIAnimCurve curve: The MOAIAnimCurve to bind to.\n<– nil\n\nOverload:\n–> MOAITextBox self\n<– nil",
-                args = "(MOAITextBox self, [number curveID, MOAIAnimCurve curve])",
-                returns = "nil"
-            },
-            setFont = {
-                type = "method",
-                description = "Sets the font to be used by the textbox's default style. If no default style exists, a default style is created.\n\n–> MOAITextBox self\n–> MOAIFont font\n<– nil",
-                args = "(MOAITextBox self, MOAIFont font)",
-                returns = "nil"
-            },
-            setGlyphScale = {
-                type = "method",
-                description = "Sets the glyph scale. This is a scalar applied to glyphs as they are positioned in the text box.\n\n–> MOAITextBox self\n[–> number glyphScale: Default value is 1.]\n<– number glyphScale",
-                args = "(MOAITextBox self, [number glyphScale])",
-                returns = "number glyphScale",
-                valuetype = "number"
-            },
-            setHighlight = {
-                type = "method",
-                description = "Set or clear the highlight color of a sub string in the text. Only affects text displayed on the current page. Highlight will automatically clear when layout or page changes.\n\nOverload:\n–> MOAITextBox self\n–> number index: Index of the first character in the substring.\n–> number size: Length of the substring.\n–> number r\n–> number g\n–> number b\n[–> number a: Default value is 1.]\n<– nil\n\nOverload:\n–> MOAITextBox self\n–> number index: Index of the first character in the substring.\n–> number size: Length of the substring.\n<– nil",
-                args = "(MOAITextBox self, number index, number size, [number r, number g, number b, [number a]])",
-                returns = "nil"
-            },
-            setLineSpacing = {
-                type = "method",
-                description = "Sets additional space between lines in text units. '0' uses the default spacing. Values must be positive.\n\n–> MOAITextBox self\n–> number lineSpacing: Default value is 0.\n<– nil",
-                args = "(MOAITextBox self, number lineSpacing)",
-                returns = "nil"
-            },
-            setRect = {
-                type = "method",
-                description = "Sets the rectangular area for this text box.\n\n–> MOAITextBox self\n–> number x1: The X coordinate of the rect's upper-left point.\n–> number y1: The Y coordinate of the rect's upper-left point.\n–> number x2: The X coordinate of the rect's lower-right point.\n–> number y2: The Y coordinate of the rect's lower-right point.\n<– nil",
-                args = "(MOAITextBox self, number x1, number y1, number x2, number y2)",
-                returns = "nil"
-            },
-            setReveal = {
-                type = "method",
-                description = "Sets the number of renderable characters to be shown. Can range from 0 to any value; values greater than the number of renderable characters in the current text will be ignored.\n\n–> MOAITextBox self\n–> number reveal: The number of renderable characters (i.e. not whitespace) to be shown.\n<– nil",
-                args = "(MOAITextBox self, number reveal)",
-                returns = "nil"
-            },
-            setSnapToViewportScale = {
-                type = "method",
-                description = "If set to true text positions will snap to integers according to the viewport scale. Default value is true.\n\n–> MOAITextBox self\n–> boolean snap: Whether text positions should snap to viewport scale\n<– nil",
-                args = "(MOAITextBox self, boolean snap)",
-                returns = "nil"
-            },
-            setSpeed = {
-                type = "method",
-                description = "Sets the base spool speed used when creating a spooling MOAIAction with the spool() function.\n\n–> MOAITextBox self\n–> number speed: The base spooling speed.\n<– nil",
-                args = "(MOAITextBox self, number speed)",
-                returns = "nil"
-            },
-            setString = {
-                type = "method",
-                description = "Sets the text string to be displayed by this textbox.\n\n–> MOAITextBox self\n–> string newStr: The new text string to be displayed.\n<– nil",
-                args = "(MOAITextBox self, string newStr)",
-                returns = "nil"
-            },
-            setStyle = {
-                type = "method",
-                description = "Attaches a style to the textbox and associates a name with it. If no name is given, sets the default style.\n\nOverload:\n–> MOAITextBox self\n–> MOAITextStyle defaultStyle\n<– nil\n\nOverload:\n–> MOAITextBox self\n–> string styleName\n–> MOAITextStyle style\n<– nil",
-                args = "(MOAITextBox self, (MOAITextStyle defaultStyle | (string styleName, MOAITextStyle style)))",
-                returns = "nil"
-            },
-            setTextSize = {
-                type = "method",
-                description = "Sets the size to be used by the textbox's default style. If no default style exists, a default style is created.\n\n–> MOAITextBox self\n–> number points: The point size to be used by the default style.\n[–> number dpi: The device DPI (dots per inch of device screen). Default value is 72 (points same as pixels).]\n<– nil",
-                args = "(MOAITextBox self, number points, [number dpi])",
-                returns = "nil"
-            },
-            setWordBreak = {
-                type = "method",
-                description = "Sets the rule for breaking words across lines.\n\n–> MOAITextBox self\n[–> number rule: One of MOAITextBox.WORD_BREAK_NONE, MOAITextBox.WORD_BREAK_CHAR. Default is MOAITextBox.WORD_BREAK_NONE.]\n<– nil",
-                args = "(MOAITextBox self, [number rule])",
-                returns = "nil"
-            },
-            setYFlip = {
-                type = "method",
-                description = "Sets the rendering direction for the text. Default assumes a window style screen space (positive Y moves down the screen). Set to true to render text for world style coordinate systems (positive Y moves up the screen).\n\n–> MOAITextBox self\n–> boolean yFlip: Whether the vertical rendering direction should be inverted.\n<– nil",
-                args = "(MOAITextBox self, boolean yFlip)",
-                returns = "nil"
-            },
-            spool = {
-                type = "method",
-                description = "Creates a new MOAIAction which when run has the effect of increasing the amount of characters revealed from 0 to the length of the string currently set. The spool action is automatically added to the root of the action tree, but may be reparented or stopped by the developer. This function also automatically sets the current number of revealed characters to 0 (i.e. MOAITextBox:setReveal(0)).\n\n–> MOAITextBox self\n–> number yFlip: Whether the vertical rendering direction should be inverted.\n<– MOAIAction action: The new MOAIAction which spools the text when run.",
-                args = "(MOAITextBox self, number yFlip)",
-                returns = "MOAIAction action",
-                valuetype = "MOAIAction"
-            }
-        }
-    },
     MOAITextBundle = {
         type = "class",
         inherits = "MOAILuaObject",
@@ -9129,6 +9916,273 @@ return {
                 args = "(MOAITextBundle self, string key)",
                 returns = "(string value, boolean found)",
                 valuetype = "string"
+            }
+        }
+    },
+    MOAITextLabel = {
+        type = "class",
+        inherits = "MOAIGraphicsProp MOAIAction",
+        description = "The text box manages styling, laying out and displaying text. You can attach named styles to the text box to be applied to the text using style escapes. You can also inline style escapes to control color. Style escapes may be nested.\nTo attach a style to a text box use setStyle (). If you provide a name for the style then the style may be applied by name using a style escape. If you do not provide a name then the style will be used as the default style for the text box. The default style is the style that will be used when no style escapes are in effect.\nThe setFont () and setSize () methods are helpers that operate on the text box's default style. If no default style exists when these methods are called, one will be created.\nThere are three kinds of text escapes. The first takes the form of <styleName> where 'styleName' is the name of the style you provided via setStyle (). If there is no match for the name then the default style will be used.\nThe second form of style escape sets text color. It takes the form of <c:XXX> where 'XXX' is a hexadecimal number representing a color value. The hexadecimal number may be have from one up to eight digits, excluding five digit numbers. One and two digit numbers correspond to grayscale values of 4 and 8 bits of precision (16 or 256 levels) respectively. Three and four digit numbers represent RGB and RGBA colors at 4 bit precision. Six digits is RGB at 8 bits of precision. Seven digits is RGBA with 8 bits for RGB and 4 bits for A. Eight digits is RGBA with 8 bits for each component.\nThe final text escapes ends the current escape. It takes the form of </>. Including any additional text in this kind of escape is an error.\nYou may escape the '<' symbol itself by using an additional '<'. For example, '<<' will output '<'. '<<test>' will short circuit the style escape and output '<test>' in the displayed text.\nWhen using MOAITextLabel with MOAIFont it's important to understand how and when glyphs are rendered. When you call setText () the text box's style goes to work. The entire string you provide is scanned and a 'style span' is created for each uniquely styled block of text. If you do not use any styles then there will be only one style span.\nOnce the text style has created style spans for your text, the spans themselves are scanned. Each span must specify a font to be used. All of the characters in the span are 'affirmed' by the font: if the glyphs for the characters have already been ripped then nothing happens. If not, the characters are enqueued by the font to have their glyphs ripped.\nFinally, we iterate through all of the fonts used by the text and instruct them to load and render any pending glyphs. If the font is dynamic and has a valid implementation of MOAIFontReader and MOAIDynamicGlyphCache attached to it then the glyphs will be rendered and placed in the cache.\nOnce the glyphs have been rendered, we know their metrics and (hopefully) have valid textures for them. We can now lay out an actual page of text. This is done by a separate subsystem known as the text designer. The text designer reads the style spans and uses the associated font, color and size information to place the glyphs into a layout.\nIf the text associated with the textbox doesn't fit, then the textbox will have multiple pages. The only method that deals with pages at this time is nextPage (). Additional methods giving finer control over multi-page text boxes will be provided in a future release.\nThere are some additional ways you can use the text box to style your text. The current implementation supports left, center and right positioning as well as top, center and bottom positioning. A future implementation will include justification in which words and lines of text will be spaced out to align with the edges of the text box.\nYou can also attach MOAIAnimCurves to the text box. The animation curves may be used to offset characters in lines of text. Each curve may have any number of keyframes, but only the span between t0 and t1 is used by the text box, regardless of its width. Curves correspond to lines of text. If there are more lines of text than curves, the curves will simply repeat.\nOnce you've loaded text into the text box you can apply highlight colors. These colors will override any colors specified by style escapes. Highlight spans may be set or cleared using setHighlight (). clearHighlights () will remove all highlights from the text. Highlights will persists from page to page of text, but will be lost if new text is loaded by calling setText ().",
+        childs = {
+            BASELINE_JUSTIFY = {
+                type = "value"
+            },
+            BOTTOM_JUSTIFY = {
+                type = "value"
+            },
+            CENTER_JUSTIFY = {
+                type = "value"
+            },
+            LEFT_JUSTIFY = {
+                type = "value"
+            },
+            RIGHT_JUSTIFY = {
+                type = "value"
+            },
+            TOP_JUSTIFY = {
+                type = "value"
+            },
+            WORD_BREAK_CHAR = {
+                type = "value"
+            },
+            WORD_BREAK_NONE = {
+                type = "value"
+            },
+            affirmStyle = {
+                type = "method",
+                description = "Returns the textbox's default style. If no default style exists, creates an empty style, sets it as the default and returns it.\n\n–> MOAITextLabel self\n<– MOAITextStyle style",
+                args = "MOAITextLabel self",
+                returns = "MOAITextStyle style",
+                valuetype = "MOAITextStyle"
+            },
+            clearHighlights = {
+                type = "method",
+                description = "Removes all highlights currently associated with the text box.\n\n–> MOAITextLabel self\n<– nil",
+                args = "MOAITextLabel self",
+                returns = "nil"
+            },
+            getAlignment = {
+                type = "method",
+                description = "Returns the alignment of the text\n\n–> MOAITextLabel self\n<– number hAlign: horizontal alignment\n<– number vAlign: vertical alignment",
+                args = "MOAITextLabel self",
+                returns = "(number hAlign, number vAlign)",
+                valuetype = "number"
+            },
+            getGlyphScale = {
+                type = "method",
+                description = "Returns the current glyph scale.\n\n–> MOAITextLabel self\n<– number glyphScale",
+                args = "MOAITextLabel self",
+                returns = "number glyphScale",
+                valuetype = "number"
+            },
+            getLineSpacing = {
+                type = "method",
+                description = "Returns the spacing between lines (in pixels).\n\n–> MOAITextLabel self\n<– number lineScale: The size of the spacing in pixels.",
+                args = "MOAITextLabel self",
+                returns = "number lineScale",
+                valuetype = "number"
+            },
+            getOverrunRules = {
+                type = "method",
+                description = "Returns the overrun rules.\n\n–> MOAITextLabel self\n<– number firstOverrunRule\n<– number overrunRule",
+                args = "MOAITextLabel self",
+                returns = "(number firstOverrunRule, number overrunRule)",
+                valuetype = "number"
+            },
+            getRect = {
+                type = "method",
+                description = "Returns the two-dimensional boundary of the text box (if any).\n\n–> MOAITextLabel self\n<– number xMin\n<– number yMin\n<– number xMax\n<– number yMax",
+                args = "MOAITextLabel self",
+                returns = "(number xMin, number yMin, number xMax, number yMax)",
+                valuetype = "number"
+            },
+            getSizingRules = {
+                type = "method",
+                description = "Returns the sizing rules.\n\n–> MOAITextLabel self\n<– number hLayoutSizingRule\n<– number vLayoutSizingRule\n<– number lineSizingRule",
+                args = "MOAITextLabel self",
+                returns = "(number hLayoutSizingRule, number vLayoutSizingRule, number lineSizingRule)",
+                valuetype = "number"
+            },
+            getStyle = {
+                type = "method",
+                description = "Returns the style associated with a name or, if no name is given, returns the default style.\n\nOverload:\n–> MOAITextLabel self\n<– MOAITextStyle defaultStyle\n\nOverload:\n–> MOAITextLabel self\n–> string styleName\n<– MOAITextStyle style",
+                args = "(MOAITextLabel self, [string styleName])",
+                returns = "(MOAITextStyle defaultStyle | MOAITextStyle style)",
+                valuetype = "MOAITextStyle"
+            },
+            getText = {
+                type = "method",
+                description = "Return the text string.\n\n–> MOAITextLabel self\n<– string text: Text string.",
+                args = "MOAITextLabel self",
+                returns = "string text",
+                valuetype = "string"
+            },
+            getTextBounds = {
+                type = "method",
+                description = "Returns the bounding rectange of a given substring on a single line in the local space of the text box. If 'index' and 'size' are not passed, the bounds for all visible text will be returned.\n\n–> MOAITextLabel self\n[–> number index: Index of the first character in the substring.]\n[–> number size: Length of the substring.]\n<– number xMin: Edge of rect or 'nil' is no match found.\n<– number yMin: Edge of rect or 'nil' is no match found.\n<– number xMax: Edge of rect or 'nil' is no match found.\n<– number yMax: Edge of rect or 'nil' is no match found.",
+                args = "(MOAITextLabel self, [number index, [number size]])",
+                returns = "(number xMin, number yMin, number xMax, number yMax)",
+                valuetype = "number"
+            },
+            hasOverrun = {
+                type = "method",
+                description = "Returns whether a token was truncated at the end of the text layout.\n\n–> MOAITextBox self\n<– boolean overrun: Only true if a token is split across layout pages.",
+                args = "MOAITextBox self",
+                returns = "boolean overrun",
+                valuetype = "boolean"
+            },
+            more = {
+                type = "method",
+                description = "Returns whether there are additional pages of text below the cursor position that are not visible on the screen.\n\n–> MOAITextLabel self\n<– boolean isMore: If there is additional text below the cursor that is not visible on the screen due to clipping.",
+                args = "MOAITextLabel self",
+                returns = "boolean isMore",
+                valuetype = "boolean"
+            },
+            nextPage = {
+                type = "method",
+                description = "Advances to the next page of text (if any) or wraps to the start of the text (if at end).\n\n–> MOAITextLabel self\n[–> boolean reveal: Default is true]\n<– nil",
+                args = "(MOAITextLabel self, [boolean reveal])",
+                returns = "nil"
+            },
+            reserveCurves = {
+                type = "method",
+                description = "Reserves a set of IDs for animation curves to be binding to this text object. See setCurves.\n\n–> MOAITextLabel self\n–> number nCurves\n<– nil",
+                args = "(MOAITextLabel self, number nCurves)",
+                returns = "nil"
+            },
+            revealAll = {
+                type = "method",
+                description = "Displays as much text as will fit in the text box.\n\n–> MOAITextLabel self\n<– nil",
+                args = "MOAITextLabel self",
+                returns = "nil"
+            },
+            setAlignment = {
+                type = "method",
+                description = "Sets the horizontal and/or vertical alignment of the text in the text box.\n\n–> MOAITextLabel self\n–> number hAlignment: Can be one of LEFT_JUSTIFY, CENTER_JUSTIFY or RIGHT_JUSTIFY.\n–> number vAlignment: Can be one of TOP_JUSTIFY, CENTER_JUSTIFY, BOTTOM_JUSTIFY or BASELINE_JUSTIFY.\n<– nil",
+                args = "(MOAITextLabel self, number hAlignment, number vAlignment)",
+                returns = "nil"
+            },
+            setAutoFlip = {
+                type = "method",
+                description = "When autoflip is enabled, the label will be evaluated in screen space during rendering, and flipped vertically to remain 'upright' in the view.\n\n–> MOAITextLabel self\n–> boolean autoflip: Default value is false.\n<– nil",
+                args = "(MOAITextLabel self, boolean autoflip)",
+                returns = "nil"
+            },
+            setBounds = {
+                type = "method",
+                description = "Sets or removes a bounding rectangle for the text, specified as the XY planes of the given bounding box. Toggles the rect limits accordingly.\n\nOverload:\n–> MOAITextLabel self\n–> number xMin\n–> number yMin\n–> number zMin\n–> number xMax\n–> number yMax\n–> number zMax\n<– nil\n\nOverload:\n–> MOAITextLabel self\n<– nil",
+                args = "(MOAITextLabel self, [number xMin, number yMin, number zMin, number xMax, number yMax, number zMax])",
+                returns = "nil"
+            },
+            setCurve = {
+                type = "method",
+                description = "Binds an animation curve to the text, where the Y value of the curve indicates the text offset, or clears the curves.\n\nOverload:\n–> MOAITextLabel self\n–> number curveID: The ID of the curve within this text object.\n–> MOAIAnimCurve curve: The MOAIAnimCurve to bind to.\n<– nil\n\nOverload:\n–> MOAITextLabel self\n<– nil",
+                args = "(MOAITextLabel self, [number curveID, MOAIAnimCurve curve])",
+                returns = "nil"
+            },
+            setFont = {
+                type = "method",
+                description = "Sets the font to be used by the textbox's default style. If no default style exists, a default style is created.\n\n–> MOAITextLabel self\n–> MOAIFont font\n<– nil",
+                args = "(MOAITextLabel self, MOAIFont font)",
+                returns = "nil"
+            },
+            setGlyphScale = {
+                type = "method",
+                description = "Sets the glyph scale. This is a scalar applied to glyphs as they are positioned in the text box.\n\n–> MOAITextLabel self\n[–> number glyphScale: Default value is 1.]\n<– number glyphScale",
+                args = "(MOAITextLabel self, [number glyphScale])",
+                returns = "number glyphScale",
+                valuetype = "number"
+            },
+            setHighlight = {
+                type = "method",
+                description = "Set or clear the highlight color of a sub string in the text. Only affects text displayed on the current page. Highlight will automatically clear when layout or page changes.\n\nOverload:\n–> MOAITextLabel self\n–> number index: Index of the first character in the substring.\n–> number size: Length of the substring.\n–> number r\n–> number g\n–> number b\n[–> number a: Default value is 1.]\n<– nil\n\nOverload:\n–> MOAITextLabel self\n–> number index: Index of the first character in the substring.\n–> number size: Length of the substring.\n<– nil",
+                args = "(MOAITextLabel self, number index, number size, [number r, number g, number b, [number a]])",
+                returns = "nil"
+            },
+            setLineSnap = {
+                type = "method",
+                description = "Sets the snapping boundary for lines of text. Only applied during layout and in the text label's local space.\n\n–> MOAITextLabel self\n[–> number hLineSnap]\n[–> number vLineSnap: Default value is hLineSnap.]\n<– nil",
+                args = "(MOAITextLabel self, [number hLineSnap, [number vLineSnap]])",
+                returns = "nil"
+            },
+            setLineSpacing = {
+                type = "method",
+                description = "Sets additional space between lines in text units. '0' uses the default spacing.\n\n–> MOAITextLabel self\n–> number lineSpacing: Default value is 0.\n<– nil",
+                args = "(MOAITextLabel self, number lineSpacing)",
+                returns = "nil"
+            },
+            setOverrunRule = {
+                type = "method",
+                description = "Control behavior of text shaper when a token needs to be wrapped. An alternate rule may be set for the first token on a line. OVERRUN_MOVE_WORD will cause the entire token to be moved to the next line. OVERRUN_SPLIT_WORD will split the token across lines. OVERRUN_TRUNCATE_WORD will discard the remaining characters in the token. OVERRUN_ABORT_LAYOUT will back up to the start of the token and stop the layout. OVERRUN_MOVE_WORD is not permitted as the rule for the line's first token. If the first token doesn't fit on current line, it will not fit on the next line and so on.\n\n–> MOAITextLabel self\n–> number firstOverrunRule: One of OVERRUN_SPLIT_WORD, OVERRUN_TRUNCATE_WORD, OVERRUN_ABORT_LAYOUT. Default value is OVERRUN_SPLIT_WORD.\n–> number overrunRule: One of OVERRUN_MOVE_WORD, OVERRUN_SPLIT_WORD, OVERRUN_TRUNCATE_WORD, OVERRUN_ABORT_LAYOUT. Default value is OVERRUN_MOVE_WORD.\n<– nil",
+                args = "(MOAITextLabel self, number firstOverrunRule, number overrunRule)",
+                returns = "nil"
+            },
+            setRect = {
+                type = "method",
+                description = "Sets the rectangular area for this text box.\n\n–> MOAITextLabel self\n–> number x1: The X coordinate of the rect's upper-left point.\n–> number y1: The Y coordinate of the rect's upper-left point.\n–> number x2: The X coordinate of the rect's lower-right point.\n–> number y2: The Y coordinate of the rect's lower-right point.\n<– nil",
+                args = "(MOAITextLabel self, number x1, number y1, number x2, number y2)",
+                returns = "nil"
+            },
+            setRectLimits = {
+                type = "method",
+                description = "Toggles width/height constraints based on the rect.\n\n–> MOAITextLabel self\n[–> boolean limitWidth: Limit text to the rect's width. Default value is 'false'.]\n[–> boolean limitHeight: Limit text to the rect's height. Default value is 'false'.]\n<– nil",
+                args = "(MOAITextLabel self, [boolean limitWidth, [boolean limitHeight]])",
+                returns = "nil"
+            },
+            setReveal = {
+                type = "method",
+                description = "Sets the number of renderable characters to be shown. Can range from 0 to any value; values greater than the number of renderable characters in the current text will be ignored.\n\n–> MOAITextLabel self\n–> number reveal: The number of renderable characters (i.e. not whitespace) to be shown.\n<– nil",
+                args = "(MOAITextLabel self, number reveal)",
+                returns = "nil"
+            },
+            setSizingRule = {
+                type = "method",
+                description = "The sizing rules are used to determine the boundaries of each line for layout and alignment purposes. The H and V layout sizing rules determine whether the layout is based on the tight-fitting glyph boundaries or the (possibly) looser fitting 'logical' bounds (i.e. the bounds specified by the type face, allowing for full ascent and descent). The line sizing rule determines whether lines are spaced from logical or glyph bounds. Note that these rules do not affect the spacing of glyphs as they are laid out within a line, but they do affect the spacing of lines.\n\n–> MOAITextLabel self\n–> number hLayoutSizingRule: One of LOGICAL_SIZE or GLYPH_SIZE. Default is LOGICAL_SIZE.\n–> number vLayoutSizingRule: One of LOGICAL_SIZE or GLYPH_SIZE. Default is LOGICAL_SIZE.\n–> number lineSizingRule: One of LOGICAL_SIZE or GLYPH_SIZE. Default is LOGICAL_SIZE.\n<– nil",
+                args = "(MOAITextLabel self, number hLayoutSizingRule, number vLayoutSizingRule, number lineSizingRule)",
+                returns = "nil"
+            },
+            setSpeed = {
+                type = "method",
+                description = "Sets the base spool speed used when creating a spooling MOAIAction with the spool() function.\n\n–> MOAITextLabel self\n–> number speed: The base spooling speed.\n<– nil",
+                args = "(MOAITextLabel self, number speed)",
+                returns = "nil"
+            },
+            setStyle = {
+                type = "method",
+                description = "Attaches a style to the textbox and associates a name with it. If no name is given, sets the default style.\n\nOverload:\n–> MOAITextLabel self\n–> MOAITextStyle defaultStyle\n<– nil\n\nOverload:\n–> MOAITextLabel self\n–> string styleName\n–> MOAITextStyle style\n<– nil",
+                args = "(MOAITextLabel self, (MOAITextStyle defaultStyle | (string styleName, MOAITextStyle style)))",
+                returns = "nil"
+            },
+            setText = {
+                type = "method",
+                description = "Sets the text string to be displayed by this textbox.\n\n–> MOAITextLabel self\n–> string newStr: The new text string to be displayed.\n<– nil",
+                args = "(MOAITextLabel self, string newStr)",
+                returns = "nil"
+            },
+            setTextSize = {
+                type = "method",
+                description = "Sets the size to be used by the textbox's default style. If no default style exists, a default style is created.\n\n–> MOAITextLabel self\n–> number points: The point size to be used by the default style.\n[–> number dpi: The device DPI (dots per inch of device screen). Default value is 72 (points same as pixels).]\n<– nil",
+                args = "(MOAITextLabel self, number points, [number dpi])",
+                returns = "nil"
+            },
+            setWordBreak = {
+                type = "method",
+                description = "Sets the rule for breaking words across lines.\n\n–> MOAITextLabel self\n[–> number rule: One of MOAITextLabel.WORD_BREAK_NONE, MOAITextLabel.WORD_BREAK_CHAR. Default is MOAITextLabel.WORD_BREAK_NONE.]\n<– nil",
+                args = "(MOAITextLabel self, [number rule])",
+                returns = "nil"
+            },
+            setYFlip = {
+                type = "method",
+                description = "Sets the rendering direction for the text. Default assumes a window style screen space (positive Y moves down the screen). Set to true to render text for world style coordinate systems (positive Y moves up the screen).\n\n–> MOAITextLabel self\n–> boolean yFlip: Whether the vertical rendering direction should be inverted.\n<– nil",
+                args = "(MOAITextLabel self, boolean yFlip)",
+                returns = "nil"
+            },
+            spool = {
+                type = "method",
+                description = "Creates a new MOAIAction which when run has the effect of increasing the amount of characters revealed from 0 to the length of the string currently set. The spool action is automatically added to the root of the action tree, but may be reparented or stopped by the developer. This function also automatically sets the current number of revealed characters to 0 (i.e. MOAITextLabel:setReveal(0)).\n\n–> MOAITextLabel self\n<– MOAIAction action: The new MOAIAction which spools the text when run.",
+                args = "MOAITextLabel self",
+                returns = "MOAIAction action",
+                valuetype = "MOAIAction"
             }
         }
     },
@@ -9177,11 +10231,24 @@ return {
                 args = "(MOAITextStyle self, [MOAIFont font])",
                 returns = "nil"
             },
+            setPadding = {
+                type = "method",
+                description = "Add padding to glyphs during layout. Padding does not affect placement of glyphs. Padding only causes more of the glyph and its underlying texture to be shown.\n\nOverload:\n–> MOAITextStyle self\n–> number hPad: glyph xMin -= hPad * 0.5, glyph xMax += hPad * 0.5\n–> number vPad: glyph yMin -= vPad * 0.5, glyph yMax += vPad * 0.5\n<– nil\n\nOverload:\n–> MOAITextStyle self\n–> xMinP glyph: xMin -= xMinP\n–> yMinP glyph: yMin -= yMinP\n–> xMaxP glyph: xMax += xMaxP\n–> yMaxP glyph: yMax += yMaxP\n<– nil",
+                args = "(MOAITextStyle self, ((number hPad, number vPad) | (xMinP glyph, yMinP glyph, xMaxP glyph, yMaxP glyph)))",
+                returns = "nil"
+            },
             setScale = {
                 type = "method",
                 description = "Sets the scale of the style. The scale is applied to any glyphs drawn using the style after the glyph set has been selected by size.\n\n–> MOAITextStyle self\n[–> number scale: Default value is 1.]\n<– nil",
                 args = "(MOAITextStyle self, [number scale])",
                 returns = "nil"
+            },
+            setShader = {
+                type = "method",
+                description = "Sets the shader for the text style to use.\n\n–> MOAITextStyle self\n[–> variant shader: Shader or shader preset.]\n<– MOAIShader shader: The shader that was set or created.",
+                args = "(MOAITextStyle self, [variant shader])",
+                returns = "MOAIShader shader",
+                valuetype = "MOAIShader"
             },
             setSize = {
                 type = "method",
@@ -9198,68 +10265,23 @@ return {
     },
     MOAITexture = {
         type = "class",
-        inherits = "MOAITextureBase",
+        inherits = "MOAISingleTexture MOAILuaObject",
         description = "Texture class.",
         childs = {
             load = {
                 type = "method",
-                description = "Loads a texture from a data buffer or a file. Optionally pass in an image transform (not applicable to PVR textures).\n\nOverload:\n–> MOAITexture self\n–> string filename\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIImage image\n[–> string debugname: Name used when reporting texture debug information]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIDataBuffer buffer\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIStream buffer\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil"
+                description = "Loads a texture from a data buffer or a file. Optionally pass in an image transform (not applicable to PVR textures).\n\nOverload:\n–> MOAITexture self\n–> string filename\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIImage image\n[–> string debugname: Name used when reporting texture debug information]\n[–> boolean autoClear: Default value is 'false.' Only used if there is a reloader in play.]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIDataBuffer buffer\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil\n\nOverload:\n–> MOAITexture self\n–> MOAIStream buffer\n[–> number transform: Any bitwise combination of MOAIImage.QUANTIZE, MOAIImage.TRUECOLOR, MOAIImage.PREMULTIPLY_ALPHA]\n[–> string debugname: Name used when reporting texture debug information]\n<– nil"
             }
         }
     },
     MOAITextureBase = {
         type = "class",
-        inherits = "MOAILuaObject MOAIGfxResource",
-        description = "Base class for texture resources.",
-        childs = {
-            GL_LINEAR = {
-                type = "value"
-            },
-            GL_LINEAR_MIPMAP_LINEAR = {
-                type = "value"
-            },
-            GL_LINEAR_MIPMAP_NEAREST = {
-                type = "value"
-            },
-            GL_NEAREST = {
-                type = "value"
-            },
-            GL_NEAREST_MIPMAP_LINEAR = {
-                type = "value"
-            },
-            GL_NEAREST_MIPMAP_NEAREST = {
-                type = "value"
-            },
-            getSize = {
-                type = "method",
-                description = "Returns the width and height of the texture's source image. Avoid using the texture width and height to compute UV coordinates from pixels, as this will prevent texture resolution swapping.\n\n–> MOAITextureBase self\n<– number width\n<– number height",
-                args = "MOAITextureBase self",
-                returns = "(number width, number height)",
-                valuetype = "number"
-            },
-            release = {
-                type = "method",
-                description = "Releases any memory associated with the texture.\n\n–> MOAITextureBase self\n<– nil",
-                args = "MOAITextureBase self",
-                returns = "nil"
-            },
-            setFilter = {
-                type = "method",
-                description = "Set default filtering mode for texture.\n\n–> MOAITextureBase self\n–> number min: One of MOAITextureBase.GL_LINEAR, MOAITextureBase.GL_LINEAR_MIPMAP_LINEAR, MOAITextureBase.GL_LINEAR_MIPMAP_NEAREST, MOAITextureBase.GL_NEAREST, MOAITextureBase.GL_NEAREST_MIPMAP_LINEAR, MOAITextureBase.GL_NEAREST_MIPMAP_NEAREST\n[–> number mag: Defaults to value passed to 'min'.]\n<– nil",
-                args = "(MOAITextureBase self, number min, [number mag])",
-                returns = "nil"
-            },
-            setWrap = {
-                type = "method",
-                description = "Set wrapping mode for texture.\n\n–> MOAITextureBase self\n–> boolean wrap: Texture will wrap if true, clamp if not.\n<– nil",
-                args = "(MOAITextureBase self, boolean wrap)",
-                returns = "nil"
-            }
-        }
+        inherits = "MOAILuaObject",
+        childs = {}
     },
     MOAITileDeck2D = {
         type = "class",
-        inherits = "MOAIDeck MOAIGridSpace",
+        inherits = "MOAIStandardDeck MOAIGridSpace",
         description = "Subdivides a single texture into uniform tiles enumerated from the texture's left top to right bottom.",
         childs = {
             setQuad = {
@@ -9401,6 +10423,12 @@ return {
                 description = "Manually set the current time. This will be wrapped into the current span.\n\n–> MOAITimer self\n[–> number time: Default value is 0.]\n<– nil",
                 args = "(MOAITimer self, [number time])",
                 returns = "nil"
+            },
+            toggleDirection = {
+                type = "method",
+                description = "Reverses the current direction of the timer.\n\n–> MOAITimer self\n<– nil",
+                args = "MOAITimer self",
+                returns = "nil"
             }
         }
     },
@@ -9421,6 +10449,13 @@ return {
             TOUCH_UP = {
                 type = "value"
             },
+            countTouches = {
+                type = "method",
+                description = "Return the number of currently active touches.\n\n–> MOAITouchSensor self\n<– number count",
+                args = "MOAITouchSensor self",
+                returns = "number count",
+                valuetype = "number"
+            },
             down = {
                 type = "method",
                 description = "Checks to see if the screen was touched during the last iteration.\n\n–> MOAITouchSensor self\n[–> number idx: Index of touch to check.]\n<– boolean wasPressed",
@@ -9433,6 +10468,13 @@ return {
                 description = "Returns the IDs of all of the touches currently occurring (for use with getTouch).\n\n–> MOAITouchSensor self\n<– number idx1\n<– ...\n<– number idxN",
                 args = "MOAITouchSensor self",
                 returns = "(number idx1, ..., number idxN)",
+                valuetype = "number"
+            },
+            getCenterLoc = {
+                type = "method",
+                description = "Get the center coordinate of all currently active touches (as a simple average of all active touch coordinates). Returns nil if no current active touches.\n\n–> MOAITouchSensor self\n<– number x\n<– number y",
+                args = "MOAITouchSensor self",
+                returns = "(number x, number y)",
                 valuetype = "number"
             },
             getTouch = {
@@ -9488,6 +10530,12 @@ return {
                 valuetype = "boolean"
             }
         }
+    },
+    MOAITrace = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Internal debugging and hooking class.",
+        childs = {}
     },
     MOAITransform = {
         type = "class",
@@ -9594,13 +10642,6 @@ return {
                 returns = "(number xScl, number yScl, number zScl)",
                 valuetype = "number"
             },
-            modelToWorld = {
-                type = "method",
-                description = "Transform a point in model space to world space.\n\n–> MOAITransform self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number z: Default value is 0.]\n<– number x\n<– number y\n<– number z",
-                args = "(MOAITransform self, [number x, [number y, [number z]]])",
-                returns = "(number x, number y, number z)",
-                valuetype = "number"
-            },
             move = {
                 type = "method",
                 description = "Animate the transform by applying a delta. Creates and returns a MOAIEaseDriver initialized to apply the delta.\n\n–> MOAITransform self\n–> number xDelta: Delta to be added to x.\n–> number yDelta: Delta to be added to y.\n–> number zDelta: Delta to be added to z.\n–> number xRotDelta: Delta to be added to x rot (in degrees).\n–> number yRotDelta: Delta to be added to y rot (in degrees).\n–> number zRotDelta: Delta to be added to z rot (in degrees).\n–> number xSclDelta: Delta to be added to x scale.\n–> number ySclDelta: Delta to be added to y scale.\n–> number zSclDelta: Delta to be added to z scale.\n–> number length: Length of animation in seconds.\n[–> number mode: The ease mode. One of MOAIEaseType.EASE_IN, MOAIEaseType.EASE_OUT, MOAIEaseType.FLAT MOAIEaseType.LINEAR, MOAIEaseType.SMOOTH, MOAIEaseType.SOFT_EASE_IN, MOAIEaseType.SOFT_EASE_OUT, MOAIEaseType.SOFT_SMOOTH. Defaults to MOAIEaseType.SMOOTH.]\n<– MOAIEaseDriver easeDriver",
@@ -9677,12 +10718,6 @@ return {
                 args = "(MOAITransform self, [number x, [number y, [number z]]])",
                 returns = "nil"
             },
-            setParent = {
-                type = "method",
-                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAITransform self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
-                args = "(MOAITransform self, [MOAINode parent])",
-                returns = "nil"
-            },
             setPiv = {
                 type = "method",
                 description = "Sets the transform's pivot.\n\n–> MOAITransform self\n[–> number xPiv: Default value is 0.]\n[–> number yPiv: Default value is 0.]\n[–> number zPiv: Default value is 0.]\n<– nil",
@@ -9718,13 +10753,6 @@ return {
                 description = "Sets the shear for the X and Y axes by Z.\n\n–> MOAITransform self\n–> number xz: Default value is 0.\n[–> number yz: Default value is 0.]\n<– nil",
                 args = "(MOAITransform self, number xz, [number yz])",
                 returns = "nil"
-            },
-            worldToModel = {
-                type = "method",
-                description = "Transform a point in world space to model space.\n\n–> MOAITransform self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number z: Default value is 0.]\n<– number x\n<– number y\n<– number z",
-                args = "(MOAITransform self, [number x, [number y, [number z]]])",
-                returns = "(number x, number y, number z)",
-                valuetype = "number"
             }
         }
     },
@@ -9984,104 +11012,54 @@ return {
                 args = "MOAITransformBase self",
                 returns = "(number xScale, number yScale, number zScale)",
                 valuetype = "number"
-            }
-        }
-    },
-    MOAITstoreGamecenterAndroid = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        childs = {
-            authTstore = {
-                type = "function",
-                description = "Authorizes the app through Tstore\n\n–> boolean wantsLogin\n<– nil",
-                args = "boolean wantsLogin",
-                returns = "nil"
             },
-            checkTstoreInstalled = {
-                type = "function",
-                description = "Checks if the Tstore app is installed\n\n<– boolean installed",
-                args = "()",
-                returns = "boolean installed",
-                valuetype = "boolean"
-            },
-            disableGamecenter = {
-                type = "function",
-                description = "Disables Tstore Gamecenter\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            enableGamecenter = {
-                type = "function",
-                description = "Enables Tstore Gamecenter\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            getRankList = {
-                type = "function",
-                description = "Gets the leaderboard list\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            getUserInfo = {
-                type = "function",
-                description = "Gets the userinfo\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            installGamecenter = {
-                type = "function",
-                description = "Installs the Tstore Gamecenter app\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            installTstore = {
-                type = "function",
-                description = "Installs the Tstore app\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            invokeTstoreJoinPage = {
-                type = "function",
-                description = "Invokes the Tstore join page\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            openGallery = {
-                type = "function",
-                description = "opens gallery for profile pic selection\n\n<– nil",
-                args = "()",
-                returns = "nil"
-            },
-            setPoint = {
-                type = "function",
-                description = 'Records a point to the leaderboard\n\n–> string score: ( convert number to string in Lua )\n–> string pointName: ( score + "points" or score + "rubies" )\n<– nil',
-                args = "(string score, string pointName)",
-                returns = "nil"
-            },
-            setUserInfo = {
-                type = "function",
-                description = "Records a new user nickname\n\n–> string nickname\n<– nil",
-                args = "string nickname",
-                returns = "nil"
-            },
-            startGamecenter = {
-                type = "function",
-                description = "Starts the gamecenter app\n\n<– number status: Can be GAMECENTER_INSTALLED, GAMECENTER_UPGRADING, GAMECENTER_NOT_INSTALLED",
-                args = "()",
-                returns = "number status",
+            getWorldXAxis = {
+                type = "method",
+                description = "Return the X axis of the coordinate system (includes scale);\n\n–> MOAITransform self\n<– number x\n<– number y\n<– number z",
+                args = "MOAITransform self",
+                returns = "(number x, number y, number z)",
                 valuetype = "number"
-            }
-        }
-    },
-    MOAITstoreWallAndroid = {
-        type = "class",
-        inherits = "MOAILuaObject",
-        childs = {
-            showOfferWall = {
-                type = "function",
-                description = "Displays the Tstore marketplace.\n\n<– nil",
-                args = "()",
+            },
+            getWorldXNormal = {
+                type = "method",
+                description = "Return the X axis of the coordinate system (normalized);\n\n–> MOAITransform self\n[–> number length]\n<– number x\n<– number y\n<– number z",
+                args = "(MOAITransform self, [number length])",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
+            getWorldYNormal = {
+                type = "method",
+                description = "Return the Y axis of the coordinate system (normalized);\n\n–> MOAITransform self\n[–> number length]\n<– number x\n<– number y\n<– number z",
+                args = "(MOAITransform self, [number length])",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
+            getWorldZNormal = {
+                type = "method",
+                description = "Return the Z axis of the coordinate system (normalized);\n\n–> MOAITransform self\n[–> number length]\n<– number x\n<– number y\n<– number z",
+                args = "(MOAITransform self, [number length])",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
+            modelToWorld = {
+                type = "method",
+                description = "Transform a point in model space to world space.\n\n–> MOAITransform self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number z: Default value is 0.]\n<– number x\n<– number y\n<– number z",
+                args = "(MOAITransform self, [number x, [number y, [number z]]])",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
+            },
+            setParent = {
+                type = "method",
+                description = "This method has been deprecated. Use MOAINode setAttrLink instead.\n\n–> MOAITransformBase self\n[–> MOAINode parent: Default value is nil.]\n<– nil",
+                args = "(MOAITransformBase self, [MOAINode parent])",
                 returns = "nil"
+            },
+            worldToModel = {
+                type = "method",
+                description = "Transform a point in world space to model space.\n\n–> MOAITransform self\n[–> number x: Default value is 0.]\n[–> number y: Default value is 0.]\n[–> number z: Default value is 0.]\n<– number x\n<– number y\n<– number z",
+                args = "(MOAITransform self, [number x, [number y, [number z]]])",
+                returns = "(number x, number y, number z)",
+                valuetype = "number"
             }
         }
     },
@@ -10139,6 +11117,21 @@ return {
             }
         }
     },
+    MOAITwitterIOS = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        description = "Wrapper for Twitter interaction on iOS devices. Only available on iOS 5.0 and above.",
+        childs = {
+            TWEET_CANCELLED = {
+                type = "value",
+                description = "Event indicating an unsuccessful Tweet."
+            },
+            TWEET_SUCCESSFUL = {
+                type = "value",
+                description = "Event indicating a successful Tweet."
+            }
+        }
+    },
     MOAIUntzSampleBuffer = {
         type = "class",
         inherits = "MOAILuaObject",
@@ -10146,16 +11139,16 @@ return {
         childs = {
             getData = {
                 type = "method",
-                description = "Retrieve every sample data in buffer\n\n–> MOAIUntzSampleBuffer self\n<– table data: Array of sample data numbers ( -1 ~ 1 as sample level)",
+                description = "Retrieve every sample data in buffer\n\n–> MOAIUntzSampleBuffer self\n<– table data: array of sample data number ( -1 ~ 1 as sample level)",
                 args = "MOAIUntzSampleBuffer self",
                 returns = "table data",
                 valuetype = "table"
             },
             getInfo = {
                 type = "method",
-                description = "Returns attributes of sample buffer.\n\n–> MOAIUntzSampleBuffer self\n<– number bitsPerSample\n<– number channelCount: number of channels (mono=1, stereo=2)\n<– number frameCount: number of total frames contained\n<– number sampleRate: 44100, 22050, etc.\n<– number length: sound length in seconds",
+                description = "Returns attributes of sample buffer.\n\n–> MOAIUntzSampleBuffer self\n<– number bps: bits per sample\n<– number channels: number of channels (mono=1, stereo=2)\n<– number frames: num of total frames contained\n<– number sampleRate: sample rate (44100, 22050, etc.)\n<– number length: sound length in seconds",
                 args = "MOAIUntzSampleBuffer self",
-                returns = "(number bitsPerSample, number channelCount, number frameCount, number sampleRate, number length)",
+                returns = "(number bps, number channels, number frames, number sampleRate, number length)",
                 valuetype = "number"
             },
             load = {
@@ -10166,14 +11159,20 @@ return {
             },
             prepareBuffer = {
                 type = "method",
-                description = "Allocate internal memory for sample buffer\n\n–> MOAIUntzSampleBuffer self\n–> number channelCount: number of channels (mono=1, stereo=2)\n–> number frameCount: number of total frames of sample\n–> number sampleRate: sample rate in Hz (44100 or else)\n<– nil",
-                args = "(MOAIUntzSampleBuffer self, number channelCount, number frameCount, number sampleRate)",
+                description = "Allocate internal memory for sample buffer\n\n–> MOAIUntzSampleBuffer self\n–> number channels: number of channels (mono=1, stereo=2)\n–> number frames: number of total frames of sample\n–> number sampleRate: sample rate in Hz (44100 or else)\n<– nil",
+                args = "(MOAIUntzSampleBuffer self, number channels, number frames, number sampleRate)",
                 returns = "nil"
             },
             setData = {
                 type = "method",
-                description = "Write sample data into buffer\n\n–> MOAIUntzSampleBuffer self\n–> table data: Array of sample data numbers ( -1 ~ 1 as sample level )\n–> number index: Index within sample buffer to start copying from (1 for the first sample)\n<– nil",
-                args = "(MOAIUntzSampleBuffer self, table data, number index)",
+                description = "Write sample data into buffer\n\n–> MOAIUntzSampleBuffer self\n–> table data: array of sample data number ( -1 ~ 1 as sample level )\n–> number startIndex: index of sample buffer to start copying from (1 for the first sample)\n<– nil",
+                args = "(MOAIUntzSampleBuffer self, table data, number startIndex)",
+                returns = "nil"
+            },
+            setRawData = {
+                type = "method",
+                description = "Write raw sample data (array of 16bit short value) into buffer\n\n–> MOAIUntzSampleBuffer self\n–> string raw: binary data that contains array of network byte ordered 16bit short value\n–> number of: bytes to read\n–> number index: of sample buffer start copying from (1 for the first sample)\n<– nil",
+                args = "(MOAIUntzSampleBuffer self, string raw, number of, number index)",
                 returns = "nil"
             }
         }
@@ -10237,14 +11236,14 @@ return {
             },
             load = {
                 type = "method",
-                description = "Loads a sound from disk or from a buffer.\n\nOverload:\n–> MOAIUntzSound self\n–> string filename\n[–> boolean loadIntoMemory: Default value is true]\n<– nil\n\nOverload:\n–> MOAIUntzSound self\n–> MOAIUntzSampleBuffer data\n<– nil",
-                args = "(MOAIUntzSound self, ((string filename, [boolean loadIntoMemory]) | MOAIUntzSampleBuffer data))",
+                description = "Loads a sound from disk.\n\n–> MOAIUntzSound self\n–> string filename\n<– nil",
+                args = "(MOAIUntzSound self, string filename)",
                 returns = "nil"
             },
             moveVolume = {
                 type = "method",
-                description = "Animation helper for volume attribute,\n\n–> MOAIUntzSound self\n–> number vDelta: Delta to be added to v.\n–> number length: Length of animation in seconds.\n[–> number mode: The ease mode. One of MOAIEaseType.EASE_IN, MOAIEaseType.EASE_OUT, MOAIEaseType.FLAT MOAIEaseType.LINEAR, MOAIEaseType.SMOOTH, MOAIEaseType.SOFT_EASE_IN, MOAIEaseType.SOFT_EASE_OUT, MOAIEaseType.SOFT_SMOOTH. Defaults to MOAIEaseType.SMOOTH.]\n<– MOAIEaseDriver easeDriver",
-                args = "(MOAIUntzSound self, number vDelta, number length, [number mode])",
+                description = "Animation helper for volume attribute,\n\n–> MOAITransform self\n–> number vDelta: Delta to be added to v.\n–> number length: Length of animation in seconds.\n[–> number mode: The ease mode. One of MOAIEaseType.EASE_IN, MOAIEaseType.EASE_OUT, MOAIEaseType.FLAT MOAIEaseType.LINEAR, MOAIEaseType.SMOOTH, MOAIEaseType.SOFT_EASE_IN, MOAIEaseType.SOFT_EASE_OUT, MOAIEaseType.SOFT_SMOOTH. Defaults to MOAIEaseType.SMOOTH.]\n<– MOAIEaseDriver easeDriver",
+                args = "(MOAITransform self, number vDelta, number length, [number mode])",
                 returns = "MOAIEaseDriver easeDriver",
                 valuetype = "MOAIEaseDriver"
             },
@@ -10262,8 +11261,8 @@ return {
             },
             seekVolume = {
                 type = "method",
-                description = "Animation helper for volume attribute,\n\n–> MOAIUntzSound self\n–> number vGoal: Desired resulting value for v.\n–> number length: Length of animation in seconds.\n[–> number mode: The ease mode. One of MOAIEaseType.EASE_IN, MOAIEaseType.EASE_OUT, MOAIEaseType.FLAT MOAIEaseType.LINEAR, MOAIEaseType.SMOOTH, MOAIEaseType.SOFT_EASE_IN, MOAIEaseType.SOFT_EASE_OUT, MOAIEaseType.SOFT_SMOOTH. Defaults to MOAIEaseType.SMOOTH.]\n<– MOAIEaseDriver easeDriver",
-                args = "(MOAIUntzSound self, number vGoal, number length, [number mode])",
+                description = "Animation helper for volume attribute,\n\n–> MOAITransform self\n–> number vGoal: Desired resulting value for v.\n–> number length: Length of animation in seconds.\n[–> number mode: The ease mode. One of MOAIEaseType.EASE_IN, MOAIEaseType.EASE_OUT, MOAIEaseType.FLAT MOAIEaseType.LINEAR, MOAIEaseType.SMOOTH, MOAIEaseType.SOFT_EASE_IN, MOAIEaseType.SOFT_EASE_OUT, MOAIEaseType.SOFT_SMOOTH. Defaults to MOAIEaseType.SMOOTH.]\n<– MOAIEaseDriver easeDriver",
+                args = "(MOAITransform self, number vGoal, number length, [number mode])",
                 returns = "MOAIEaseDriver easeDriver",
                 valuetype = "MOAIEaseDriver"
             },
@@ -10275,20 +11274,20 @@ return {
             },
             setLoopPoints = {
                 type = "method",
-                description = "Sets the start and end looping positions for the sound\n\n–> MOAIUntzSound self\n–> number startTime\n–> number endTime\n<– nil",
-                args = "(MOAIUntzSound self, number startTime, number endTime)",
+                description = "Sets the start and end looping positions for the sound\n\n–> MOAIUntzSound self\n–> double startTime\n–> double endTime\n<– nil",
+                args = "(MOAIUntzSound self, double startTime, double endTime)",
                 returns = "nil"
             },
             setPosition = {
                 type = "method",
-                description = "Sets the position of the sound cursor.\n\n–> MOAIUntzSound self\n[–> number position: Default value is 0.]\n<– nil",
-                args = "(MOAIUntzSound self, [number position])",
+                description = "Sets the position of the sound cursor.\n\n–> MOAIUntzSound self\n[–> boolean position: Default value is 0.]\n<– nil",
+                args = "(MOAIUntzSound self, [boolean position])",
                 returns = "nil"
             },
             setVolume = {
                 type = "method",
-                description = "Sets the volume of the sound.\n\n–> MOAIUntzSound self\n[–> number volume: Default value is 0.]\n<– nil",
-                args = "(MOAIUntzSound self, [number volume])",
+                description = "Sets the volume of the sound.\n\n–> MOAIUntzSound self\n[–> boolean volume: Default value is 0.]\n<– nil",
+                args = "(MOAIUntzSound self, [boolean volume])",
                 returns = "nil"
             },
             stop = {
@@ -10320,7 +11319,7 @@ return {
             },
             initialize = {
                 type = "function",
-                description = "Initialize the sound system.\n\n[–> number sampleRate: Default value is 44100.]\n[–> number numFrames: Default value is 8192]\n<– nil",
+                description = "Inititalize the sound system.\n\n[–> number sampleRate: Default value is 44100.]\n[–> number numFrames: Default value is 8192]\n<– nil",
                 args = "[number sampleRate, [number numFrames]]",
                 returns = "nil"
             },
@@ -10383,75 +11382,47 @@ return {
             }
         }
     },
-    MOAIVertexBuffer = {
+    MOAIVectorTesselator = {
         type = "class",
         inherits = "MOAILuaObject",
-        description = "Vertex buffer class.",
+        description = "Convert vector primitives into triangles.",
+        childs = {}
+    },
+    MOAIVertexArray = {
+        type = "class",
+        inherits = "MOAILuaObject",
         childs = {
-            bless = {
+            setVertexBuffer = {
                 type = "method",
-                description = "Call this after initializing the buffer and settings it vertices to prepare it for use.\n\n–> MOAIVertexBuffer self\n<– nil",
-                args = "MOAIVertexBuffer self",
+                description = "Set the vertex buffer to render.\n\n–> MOAIVertexArray self\n–> MOAIGfxBuffer vertexBuffer\n<– nil",
+                args = "(MOAIVertexArray self, MOAIGfxBuffer vertexBuffer)",
                 returns = "nil"
-            },
-            release = {
+            }
+        }
+    },
+    MOAIVertexBuffer = {
+        type = "class",
+        inherits = "MOAIGfxBuffer",
+        description = "Buffer for vertices.",
+        childs = {
+            computeBounds = {
                 type = "method",
-                description = "Releases any memory associated with buffer.\n\n–> MOAIVertexBuffer self\n<– nil",
-                args = "MOAIVertexBuffer self",
-                returns = "nil"
-            },
-            reserve = {
-                type = "method",
-                description = "Sets capacity of buffer in bytes.\n\n–> MOAIVertexBuffer self\n–> number size\n<– nil",
-                args = "(MOAIVertexBuffer self, number size)",
-                returns = "nil"
-            },
-            reserveVerts = {
-                type = "method",
-                description = "Sets capacity of buffer in vertices. This function should only be used after attaching a valid MOAIVertexFormat to the buffer.\n\n–> MOAIVertexBuffer self\n–> number size\n<– nil",
-                args = "(MOAIVertexBuffer self, number size)",
-                returns = "nil"
-            },
-            reset = {
-                type = "method",
-                description = "Resets the vertex stream writing to the head of the stream.\n\n–> MOAIVertexBuffer self\n<– nil",
-                args = "MOAIVertexBuffer self",
-                returns = "nil"
-            },
-            setFormat = {
-                type = "method",
-                description = "Sets the vertex format for the buffer.\n\n–> MOAIVertexBuffer self\n–> MOAIVertexFormat format\n<– nil",
+                description = "Calculates the buffer's axis-aligned bounding box. Returns nil if buffer is empty.\n\n–> MOAIVertexBuffer self\n–> MOAIVertexFormat format\n<– xMin\n<– yMin\n<– zMin\n<– xMax\n<– yMax\n<– zMax",
                 args = "(MOAIVertexBuffer self, MOAIVertexFormat format)",
-                returns = "nil"
+                returns = "(xMin, yMin, zMin, xMax, yMax, zMax)",
+                valuetype = "xMin"
             },
-            writeColor32 = {
+            countElements = {
                 type = "method",
-                description = "Write a packed 32-bit color to the vertex buffer.\n\n–> MOAIVertexBuffer self\n[–> number r: Default value is 1.]\n[–> number g: Default value is 1.]\n[–> number b: Default value is 1.]\n[–> number a: Default value is 1.]\n<– nil",
-                args = "(MOAIVertexBuffer self, [number r, [number g, [number b, [number a]]]])",
-                returns = "nil"
+                description = "Get the number of vertices given either a vertex size or a vertex format.\n\nOverload:\n–> MOAIVertexBuffer self\n–> number vertexSize\n<– number vertexCount\n\nOverload:\n–> MOAIVertexBuffer self\n–> MOAIVertexFormat format\n<– number vertexCount",
+                args = "(MOAIVertexBuffer self, (number vertexSize | MOAIVertexFormat format))",
+                returns = "number vertexCount",
+                valuetype = "number"
             },
-            writeFloat = {
+            printVertices = {
                 type = "method",
-                description = "Write a 32-bit float to the vertex buffer.\n\n–> MOAIVertexBuffer self\n[–> number f: Default value is 0.]\n<– nil",
-                args = "(MOAIVertexBuffer self, [number f])",
-                returns = "nil"
-            },
-            writeInt16 = {
-                type = "method",
-                description = "Write an 16-bit integer to the vertex buffer.\n\n–> MOAIVertexBuffer self\n[–> number i: Default value is 0.]\n<– nil",
-                args = "(MOAIVertexBuffer self, [number i])",
-                returns = "nil"
-            },
-            writeInt32 = {
-                type = "method",
-                description = "Write an 32-bit integer to the vertex buffer.\n\n–> MOAIVertexBuffer self\n[–> number i: Default value is 0.]\n<– nil",
-                args = "(MOAIVertexBuffer self, [number i])",
-                returns = "nil"
-            },
-            writeInt8 = {
-                type = "method",
-                description = "Write an 8-bit integer to the vertex buffer.\n\n–> MOAIVertexBuffer self\n[–> number i: Default value is 0.]\n<– nil",
-                args = "(MOAIVertexBuffer self, [number i])",
+                description = "Print the vertices (for debugging purposes).\n\n–> MOAIVertexBuffer self\n–> MOAIVertexFormat format\n<– nil",
+                args = "(MOAIVertexBuffer self, MOAIVertexFormat format)",
                 returns = "nil"
             }
         }
@@ -10463,8 +11434,8 @@ return {
         childs = {
             declareAttribute = {
                 type = "method",
-                description = "Declare a custom attribute (for use with programmable pipeline).\n\n–> MOAIVertexFormat self\n–> number index: Default value is 1.\n–> number type: Data type of component elements. See OpenGL ES documentation.\n–> number size: Number of elements. See OpenGL ES documentation.\n[–> boolean normalized: See OpenGL ES documentation.]\n<– nil",
-                args = "(MOAIVertexFormat self, number index, number type, number size, [boolean normalized])",
+                description = "Declare a custom attribute (for use with programmable pipeline).\n\n–> MOAIVertexFormat self\n–> number index: Default value is 1.\n–> number type: Data type of component elements. See OpenGL ES documentation.\n–> number size: Number of elements. See OpenGL ES documentation.\n[–> boolean normalized: See OpenGL ES documentation.]\n[–> number use: One of MOAIVertexFormat.ARRAY_COLOR, MOAIVertexFormat.ARRAY_NORMAL, MOAIVertexFormat.ARRAY_TEX_COORD, MOAIVertexFormat.ARRAY_VERTEX, MOAIVertexFormat.VERTEX_USE_TUPLE,]\n<– nil",
+                args = "(MOAIVertexFormat self, number index, number type, number size, [boolean normalized, [number use]])",
                 returns = "nil"
             },
             declareColor = {
@@ -10490,6 +11461,13 @@ return {
                 description = "Declare a vertex texture coordinate.\n\n–> MOAIVertexFormat self\n–> number index\n–> number type: Data type of texture coordinate elements. See OpenGL ES documentation.\n–> number size: Number of texture coordinate elements. See OpenGL ES documentation.\n<– nil",
                 args = "(MOAIVertexFormat self, number index, number type, number size)",
                 returns = "nil"
+            },
+            getVertexSize = {
+                type = "method",
+                description = "Return the size (in bytes) of the vertex described by the vertex format.\n\n–> MOAIVertexFormat self\n<– number vertexSizeInBytes",
+                args = "MOAIVertexFormat self",
+                returns = "number vertexSizeInBytes",
+                valuetype = "number"
             }
         }
     },
@@ -10619,12 +11597,47 @@ return {
             }
         }
     },
+    ZLByteStream = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
     ZLColorVec = {
         type = "class",
         inherits = "MOAILuaObject",
         childs = {}
     },
+    ZLCopyOnWrite = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
+    ZLFileStream = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
+    ZLGfxListener = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
+    ZLMemStream = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
     ZLRect = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
+    ZLStream = {
+        type = "class",
+        inherits = "MOAILuaObject",
+        childs = {}
+    },
+    ZLStreamProxy = {
         type = "class",
         inherits = "MOAILuaObject",
         childs = {}
