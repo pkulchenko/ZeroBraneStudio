@@ -1647,7 +1647,7 @@ local function setLexLPegLexer(editor, lexername)
   package.path = MergeFullPath(lpath, "?.lua") -- update `package.path` to reference `lexers/`
   local ok, lex = pcall(require, "lexer")
   package.path = ppath -- restore the original `package.path`
-  if not ok then return nil, "Can't find LexLPeg lexer components." end
+  if not ok then return nil, "Can't load LexLPeg lexer components: "..lex end
 
   -- if the requested lexer is a dynamically registered one, then need to create a file for it,
   -- as LexLPeg lexers are loaded in a separate Lua state, which this process has no contol over.
@@ -1671,16 +1671,18 @@ local function setLexLPegLexer(editor, lexername)
   local lexpath = package.searchpath("lexlpeg", ide.osclibs)
   if not lexpath then return nil, "Can't find LexLPeg lexer." end
 
-  if not pcall(require, "lpeg") then return nil, "Can't load LexLPeg lexer components." end
   do
     local err = wx.wxSysErrorCode()
     local _ = wx.wxLogNull() -- disable error reporting; will report as needed
-    if not pcall(function() editor:LoadLexerLibrary(lexpath) end) then
-      return nil, "Can't load LexLPeg library."
-    end
+    local ok, cpath = wx.wxGetEnv("LUA_CPATH")
+    if ok then wx.wxSetEnv("LUA_CPATH", package.cpath) end
+    local loaded = pcall(function() editor:LoadLexerLibrary(lexpath) end)
+    local newerr, newmsg = wx.wxSysErrorCode(), wx.wxSysErrorMsg()
+    if ok then wx.wxSetEnv("LUA_CPATH", cpath) end
+    if not loaded then return nil, "Can't load LexLPeg library." end
     -- the error code may be non-zero, but still needs to be different from the previous one
     -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
-    if wx.wxSysErrorCode() > 0 and wx.wxSysErrorCode() ~= err then return nil, wx.wxSysErrorMsg() end
+    if newerr > 0 and newerr ~= err then return nil, newmsg end
   end
 
   if dynlexer then
