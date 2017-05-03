@@ -29,9 +29,9 @@ if islinux then
 end
 
 package.cpath = (
-  iswindows and 'bin/?.dll;bin/clibs/?.dll;' or
-  islinux and ('bin/linux/%s/lib?.so;bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch,arch) or
-  --[[isosx]] 'bin/lib?.dylib;bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
+  iswindows and 'bin/clibs/?.dll;' or
+  islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch,arch) or
+  --[[isosx]] 'bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
     .. package.cpath
 package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.lua;lualibs/?/?/init.lua;'
               .. package.path
@@ -440,16 +440,13 @@ local function setLuaPaths(mainpath, osname)
 
   ide.osclibs = -- keep the list to use for various Lua versions
     osname == "Windows" and table.concat({
-        mainpath.."bin/?.dll",
         mainpath.."bin/clibs/?.dll",
       },";") or
     osname == "Macintosh" and table.concat({
-        mainpath.."bin/lib?.dylib",
         mainpath.."bin/clibs/?.dylib",
         mainpath.."bin/clibs/lib?.dylib",
       },";") or
     osname == "Unix" and table.concat({
-        mainpath..("bin/linux/%s/lib?.so"):format(arch),
         mainpath..("bin/linux/%s/clibs/?.so"):format(arch),
         mainpath..("bin/linux/%s/clibs/lib?.so"):format(arch),
       },";") or
