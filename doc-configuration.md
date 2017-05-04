@@ -14,12 +14,12 @@ System and user configuration changes **do not take effect** until the configura
 **System-wide** `cfg/user.lua` (which you may need to create) is located under the directory you installed ZeroBrane Studio to.
 You can **access this configuration file** by going to `Edit | Preferences | Settings: System` (v0.37+).
 If you are using an older version, you may need to open and edit the file directly.
-For example, on Mac OSX it is going to be `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio/cfg/user.lua`;
+For example, on MacOS it is going to be `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio/cfg/user.lua`;
 you may need to right click on "ZeroBrane Studio" application and select `Show Package Contents`.
 
 **System-wide** packages are stored in `packages/` directory.
 
-Note that on Mac OSX the per-system configuration file and packages **may be overwritten** when a new version of ZeroBrane Studio is installed to the `Applications` directory, so you may want to save them before upgrading.
+Note that on MacOS the per-system configuration file and packages **may be overwritten** when a new version of ZeroBrane Studio is installed to the `Applications` directory, so you may want to save them before upgrading.
 
 ## Per-user configuration
 

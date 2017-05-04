@@ -28,7 +28,7 @@ The difference can be seen on a fragment that includes a mix of regular and comm
 - `editor.foldflags = wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED`: set folding flags that control how folded lines are indicated in the text area (0.51+); set to `0` to disable all indicator lines.
 Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw line above if expanded), `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED` (draw line above if contracted), `wxstc.wxSTC_FOLDFLAG_LINEAFTER_EXPANDED` (draw line below if expanded), and `wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED` (draw line below if contracted).
 - `editor.fontname = "Courier New"`: set font name.
-- `editor.fontsize = 11`: set font size (the default value is `12` on OSX).
+- `editor.fontsize = 11`: set font size (the default value is `12` on MacOS).
 - `editor.indentguide = true`: show indentation guides (0.90+);
 set to `false` or `nil` to disable;
 set to `wxstc.wxSTC_IV_LOOKFORWARD` to show indentation guides beyond the actual indentation up to the level of the next non-empty line
@@ -70,7 +70,7 @@ The description takes four parameters:
 - key code, which may be a code for a visible character (`('E'):byte()`) or a [special code](http://www.scintilla.org/ScintillaDoc.html#KeyBindings) (`wxstc.wxSTC_KEY_UP`);
 - key modifiers, which is a combination of `wxstc.wxSTC_SCMOD_CTRL`, `wxstc.wxSTC_SCMOD_SHIFT`, `wxstc.wxSTC_SCMOD_META`, and `wxstc.wxSTC_SCMOD_ALT`.
 To **combine several modifiers**, make a sum of their values: `wxstc.wxSTC_SCMOD_CTRL + wxstc.wxSTC_SCMOD_SHIFT`.
-On **OSX**, the Command key is mapped to `wxstc.wxSTC_SCMOD_CTRL` and the Control key to `wxstc.wxSTC_SCMOD_META`.
+On **MacOS**, the Command key is mapped to `wxstc.wxSTC_SCMOD_CTRL` and the Control key to `wxstc.wxSTC_SCMOD_META`.
 - [Keyboard command](http://www.scintilla.org/ScintillaDoc.html#KeyboardCommands), which specify the action that needs to be tied to the key combination;
 - (optional) operating system, which is one of `'Windows'`, `'Macintosh'`, or `'Unix'` strings. If no operating system is specified, then the combination is available on all systems.
 

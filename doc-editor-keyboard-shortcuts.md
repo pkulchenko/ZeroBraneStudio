@@ -56,5 +56,5 @@ Other shortcuts used in the application can be modified as described in the [key
 Note that some of the keyboard shortcuts can't be modified using the mechanism described in [doc-editor-preferences#keyboard-shortcuts](Keyboard shortcuts) section.
 Specifically, none of the `Click`, `DblClick`, or `FoldMarginClick` shortcuts can be modified.
 
-**Note for Mac OSX users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab`, `Ctrl-Shift-Tab`, `Ctrl-PgUp`, and `Ctrl-PgDn` commands.
+**Note for MacOS users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab`, `Ctrl-Shift-Tab`, `Ctrl-PgUp`, and `Ctrl-PgDn` commands.
 Also, Use `Delete` for `Backspace` and `Fn+Delete` for `Delete`.
