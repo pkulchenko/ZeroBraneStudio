@@ -4,7 +4,7 @@ title: Features
 ---
 
 **Cross-platform**
-Windows, Mac OSX, and Linux: your choice.
+Windows, MacOS, and Linux: your choice.
 
 **Auto-complete**
 With auto-complete for Lua and Luup functions, spend less time typing and more time thinking.

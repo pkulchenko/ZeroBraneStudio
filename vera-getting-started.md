@@ -10,11 +10,11 @@ title: Getting Started
 The editor allows you to open several script files and work on them at the same time.
 Each opened file has its own page with a name and a tab at the top of the page.
 You can **switch** between pages by clicking on those tabs.
-You can also **close** those pages when you don't need them by using the `File | Close Page` menu or its shortcut `Ctrl-W` (`Cmd-W` on OSX).
+You can also **close** those pages when you don't need them by using the `File | Close Page` menu or its shortcut `Ctrl-W` (`Cmd-W` on MacOS).
 
 ## Saving and opening programs
 
-To **save** a program you can go to the `File | Save` menu at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on OSX). If the program does not have a name yet, you will be asked to provide a name for it.
+To **save** a program you can go to the `File | Save` menu at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on MacOS). If the program does not have a name yet, you will be asked to provide a name for it.
 
 To **open** a program or file you can go to the `File | Open` menu (or use its shortcut) or double click on the file name in the `Project` panel on the left. The editor will open that file for you or will activate one of the existing pages if the file is already opened.
 
