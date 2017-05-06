@@ -37,16 +37,16 @@ with links to debugging overview and other useful resources.
 - Added `markers` panel to show and navigate bookmarks and breakpoints.
 - Added saving/restoring bookmarks and breakpoints.
 - Added breakpoint prev/next navigation (`Project | Breakpoint` menu).
-- Added printing of editor tabs and Console/Output windows (available on Windows and OSX).
+- Added printing of editor tabs and Console/Output windows (available on Windows and MacOS).
 - Added ability to load/save files with invalid UTF-8 encoded characters.
-- Added opening files on drag-n-drop on Linux and on dock icon on OSX.
+- Added opening files on drag-n-drop on Linux and on dock icon on MacOS.
 - Redesigned search functionality; added incremental search and replace-in-files preview.
 - Updated Windows launcher to add dpi awareness for high dpi monitors.
 - (**Incompatibility**) Changed `Toggle Breakpoint` shortcut from `F9` to `Ctrl/Cmd-F9`.
 
-## Upgrade warning for Mac OSX users.
+## Upgrade warning for MacOS users.
 
-If you are using Mac OSX version, please make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
+If you are using MacOS version, please make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
 As an alternative, you can **move those system settings to user settings** (`Edit | Preferences | Settings: User`) as those are not affected by the upgrade process.
 
 ## What do I do if I have questions or want to receive product updates?
