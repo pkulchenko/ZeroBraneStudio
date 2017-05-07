@@ -12,7 +12,7 @@ title: Screenshots
 **Interactive console and Unicode**
 <a href="images/unicode-console.png"><img src="images/scr-unicode-console.png" /></a>
 
-**Auto-complete on Mac OSX**
+**Auto-complete on MacOS**
 <a href="images/autocomplete-osx.png"><img src="images/scr-autocomplete-osx.png" /></a>
 
 **Live coding on Linux**
