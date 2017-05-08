@@ -44,10 +44,13 @@ with links to debugging overview and other useful resources.
 - Updated Windows launcher to add dpi awareness for high dpi monitors.
 - (**Incompatibility**) Changed `Toggle Breakpoint` shortcut from `F9` to `Ctrl/Cmd-F9`.
 
-## Upgrade warning for MacOS users.
+## Upgrade warnings.
 
-If you are using MacOS version, please make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
+If you are using **MacOS**, make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
 As an alternative, you can **move those system settings to user settings** (`Edit | Preferences | Settings: User`) as those are not affected by the upgrade process.
+
+If you are using **Windows or Linux**, made any modifications to the files in the distribution,
+and plan to install the upgrade into the same location, make sure to **save your changes** before proceeding.
 
 ## What do I do if I have questions or want to receive product updates?
 
