@@ -223,6 +223,11 @@ if [ $BUILD_LEXLPEG ]; then
   unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
+  # replace loading lpeg with os and debug as they are needed for debugging;
+  # loading lpeg is not needed as it will be loaded from the Lua module.
+  sed -i 's/luaopen_lpeg, "lpeg"/luaopen_os, LUA_OSLIBNAME); l_openlib(luaopen_debug, LUA_DBLIBNAME/' LexLPeg.cxx
+  # adjust lexlpeg lexer declaration;
+  # see the discussion for details: https://groups.google.com/d/msg/wx-users/jtN7yFaWiGk/Y98sGR-xAwAJ
   sed -i "s/#define EXT_LEXER_DECL __declspec( dllexport ) __stdcall/#if PLAT_WIN\\n#define EXT_LEXER_DECL __stdcall\\n#else\\n#define EXT_LEXER_DECL __declspec( dllexport )\\n#endif/" \
     LexLPeg.cxx
 

@@ -218,6 +218,10 @@ if [ $BUILD_LEXLPEG ]; then
   unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
+  # replace loading lpeg with os and debug as they are needed for debugging;
+  # loading lpeg is not needed as it will be loaded from the Lua module.
+  sed -i 's/luaopen_lpeg, "lpeg"/luaopen_os, LUA_OSLIBNAME); l_openlib(luaopen_debug, LUA_DBLIBNAME/' LexLPeg.cxx
+
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" \
     "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \

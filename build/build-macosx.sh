@@ -217,7 +217,7 @@ if [ $BUILD_LEXLPEG ]; then
 
   # comment out loading lpeg as it's causing issues with _luaopen_lpeg symbol
   # (as it's not statically compiled) and will be loaded from Lua code anyway
-  sed -i "" 's/luaopen_lpeg, "lpeg"/luaopen_debug, LUA_DBLIBNAME/' LexLPeg.cxx
+  sed -i "" 's/luaopen_lpeg, "lpeg"/luaopen_os, LUA_OSLIBNAME); l_openlib(luaopen_debug, LUA_DBLIBNAME/' LexLPeg.cxx
 
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   g++ $BUILD_FLAGS -install_name lexlpeg.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib" \
