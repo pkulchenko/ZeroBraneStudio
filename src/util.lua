@@ -153,23 +153,27 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   local optskipbinary = (opts or {}).skipbinary
   local optondirectory = (opts or {}).ondirectory
 
-  local function spec2list(spec, list)
+  local function spec2list(spect, list)
     -- return empty list if no spec is provided
-    if spec == nil or spec == "*" or spec == "*.*" then return {}, 0 end
+    if spect == nil or spect == "*" or spect == "*.*" then return {}, 0 end
     -- accept "*.lua" and "*.txt,*.wlua" combinations
-    if type(spec) == 'table' then spec = table.concat(spec, ",") end
     local masknum, list = 0, list or {}
-    for m in spec:gmatch("[^%s;,]+") do
-      m = m:gsub("[\\/]", sep)
-      if m:find("^%*%.%w+"..sep.."?$") then
-        list[m:sub(2)] = true
-      else
-        -- escape all special characters
-        -- and replace (escaped) ** with .* and (escaped) * with [^\//]*
-        table.insert(list, EscapeMagic(m)
-          :gsub("%%%*%%%*", ".*"):gsub("%%%*", "[^/\\]*").."$")
+    for spec, specopt in pairs(type(spect) == 'table' and spect or {spect}) do
+      -- specs can be kept as `{[spec] = true}` or `{spec}`, so handle both cases
+      if type(spec) == "number" then spec = specopt end
+      if specopt == false then spec = "" end -- skip keys with `false` values
+      for m in spec:gmatch("[^%s;,]+") do
+        m = m:gsub("[\\/]", sep)
+        if m:find("^%*%.%w+"..sep.."?$") then
+          list[m:sub(2)] = true
+        else
+          -- escape all special characters
+          -- and replace (escaped) ** with .* and (escaped) * with [^\//]*
+          table.insert(list, EscapeMagic(m)
+            :gsub("%%%*%%%*", ".*"):gsub("%%%*", "[^/\\]*").."$")
+        end
+        masknum = masknum + 1
       end
-      masknum = masknum + 1
     end
     return list, masknum
   end

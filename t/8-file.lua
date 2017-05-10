@@ -63,6 +63,18 @@ ide.config.excludelist = "*.png"
 bins = FileSysGetRecursive(path, true, '*')
 is(#bins, 1, "Excluding '*.png' skips 'png' files.")
 
+ide.config.excludelist = {"*.png"}
+bins = FileSysGetRecursive(path, true, '*')
+is(#bins, 1, "Excluding {'*.png'} skips 'png' files.")
+
+ide.config.excludelist = {["*.png"] = true}
+bins = FileSysGetRecursive(path, true, '*')
+is(#bins, 1, "Excluding {['*.png'] = true} skips 'png' files.")
+
+ide.config.excludelist = {["*.png"] = false}
+bins = FileSysGetRecursive(path, true, '*')
+is(#bins, #bins0, "Excluding {['*.png'] = false} doesn't skip 'png' files.")
+
 ide.config.excludelist = "FIND*.png"
 bins = FileSysGetRecursive(path, true, '*.png')
 ok(#bins < #bins1, "Excluding `FIND*.png` filters out files with that mask.")
