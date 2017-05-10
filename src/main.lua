@@ -46,6 +46,11 @@ dofile "src/util.lua"
 -----------
 -- IDE
 --
+local function list2true(list)
+  local hash = {}
+  for k, v in ipairs(list) do hash[v] = true end
+  return hash
+end
 local pendingOutput = {}
 ide = {
   MODPREF = "* ",
@@ -204,8 +209,8 @@ ide = {
     markertint = true,
     menuicon = true,
     -- file exclusion lists
-    excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"},
-    binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"},
+    excludelist = list2true{".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"},
+    binarylist = list2true{"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"},
   },
   specs = {
     none = {
