@@ -178,7 +178,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   doc.modTime = GetFileModTime(filePath)
 
   doc:SetModified(false)
-  doc:SetTabText(doc:GetFileName())
+  doc:UpdateTitle()
 
   -- activate the editor; this is needed for those cases when the editor is
   -- created from some other element, for example, from a project tree.
@@ -292,7 +292,7 @@ function SaveFile(editor, filePath)
       doc.fileName = wx.wxFileName(filePath):GetFullName()
       doc.modTime = GetFileModTime(filePath)
       doc:SetModified(false)
-      doc:SetTabText(doc:GetFileName())
+      doc:UpdateTitle()
       SetAutoRecoveryMark()
       FileTreeMarkSelected(filePath)
 
