@@ -1674,15 +1674,12 @@ local function setLexLPegLexer(editor, lexername)
   do
     local err = wx.wxSysErrorCode()
     local _ = wx.wxLogNull() -- disable error reporting; will report as needed
-    local ok, cpath = wx.wxGetEnv("LUA_CPATH")
-    if ok then wx.wxSetEnv("LUA_CPATH", package.cpath) end
     local loaded = pcall(function() editor:LoadLexerLibrary(lexpath) end)
-    local newerr, newmsg = wx.wxSysErrorCode(), wx.wxSysErrorMsg()
-    if ok then wx.wxSetEnv("LUA_CPATH", cpath) end
     if not loaded then return nil, "Can't load LexLPeg library." end
     -- the error code may be non-zero, but still needs to be different from the previous one
     -- as it may report non-zero values on Windows (for example, 1447) when no error is generated
-    if newerr > 0 and newerr ~= err then return nil, newmsg end
+    local newerr = wx.wxSysErrorCode()
+    if newerr > 0 and newerr ~= err then return nil, wx.wxSysErrorMsg() end
   end
 
   if dynlexer then
@@ -1697,10 +1694,17 @@ local function setLexLPegLexer(editor, lexername)
     -- update lpath to point to the temp folder
     lpath = tmppath
   end
+
+  -- temporarily set the enviornment variable to load the new lua state with proper paths
+  -- do here as the Lua state in LexLPeg parser is initialized furing `SetLexerLanguage` call
+  local ok, cpath = wx.wxGetEnv("LUA_CPATH")
+  if ok then wx.wxSetEnv("LUA_CPATH", ide.osclibs) end
   editor:SetLexerLanguage("lpeg")
   editor:SetProperty("lexer.lpeg.home", lpath)
   editor:SetProperty("fold", edcfg.fold and "1" or "0")
   editor:PrivateLexerCall(wxstc.wxSTC_SETLEXERLANGUAGE, lexer) --[[ SetLexerLanguage for LexLPeg ]]
+  if ok then wx.wxSetEnv("LUA_CPATH", cpath) end
+
   if dynlexer then cleanup({dynfile, MergeFullPath(tmppath, "lexer.lua"), tmppath}) end
 
   local styleconvert = {}
