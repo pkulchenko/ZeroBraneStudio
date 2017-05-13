@@ -1700,7 +1700,7 @@ local function setLexLPegLexer(editor, lexername)
   editor:SetLexerLanguage("lpeg")
   editor:SetProperty("lexer.lpeg.home", lpath)
   editor:SetProperty("fold", edcfg.fold and "1" or "0")
-  editor:PrivateLexerCall(4006, lexer) --[[ SetLexerLanguage ]]
+  editor:PrivateLexerCall(wxstc.wxSTC_SETLEXERLANGUAGE, lexer) --[[ SetLexerLanguage for LexLPeg ]]
   if dynlexer then cleanup({dynfile, MergeFullPath(tmppath, "lexer.lua"), tmppath}) end
 
   local styleconvert = {}
