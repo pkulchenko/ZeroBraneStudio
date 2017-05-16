@@ -30,7 +30,7 @@ end
 
 package.cpath = (
   iswindows and 'bin/clibs/?.dll;' or
-  islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch,arch) or
+  islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch) or
   --[[isosx]] 'bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
     .. package.cpath
 package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.lua;lualibs/?/?/init.lua;'
@@ -48,7 +48,7 @@ dofile "src/util.lua"
 --
 local function list2true(list)
   local hash = {}
-  for k, v in ipairs(list) do hash[v] = true end
+  for _, v in ipairs(list) do hash[v] = true end
   return hash
 end
 local pendingOutput = {}
