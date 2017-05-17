@@ -998,7 +998,8 @@ function ide:IsValidCtrl(ctrl)
 end
 
 function ide:IsValidProperty(ctrl, prop)
-  return ide:IsValidCtrl(ctrl) and pcall(function() return ctrl[prop] end) and ctrl[prop]
+  -- some control may return `nil` values for non-existing properties, so check for that
+  return pcall(function() return ctrl[prop] end) and ctrl[prop] ~= nil
 end
 
 function ide:IsValidHotKey(ksc)

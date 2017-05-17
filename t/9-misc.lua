@@ -112,3 +112,5 @@ is(ide:GetProject("t"):gsub("[/\\]$",""), MergeFullPath(cwd,"t"), "Project is se
 local tree = ide:GetProjectTree()
 local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
+
+is(ide:IsValidProperty({}, "nonexisting"), false, "`IsValidProperty` returns `false ` for non-existing properties.")
