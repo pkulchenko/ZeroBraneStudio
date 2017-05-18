@@ -683,8 +683,14 @@ function CreateEditor(bare)
   -- populate cache with Ctrl-<letter> combinations for workaround on Linux
   -- http://wxwidgets.10942.n7.nabble.com/Menu-shortcuts-inconsistentcy-issue-td85065.html
   for id, shortcut in pairs(ide.config.keymap) do
-    local key = shortcut:match('^Ctrl[-+](.)$')
-    if key then editor.ctrlcache[key:byte()] = id end
+    if shortcut:match('%f[%w]Ctrl[-+]') then
+      local mask = (wx.wxMOD_CONTROL
+        + (shortcut:match('%f[%w]Alt[-+]') and wx.wxMOD_ALT or 0)
+        + (shortcut:match('%f[%w]Shift[-+]') and wx.wxMOD_SHIFT or 0)
+      )
+      local key = shortcut:match('[-+](.)$')
+      if key then editor.ctrlcache[key:byte()..mask] = id end
+    end
   end
 
   -- populate editor keymap with configured combinations
@@ -1354,9 +1360,9 @@ function CreateEditor(bare)
       and (mod == wx.wxMOD_CONTROL or mod == (wx.wxMOD_CONTROL + wx.wxMOD_SHIFT)) then
         addOneLine(editor, mod == (wx.wxMOD_CONTROL + wx.wxMOD_SHIFT) and -1 or 0)
       elseif ide.osname == "Unix" and ide.wxver >= "2.9.5"
-      and mod == wx.wxMOD_CONTROL and editor.ctrlcache[keycode] then
+      and editor.ctrlcache[keycode..mod] then
         ide.frame:AddPendingEvent(wx.wxCommandEvent(
-          wx.wxEVT_COMMAND_MENU_SELECTED, editor.ctrlcache[keycode]))
+          wx.wxEVT_COMMAND_MENU_SELECTED, editor.ctrlcache[keycode..mod]))
       else
         if ide.osname == 'Macintosh' and mod == wx.wxMOD_META then
           return -- ignore a key press if Command key is also pressed
