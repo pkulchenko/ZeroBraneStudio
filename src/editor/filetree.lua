@@ -10,8 +10,8 @@ ide.filetree = {
   projdirpartmap = {},
   projtreeCtrl = nil,
   imglist = ide:CreateImageList("PROJECT",
-    "FOLDER", "FILE-KNOWN", "FILE-NORMAL", "FILE-NORMAL-START",
-    "FOLDER-MAPPED"),
+    "FOLDER", "FOLDER-MAPPED", "FILE-NORMAL", "FILE-NORMAL-START",
+    "FILE-KNOWN"),
   settings = {extensionignore = {}, startfile = {}, mapped = {}},
   extmap = {},
 }
@@ -19,7 +19,7 @@ local filetree = ide.filetree
 local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
 local pathsep = GetPathSeparator()
 local q = EscapeMagic
-local image = {
+local image = { -- the order of ids has to match the order in the ImageList
   DIRECTORY = 0, DIRECTORYMAPPED = 1, FILEOTHER = 2, FILEOTHERSTART = 3,
   FILEKNOWN = 4,
 }
