@@ -694,7 +694,7 @@ function CreateEditor(bare)
   end
 
   -- populate editor keymap with configured combinations
-  for _, map in ipairs(edcfg.keymap or {}) do
+  for _, map in pairs(edcfg.keymap or {}) do
     local key, mod, cmd, os = unpack(map)
     if not os or os == ide.osname then
       if cmd then
