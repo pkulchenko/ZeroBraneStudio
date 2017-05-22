@@ -695,8 +695,8 @@ function CreateEditor(bare)
 
   -- populate editor keymap with configured combinations
   for _, map in pairs(edcfg.keymap or {}) do
-    local key, mod, cmd, os = unpack(map)
-    if not os or os == ide.osname then
+    local key, mod, cmd, osname = unpack(map)
+    if not osname or osname == ide.osname then
       if cmd then
         editor:CmdKeyAssign(key, mod, cmd)
       else
