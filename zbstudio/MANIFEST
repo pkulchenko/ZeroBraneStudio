@@ -32,7 +32,7 @@ lualibs/ssl/https.lua
 lualibs/testwell.lua
 packages/*.lua
 spec/*.lua
-src/defs.lua
+src/config.lua
 src/editor/*.lua
 src/main.lua
 src/util.lua
