@@ -2,6 +2,8 @@
 
 local TR = function(...) return ... end
 
+ide.config.toolbar = ide.config.toolbar or {}
+
 ide.config.toolbar.icons = {
   ID.NEW, ID.OPEN, ID.SAVE, ID.SAVEALL, ID.PROJECTDIRFROMFILE, ID.PROJECTDIRCHOOSE,
   ID.SEPARATOR,
