@@ -1,4 +1,4 @@
--- Copyright 2015 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2015-17 Paul Kulchenko, ZeroBrane LLC
 
 local ide = ide
 ide.markers = {

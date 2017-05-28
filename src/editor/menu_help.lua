@@ -1,4 +1,4 @@
--- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
 ---------------------------------------------------------
 
 local ide = ide
