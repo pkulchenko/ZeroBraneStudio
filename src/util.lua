@@ -470,7 +470,7 @@ function RequestAttention()
 end
 
 function TR(msg, count)
-  local messages = ide.config.messages
+  local messages = ide.messages
   local lang = ide.config.language
   local counter = messages[lang] and messages[lang][0]
   local message = messages[lang] and messages[lang][msg]

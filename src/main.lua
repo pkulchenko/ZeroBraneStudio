@@ -62,6 +62,7 @@ ide = {
       sep = "\1",
     }
   },
+  messages = {},
   tools = {},
   iofilters = {},
   interpreters = {},
@@ -527,11 +528,11 @@ do
 
   local sep = GetPathSeparator()
   if ide.config.language then
-    LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
+    LoadLuaFileExt(ide.messages, "cfg"..sep.."i18n"..sep..ide.config.language..".lua")
   end
   -- always load 'en' as it's required as a fallback for pluralization
   if ide.config.language ~= 'en' then
-    LoadLuaFileExt(ide.config.messages, "cfg"..sep.."i18n"..sep.."en.lua")
+    LoadLuaFileExt(ide.messages, "cfg"..sep.."i18n"..sep.."en.lua")
   end
 end
 

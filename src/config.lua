@@ -96,7 +96,6 @@ return {
   imagemap = {
     ['VALUE-MCALL'] = 'VALUE-SCALL',
   },
-  messages = {},
   language = "en",
 
   styles = nil,
