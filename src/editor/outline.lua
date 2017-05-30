@@ -372,7 +372,7 @@ local function eachNode(eachFunc, root, recursive)
   if not ctrl then return end
   root = root or ctrl:GetRootItem()
   if not (root and root:IsOk()) then return end
-  item = ctrl:GetFirstChild(root)
+  local item = ctrl:GetFirstChild(root)
   while true do
     if not item:IsOk() then break end
     if eachFunc and eachFunc(ctrl, item) then break end
