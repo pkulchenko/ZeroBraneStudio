@@ -39,7 +39,7 @@ return {
   },
   default = {
     name = 'untitled',
-    fullname = 'untitled.lua',
+    extension = 'lua',
     interpreter = 'luadeb',
   },
   outputshell = {

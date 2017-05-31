@@ -14,7 +14,7 @@ local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
 local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
 
 function NewFile(filename)
-  filename = filename or ide.config.default.fullname
+  filename = filename or ide:GetDefaultFileName()
   local editor = CreateEditor()
   editor:SetupKeywords(GetFileExt(filename))
   local doc = AddEditor(editor, filename)
@@ -170,8 +170,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   if doc then -- existing editor; switch to the tab
     notebook:SetSelection(doc:GetTabIndex())
   else -- the editor has not been added to notebook
-    doc = AddEditor(editor, wx.wxFileName(filePath):GetFullName()
-      or ide.config.default.fullname)
+    doc = AddEditor(editor, wx.wxFileName(filePath):GetFullName() or ide:GetDefaultFileName())
   end
   doc.filePath = filePath
   doc.fileName = wx.wxFileName(filePath):GetFullName()

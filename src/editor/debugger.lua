@@ -658,7 +658,7 @@ function debugger:Listen(start)
 
       if not startfile then
         displayError(TR("Can't start debugging without an opened file or with the current file not being saved ('%s').")
-          :format(ide.config.default.fullname))
+          :format(ide:GetDefaultFileName()))
         return debugger:terminate()
       end
 
@@ -1736,7 +1736,7 @@ end
 local function debuggerMakeFileName(editor)
   return ide:GetDocument(editor):GetFilePath()
   or ide:GetDocument(editor):GetFileName()
-  or ide.config.default.fullname
+  or ide:GetDefaultFileName()
 end
 
 function debugger:breakpointToggle(editor, line, value)
