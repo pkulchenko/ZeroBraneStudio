@@ -40,6 +40,7 @@ return {
   default = {
     name = 'untitled',
     extension = 'lua',
+    usecurrentextension = true,
     interpreter = 'luadeb',
   },
   outputshell = {

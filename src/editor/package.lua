@@ -127,7 +127,13 @@ function ide:Exit(hotexit)
 end
 function ide:GetApp() return self.editorApp end
 function ide:GetAppName() return self.appname end
-function ide:GetDefaultFileName() return self.config.default.name.."."..self.config.default.extension end
+function ide:GetDefaultFileName()
+  local default = self.config.default
+  local ext = default.extension
+  local ed = self:GetEditor()
+  if ed and default.usecurrentextension then ext = self:GetDocument(ed):GetFileExt() end
+  return default.name..(ext and ext > "" and "."..ext or "")
+end
 function ide:GetEditor(index) return GetEditor(index) end
 function ide:GetEditorWithFocus(...) return GetEditorWithFocus(...) end
 function ide:GetEditorWithLastFocus()
