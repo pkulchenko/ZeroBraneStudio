@@ -72,7 +72,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "不能启动调试器服务器在  %s:%d: %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "不能启动调试编译到 '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "除错动作失败 '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "不能启动除错，没有文档被开启或当前更改过的文档还没保存('%s')", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "不能启动除错，没有文档被开启或当前更改过的文档还没保存", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "不能终止一个未启动的调试器", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "被用户取消", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "选择一个映射目录", -- src\editor\filetree.lua

@@ -74,7 +74,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "No se puede iniciar el servidor de depuración %s:%d: %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "No se puede iniciar la depuración para '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "No se puede iniciar la sesión de depuración debido a un error interno '%s'.'", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "No se puede iniciar la depuración sin abrir un archivo o si no ha sido guardado ('%s').", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "No se puede iniciar la depuración sin abrir un archivo o si no ha sido guardado.", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "No se puede parar el servidor de puración ya que no se ha iniciado.", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Cancelado por el usuario.", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "Elegir un directorio para mapear", -- src\editor\filetree.lua

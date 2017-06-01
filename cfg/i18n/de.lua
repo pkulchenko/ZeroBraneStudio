@@ -73,7 +73,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "Kann Debugserver nicht starten (%s:%d): %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "Kann Debuggen nicht starten für '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "Debugging kann nicht gestartet werden wegen eines internen Fehlers '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "Debugging kann ohne geöffnete Datei nicht gestartet werden oder wenn die aktuelle Datei nicht gespeichert ist ('%s').", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "Debugging kann ohne geöffnete Datei nicht gestartet werden oder wenn die aktuelle Datei nicht gespeichert ist.", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "Kann Debugserver nicht stoppen wenn er vorher nicht gestartet wurde.", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Durch Benutzer abgebrochen.", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "Bitte Verzeichnis wählen zum virtuellen Einbinden", -- src\editor\filetree.lua

@@ -73,7 +73,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "Невозможно запустить сервер отладки %s:%d: %s", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "Невозможно начать отладку для '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "Невозможно начать отладочную сессию из-за внутренней ошибки '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "Невозможно начать отладку без открытого файла или с несохраненным текущим файлом ('%s').", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "Невозможно начать отладку без открытого файла или с несохраненным текущим файлом.", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "Невозможно остановить сервер отладки пока он не запущен", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Отменено пользователем.", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "Выберите папку для добавления в список", -- src\editor\filetree.lua

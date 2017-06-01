@@ -72,7 +72,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "無法啟動除錯伺服器於 %s:%d: %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "無法啟動除錯 '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "無法啟動除錯session由於內部錯誤 '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "沒有檔案被開啟或目前檔案尚未儲存無法啟動除錯 ('%s')", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "沒有檔案被開啟或目前檔案尚未儲存無法啟動除錯", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "無法停止未啟動的除錯伺服器", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "被使用者取消", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "選取一個映射目錄", -- src\editor\filetree.lua

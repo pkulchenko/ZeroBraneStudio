@@ -74,7 +74,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "Ne povas ekfunkciigi sencimigilo-servilon ĉe %s:%d: %s.", -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = nil, -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "Ne povas komenci sencimigan seancon pro interna eraro", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "Ne povas ek-sencimigon sen malfermita dosiero aŭ kun la kuranta dosiero nekonserviĝas ('%s').", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "Ne povas ek-sencimigon sen malfermita dosiero aŭ kun la kuranta dosiero nekonserviĝas.", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "Ne povas malfunkciigi sencimigilo-servilon, ĉar ĝi ne funkciantas", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Nuligita per la uzanto", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = nil, -- src\editor\filetree.lua

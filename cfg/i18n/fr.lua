@@ -73,7 +73,7 @@ return {
   ["Can't start debugger server at %s:%d: %s."] = "Impossible de lancer le serveur de débogage à %s:%d: %s." , -- src\editor\debugger.lua
   ["Can't start debugging for '%s'."] = "Impossible de lancer le débogage pour '%s'.", -- src\editor\debugger.lua
   ["Can't start debugging session due to internal error '%s'."] = "Impossible de lancer la session de débogage : erreur interne '%s'.", -- src\editor\debugger.lua
-  ["Can't start debugging without an opened file or with the current file not being saved ('%s')."] = "Impossible de lancer le débogage si aucun fichier n'est ouvert ou si le fichier courant n'a pas été enregistré ('%s').", -- src\editor\debugger.lua
+  ["Can't start debugging without an opened file or with the current file not being saved."] = "Impossible de lancer le débogage si aucun fichier n'est ouvert ou si le fichier courant n'a pas été enregistré.", -- src\editor\debugger.lua
   ["Can't stop debugger server as it is not started."] = "Impossible d'arrêter le serveur de débogage car il n'a pas été démarré.", -- src\editor\debugger.lua
   ["Cancelled by the user."] = "Annulé par l'utilisateur.", -- src\editor\findreplace.lua
   ["Choose a directory to map"] = "Choisir un répertoire à mapper", -- src\editor\filetree.lua

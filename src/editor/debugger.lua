@@ -657,8 +657,7 @@ function debugger:Listen(start)
         or (wxfilepath and wxfilepath:GetFullPath())
 
       if not startfile then
-        displayError(TR("Can't start debugging without an opened file or with the current file not being saved ('%s').")
-          :format(ide:GetDefaultFileName()))
+        displayError(TR("Can't start debugging without an opened file or with the current file not being saved."))
         return debugger:terminate()
       end
 
