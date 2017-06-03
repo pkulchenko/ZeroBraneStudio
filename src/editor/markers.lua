@@ -71,7 +71,8 @@ local function markersRefresh()
 
       for _, edmarker in ipairs(getMarkers(editor)) do
         local line, markertype = unpack(edmarker)
-        local text = ("%d: %s"):format(line+1, FixUTF8(editor:GetLineDyn(line)))
+        local text = ("%d: %s"):format(line+1,
+          FixUTF8(editor:GetLineDyn(line), function(s) return '\\'..string.byte(s) end))
         ctrl:AppendItem(fileitem, text:gsub("[\r\n]+$",""), image[markertype:upper()])
       end
 
