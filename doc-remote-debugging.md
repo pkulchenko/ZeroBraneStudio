@@ -53,6 +53,10 @@ as the libraries included with the IDE are compiled for 32bit architecture and w
 MacOS and Linux don't require any special handling for 64bit applications as Linux version are available for both 32bit and 64bit architectures
 and MacOS libraries are compiled as universal libraries (and can be loaded from 32bit and 64bit applications).
 
+If you also plan to launch the 64bit application from the IDE (instead of or in addition to
+launching it outside of the IDE), you need to configure `path.lua` to point to the location of your Lua executable
+(as described in the [general preferences section](doc-general-preferences#interpreter-path)).
+
 ## Configure path for debugging
 
 In a similar way, instead of specifying `LUA_PATH` and `LUA_CPATH`, you can set `package.path` and `package.cpath` (if needed) directly from your script:
