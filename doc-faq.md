@@ -105,6 +105,11 @@ Yes; see [Lua 5.3 debugging](doc-lua53-debugging) section for details.
 Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
 See [LuaJIT debugging](doc-luajit-debugging) section for details.
 
+## Is debugging of 64bit applications supported?
+
+Yes; even when you use a 32bit version of the IDE, you can still run and debug 64bit applications.
+See [Debugging of 64bit applications](doc-remote-debugging#debugging-of-64bit-applications) section for details.
+
 ## Why am I getting compilation errors in the IDE when my code runs fine outside of it?
 
 Starting from v0.39, ZeroBrane Studio is using LuaJIT as its internal Lua engine.
