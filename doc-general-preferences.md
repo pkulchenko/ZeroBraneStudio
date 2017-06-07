@@ -154,13 +154,15 @@ set to `false` to limit the symbols to currently opened files.
 
 ## File exclusion lists
 
-- `excludelist = {".svn/", ".git/", ".hg/", "CVS/", "*.pyc", "*.pyo", "*.exe", "*.dll", "*.obj","*.o", "*.a", "*.lib", "*.so", "*.dylib", "*.ncb", "*.sdf", "*.suo", "*.pdb", "*.idb", ".DS_Store", "*.class", "*.psd", "*.db"}`: set the list of files to be excluded from any processing by the IDE (1.10+).
+- `excludelist = { [".svn/"] = true, [".git/"] = true, [".hg/"] = true, ["CVS/"] = true, ["*.pyc"] = true, ["*.pyo"] = true, ["*.exe"] = true, ["*.dll"] = true, ["*.obj"] = true, ["*.o"] = true, ["*.a"] = true, ["*.lib"] = true, ["*.so"] = true, ["*.dylib"] = true, ["*.ncb"] = true, ["*.sdf"] = true, ["*.suo"] = true, ["*.pdb"] = true, ["*.idb"] = true, [".DS_Store"] = true, ["*.class"] = true, ["*.psd"] = true, ["*.db"] = true }`: set the list of files to be excluded from any processing by the IDE (1.10+).
 These files and directories will not be displayed in the project tree and will not be searched.
 They can still be opened in the IDE when opened directly using `File Open` and similar operations.
-- `binarylist = {"*.jpg", "*.jpeg", "*.png", "*.gif", "*.ttf", "*.tga", "*.dds", "*.ico", "*.eot", "*.pdf", "*.swf", "*.jar", "*.zip", ".gz", ".rar"}`: set the list of files to be recognized as binary files (1.10+).
+- `binarylist = binarylist = { ["*.jpg"] = true, ["*.jpeg"] = true, ["*.png"] = true, ["*.gif"] = true, ["*.ttf"] = true, ["*.tga"] = true, ["*.dds"] = true, ["*.ico"] = true, ["*.eot"] = true, ["*.pdf"] = true, ["*.swf"] = true, ["*.jar"] = true, ["*.zip"] = true, ["*.gz"] = true, ["*.rar"] = true }`: set the list of files to be recognized as binary files (1.10+).
 These files are displayed in the project tree, but will be skipped from fuzzy search and find- and replace-in-files operations.
 
-File names without a wildcard `*` will be applied as is; file names that end with a path separator (both `\\` and `/` work on all platforms) will be applied as directory names.
+(1.61+) The format of the lists has been changed from array (`{"*.jpg", "*.png"}`) to hash (`{["*.jpg"] = true, ["*.png"] = true}`) to simplify addition and removal of values. The array syntax is still supported, but deprecated.
+
+File names without a wildcard `*` will be applied as is; file names that end with a path separator (both file separators `\` and `/` work on all platforms) will be applied as directory names.
 For example, `.svn` and `*.svn` will exclude all files with `svn` extension and `.svn/` and `.svn\` will completely skip processing of the `.svn` directory.
 
 In addition to that, `**` pattern is handled differently from `*` pattern and means a match in all (sub-)directories.
