@@ -193,7 +193,7 @@ For example, the value `\t\tPage %p of %P` for the header will print `Page 1 of 
 
 ## Custom APIs
 
-- `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91)+.
+- `api = nil`: set the list of APIs to be loaded for specific or all interpreters (0.91+).
 For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all interpreters and `bar` API for the `luadeb` interpreter.
 
 ## Toolbar
