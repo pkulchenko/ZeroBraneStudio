@@ -138,7 +138,7 @@ return {
   bordersize = 3,
   savebak = false,
   singleinstance = false,
-  singleinstanceport = 0xe493,
+  singleinstanceport = 8172,
   showmemoryusage = false,
   showhiddenfiles = false,
   hidpi = false, -- HiDPI/Retina display support
