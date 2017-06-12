@@ -207,7 +207,7 @@ You can start multiple instances if you disable "single instance" check
 either by adding `singleinstance=false` to the configuration file
 or by starting the second instance with the following command: `zbstudio -cfg "singleinstance=false"`.
 
-The single instance check is disabled on MacOS by default.
+The single instance check is disabled on MacOS by default; to run multiple instances, you need to use `open -n ZeroBraneStudio.app`.
 
 ## How do I start two ZeroBrane Studio instances to debug two applications at the same time?
 
@@ -215,7 +215,7 @@ You can start one instance as you normally do and then start the second instance
 This command disables a singleinstance check for the second instance and configures it to use port 8173 for debugging.
 You can then use `require('mobdebug').start("domain-name", 8173)` in your application to connect to the second instance for debugging.
 
-If you use MacOS, you may need to run the command as `open ZeroBraneStudio.app --args -cfg "singleinstance=false; debugger.port = 8173"`.
+If you use MacOS, you may need to run the command as `open -n ZeroBraneStudio.app --args -cfg "debugger.port = 8173"`.
 
 ## How do I restore default configuration for UI elements?
 
