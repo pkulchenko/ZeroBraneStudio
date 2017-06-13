@@ -193,6 +193,7 @@ For example, the value `\t\tPage %p of %P` for the header will print `Page 1 of 
 Use a string value with the name of the interpreter to set the interpreter.
 The name of the interpreter is either its file name (without an extension) or a name used in `ide:AddInterpreter()` call.
 For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
+- `default.name = 'untitled'`: set the default file name for files created in the IDE.
 
 ## Custom APIs
 
