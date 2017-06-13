@@ -26,10 +26,6 @@ This session information is saved in the [.ini file](#session-configuration).
 If the filename is absolute, it is used as the new location;
 (1.11+) if it is relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
-- `interpreter = nil`: set the default interpreter used for new projects (1.11+).
-Use a string value with the name of the interpreter to set the interpreter.
-The name of the interpreter is either its file name (without an extension) or a name used in `ide:AddInterpreter()` call.
-For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
 - `language = "en"`: set the language to use in the IDE; this requires a language file in `cfg/i18n` directory.
 - `menuicon = true`: show icons in the menu (1.31+).
 On Linux may not show even when set to `true`, as it is also controlled by `gtk-menu-images` setting.
@@ -190,6 +186,13 @@ In addition to [placeholders from this list](#formats), `%D` can be used for the
 Each string may include tabs to separate parts of the header/footer that have different adjustments.
 The first value is left adjusted, the second value is centered and the third value is right adjusted.
 For example, the value `\t\tPage %p of %P` for the header will print `Page 1 of 1` adjusted to the right for one-page output.
+
+## Default
+
+- `default.interpreter = nil`: set the default interpreter used for new projects (1.20+).
+Use a string value with the name of the interpreter to set the interpreter.
+The name of the interpreter is either its file name (without an extension) or a name used in `ide:AddInterpreter()` call.
+For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
 
 ## Custom APIs
 
