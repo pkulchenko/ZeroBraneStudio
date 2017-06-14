@@ -193,7 +193,10 @@ For example, the value `\t\tPage %p of %P` for the header will print `Page 1 of 
 Use a string value with the name of the interpreter to set the interpreter.
 The name of the interpreter is either its file name (without an extension) or a name used in `ide:AddInterpreter()` call.
 For example, to select the LÖVE interpreter, use `interpreter = "love2d"`.
+- `default.extension = 'lua'`: set the default file extension to be used when `default.usecurrentextension` is set to `false` or when no editor tab is opened (1.61+).
 - `default.name = 'untitled'`: set the default file name for files created in the IDE.
+- `default.usecurrentextension = true`: use extension from the current editor tab when creating a new file (1.61+).
+Set to `false` to always use `default.extension`, which is also used when no editor tab is opened.
 
 ## Custom APIs
 
