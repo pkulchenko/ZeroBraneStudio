@@ -39,18 +39,18 @@ local colors = {
     Purple      = H'8959a8',
   },
   TomorrowContrast = { -- contributed by Sergey Lerg
-    Background  = H'f7f7f7',
-    CurrentLine = H'efefef',
-    Selection   = H'd6d6d6',
-    Foreground  = H'202020',
-    Comment     = H'8e908c',
+    Background  = H'f7f7f7', --background of pane
+    CurrentLine = H'efefef', --background of current line 
+    Selection   = H'd6d6d6', --background of selection
+    Foreground  = H'202020', --foreground text color
+    Comment     = H'8e908c', --foreground of comments, line numbers, helper lines (collapsing + whitespace)
     Red         = H'4669ff', --numbers
     Orange      = H'f5871f',
     Yellow      = H'eab700',
     Green       = H'108010', --strings
-    Aqua        = H'4060b0', --built in functions
+    Aqua        = H'4060b0', --operators, and round/square/curly braces
     Blue        = H'101080', --keywords
-    Purple      = H'a01090',
+    Purple      = H'a01090', --built in functions
   },
   TomorrowNight = {
     Background  = H'1d1f21',
