@@ -902,6 +902,7 @@ local function closeWindow(event)
 
   -- stop all the timers
   for _, timer in pairs(ide.timers) do timer:Stop() end
+  wx.wxGetApp():Disconnect(wx.wxEVT_TIMER)
 
   event:Skip()
 
