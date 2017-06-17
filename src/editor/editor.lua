@@ -238,6 +238,9 @@ function EditorAutoComplete(editor)
   -- remove everything that can't be auto-completed
   lt = lt:match("[%w_"..q(editor.spec.sep).."]*$")
 
+  -- if there is nothing to auto-complete for, then don't show the list
+  if lt:find("^["..q(editor.spec.sep).."]*$") then return end
+
   -- know now which string is to be completed
   local userList = CreateAutoCompList(editor, lt, pos)
 
