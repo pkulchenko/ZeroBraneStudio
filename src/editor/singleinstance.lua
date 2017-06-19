@@ -34,9 +34,10 @@ local delay = tonumber(ide.config.singleinstance) or 1000 -- in ms
 local success = svr:setsockname("127.0.0.1",port) -- bind on local host
 local protocol = {client = {}, server = {}}
 
-protocol.client.greeting = "Is this you, my IDE? It's me, a new instance."
+protocol.client.greeting = "Is this you, my master? It's me, a new instance."
 protocol.server.greeting = "Yes it is me, running as: %s"
 protocol.client.requestloading = "Could you please load this file for me: %s"
+protocol.client.show = "Show yourself, my master."
 protocol.server.answerok = "Sure. You may now leave."
 
 if success then -- ok, server was started, we are solo
@@ -46,6 +47,9 @@ if success then -- ok, server was started, we are solo
       if msg then
         if msg == protocol.client.greeting then
           svr:sendto(protocol.server.greeting:format(wx.wxGetUserName()),ip,port)
+        elseif msg == protocol.client.show then
+          svr:sendto(protocol.server.answerok,ip,port)
+          RequestAttention()
         elseif msg:match(protocol.client.requestloading:gsub("%%s",".+$")) then -- ok we need to open something
           svr:sendto(protocol.server.answerok,ip,port)
           local filename = msg:match(protocol.client.requestloading:gsub("%%s","(.+)$"))
@@ -85,8 +89,12 @@ else -- something different is running on our port
           end
         end
       end
+      if #arg == 1 then -- no files are being loaded; just active the IDE
+        cln:send(protocol.client.show)
+        if cln:receive() ~= protocol.server.answerok then failed = true end
+      end
       if failed then
-        ide:Print("The server instance failed to open the files, this instance will continue running.")
+        ide:Print("Communication with the running instance failed, this instance will continue running.")
       else -- done
         os.exit(0)
       end
