@@ -781,6 +781,8 @@ function CreateEditor(bare)
     -- allow extra ascent/descent
     editor:SetExtraAscent(tonumber(edcfg.extraascent) or 0)
     editor:SetExtraDescent(tonumber(edcfg.extradescent) or 0)
+    -- set whitespace size
+    editor:SetWhitespaceSize(tonumber(edcfg.whitespacesize) or 1)
   end
 
   do
