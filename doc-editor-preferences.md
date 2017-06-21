@@ -42,7 +42,10 @@ set to `true` to add an [indicator for function calls](doc-styles-color-schemes#
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
 - `editor.usewrap = true`: wrap long lines.
-- `editor.whitespace = false`: display whitespaces.
+- `editor.whitespace = false`: display whitespaces;
+set to `true` or `wxstc.wxSTC_WS_VISIBLEALWAYS` to display white space characters drawn as dots and arrows;
+set to `wxstc.wxSTC_WS_VISIBLEAFTERINDENT` to show white spaces after the first visible character only
+and to `wxstc.wxSTC_WS_VISIBLEONLYININDENT` to show white spaces used for indentation only (1.61+).
 - `editor.wrapflags = nil`: enable drawing of visual flags to indicate wrapped lines (0.51+).
 Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subline), `wxstc.wxSTC_WRAPVISUALFLAG_START` (beginning of subline), and `wxstc.wxSTC_WRAPVISUALFLAG_MARGIN` (line number margin).
 - `editor.wrapindentmode = wxstc.wxSTC_WRAPINDENT_FIXED`: enable wrapped sublines to be indented to the position of their first subline or one more indent level (0.61+).
