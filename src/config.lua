@@ -3,6 +3,8 @@ return {
     autoactivate = false,
     foldcompact = true,
     checkeol = true,
+    edge = false,
+    edgemode = wxstc.wxSTC_EDGE_NONE,
     saveallonrun = false,
     caretline = true,
     commentlinetoggle = false,

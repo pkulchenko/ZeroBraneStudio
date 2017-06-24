@@ -228,10 +228,8 @@ local specialmapping = {
   end,
 
   edge = function(editor,style)
-    if style.fg or style.col or style.mode then
-      editor:SetEdgeColour(wx.wxColour(unpack(style.fg or {220, 220, 220})))
-      editor:SetEdgeMode(style.mode or wxstc.wxSTC_EDGE_LINE)
-      editor:SetEdgeColumn(style.col or 80)
+    if style.fg then
+      editor:SetEdgeColour(wx.wxColour(unpack(style.fg)))
     end
   end,
 

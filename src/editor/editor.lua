@@ -799,6 +799,11 @@ function CreateEditor(bare)
     editor:SetMouseDwellTime(edcfg.calltipdelay)
   end
 
+  if edcfg.edgemode ~= wxstc.wxSTC_EDGE_NONE or edcfg.edge then
+    editor:SetEdgeMode(edcfg.edgemode ~= wxstc.wxSTC_EDGE_NONE and edcfg.edgemode or wxstc.wxSTC_EDGE_LINE)
+    editor:SetEdgeColumn(tonumber(edcfg.edge) or 80)
+  end
+
   editor:AutoCompSetIgnoreCase(ide.config.acandtip.ignorecase)
   if (ide.config.acandtip.strategy > 0) then
     editor:AutoCompSetAutoHide(0)
