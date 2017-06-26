@@ -20,6 +20,8 @@ The values shown are the default values.
 - `editor.commentlinetoggle = false`: set to toggle comments all at once (when set to `false`) or line-by-line (when set to `true`) (1.31+).
 The difference can be seen on a fragment that includes a mix of regular and commented lines; when set to `true`, each line is toggled individually (so commented lines will be uncommented), but when set to `false`, all lines will be commented out.
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
+- `editor.edge = false`: set editor edge to mark lines that exceed a given length (1.61+);
+set to `true` to enable (at 80 columns) or to a number to set to specific column.
 - `editor.extraascent = nil`: extra spacing (in pixels) above the baseline (0.51+).
 - `editor.extradescent = nil`: extra spacing (in pixels) below the baseline (0.61+).
 - `editor.fold = true`: enable folding (0.39+).
