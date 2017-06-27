@@ -22,6 +22,10 @@ The difference can be seen on a fragment that includes a mix of regular and comm
 - `editor.defaulteol = nil`: default EOL encoding (`wxstc.wxSTC_EOL_CRLF` or `wxstc.wxSTC_EOL_LF`).
 - `editor.edge = false`: set editor edge to mark lines that exceed a given length (1.61+);
 set to `true` to enable (at 80 columns) or to a number to set to specific column.
+- `editor.edgemode = wxstc.wxSTC_EDGE_NONE`: set how the edge for the long lines is displayed (1.61+);
+set to `wxstc.wxSTC_EDGE_LINE` to display as a line or
+set to `wxstc.wxSTC_EDGE_BACKGROUND` to display as a different background color of characters after the column limit.
+The color of the characters or the edge line is controlled by `style.edge.fg` configuration setting.
 - `editor.extraascent = nil`: extra spacing (in pixels) above the baseline (0.51+).
 - `editor.extradescent = nil`: extra spacing (in pixels) below the baseline (0.61+).
 - `editor.fold = true`: enable folding (0.39+).
