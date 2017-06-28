@@ -123,6 +123,7 @@ function StylesAddMarker(marker, ch, fg, bg)
   return num
 end
 
+local function iscolor(c) return type(c) == "table" and #c == 3 end
 local function applymarker(editor,marker,clrfg,clrbg,clrsel)
   if (clrfg) then editor:MarkerSetForeground(marker,clrfg) end
   if (clrbg) then editor:MarkerSetBackground(marker,clrbg) end
@@ -130,12 +131,12 @@ local function applymarker(editor,marker,clrfg,clrbg,clrsel)
 end
 local specialmapping = {
   sel = function(editor,style)
-    if (style.fg) then
+    if iscolor(style.fg) then
       editor:SetSelForeground(1,wx.wxColour(unpack(style.fg)))
     else
       editor:SetSelForeground(0,wx.wxWHITE)
     end
-    if (style.bg) then
+    if iscolor(style.bg) then
       editor:SetSelBackground(1,wx.wxColour(unpack(style.bg)))
     else
       editor:SetSelBackground(0,wx.wxWHITE)
@@ -150,10 +151,10 @@ local specialmapping = {
 
   seladd = function(editor,style)
     if ide.wxver >= "2.9.5" then
-      if (style.fg) then
+      if iscolor(style.fg) then
         editor:SetAdditionalSelForeground(wx.wxColour(unpack(style.fg)))
       end
-      if (style.bg) then
+      if iscolor(style.bg) then
         editor:SetAdditionalSelBackground(wx.wxColour(unpack(style.bg)))
       end
       if (style.alpha) then
@@ -163,13 +164,13 @@ local specialmapping = {
   end,
 
   caret = function(editor,style)
-    if (style.fg) then
+    if iscolor(style.fg) then
       editor:SetCaretForeground(wx.wxColour(unpack(style.fg)))
     end
   end,
 
   caretlinebg = function(editor,style)
-    if (style.bg) then
+    if iscolor(style.bg) then
       editor:SetCaretLineBackground(wx.wxColour(unpack(style.bg)))
     end
     if (style.alpha and ide.wxver >= "2.9.5") then
@@ -178,12 +179,12 @@ local specialmapping = {
   end,
 
   whitespace = function(editor,style)
-    if (style.fg) then
+    if iscolor(style.fg) then
       editor:SetWhitespaceForeground(1,wx.wxColour(unpack(style.fg)))
     else
       --editor:SetWhitespaceForeground(0)
     end
-    if (style.bg) then
+    if iscolor(style.bg) then
       editor:SetWhitespaceBackground(1,wx.wxColour(unpack(style.bg)))
     else
       --editor:SetWhitespaceBackground(0)
@@ -191,10 +192,10 @@ local specialmapping = {
   end,
 
   fold = function(editor,style)
-    local clrfg = style.fg and wx.wxColour(unpack(style.fg))
-    local clrbg = style.bg and wx.wxColour(unpack(style.bg))
-    local clrhi = style.hi and wx.wxColour(unpack(style.hi))
-    local clrsel = style.sel and wx.wxColour(unpack(style.sel))
+    local clrfg = iscolor(style.fg) and wx.wxColour(unpack(style.fg))
+    local clrbg = iscolor(style.bg) and wx.wxColour(unpack(style.bg))
+    local clrhi = iscolor(style.hi) and wx.wxColour(unpack(style.hi))
+    local clrsel = iscolor(style.sel) and wx.wxColour(unpack(style.sel))
 
     -- if selected background is set then enable support for it
     if ide.wxver >= "2.9.5" and clrsel then editor:MarkerEnableHighlight(true) end
@@ -228,7 +229,7 @@ local specialmapping = {
   end,
 
   edge = function(editor,style)
-    if style.fg then
+    if iscolor(style.fg) then
       editor:SetEdgeColour(wx.wxColour(unpack(style.fg)))
     end
   end,
@@ -237,8 +238,8 @@ local specialmapping = {
     for m, style in pairs(markers) do
       local id, ch, fg, bg = StylesGetMarker(m)
       if style.ch then ch = style.ch end
-      if style.fg then fg = wx.wxColour(unpack(tint(style.fg))) end
-      if style.bg then bg = wx.wxColour(unpack(tint(style.bg))) end
+      if iscolor(style.fg) then fg = wx.wxColour(unpack(tint(style.fg))) end
+      if iscolor(style.bg) then bg = wx.wxColour(unpack(tint(style.bg))) end
       editor:MarkerDefine(id, ch, fg, bg)
     end
   end,
@@ -249,8 +250,8 @@ local specialmapping = {
     -- don't color toolbars as they have their own color/style
     local skipcolor = {wxAuiToolBar = true, wxToolBar = true}
     local default = wxstc.wxSTC_STYLE_DEFAULT
-    local bg = style.bg and wx.wxColour(unpack(style.bg)) or editor:StyleGetBackground(default)
-    local fg = style.fg and wx.wxColour(unpack(style.fg)) or editor:StyleGetForeground(default)
+    local bg = iscolor(style.bg) and wx.wxColour(unpack(style.bg)) or editor:StyleGetBackground(default)
+    local fg = iscolor(style.fg) and wx.wxColour(unpack(style.fg)) or editor:StyleGetForeground(default)
 
     local uimgr = ide.frame.uimgr
     local panes = uimgr:GetAllPanes()
@@ -286,8 +287,8 @@ local defaultmapping = {
 }
 
 function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
-  local defaultfg = styles.text and styles.text.fg and wx.wxColour(unpack(styles.text.fg)) or nil
-  local defaultbg = styles.text and styles.text.bg and wx.wxColour(unpack(styles.text.bg)) or nil
+  local defaultfg = styles.text and iscolor(styles.text.fg) and wx.wxColour(unpack(styles.text.fg)) or nil
+  local defaultbg = styles.text and iscolor(styles.text.bg) and wx.wxColour(unpack(styles.text.bg)) or nil
 
   local function applystyle(style,id)
     editor:StyleSetFont(id, style.i and fontitalic or font)
@@ -302,7 +303,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     if style.hs then
       editor:StyleSetHotSpot(id, 1)
       -- if passed a color (table) as value, set it as foreground
-      if type(style.hs) == 'table' then
+      if iscolor(style.hs) then
         local color = wx.wxColour(unpack(style.hs))
         editor:SetHotspotActiveForeground(1, color)
       end
@@ -310,10 +311,10 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
       editor:SetHotspotSingleLine(1)
     end
 
-    if (style.fg or defaultfg) then
+    if iscolor(style.fg) or defaultfg then
       editor:StyleSetForeground(id, style.fg and wx.wxColour(unpack(style.fg)) or defaultfg)
     end
-    if (style.bg or defaultbg) then
+    if iscolor(style.bg) or defaultbg then
       editor:StyleSetBackground(id, style.bg and wx.wxColour(unpack(style.bg)) or defaultbg)
     end
   end
