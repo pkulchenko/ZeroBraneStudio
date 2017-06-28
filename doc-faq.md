@@ -248,6 +248,13 @@ The content of the Outline can be [configured in various ways](doc-general-prefe
 
 (**0.80 and earlier**) The list of functions was available through the dropdown in the toolbar.
 
+## How to set the edge in the editor at a particular column?
+
+(**1.61+**) You can set `editor.edge = true` or `editor.edge = 76` to mark the edge at a specific column (80 is the default).
+See [editor settings](doc-editor-preferences#editor) for details.
+
+With earlier versions you can use the [edgemark plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/edgemark.lua).
+
 ## Why not all upvalues are shown in the debugger?
 
 Upvalues shown in watch/console/stack windows will only include those **upvalues that are used or referenced** in the current function.
