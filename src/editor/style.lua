@@ -182,12 +182,12 @@ local specialmapping = {
     if iscolor(style.fg) then
       editor:SetWhitespaceForeground(1,wx.wxColour(unpack(style.fg)))
     else
-      --editor:SetWhitespaceForeground(0)
+      editor:SetWhitespaceForeground(0,wx.wxBLACK) -- color is not used, but needs to be provided
     end
     if iscolor(style.bg) then
       editor:SetWhitespaceBackground(1,wx.wxColour(unpack(style.bg)))
     else
-      --editor:SetWhitespaceBackground(0)
+      editor:SetWhitespaceBackground(0,wx.wxBLACK) -- color is not used, but needs to be provided
     end
   end,
 
