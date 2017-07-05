@@ -648,7 +648,8 @@ function ShowCommandBar(default, selected)
       elseif file then
         -- skip binary files with unknown extensions
         if #ide:GetKnownExtensions(GetFileExt(file)) > 0
-        or not IsBinary(FileRead(file, 2048)) then
+        -- file may not be read if there is an error, so provide a default for that case
+        or not IsBinary(FileRead(file, 2048) or "") then
           preview = preview or NewFile()
           preview:SetEvtHandlerEnabled(false)
           LoadFile(file, preview, true, true)
