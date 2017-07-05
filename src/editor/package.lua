@@ -349,6 +349,7 @@ function ide:PushStatus(text, field) self:GetStatusBar():PushStatusText(text, fi
 function ide:PopStatus(field) self:GetStatusBar():PopStatusText(field or 0) end
 function ide:Yield() wx.wxYield() end
 function ide:CreateBareEditor() return CreateEditor(true) end
+function ide:ShowCommandBar(...) return ShowCommandBar(...) end
 
 local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
   "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}

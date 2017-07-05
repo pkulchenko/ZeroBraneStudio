@@ -110,13 +110,13 @@ frame:Connect(ID_FINDSELECTPREV, wx.wxEVT_UPDATE_UI, onUpdateUISearchMenu)
 
 local special = {SYMBOL = '@', LINE = ':', METHOD = ';'}
 frame:Connect(ID_NAVIGATETOFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() ShowCommandBar("") end)
+  function() ide:ShowCommandBar("") end)
 frame:Connect(ID_NAVIGATETOLINE, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() ShowCommandBar(special.LINE) end)
+  function() ide:ShowCommandBar(special.LINE) end)
 frame:Connect(ID_NAVIGATETOMETHOD, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() ShowCommandBar(special.METHOD) end)
+  function() ide:ShowCommandBar(special.METHOD) end)
 frame:Connect(ID_NAVIGATETOSYMBOL, wx.wxEVT_COMMAND_MENU_SELECTED,
   function()
     local ed = GetEditor()
-    ShowCommandBar(special.SYMBOL, ed and ed:ValueFromPosition(ed:GetCurrentPos()))
+    ide:ShowCommandBar(special.SYMBOL, ed and ed:ValueFromPosition(ed:GetCurrentPos()))
   end)
