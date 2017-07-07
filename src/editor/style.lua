@@ -46,16 +46,16 @@ function StylesGetDefault()
     linenumber = {fg = {128, 128, 128}, bg = {250, 250, 250}},
     bracematch = {fg = {32, 128, 255}, b = true},
     bracemiss = {fg = {255, 128, 32}, b = true},
-    ctrlchar = nil,
+    ctrlchar = {},
     indent = {fg = {192, 192, 230}, bg = {255, 255, 255}},
-    calltip = nil,
+    calltip = {},
 
     -- common special (need custom fg & bg)
     sel = {bg = {208, 208, 208}},
     caret = {fg = {0, 0, 0}},
     caretlinebg = {bg = {240, 240, 230}},
     fold = {fg = {192, 192, 192}, bg = {250, 250, 250}, sel = {160, 128, 224}},
-    whitespace = nil,
+    whitespace = {},
     edge = {},
 
     -- deprecated; allowed for backward compatibility in case someone does
