@@ -13,6 +13,11 @@ local function getFontHeight(font)
   return h
 end
 
+local pending
+local function pendingInput()
+  ide:Yield()
+  return pending
+end
 local function showCommandBar(params)
   local onDone, onUpdate, onItem, onSelection, defaultText, selectedText =
     params.onDone, params.onUpdate, params.onItem, params.onSelection,
@@ -103,7 +108,8 @@ local function showCommandBar(params)
   local function onExit(index)
     onExit = function() end
     onDone(index and lines[index], index, search:GetValue())
-    frame:Close()
+    -- delay destroying the frame until all the related processing is done
+    ide:DoWhenIdle(function() if ide:IsValidCtrl(frame) then frame:Destroy() end end)
   end
 
   local linesnow
@@ -176,11 +182,17 @@ local function showCommandBar(params)
   end
 
   local linewas -- line that was reported when updated
-  local function onTextUpdated(event)
+  local function onTextUpdated()
+    pending = ide:GetApp():GetMainLoop():IsYielding()
+    if pending then return end
+
     local text = search:GetValue()
     lines = onUpdate(text)
     linenow = #text > 0 and #lines > 0 and 1 or 0
     linewas = nil
+
+    -- the control can disappear during onUpdate as it can be closed, so check for that
+    if not ide:IsValidCtrl(frame) then return end
 
     local size = frame:GetClientSize()
     local height = minheight + row_height*math.min(maxlines,#lines)
@@ -243,7 +255,9 @@ local function showCommandBar(params)
 
   local takeNearestEdit = false
   local function onIdle(event)
-    if takeNearestEdit then onExit() end
+    if ide:GetApp():GetMainLoop():IsYielding() then return end
+    if pending then onTextUpdated() end
+    if takeNearestEdit then return onExit() end
     if linewas == linenow then return end
     linewas = linenow
     if linenow == 0 then return end
@@ -263,8 +277,6 @@ local function showCommandBar(params)
       search:SetSelection(f, t)
     end
   end
-
-  frame:Connect(wx.wxEVT_CLOSE_WINDOW, function() frame:Destroy() end)
 
   panel:Connect(wx.wxEVT_PAINT, onPanelPaint)
   panel:Connect(wx.wxEVT_ERASE_BACKGROUND, function() end)
@@ -350,7 +362,9 @@ local function commandBarScoreItems(t, pattern, limit)
     -- if there are too many records to filter (prefilter*20), then only search for substrings
     and (prefilter * 10 <= #t and pref or pref:gsub(".", "%1.*"):gsub("%.%*$",""))
     or nil
-  for _, v in ipairs(t) do
+  for n, v in ipairs(t) do
+    -- there was additional input while scoring, so abort to check for it
+    if n % ((prefilter or 250) * 10) == 0 and pendingInput() then return {} end
     if #v >= plen then
       local match = filter and v:lower():find(filter)
       -- check if the current name needs to be prefiltered or anchored (for better performance);
