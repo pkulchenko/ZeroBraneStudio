@@ -15,7 +15,9 @@ end
 
 local pending
 local function pendingInput()
-  ide:Yield()
+  if ide.osname ~= 'Unix' then
+    ide:GetApp():SafeYieldFor(wx.NULL, wx.wxEVT_CATEGORY_USER_INPUT + wx.wxEVT_CATEGORY_UI)
+  end
   return pending
 end
 local function showCommandBar(params)
