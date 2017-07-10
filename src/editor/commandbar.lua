@@ -208,6 +208,11 @@ local function showCommandBar(params)
   end
 
   local function onKeyDown(event)
+    if ide:GetApp():GetMainLoop():IsYielding() then
+      event:Skip()
+      return
+    end
+
     local linesnow = #lines
     local keycode = event:GetKeyCode()
     if keycode == wx.WXK_RETURN then
