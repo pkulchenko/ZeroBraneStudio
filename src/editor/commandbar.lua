@@ -260,11 +260,9 @@ local function showCommandBar(params)
     onExit(math.floor(y / row_height)+1)
   end
 
-  local takeNearestEdit = false
   local function onIdle(event)
     if ide:GetApp():GetMainLoop():IsYielding() then return end
     if pending then onTextUpdated() end
-    if takeNearestEdit then return onExit() end
     if linewas == linenow then return end
     linewas = linenow
     if linenow == 0 then return end
@@ -300,7 +298,7 @@ local function showCommandBar(params)
   -- this could be done with calling `onExit`, but on OSX KILL_FOCUS is called before
   -- mouse LEFT_DOWN, which closes the panel before the results are taken;
   -- to avoid this, `onExit` call is delayed and handled in IDLE event
-  search:Connect(wx.wxEVT_KILL_FOCUS, function() takeNearestEdit = true end)
+  search:Connect(wx.wxEVT_KILL_FOCUS, function() onExit() end)
 
   frame:Show(true)
   frame:Update()
