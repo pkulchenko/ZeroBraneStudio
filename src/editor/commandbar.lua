@@ -20,6 +20,7 @@ local function pendingInput()
   end
   return pending
 end
+local showProgress
 local function showCommandBar(params)
   local onDone, onUpdate, onItem, onSelection, defaultText, selectedText =
     params.onDone, params.onUpdate, params.onItem, params.onSelection,
@@ -94,6 +95,7 @@ local function showCommandBar(params)
   local bbrush = wx.wxBrush(pancolor, wx.wxSOLID)
   local lpen = wx.wxPen(borcolor, 1, wx.wxDOT)
   local bpen = wx.wxPen(borcolor, 1, wx.wxSOLID)
+  local npen = wx.wxPen(backcolor, 1, wx.wxSOLID)
 
   local topSizer = wx.wxFlexGridSizer(2, 1, -border*2, 0)
   topSizer:SetFlexibleDirection(wx.wxVERTICAL)
@@ -116,6 +118,8 @@ local function showCommandBar(params)
 
   local linesnow
   local function onPaint(event)
+    if not ide:IsValidCtrl(frame) then return end
+
     -- adjust the scrollbar before working with the canvas
     local _, starty = results:GetViewStart()
     -- recalculate the scrollbars if the number of lines shown has changed
@@ -169,7 +173,17 @@ local function showCommandBar(params)
     dc:delete()
   end
 
+  local progress = 0
+  showProgress = function(newprogress)
+    progress = newprogress
+    if not ide:IsValidCtrl(panel) then return end
+    panel:Refresh()
+    panel:Update()
+  end
+
   local function onPanelPaint(event)
+    if not ide:IsValidCtrl(frame) then return end
+
     local dc = wx.wxBufferedPaintDC(panel)
     dc:SetBrush(bbrush)
     dc:SetPen(bpen)
@@ -177,6 +191,12 @@ local function showCommandBar(params)
     local psize = panel:GetClientSize()
     dc:DrawRectangle(0, 0, psize:GetWidth(), psize:GetHeight())
     dc:DrawRectangle(sash+1, sash+1, psize:GetWidth()-2*(sash+1), psize:GetHeight()-2*(sash+1))
+
+    if progress > 0 then
+      dc:SetBrush(nbrush)
+      dc:SetPen(npen)
+      dc:DrawRectangle(sash+2, 1, math.floor((row_width-4)*progress), sash)
+    end
 
     dc:SetPen(wx.wxNullPen)
     dc:SetBrush(wx.wxNullBrush)
@@ -261,8 +281,7 @@ local function showCommandBar(params)
   end
 
   local function onIdle(event)
-    if ide:GetApp():GetMainLoop():IsYielding() then return end
-    if pending then onTextUpdated() end
+    if pending then return onTextUpdated() end
     if linewas == linenow then return end
     linewas = linenow
     if linenow == 0 then return end
@@ -358,6 +377,7 @@ local function commandBarScoreItems(t, pattern, limit)
   local r, plen = {}, #(pattern:gsub("%s+",""))
   local maxp = 0
   local num = 0
+  local total = #t
   local prefilter = ide.config.commandbar and tonumber(ide.config.commandbar.prefilter)
   -- anchor for 1-2 symbol patterns to speed up search
   local needanchor = prefilter and prefilter * 4 <= #t and plen <= 2
@@ -367,9 +387,18 @@ local function commandBarScoreItems(t, pattern, limit)
     -- if there are too many records to filter (prefilter*20), then only search for substrings
     and (prefilter * 10 <= #t and pref or pref:gsub(".", "%1.*"):gsub("%.%*$",""))
     or nil
+  local lastpercent = 0
   for n, v in ipairs(t) do
     -- there was additional input while scoring, so abort to check for it
-    if n % ((prefilter or 250) * 10) == 0 and pendingInput() then return {} end
+    local timeToCheck = n % ((prefilter or 250) * 10) == 0
+    if timeToCheck and pendingInput() then r = {}; break end
+    local progress = n/total
+    local percent = math.floor(progress * 100 + 0.5)
+    if timeToCheck and percent ~= lastpercent then
+      lastpercent = percent
+      if showProgress then showProgress(progress) end
+    end
+
     if #v >= plen then
       local match = filter and v:lower():find(filter)
       -- check if the current name needs to be prefiltered or anchored (for better performance);
@@ -392,6 +421,7 @@ local function commandBarScoreItems(t, pattern, limit)
     r = {}
     for i = 1, limit do r[i] = tmp[i] end
   end
+  if showProgress then showProgress(0) end
   return r
 end
 
