@@ -168,9 +168,11 @@ function FileSysGetRecursive(path, recursive, spec, opts)
           list[m:sub(2)] = true
         else
           -- escape all special characters
-          -- and replace (escaped) ** with .* and (escaped) * with [^\//]*
           table.insert(list, EscapeMagic(m)
-            :gsub("%%%*%%%*", ".*"):gsub("%%%*", "[^/\\]*").."$")
+            :gsub("%%%*%%%*", ".*") -- replace (escaped) ** with .*
+            :gsub("%%%*", "[^/\\]*") -- replace (escaped) * with [^\//]*
+            :gsub("^"..sep, ide:GetProject() or "") -- replace leading separator with project directory (if set)
+            .."$")
         end
         masknum = masknum + 1
       end
