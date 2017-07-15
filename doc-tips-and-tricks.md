@@ -115,6 +115,9 @@ To **dock** the window, release the mouse when one side of the main window chang
 If you want to avoid docking, press `Ctrl`/`Cmd` button before releasing the mouse button.
 The new configuration will be used until you reset or change it.
 
+Tabs in notebooks can also be **split vertically or horizontally**. Click and hold the mouse on the tab and drag it to the location you want it to split to until the light blue color appears showing the proposed split. Release the mouse to fix the split.
+Some of the auxiliary panels can be **pulled out** of the notebook. For example, click and hold the mouse on the tab of the Markers panel and drag it out of the notebook. When you release the mouse, the panel will become a standalone window that you can then re-position and dock as described earlier in this section.
+
 ## Move windows without docking them
 
 `Ctrl-Drag`/`Cmd-Drag` will move the window without trying to dock it.
