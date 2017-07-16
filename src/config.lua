@@ -74,6 +74,7 @@ return {
   },
   staticanalyzer = {
     infervalue = false, -- run more detailed static analysis; off by default as it's a slower mode
+    luacheck = false, -- don't use luacheck by default; can be set to `true` to enable or a table
   },
   search = {
     autocomplete = true,
