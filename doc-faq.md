@@ -222,6 +222,10 @@ If you use MacOS, you may need to run the command as `open -n ZeroBraneStudio.ap
 If you made changes by moving panels/windows around and want to undo them,
 you can **restore** the original UI configuration by selecting `View | Default Layout`.
 
+## How do I merge or split windows and tabs?
+
+To merge or split windows and tabs and to change their positions, check the [section in the Tips and Tricks document](doc-tips-and-tricks#merge-and-split-windows-and-tabs).
+
 ## How do I restore default configuration for recent files, projects, and editor tabs?
 
 You can **remove** the [configuration file](doc-general-preferences#session-configuration) ZeroBrane Studio is using to store these settings.
