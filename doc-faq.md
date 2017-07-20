@@ -84,7 +84,7 @@ See [this section](doc-lua-debugging#coroutine-debugging) in the documentation f
 
 ## Is it possible to debug dynamic fragments loaded with `loadstring()`?
 
-Yes; starting from v0.38 if you step into `loadstring()` call, the IDE will open a new window (when [editor.autoactivate](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) is enabled) with the code you can then step through.
+Yes; **starting from v0.38** if you step into `loadstring()` call, the IDE will open a new window (when [editor.autoactivate](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) is enabled) with the code you can then step through.
 As an alternative, you can specify a filename as the second parameter to `loadstring` (also as the absolute or relative path) and have that file in your project directory with the same content as what's loaded with `loadstring`.
 
 You can then open that file in the IDE or configure it to [auto-open](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua#L71) it for you.
@@ -102,7 +102,7 @@ Yes; see [Lua 5.3 debugging](doc-lua53-debugging) section for details.
 
 ## Is debugging of LuaJIT applications supported?
 
-Starting from v0.35 the debugging of LuaJIT applications is supported out-of-the-box.
+**Starting from v0.35** the debugging of LuaJIT applications is supported out-of-the-box.
 See [LuaJIT debugging](doc-luajit-debugging) section for details.
 
 ## Is debugging of 64bit applications supported?
@@ -112,7 +112,7 @@ See [Debugging of 64bit applications](doc-remote-debugging#debugging-of-64bit-ap
 
 ## Why am I getting compilation errors in the IDE when my code runs fine outside of it?
 
-Starting from v0.39, ZeroBrane Studio is using LuaJIT as its internal Lua engine.
+**Starting from v0.39**, ZeroBrane Studio is using LuaJIT as its internal Lua engine.
 LuaJIT is a bit more strict than Lua 5.1 in some checks and may return errors even when your application runs fine by Lua 5.1.
 One typical example is string escape sequences. Lua 5.1 lists [escape sequences it recognizes](http://www.lua.org/pil/2.4.html), but it will accept other sequences as well, for example, `\/`.
 Running a script with this escape sequence under LuaJIT will trigger an error: `invalid escape sequence near ...`.
@@ -147,7 +147,7 @@ You may still need to enable it for other executables (not included with the IDE
 
 ## Why is the text blurry in the editor when running on retina display (MacOS)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on MacOS starting from v0.60.
+You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on MacOS **starting from v0.60**.
 
 (**1.30 and earlier**) Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
@@ -232,7 +232,7 @@ You can **remove** the [configuration file](doc-general-preferences#session-conf
 
 ## Why can't I delete text that includes formatted comments?
 
-(This restriction has been **removed** in v1.20) Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting), which uses styles with hidden characters.
+(This restriction has been **removed in v1.20**) Formatted comments allow usage of [Markdown formatting](doc-markdown-formatting), which uses styles with hidden characters.
 Those characters can't be deleted with some of the delete operations (line 'cut' or 'delete selection') and need to be deleted using `Delete` or `Backspace`.
 
 ## I'm getting a message about mixed end-of-line sequences. How do I make them visible?
