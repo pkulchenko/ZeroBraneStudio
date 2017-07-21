@@ -390,9 +390,12 @@ local function isIgnoredInIndex(name)
   local ignoredirs = outline.settings.ignoredirs
   if ignoredirs[name] then return true end
 
-  -- check through ignored dirs to see if any of them match the file
+  -- check through ignored dirs to see if any of them match the file;
+  -- skip those that are outside of the current project tree to allow
+  -- scanning of the projects that may be inside ignored directories.
+  local proj = ide:GetProject() -- `nil` when not set
   for path in pairs(ignoredirs) do
-    if isInSubDir(name, path) then return true end
+    if (not proj or isInSubDir(path, proj)) and isInSubDir(name, path) then return true end
   end
 
   return false
