@@ -374,6 +374,8 @@ function RequestAttention()
     if ide.osname == "Macintosh" then
       local cmd = [[osascript -e 'tell application "%s" to activate']]
       wx.wxExecute(cmd:format(ide.editorApp:GetAppName()), wx.wxEXEC_ASYNC)
+    elseif ide.osname == "Unix" then
+      if frame:IsIconized() then frame:Iconize(false) end
     elseif ide.osname == "Windows" then
       if frame:IsIconized() then frame:Iconize(false) end
       frame:Raise() -- raise the window
