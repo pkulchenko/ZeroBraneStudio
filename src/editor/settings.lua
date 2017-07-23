@@ -57,7 +57,7 @@ function SettingsRestoreFramePosition(window, windowName)
   local w = tonumber(select(2,settings:Read("w", 1100)))
   local h = tonumber(select(2,settings:Read("h", 700)))
 
-  if (s ~= -1) and (s ~= 1) and (s ~= 2) then
+  if (s ~= -1) then
     local clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
 
     -- if left-top corner outside of the left-top side, reset it to the screen side
@@ -78,9 +78,10 @@ function SettingsRestoreFramePosition(window, windowName)
     end
 
     window:SetSize(x, y, w, h)
-  elseif s == 1 then
-    window:Maximize(true)
   end
+
+  -- maximize after setting window position to make sure it's maximized on the correct monitor
+  if s == 1 then window:Maximize(true) end
 
   settings:SetPath(path)
 end
@@ -100,13 +101,10 @@ function SettingsSaveFramePosition(window, windowName)
   end
 
   settings:Write("s", s==2 and 0 or s) -- iconized maybe - but that shouldnt be saved
-
-  if s == 0 then
-    settings:Write("x", x)
-    settings:Write("y", y)
-    settings:Write("w", w)
-    settings:Write("h", h)
-  end
+  settings:Write("x", x)
+  settings:Write("y", y)
+  settings:Write("w", w)
+  settings:Write("h", h)
 
   settings:SetPath(path)
 end
