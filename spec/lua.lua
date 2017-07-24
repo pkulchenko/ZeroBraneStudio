@@ -173,6 +173,8 @@ return {
         local var,typ = tx:match("%s*"..identifier.."%s*=%s*([^;]+)")
 
         var = var and var:gsub("local",""):gsub("%s","")
+        -- remove assert() calls as they don't affect their parameter types
+        typ = typ and typ:gsub("assert%s*(%b())", function(s) return s:gsub("^%(",""):gsub("%)$","") end)
         -- handle `require` as a special case that returns a type that matches its parameter
         -- (this is without deeper analysis on loaded files and should work most of the time)
         local req = typ and typ:match("^require%s*%(?%s*['\"](.+)['\"]%s*%)?")

@@ -22,6 +22,22 @@ ok(limit(maxstat, function() CreateAutoCompList(editor, "line.") end),
 
 editor:SetText('') -- use Set/Add to position cursor after added text
 editor:AddText([[
+  local foo = io
+  foo:]])
+
+ok((CreateAutoCompList(editor, "foo.") or ""):find("flush") ~= nil,
+  "Auto-complete works for assigned `io` table.")
+
+editor:SetText('') -- use Set/Add to position cursor after added text
+editor:AddText([[
+  local foo = assert(io)
+  foo:]])
+
+ok((CreateAutoCompList(editor, "foo.") or ""):find("flush") ~= nil,
+  "Auto-complete works for assignment wrapped into `assert()` call.")
+
+editor:SetText('') -- use Set/Add to position cursor after added text
+editor:AddText([[
   smth = smth:new()
   smth:]])
 
