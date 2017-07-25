@@ -12,6 +12,7 @@ lualibs/git.lua
 lualibs/git/*.lua
 lualibs/lua_lexer_loose.lua
 lualibs/lua_parser_loose.lua
+lualibs/luacheck/*.lua
 lualibs/luainspect/*.lua
 lualibs/metalua/*.lua
 lualibs/metalua/compiler/*.lua
