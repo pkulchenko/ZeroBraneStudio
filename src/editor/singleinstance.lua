@@ -49,12 +49,12 @@ if success then -- ok, server was started, we are solo
           svr:sendto(protocol.server.greeting:format(wx.wxGetUserName()),ip,port)
         elseif msg == protocol.client.show then
           svr:sendto(protocol.server.answerok,ip,port)
-          RequestAttention()
+          ide:RequestAttention()
         elseif msg:match(protocol.client.requestloading:gsub("%%s",".+$")) then -- ok we need to open something
           svr:sendto(protocol.server.answerok,ip,port)
           local filename = msg:match(protocol.client.requestloading:gsub("%%s","(.+)$"))
           if filename then
-            RequestAttention()
+            ide:RequestAttention()
             ide:ActivateFile(filename)
           end
         end

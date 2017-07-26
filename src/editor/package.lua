@@ -351,6 +351,41 @@ function ide:Yield() wx.wxYield() end
 function ide:CreateBareEditor() return CreateEditor(true) end
 function ide:ShowCommandBar(...) return ShowCommandBar(...) end
 
+function ide:RequestAttention()
+  local ide = self
+  local frame = ide.frame
+  if not frame:IsActive() then
+    frame:RequestUserAttention()
+    if ide.osname == "Macintosh" then
+      local cmd = [[osascript -e 'tell application "%s" to activate']]
+      wx.wxExecute(cmd:format(ide.editorApp:GetAppName()), wx.wxEXEC_ASYNC)
+    elseif ide.osname == "Unix" then
+      if frame:IsIconized() then frame:Iconize(false) end
+    elseif ide.osname == "Windows" then
+      if frame:IsIconized() then frame:Iconize(false) end
+      frame:Raise() -- raise the window
+
+      local winapi = require 'winapi'
+      if winapi then
+        local pid = winapi.get_current_pid()
+        local wins = winapi.find_all_windows(function(w)
+          return w:get_process():get_pid() == pid
+             and w:get_class_name() == 'wxWindowNR'
+        end)
+        if wins and #wins > 0 then
+          -- found the window, now need to activate it:
+          -- send some input to the window and then
+          -- bring our window to foreground (doesn't work without some input)
+          -- send Attn key twice (down and up)
+          winapi.send_to_window(0xF6, false)
+          winapi.send_to_window(0xF6, true)
+          for _, w in ipairs(wins) do w:set_foreground() end
+        end
+      end
+    end
+  end
+end
+
 local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
   "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
 local useraw = nil

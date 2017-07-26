@@ -387,7 +387,7 @@ function debugger:ActivateDocument(file, line, activatehow)
       end
 
       local selection = document.index
-      RequestAttention()
+      ide:RequestAttention()
       notebook:SetSelection(selection)
       SetEditorSelection(selection)
 
@@ -808,7 +808,7 @@ function debugger:Listen(start)
       end
 
       -- request attention if the debugging is stopped
-      if not debugger.running then RequestAttention() end
+      if not debugger.running then ide:RequestAttention() end
       -- refresh toolbar and menus in case the main app is not active
       ide:GetMainFrame():UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
       ide:GetToolBar():UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
