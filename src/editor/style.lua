@@ -85,6 +85,7 @@ function StylesGetDefault()
       varglobal = {},
       varmasking = {},
       varmasked = {},
+      varself = {},
       searchmatch = {},
     },
   }
@@ -368,6 +369,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
 
     local fncall = ide:AddIndicator("core.fncall")
     local varlocal = ide:AddIndicator("core.varlocal")
+    local varself = ide:AddIndicator("core.varself")
     local varglobal = ide:AddIndicator("core.varglobal")
     local varmasking = ide:AddIndicator("core.varmasking")
     local varmasked = ide:AddIndicator("core.varmasked")
@@ -377,6 +379,8 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(type(indic.fncall) == type{} and indic.fncall.fg or {128, 128, 255})))
     editor:IndicatorSetStyle(varlocal, type(indic.varlocal) == type{} and indic.varlocal.st or wxstc.wxSTC_INDIC_DOTS or wxstc.wxSTC_INDIC_TT)
     editor:IndicatorSetForeground(varlocal, wx.wxColour(unpack(type(indic.varlocal) == type{} and indic.varlocal.fg or defaultfg)))
+    editor:IndicatorSetStyle(varself, type(indic.varself) == type{} and indic.varself.st or wxstc.wxSTC_INDIC_DOTS)
+    editor:IndicatorSetForeground(varself, wx.wxColour(unpack(type(indic.varself) == type{} and indic.varself.fg or defaultfg)))
     editor:IndicatorSetStyle(varglobal, type(indic.varglobal) == type{} and indic.varglobal.st or wxstc.wxSTC_INDIC_PLAIN)
     editor:IndicatorSetForeground(varglobal, wx.wxColour(unpack(type(indic.varglobal) == type{} and indic.varglobal.fg or defaultfg)))
     editor:IndicatorSetStyle(varmasking, type(indic.varmasking) == type{} and indic.varmasking.st or wxstc.wxSTC_INDIC_DASH or wxstc.wxSTC_INDIC_DIAGONAL)

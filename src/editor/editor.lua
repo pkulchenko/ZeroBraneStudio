@@ -426,6 +426,7 @@ local indicator = {
   FNCALL = ide:GetIndicator("core.fncall"),
   LOCAL = ide:GetIndicator("core.varlocal"),
   GLOBAL = ide:GetIndicator("core.varglobal"),
+  SELF = ide:GetIndicator("core.varself"),
   MASKING = ide:GetIndicator("core.varmasking"),
   MASKED = ide:GetIndicator("core.varmasked"),
 }
@@ -588,7 +589,7 @@ function IndicateAll(editor, lines)
   end
 
   local cleared = {}
-  for _, indic in ipairs {indicator.FNCALL, indicator.LOCAL, indicator.GLOBAL, indicator.MASKING} do
+  for _, indic in ipairs {indicator.FNCALL, indicator.LOCAL, indicator.GLOBAL, indicator.MASKING, indicator.SELF} do
     cleared[indic] = pos
   end
 
@@ -622,7 +623,7 @@ function IndicateAll(editor, lines)
     -- indicate local/global variables
     if op == 'Id'
     and (var and indic.varlocal or not var and indic.varglobal) then
-      IndicateOne(var and indicator.LOCAL or indicator.GLOBAL, lineinfo, #name)
+      IndicateOne(var and (var.self and indicator.SELF or indicator.LOCAL) or indicator.GLOBAL, lineinfo, #name)
     end
 
     -- indicate masked values at the same level
