@@ -50,6 +50,8 @@ You can change the color of an indicator (by setting its `fg` property), its typ
 If you want to **disable an indicator**, set its value to `nil`: `styles.indicator.varlocal = nil`.
 If you want to **disable all indicators**, use `styles.indicator = {}`.
 
+## Indicator types
+
 The following list shows possible **indicator types**:
 
 - `wxstc.wxSTC_INDIC_DOTS`: Dotted underline
