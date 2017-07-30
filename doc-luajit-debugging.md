@@ -5,10 +5,10 @@ title: LuaJIT Debugging
 
 ZeroBrane Studio supports **debugging of [LuaJIT](http://luajit.org/) applications** in several ways:
 
-1. (v0.39+) **LuaJIT (v2.0.2) interpreter is included** in ZeroBrane Studio and is the default interpreter (`Project | Lua Interpreter | Lua`).
+1. (**v0.39+**) **LuaJIT (v2.0.2) interpreter is included** in ZeroBrane Studio and is the default interpreter (`Project | Lua Interpreter | Lua`).
 2. A LuaJIT application can be debugged as any other application using [remote debugging](doc-remote-debugging).
 
-Or, if you are running v0.38 or earlier:
+Or, if you are running **v0.38 or earlier**:
 
 1. A LuaJIT interpreter can **replace the default Lua interpreter** used by ZeroBrane Studio.
 To do that, you need to set `path.lua = "/full/path/to/luajit_executable"` in [cfg/user.lua](doc-configuration).

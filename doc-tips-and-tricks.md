@@ -20,12 +20,12 @@ To **show only some elements from a large table**, you can use an expression tha
 
 ## Go to definition
 
-(0.39+) To **jump to the definition of a local variable** (also works for loop variables and parameters), you can use `Alt/Opt+Ctrl+Click` or right mouse click and select `Go To Definition`.
+(**v0.39+**) To **jump to the definition of a local variable** (also works for loop variables and parameters), you can use `Alt/Opt+Ctrl+Click` or right mouse click and select `Go To Definition`.
 You can then **navigate back to the original location** by using `Alt/Opt-Left`.
 
 ## Select all instances of a variable
 
-(0.38+) To **select all instances of a variable** (scope-aware), you can use `Ctrl/Cmd+DblClick` or right mouse click and select `Rename All Instances`.
+(**v0.38+**) To **select all instances of a variable** (scope-aware), you can use `Ctrl/Cmd+DblClick` or right mouse click and select `Rename All Instances`.
 The menu item will also show how many instances will be selected ([screenshot and details](http://notebook.kulchenko.com/zerobrane/scope-aware-variable-indicators-zerobrane-studio)).
 
 ## Quick search
@@ -40,15 +40,15 @@ When you select all instance of a variable, you can **navigate them forward and 
 
 ## Search in the console history
 
-(0.39+) To **search and auto-complete commands in the console history**, you can start typing the command and then use `TAB`, which will auto-complete the last matching command.
+(**v0.39+**) To **search and auto-complete commands in the console history**, you can start typing the command and then use `TAB`, which will auto-complete the last matching command.
 You can see other matches if you continue pressing `TAB`.
 
 ## Auto-reload externally modified files
 
-(0.50+) To **auto-reload externally modified files** set `editor.autoreload` configuration setting to true.
+(**v0.50+**) To **auto-reload externally modified files** set `editor.autoreload` configuration setting to true.
 If no conflict is detected, the file content is going to be reloaded and its current markers (breakpoints and others) are going to be restored if possible.
 
-(0.80+) This option is enabled by default.
+(**v0.80+**) This option is enabled by default.
 
 ## Hiding files in the Project tree
 
@@ -76,7 +76,7 @@ See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_GET
 
 ## Search and replacement with regular expressions and captures
 
-(0.39+) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
+(**v0.39+**) When regular expression search is used with search and replace, `\n` refer to first through ninth **pattern captures** marked with brackets `()`.
 For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherVariable\1`, `MyVariable1` will be replaced with `MyOtherVariable1`, `MyVariable2` with `MyOtherVariable2`, and so on.
 
 ## Pretty printing in the Console window
@@ -88,7 +88,7 @@ To print complex elements on multiple lines, you can prepend the expression with
 
 To limit the number of levels shown during pretty printing, instead of `val`, use `return require('mobdebug').line(val, {maxlevel = 1})`, and instead of `=val`, use `return require('mobdebug').line(a, {indent = ' ', maxlevel = 1})`.
 
-(1.51+) Another option to limit the number of levels shown during pretty printing, is to add a comment with serializer options, so instead of `val`, use `val -- {maxlevel = 2}`.
+(**v1.51+**) Another option to limit the number of levels shown during pretty printing, is to add a comment with serializer options, so instead of `val`, use `val -- {maxlevel = 2}`.
 You can use any [option supported by the Serpent serializer](https://github.com/pkulchenko/serpent#options), for example, you can change the format for the results of the expression using `numformat` option: `val --{numformat = "%x"}`.
 
 ## Quick jump to the source of the error
@@ -109,7 +109,7 @@ If you are on MacOS, you may need to use `open -n ZeroBraneStudio.app --args -cf
 ## Merge and split windows and tabs
 
 You can **resize** windows by dragging the splitters between them.
-To **undock** or **re-dock** the window, doubleclick on the tab background of the notebook in that window (0.60+).
+To **undock** or **re-dock** the window, doubleclick on the tab background of the notebook in that window (**v0.60+**).
 To **move** the window, click and hold the mouse on the window caption area (when the window is undocked); then drag the window to a new location.
 To **dock** the window, release the mouse when one side of the main window changes its color to light blue.
 If you want to avoid docking, press `Ctrl`/`Cmd` button before releasing the mouse button.
@@ -127,19 +127,19 @@ Some of the auxiliary panels can be **pulled out** of the notebook. For example,
 You can **change the current project** in several ways:
 
 1. Use `Project | Project Directory | Choose...`.
-2. Use `File | Recent Projects` (0.60+).
-3. Use the context menu in the Project tree (mouse right click) and then `Project Directory` (0.60+).
+2. Use `File | Recent Projects` (**v0.60+**).
+3. Use the context menu in the Project tree (mouse right click) and then `Project Directory` (**v0.60+**).
 4. Use `Choose a project directory` icon on the toolbar.
-5. Use dropdown next to the `Choose a project directory` icon on the toolbar (0.60+).
+5. Use dropdown next to the `Choose a project directory` icon on the toolbar (**v0.60+**).
 
 ## Project tree refresh
 
-(1.40+) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
+(**v1.40+**) All the changes in the file system will be reflected in the Project tree when they happen in the folders expanded in the tree.
 
 To refresh the project tree manually you have several options:
 
 1. Collapse/Expand a particular directory, which will refresh its content.
-2. (1.10+) Use `Refresh` item in the context menu in the project tree (mouse right click).
+2. (**v1.10+**) Use `Refresh` item in the context menu in the project tree (mouse right click).
 
 If you are using one of the earlier versions, you can check [Refresh Project](https://github.com/pkulchenko/ZeroBranePackage/blob/master/refreshproject.lua) plugin (Windows only).
 
@@ -154,7 +154,7 @@ The content of the `Output` window can be cleared by accessing context menu (rig
 
 ## Zooming all editor tabs
 
-(0.41+) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
+(**v0.41+**) Use `Shift+Zoom` (`Shift+Ctrl+Scroll`) to zoom all editors.
 Using `Ctrl+Scroll` still zooms only the current editor tab.
 
 ## Sorting of functions in the Outline
@@ -185,7 +185,7 @@ To switch back either remove the configuration setting or reset `debugger.init` 
 
 ## Change format for numeric values in Stack/Watch windows
 
-(1.51+) To change the format of numeric values shown in Stack/Watch windows, set `debugger.numformat` contiguration setting to the desired value.
+(**v1.51+**) To change the format of numeric values shown in Stack/Watch windows, set `debugger.numformat` contiguration setting to the desired value.
 For example, to show  the values in the hexadecimal format, add the following fragment to the [configuration](doc-configuration) file:
 
 ```lua
