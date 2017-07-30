@@ -37,7 +37,7 @@ by adding to the configuration file (`Edit | Preferences | Settings: User`) the 
 
 ## Will the IDE work with my device that is using UI6+?
 
-(**The auto-detection has been improveed since v0.27 of the Vera plugin, which is included with v1.40+, so no additional configuration should be needed.**)
+(**The auto-detection has been improved since v0.27 of the Vera plugin, which is included with v1.40+, so no additional configuration should be needed.**)
 
 The auto-detection step that identifies the address of your device to connect to may not work if your device is using *UI6* or *UI7* firmware.
 If the debugging doesn't start or if you get an error message, you may manually configure the IDE to connect to your device
