@@ -99,7 +99,7 @@ The general command for launching is the following: `zbstudio [option] [<project
 * **Open files**: `zbstudio <filename> [<filename>...]`.
 * **Set project directory** (and optionally open files): `zbstudio <project directory> [<filename>...]`.
 * **Overwrite default configuration**: `zbstudio -cfg "string with configuration settings"`, for example: `zbstudio -cfg "editor.fontsize=12; editor.usetabs=true"`.
-* **Load custom configuration file**: `zbstudio -cfg <filename>`, for example: `zbstudio -cfg cfg/estrela.lua`.
+* **Load custom configuration file**: `zbstudio -cfg <filename>`, for example: `zbstudio -cfg cfg/xcode-keys.lua`.
 
 All configuration changes applied from the command line are only effective for the current session.
 
