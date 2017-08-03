@@ -84,7 +84,7 @@ The IDE can be **installed into and run from any directory**. There are three op
 
 **No compilation is needed** for any of the installation options, although the scripts to compile required libraries for all supported platforms are available in the `build/` directory.
 
-See the [installation section](https://studio.zerobrane.com/doc-installation) in the documentation for further details.
+See the [installation section](https://studio.zerobrane.com/doc-installation) in the documentation for further details and uninstallation instructions.
 
 ## Usage
 
