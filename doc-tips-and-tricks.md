@@ -205,6 +205,10 @@ To enable document map that provides a bird's-eye view of the currently edited d
 
 To open and edit the same file in multiple windows, you can use [clone view plugin](http://notebook.kulchenko.com/zerobrane/clone-editor-view-plugin-for-zerobrane-studio).
 
+## Highlight selected (plugin)
+
+To highlight all instances of the currently selected word, you can use [highlight selected plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/highlightselected.lua).
+
 ## Real-time watches (plugin)
 
 To display values from your program while it is running, you can use [real-time watches view plugin](http://notebook.kulchenko.com/zerobrane/real-time-watches-plugin-zerobrane-studio).
