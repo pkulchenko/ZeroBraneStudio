@@ -289,7 +289,7 @@ local function analyzeProgram(editor)
   -- save all files (if requested) for "infervalue" analysis to keep the changes on disk
   if ide.config.editor.saveallonrun and ide.config.staticanalyzer.infervalue then SaveAll(true) end
   if ide:GetLaunchedProcess() == nil and not ide:GetDebugger():IsConnected() then ClearOutput() end
-  DisplayOutput("Analyzing the source code")
+  ide:GetOutput():Write("Analyzing the source code")
   frame:Update()
 
   local editorText = editor:GetTextDyn()
@@ -297,13 +297,13 @@ local function analyzeProgram(editor)
   local filePath = doc:GetFilePath() or doc:GetFileName()
   local warn, err = warnings_from_string(editorText, filePath)
   if err then -- report compilation error
-    DisplayOutputLn((": not completed.\n%s"):format(err))
+    ide:Print((": not completed.\n%s"):format(err))
     return false
   end
 
-  DisplayOutputLn((": %s warning%s.")
+  ide:Print((": %s warning%s.")
     :format(#warn > 0 and #warn or 'no', #warn == 1 and '' or 's'))
-  DisplayOutputNoMarker(table.concat(warn, "\n") .. (#warn > 0 and "\n" or ""))
+  ide:GetOutput():Write(table.concat(warn, "\n") .. (#warn > 0 and "\n" or ""))
 
   return true -- analyzed ok
 end

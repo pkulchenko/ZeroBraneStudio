@@ -85,8 +85,7 @@ function ProjectSetInterpreter(name)
     selectInterpreter(id)
     return true
   else
-    DisplayOutputLn(("Can't load interpreter '%s'; using the default interpreter instead.")
-      :format(name))
+    ide:Print(("Can't load interpreter '%s'; using the default interpreter instead."):format(name))
     local id = (
       -- interpreter is set and is (still) on the list of known interpreters
       IDget("debug.interpreter."..(ide.config.interpreter or ide.config.default.interpreter)) or
@@ -266,10 +265,10 @@ frame:Connect(ID_BREAKPOINTNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
     local BPNSC = KSC(ID_BREAKPOINTNEXT):gsub("\t","")
     if not GetEditor():MarkerGotoNext(BREAKPOINT_MARKER) and BPNSC == "F9" then
       local osx = ide.osname == "Macintosh"
-      DisplayOutputLn(("You used '%s' shortcut that has been changed from toggling a breakpoint to navigating to the next breakpoint in the document.")
+      ide:Print(("You used '%s' shortcut that has been changed from toggling a breakpoint to navigating to the next breakpoint in the document.")
         :format(BPNSC))
       -- replace Ctrl with Cmd, but not in RawCtrl
-      DisplayOutputLn(("To toggle a breakpoint, use '%s' or click in the editor margin.")
+      ide:Print(("To toggle a breakpoint, use '%s' or click in the editor margin.")
         :format(KSC(ID_BREAKPOINTTOGGLE):gsub("\t",""):gsub("%f[%w]Ctrl", osx and "Cmd" or "Ctrl")))
     end
   end)
