@@ -701,7 +701,7 @@ function debugger:Listen(start)
                   return
                 end
               end
-              if m then DisplayOutputNoMarker(m) end
+              if m then ide:GetOutput():Write(m) end
             end})
       end
 
