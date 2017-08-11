@@ -491,6 +491,26 @@ local function treeSetConnectorsAndIcons(tree)
     tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
   end
 
+  function tree:GetStartFile()
+    local project = FileTreeGetDir()
+    return project and filetree.settings.startfile[project]
+  end
+
+  function tree:SetStartFile(path)
+    local item_id
+    local project = FileTreeGetDir()
+    if project and type(path) == "string" then
+      local startfile = path:gsub(project, "")
+      item_id = self:FindItem(startfile)
+    end
+    -- unset if explicitly requested or the replacement has been found
+    if not path or item_id then unsetStartFile() end
+    if item_id then setStartFile(item_id) end
+
+    saveSettings()
+    return item_id
+  end
+
   tree:Connect(ID_NEWFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:EditLabel(addItem(tree:GetSelection(), empty, image.FILEOTHER))
