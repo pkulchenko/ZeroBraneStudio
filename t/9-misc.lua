@@ -107,9 +107,11 @@ if ide.osname == "Windows" then
   is(FileGetLongPath(MergeFullPath(cwd,capname):gsub("^.:","")), MergeFullPath(cwd,capname:lower()):gsub("^.:",""), "`GetLongFilePath` returns properly formatted path on Windows (3/3).")
 end
 
+local tree = ide:GetProjectTree()
+ok(pcall(function() tree:SetStartFile() end) == true, "Unsetting start file without project doesn't fail.")
+
 ide:SetProject("t")
 is(ide:GetProject("t"):gsub("[/\\]$",""), MergeFullPath(cwd,"t"), "Project is set to the expected path.")
-local tree = ide:GetProjectTree()
 local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
 

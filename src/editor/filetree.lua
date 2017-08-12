@@ -268,6 +268,8 @@ local function treeSetConnectorsAndIcons(tree)
 
   local function unMapDir(dir)
     local project = FileTreeGetDir()
+    if not project then return end
+
     local mapped = filetree.settings.mapped[project] or {}
     for k, m in ipairs(mapped) do
       if m == dir then table.remove(mapped, k) end
@@ -277,6 +279,8 @@ local function treeSetConnectorsAndIcons(tree)
   end
   local function mapDir()
     local project = FileTreeGetDir()
+    if not project then return end
+
     local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
       project ~= "" and project or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
     if dirPicker:ShowModal(true) ~= wx.wxID_OK then return end
@@ -474,6 +478,8 @@ local function treeSetConnectorsAndIcons(tree)
 
   local function unsetStartFile()
     local project = FileTreeGetDir()
+    if not project then return end
+
     local startfile = filetree.settings.startfile[project]
     filetree.settings.startfile[project] = nil
     if startfile then
@@ -482,13 +488,17 @@ local function treeSetConnectorsAndIcons(tree)
         tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
       end
     end
+    return startfile
   end
 
   local function setStartFile(item_id)
     local project = FileTreeGetDir()
+    if not project then return end
+
     local startfile = tree:GetItemFullName(item_id):gsub(project, "")
     filetree.settings.startfile[project] = startfile
     tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
+    return startfile
   end
 
   function tree:GetStartFile()
@@ -593,7 +603,8 @@ local function treeSetConnectorsAndIcons(tree)
         or TR("&Rename"))
       local fname = tree:GetItemText(item_id)
       local ext = GetFileExt(fname)
-      local startfile = filetree.settings.startfile[FileTreeGetDir()]
+      local project = FileTreeGetDir()
+      local startfile = project and filetree.settings.startfile[project]
       local menu = ide:MakeMenu {
         { ID_NEWFILE, TR("New &File") },
         { ID_NEWDIRECTORY, TR("&New Directory") },
