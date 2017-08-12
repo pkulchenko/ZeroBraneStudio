@@ -276,6 +276,8 @@ local function createNotebook(frame)
 
       -- save tab index the event is for
       selection = notebook:GetPageIndex(tabctrl:GetPage(idx).window)
+      local tree = ide:GetProjectTree()
+      local startfile = tree:GetStartFile()
 
       local menu = ide:MakeMenu {
         { ID_CLOSE, TR("&Close Page") },
@@ -286,10 +288,17 @@ local function createNotebook(frame)
         { ID_SAVE, TR("&Save") },
         { ID_SAVEAS, TR("Save &As...") },
         { },
+        { ID_SETSTARTFILE, TR("Set As Start File") },
+        { ID_UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
+        { },
         { ID_COPYFULLPATH, TR("Copy Full Path") },
         { ID_SHOWLOCATION, TR("Show Location") },
         { ID_REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
       }
+
+      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
+      if not fpath or not tree:FindItem(fpath) then menu:Enable(ID_SETSTARTFILE, false) end
+      if not startfile then menu:Destroy(ID_UNSETSTARTFILE) end
 
       PackageEventHandle("onMenuEditorTab", menu, notebook, event, selection)
 
@@ -300,15 +309,22 @@ local function createNotebook(frame)
 
   local function IfAtLeastOneTab(event) event:Enable(notebook:GetPageCount() > 0) end
 
+  notebook:Connect(ID_SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
+      if fpath then ide:GetProjectTree():SetStartFile(fpath) end
+    end)
+  notebook:Connect(ID_UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:GetProjectTree():SetStartFile()
+    end)
   notebook:Connect(ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:GetDocument(GetEditor(selection)):Save()
+      ide:GetDocument(ide:GetEditor(selection)):Save()
     end)
   notebook:Connect(ID_SAVE, wx.wxEVT_UPDATE_UI, function(event)
-      local doc = ide:GetDocument(GetEditor(selection))
+      local doc = ide:GetDocument(ide:GetEditor(selection))
       event:Enable(doc:IsModified() or doc:IsNew())
     end)
   notebook:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      SaveFileAs(GetEditor(selection))
+      SaveFileAs(ide:GetEditor(selection))
     end)
   notebook:Connect(ID_SAVEAS, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
