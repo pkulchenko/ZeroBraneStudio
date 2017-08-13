@@ -3,6 +3,8 @@ layout: default
 title: Styles and Color schemes
 ---
 
+<ul id='toc'>&nbsp;</ul>
+
 To **modify colors and appearance** of text, markers, or indicators in the editor and Output/Console panels,
 you can use these commands and apply them as described in the [configuration](doc-configuration) section
 and as shown in [user-sample.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/user-sample.lua).
@@ -57,15 +59,18 @@ The following list shows possible **indicator types**:
 - `wxstc.wxSTC_INDIC_DOTS`: Dotted underline
 - `wxstc.wxSTC_INDIC_PLAIN`: Single-line underline
 - `wxstc.wxSTC_INDIC_TT`: Line of T-shapes
-- `wxstc.wxSTC_INDIC_SQUIGGLE`: Squiggly underline
 - `wxstc.wxSTC_INDIC_STRIKE`: Strike-out
+- `wxstc.wxSTC_INDIC_SQUIGGLE`: Squiggly underline
 - `wxstc.wxSTC_INDIC_SQUIGGLELOW`: Squiggly underline (2 pixels)
+- `wxstc.wxSTC_INDIC_SQUIGGLEPIXMAP`: Similar to `INDIC_SQUIGGLE`, but draws a pixmap instead of a series of line segments for performance (**v1.40+**)
 - `wxstc.wxSTC_INDIC_BOX`: Box
 - `wxstc.wxSTC_INDIC_ROUNDBOX`: Rounded Box
-- `wxstc.wxSTC_INDIC_DASH`: Dashed underline
 - `wxstc.wxSTC_INDIC_STRAIGHTBOX`: Box with trasparency
 - `wxstc.wxSTC_INDIC_DOTBOX`: Dotted rectangle
+- `wxstc.wxSTC_INDIC_FULLBOX`: Rectangle around the text using translucent drawing similar to `INDIC_STRAIGHTBOX` but covering the entire character area (**v1.40+**)
+- `wxstc.wxSTC_INDIC_DASH`: Dashed underline
 - `wxstc.wxSTC_INDIC_DIAGONAL`: Diagonal hatching
+- `wxstc.wxSTC_INDIC_TEXTFORE`: Changes the colour of the text (**v1.40+**)
 - `wxstc.wxSTC_INDIC_HIDDEN`: No visual effect
 
 See [Scintilla documentation](http://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETSTYLE) for indicator style examples.
