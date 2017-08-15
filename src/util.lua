@@ -295,11 +295,15 @@ function FileRead(fname, length, callback)
     while true do
       local len, content = file:Read(length)
       local res, msg = callback(content) -- may return `false` to signal to stop
-      if res == false then return false, msg or "Unknown error" end
+      if res == false then
+        file:Close()
+        return false, msg or "Unknown error"
+      end
       if len < length then break end
       pos = pos + len
       file:Seek(pos)
     end
+    file:Close()
     return true, wx.wxSysErrorMsg()
   end
 

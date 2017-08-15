@@ -37,13 +37,12 @@ is(#luas, #luasnodir, "List of files returned for '.lua' does not include folder
 local fcopy = "t/copy.lua!"
 ok(FileCopy("t/test.lua", fcopy), "File copied successfully.")
 local copy = FileRead(fcopy)
-ok(copy, "Copied file exists.")
+ok(copy ~= nil, "Copied file exists.")
 ok(copy == FileRead("t/test.lua"), "Copy matches the original.")
 
 local luasmore = FileSysGetRecursive('t', true, '*.lua')
 is(#luasmore, #luas, ("Mask '.lua' doesn't match '%s'"):format(fcopy))
-os.remove(fcopy)
-ok(not FileRead(fcopy), "File deleted successfully.")
+ok(FileRemove(fcopy) and not FileRead(fcopy), "File deleted successfully.")
 
 local exlist = ide.config.excludelist
 local path = 'zbstudio/res/16'
