@@ -226,11 +226,10 @@ if [ $BUILD_LEXLPEG ]; then
   g++ $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" \
     "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/include" "-I../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/" \
     -DSCI_LEXER -DLPEG_LEXER -DLPEG_LEXER_EXTERNAL \
-    LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx} \
-    "$BIN_DIR/clibs$LUAS/lpeg.so"
+    LexLPeg.cxx ../$WXWIDGETS_BASENAME/src/stc/scintilla/lexlib/{PropSetSimple.cxx,WordList.cxx,LexerModule.cxx,LexerSimple.cxx,LexerBase.cxx,Accessor.cxx}
 
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so" ] || { echo "Error: LexLPeg.so isn't found"; exit 1; }
-  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/lexlpeg.so"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so"
 
   cd ..
   rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
