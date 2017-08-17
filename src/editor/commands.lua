@@ -75,6 +75,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   editor:SetupKeywords(GetFileExt(filePath))
   editor:MarkerDeleteAll(-1)
   if filesize then editor:Allocate(filesize) end
+  editor:SetReadOnly(false) -- disable read-only status if set on the editor
   editor:SetTextDyn("")
   editor.bom = string.char(0xEF,0xBB,0xBF)
 

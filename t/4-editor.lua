@@ -72,6 +72,12 @@ if ide.wxver >= "3.1" then
   ok(wxstc.wxSTC_INDIC_TEXTFORE ~= nil, "Text foreground color indicator is available.")
 end
 
+editor:SetReadOnly(true)
+local ed = ide:LoadFile("t/test.lua", editor)
+ok(ed ~= nil, "File loaded into read-only editor.")
+ok(ed == editor, "File loaded into requested editor.")
+is(editor:GetText(), FileRead("t/test.lua"), "Editor content matches file content after loading into read-only editor.")
+
 -- cleanup
 ide:GetDocument(editor):SetModified(false)
 ClosePage()
