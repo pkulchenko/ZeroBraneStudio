@@ -1,5 +1,7 @@
-for _, ln in ipairs({'cn', 'de', 'eo', 'pt-br', 'es', 'fr', 'it', 'ru'}) do
-  local func = loadfile(("cfg/i18n/%s.lua"):format(ln))
+local i18n = FileSysGetRecursive('cfg/i18n/', true)
+is(#i18n, 10, "Language files are present in i18n directory.")
+for _, ln in ipairs(i18n) do
+  local func = loadfile(ln)
   ok(type(func) == 'function' and func() ~= nil, ("Loaded '%s' language file."):format(ln))
 end
 
