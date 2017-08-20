@@ -628,11 +628,11 @@ local function treeSetConnectorsAndIcons(tree)
         {},
         { ID_SHOWEXTENSIONALL, TR("Show All Files"), TR("Show all files") },
       }
-      for ext in pairs(filetree.settings.extensionignore) do
-        local id = ID("filetree.showextension."..ext)
-        table.insert(extlist, 1, {id, '.'..ext})
+      for extignore in pairs(filetree.settings.extensionignore) do
+        local id = ID("filetree.showextension."..extignore)
+        table.insert(extlist, 1, {id, '.'..extignore})
         menu:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-          filetree.settings.extensionignore[ext] = nil
+          filetree.settings.extensionignore[extignore] = nil
           saveSettings()
           refreshChildren()
         end)
