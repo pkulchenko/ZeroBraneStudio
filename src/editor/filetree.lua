@@ -100,14 +100,14 @@ local function treeAddDir(tree,parent_id,rootdir)
       if item then -- existing item
         -- keep deleting items until we find item
         while true do
-          local next = (curr
+          local nextitem = (curr
             and tree:GetNextSibling(curr)
             or tree:GetFirstChild(parent_id))
-          if not next:IsOk() or name == tree:GetItemText(next) then
-            curr = next
+          if not nextitem:IsOk() or name == tree:GetItemText(nextitem) then
+            curr = nextitem
             break
           end
-          tree:Delete(next)
+          tree:Delete(nextitem)
         end
       else -- new item
         curr = (curr
@@ -121,11 +121,11 @@ local function treeAddDir(tree,parent_id,rootdir)
 
   -- delete any leftovers (something that exists in the tree, but not on disk)
   while true do
-    local next = (curr
+    local nextitem = (curr
       and tree:GetNextSibling(curr)
       or tree:GetFirstChild(parent_id))
-    if not next:IsOk() then break end
-    tree:Delete(next)
+    if not nextitem:IsOk() then break end
+    tree:Delete(nextitem)
   end
 
   -- cache the mapping from names to tree items
