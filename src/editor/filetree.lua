@@ -107,6 +107,7 @@ local function treeAddDir(tree,parent_id,rootdir)
             curr = nextitem
             break
           end
+          PackageEventHandle("onFiletreeFileRemove", tree, nextitem, tree:GetItemFullName(nextitem))
           tree:Delete(nextitem)
         end
       else -- new item
@@ -114,6 +115,7 @@ local function treeAddDir(tree,parent_id,rootdir)
           and tree:InsertItem(parent_id, curr, name, icon)
           or tree:PrependItem(parent_id, name, icon))
         if isdir then tree:SetItemHasChildren(curr, FileDirHasContent(file)) end
+        PackageEventHandle("onFiletreeFileAdd", tree, curr, file)
       end
       if curr:IsOk() then cache[iscaseinsensitive and name:lower() or name] = curr end
     end
@@ -125,6 +127,7 @@ local function treeAddDir(tree,parent_id,rootdir)
       and tree:GetNextSibling(curr)
       or tree:GetFirstChild(parent_id))
     if not nextitem:IsOk() then break end
+    PackageEventHandle("onFiletreeFileRemove", tree, nextitem, tree:GetItemFullName(nextitem))
     tree:Delete(nextitem)
   end
 
@@ -137,6 +140,8 @@ local function treeAddDir(tree,parent_id,rootdir)
 
   tree:SetItemHasChildren(parent_id,
     tree:GetChildrenCount(parent_id, false) > 0)
+
+  PackageEventHandle("onFiletreeFileRefresh", tree, parent_id, tree:GetItemFullName(parent_id))
 end
 
 local function treeSetRoot(tree,rootdir)
