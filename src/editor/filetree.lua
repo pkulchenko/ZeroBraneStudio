@@ -11,6 +11,7 @@ ide.filetree = {
   projtreeCtrl = nil,
   imglist = ide:CreateImageList("PROJECT",
     "FOLDER", "FOLDER-MAPPED", "FILE-NORMAL", "FILE-NORMAL-START",
+    -- "file known" needs to be the last one as dynamic types can be added after it
     "FILE-KNOWN"),
   settings = {extensionignore = {}, startfile = {}, mapped = {}},
   extmap = {},
