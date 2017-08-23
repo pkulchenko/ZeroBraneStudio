@@ -77,16 +77,16 @@ return {
   end,
   isincindent = function(str)
     -- remove "long" comments and escaped slashes (to process \' and \" below)
-    str = str:gsub('%-%-%[=*%[.-%]=*%]',''):gsub('\\[\\\'"]','')
+    str = str:gsub('%-%-%[=*%[.-%]=*%]',' '):gsub('\\[\\\'"]','')
     while true do
       local num, sep = nil, str:match("['\"]")
       if not sep then break end
-      str, num = str:gsub(sep..".-\\"..sep,sep):gsub(sep..".-"..sep,"")
+      str, num = str:gsub(sep..".-\\"..sep,sep):gsub(sep..".-"..sep," ")
       if num == 0 then break end
     end
     str = (str
-      :gsub('%[=*%[.-%]=*%]','') -- remove long strings
-      :gsub("%b[]","") -- remove all table indexes
+      :gsub('%[=*%[.-%]=*%]',' ') -- remove long strings
+      :gsub('%b[]',' ') -- remove all table indexes
       :gsub('%[=*%[.*',''):gsub('.*%]=*%]','') -- remove partial long strings
       :gsub('%-%-.*','') -- strip comments after strings are processed
       :gsub("%b()","()") -- remove all function calls
@@ -98,13 +98,13 @@ return {
     -- fix 'if' not terminated with 'then'
     -- or 'then' not started with 'if'
     if (term == 'if' or term == 'elseif') and not str:match("%f[%w_]then%f[^%w_]")
-    or (term == 'for') and not str:match("%S%s+do%f[^%w_]")
+    or (term == 'for') and not str:match("%f[%w_]do%f[^%w_]")
     or (term == 'while') and not str:match("%f[%w_]do%f[^%w_]")
     -- if this is a function definition, then don't increment the level
     or func == 1 then
       terminc = 0
     elseif not (term == 'if' or term == 'elseif') and str:match("%f[%w_]then%f[^%w_]")
-    or not (term == 'for') and str:match("%S%s+do%f[^%w_]")
+    or not (term == 'for') and str:match("%f[%w_]do%f[^%w_]")
     or not (term == 'while') and str:match("%f[%w_]do%f[^%w_]") then
       terminc = 1
     end
