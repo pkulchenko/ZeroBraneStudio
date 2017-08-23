@@ -1050,7 +1050,8 @@ function CreateEditor(bare)
             linetxtopos = nil
           end
         end
-        local tip = GetTipInfo(editor,linetxtopos,ide.config.acandtip.shorttip)
+        local var, funccall = editor:ValueFromPosition(pos)
+        local tip = GetTipInfo(editor, funccall or var, ide.config.acandtip.shorttip)
         if tip then
           if editor:CallTipActive() then editor:CallTipCancel() end
           if PackageEventHandle("onEditorCallTip", editor, tip) ~= false then
