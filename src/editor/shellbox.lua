@@ -415,6 +415,7 @@ console:Connect(wx.wxEVT_KEY_DOWN,
     -- "break" aborts the processing and processes the key normally
     while true do
       local key = event:GetKeyCode()
+      local modifiers = event:GetModifiers()
       if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP then
         -- if we are below the prompt line, then allow to go up
         -- through multiline entry
@@ -423,8 +424,11 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         -- if we are not on the caret line, move normally
         if not caretOnPromptLine() then break end
 
-        local promptText = getPromptText()
-        setPromptText(getNextHistoryLine(false, promptText))
+        -- only change prompt if no modifiers are used (to allow for selection movement)
+        if modifiers == wx.wxMOD_NONE then
+          local promptText = getPromptText()
+          setPromptText(getNextHistoryLine(false, promptText))
+        end
         return
       elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
         -- if we are above the last line, then allow to go down
@@ -435,8 +439,11 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         -- if we are not on the caret line, move normally
         if not caretOnPromptLine() then break end
 
-        local promptText = getPromptText()
-        setPromptText(getNextHistoryLine(true, promptText))
+        -- only change prompt if no modifiers are used (to allow for selection movement)
+        if modifiers == wx.wxMOD_NONE then
+          local promptText = getPromptText()
+          setPromptText(getNextHistoryLine(true, promptText))
+        end
         return
       elseif key == wx.WXK_TAB then
         -- if we are above the prompt line, then don't move
@@ -495,7 +502,7 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         end
         currentHistory = getPromptLine() -- reset history
         return -- don't need to do anything else with return
-      elseif event:GetModifiers() == wx.wxMOD_NONE or console:GetSelectedText() == "" then
+      elseif modifiers == wx.wxMOD_NONE or console:GetSelectedText() == "" then
         -- move cursor to end if not already there
         if not caretOnPromptLine() then
           console:GotoPos(console:GetLength())
