@@ -541,6 +541,9 @@ function ShowCommandBar(default, selected)
       end
       preview = nil
       if not mac then nb:Thaw() end
+
+      -- reset file cache if it's not needed
+      if not ide.config.commandbar.filecache then files = nil end
     end,
     onUpdate = function(text)
       local lines = {}
@@ -750,15 +753,18 @@ ide:AddPackage('core.commandbar', {
     onFiletreeFileRefresh = function(self, tree, item, filepath)
       if not files then return end
 
-      for key, val in ipairs(files or {}) do
-        local ar = addremove[val]
-        -- removed file, purge it from cache
-        if ar == false then table.remove(files, key) end
-        -- remove from the add-remove list, so that only non-existing files are left
-        if ar ~= nil then addremove[val] = nil end
+      -- to save time only keep the file cache up-to-date if it's used
+      if ide.config.commandbar.filecache then
+        for key, val in ipairs(files or {}) do
+          local ar = addremove[val]
+          -- removed file, purge it from cache
+          if ar == false then table.remove(files, key) end
+          -- remove from the add-remove list, so that only non-existing files are left
+          if ar ~= nil then addremove[val] = nil end
+        end
+        -- go over non-existing files and add them to the cache
+        for key in pairs(addremove) do table.insert(files, key) end
       end
-      -- go over non-existing files and add them to the cache
-      for key in pairs(addremove) do table.insert(files, key) end
       addremove = {}
     end,
   })

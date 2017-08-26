@@ -69,6 +69,7 @@ return {
     prefilter = 250, -- number of records after which to apply filtering
     maxitems = 30, -- max number of items to show
     maxlines = 8, -- max number of lines to show
+    filecache = true, -- caches files for the current session
     width = 0.35, -- <1 -- size in proportion to the app frame width; >=1 -- size in pixels
     showallsymbols = true, -- show all symbols in a project
   },
