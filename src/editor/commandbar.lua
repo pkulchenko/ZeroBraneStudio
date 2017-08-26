@@ -434,6 +434,7 @@ local function name2index(name)
   local p = name:find(tabsep)
   return p and tonumber(name:sub(p + #tabsep)) or nil
 end
+local files
 function ShowCommandBar(default, selected)
   local styles = ide.config.styles
   -- re-register the marker as the colors might have changed
@@ -443,7 +444,7 @@ function ShowCommandBar(default, selected)
   local nb = ide:GetEditorNotebook()
   local selection = nb:GetSelection()
   local maxitems = ide.config.commandbar.maxitems
-  local files, preview, origline, functions, methods
+  local preview, origline, functions, methods
 
   local function markLine(ed, toline)
     ed:MarkerDefine(ide:GetMarker(markername))
@@ -726,7 +727,38 @@ end
 
 ide.test.commandBarScoreItems = commandBarScoreItems
 
+local sep = GetPathSeparator()
+local function relpath(path, filepath)
+  local pathpatt = "^"..EscapeMagic(path:gsub("[\\/]$",""):gsub("[\\/]", sep))..sep.."?"
+  return (filepath:gsub(pathpatt, ""))
+end
+
+local addremove = {}
 ide:AddPackage('core.commandbar', {
-    -- reset ngram cache when switching projects to conserve memory
-    onProjectLoad = function() cache = {} end
+    onProjectLoad = function()
+      cache = {} -- reset ngram cache when switching projects to conserve memory
+      files = nil -- reset files cache when switching projects
+    end,
+    onFiletreeFileAdd =  function(self, tree, item, filepath)
+      if not files or tree:IsDirectory(item) then return end
+      addremove[relpath(ide:GetProject(), filepath)] = true
+    end,
+    onFiletreeFileRemove = function(self, tree, item, filepath)
+      if not files or tree:IsDirectory(item) then return end
+      addremove[relpath(ide:GetProject(), filepath)] = false
+    end,
+    onFiletreeFileRefresh = function(self, tree, item, filepath)
+      if not files then return end
+
+      for key, val in ipairs(files or {}) do
+        local ar = addremove[val]
+        -- removed file, purge it from cache
+        if ar == false then table.remove(files, key) end
+        -- remove from the add-remove list, so that only non-existing files are left
+        if ar ~= nil then addremove[val] = nil end
+      end
+      -- go over non-existing files and add them to the cache
+      for key in pairs(addremove) do table.insert(files, key) end
+      addremove = {}
+    end,
   })
