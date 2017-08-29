@@ -519,9 +519,9 @@ function ide:CreateStyledTextCtrl(...)
     if not line then editor:EnsureCaretVisible() end
   end
 
-  local function getMarginWidth(editor)
+  function editor:GetAllMarginWidth()
     local width = 0
-    for m = 0, ide.MAXMARGIN do width = width + editor:GetMarginWidth(m) end
+    for m = 0, ide.MAXMARGIN do width = width + self:GetMarginWidth(m) end
     return width
   end
 
@@ -530,7 +530,7 @@ function ide:CreateStyledTextCtrl(...)
     self:EnsureVisibleEnforcePolicy(line)
     -- skip the rest if line wrapping is on
     if editor:GetWrapMode() ~= wxstc.wxSTC_WRAP_NONE then return end
-    local xwidth = self:GetClientSize():GetWidth() - getMarginWidth(self)
+    local xwidth = self:GetClientSize():GetWidth() - self:GetAllMarginWidth()
     local xoffset = self:GetTextExtent(self:GetLineDyn(line):sub(1, pos-self:PositionFromLine(line)+1))
     self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
   end

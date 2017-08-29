@@ -1849,8 +1849,7 @@ function debugger:ScratchpadOn(editor)
   for _, numberStyle in ipairs(scratchpadEditor.spec.isnumber) do
     scratchpadEditor:StyleSetUnderline(numberStyle, true)
   end
-  debugger.scratchpad.margin = scratchpadEditor:GetMarginWidth(0) +
-    scratchpadEditor:GetMarginWidth(1) + scratchpadEditor:GetMarginWidth(2)
+  debugger.scratchpad.margin = scratchpadEditor:GetAllMarginWidth()
 
   scratchpadEditor:Connect(wxstc.wxEVT_STC_MODIFIED, function(event)
     local evtype = event:GetModificationType()

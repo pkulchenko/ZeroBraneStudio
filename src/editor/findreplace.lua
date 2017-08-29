@@ -564,9 +564,7 @@ function findReplace:RunInFiles(replace)
         and not wx.wxGetKeyState(wx.WXK_CONTROL)
         and not wx.wxGetKeyState(wx.WXK_ALT) then
           local point = event:GetPosition()
-          local margin = 0
-          for m = 0, ide.MAXMARGIN do margin = margin + reseditor:GetMarginWidth(m) end
-          if point:GetX() <= margin then return end
+          if point:GetX() <= reseditor:GetAllMarginWidth() then return end
 
           local pos = reseditor:PositionFromPoint(point)
           local line = reseditor:LineFromPosition(pos)
