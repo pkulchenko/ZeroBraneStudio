@@ -722,7 +722,7 @@ function debugger:Listen(start)
           displayError(TR("Debugging suspended at '%s:%s' (couldn't activate the file).")
             :format(file, line))
         end
-      elseif not (options.run or debugger.scratchpad) then
+      elseif not debugger.scratchpad then
         local file, line, err = debugger:loadfile(startfile)
         -- "load" can work in two ways: (1) it can load the requested file
         -- OR (2) it can "refuse" to load it if the client was started
@@ -794,17 +794,11 @@ function debugger:Listen(start)
 
       ide:Print(TR("Debugging session started in '%s'."):format(debugger.basedir))
 
-      if (debugger.scratchpad) then
+      if debugger.scratchpad then
         debugger.scratchpad.updated = true
-      else
-        if runstart then
-          ClearAllCurrentLineMarkers()
-          debugger:Run()
-        end
-        if (options.run) then
-          local file, line = debugger:handle("run")
-          debugger:ActivateDocument(file, line)
-        end
+      elseif runstart then
+        ClearAllCurrentLineMarkers()
+        debugger:Run()
       end
 
       -- request attention if the debugging is stopped
