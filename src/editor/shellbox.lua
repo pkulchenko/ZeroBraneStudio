@@ -421,8 +421,9 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         -- through multiline entry
         if console:GetCurrentLine() > getPromptLine() then break end
 
-        -- if we are not on the caret line, move normally
-        if not caretOnPromptLine() then break end
+        -- if we are not on the caret line, or are on wrapped caret line, move normally
+        if not caretOnPromptLine()
+        or console:GetLineWrapped(console:GetCurrentPos(), -1) then break end
 
         -- only change prompt if no modifiers are used (to allow for selection movement)
         if modifiers == wx.wxMOD_NONE then
@@ -436,8 +437,9 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         local totalLines = console:GetLineCount()-1
         if console:GetCurrentLine() < totalLines then break end
 
-        -- if we are not on the caret line, move normally
-        if not caretOnPromptLine() then break end
+        -- if we are not on the caret line, or are on wrapped caret line, move normally
+        if not caretOnPromptLine()
+        or console:GetLineWrapped(console:GetCurrentPos(), 1) then break end
 
         -- only change prompt if no modifiers are used (to allow for selection movement)
         if modifiers == wx.wxMOD_NONE then
