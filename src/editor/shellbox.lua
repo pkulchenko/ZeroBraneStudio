@@ -429,6 +429,8 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         if modifiers == wx.wxMOD_NONE then
           local promptText = getPromptText()
           setPromptText(getNextHistoryLine(false, promptText))
+          -- move to the beginning of the updated prompt
+          console:GotoPos(console:PositionFromLine(getPromptLine()))
         end
         return
       elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
@@ -445,6 +447,7 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         if modifiers == wx.wxMOD_NONE then
           local promptText = getPromptText()
           setPromptText(getNextHistoryLine(true, promptText))
+          -- staying at the end of the updated prompt
         end
         return
       elseif key == wx.WXK_TAB then
