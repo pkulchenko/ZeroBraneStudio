@@ -535,6 +535,20 @@ function ide:CreateStyledTextCtrl(...)
     self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
   end
 
+  function editor:GetLineWrapped(pos, direction)
+    local function getPosNear(editor, pos, direction)
+      local point = editor:PointFromPosition(pos)
+      local height = editor:TextHeight(editor:LineFromPosition(pos))
+      return editor:PositionFromPoint(wx.wxPoint(point:GetX(), point:GetY() + direction * height))
+    end
+    direction = tonumber(direction) or 1
+    local line = editor:LineFromPosition(pos)
+    if editor:WrapCount(line) < 2
+    or direction < 0 and line == 0
+    or direction > 0 and line == editor:GetLineCount()-1 then return false end
+    return line == editor:LineFromPosition(getPosNear(editor, pos, direction))
+  end
+
   -- wxSTC included with wxlua didn't have ScrollRange defined, so substitute if not present
   if not ide:IsValidProperty(editor, "ScrollRange") then
     function editor:ScrollRange() end
