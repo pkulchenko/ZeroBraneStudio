@@ -26,6 +26,9 @@ local function isfndef(str)
 end
 local q = EscapeMagic
 
+local PARSE = require 'lua_parser_loose'
+local LEX = require 'lua_lexer_loose'
+
 local function ldoc(tx, typepatt)
   local varname = "([%w_]+)"
   -- <type> == ?string, ?|T1|T2
@@ -117,8 +120,6 @@ return {
     return opened - closed + func + terminc - ended
   end,
   marksymbols = function(code, pos, vars)
-    local PARSE = require 'lua_parser_loose'
-    local LEX = require 'lua_lexer_loose'
     local lx = LEX.lexc(code, nil, pos)
     return coroutine.wrap(function()
       local varnext = {}
