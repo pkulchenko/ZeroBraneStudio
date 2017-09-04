@@ -38,6 +38,7 @@ return {
     redirect = nil,
     refuseonconflict = true,
     runonstart = nil,
+    showtostring = false,
     verbose = false,
   },
   default = {

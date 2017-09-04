@@ -78,7 +78,7 @@ ide.proto.Debugger = {__index = {
   GetDataOptions = function(self, options)
     local cfg = ide.config.debugger
     local params = {
-      comment = false, nocode = true, numformat = cfg.numformat,
+      comment = false, nocode = true, numformat = cfg.numformat, metatostring = cfg.showtostring,
       maxlevel = cfg.maxdatalevel, maxnum = cfg.maxdatanum, maxlength = cfg.maxdatalength,
     }
     for k, v in pairs(options or {}) do params[k] = v end
