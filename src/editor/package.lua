@@ -1241,3 +1241,5 @@ function ide:ActivateFile(filename)
   end
   return opened
 end
+
+function ide:MergePath(...) return MergeFullPath(...) end
