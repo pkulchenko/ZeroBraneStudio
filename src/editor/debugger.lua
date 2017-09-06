@@ -1580,8 +1580,10 @@ local function debuggerCreateWatchWindow()
       item = nil
     end)
 
-  watchCtrl:Connect(ID_ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function (event) watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, image.LOCAL)) end)
+  watchCtrl:Connect(ID_ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
+      watchCtrl:SetFocus()
+      watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, image.LOCAL))
+    end)
 
   watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:EditLabel(item or watchCtrl:GetSelection()) end)
