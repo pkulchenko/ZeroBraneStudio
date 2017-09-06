@@ -4,28 +4,28 @@ title: Screenshots
 ---
 
 **Debugging with Stack view**
-<a href="images/debugging.png"><img src="images/scr-debugging.png" /></a>
-
-**Static analyzer**
-<a href="images/static-analysis.png"><img src="images/scr-static-analysis.png" /></a>
-
-**Interactive console and Unicode**
-<a href="images/unicode-console.png"><img src="images/scr-unicode-console.png" /></a>
-
-**Auto-complete on MacOS**
-<a href="images/autocomplete-osx.png"><img src="images/scr-autocomplete-osx.png" /></a>
-
-**Live coding on Linux**
-<a href="images/scratchpad-linux-mint.png"><img src="images/scr-scratchpad-linux-mint.png" /></a>
-
-**Live coding on a mobile device**
-<a href="images/live-coding-gideros-zerobrane-studio.png"><img src="images/tut-live-coding-gideros-zerobrane-studio.png" /></a>
+<a href="images/debugging.png"><img src="images/debugging.png" style="width:256px; height:182px"/></a>
 
 **Integrated Markdown formatting**
-<a href="images/integrated-materials.png"><img src="images/scr-integrated-materials.png" /></a>
+<a href="images/integrated-materials.png"><img src="images/integrated-materials.png" style="width:256px; height:182px"/></a>
+
+**Static analyzer**
+<a href="images/static-analysis.png"><img src="images/static-analysis.png" style="width:256px; height:182px"/></a>
+
+**Interactive console and Unicode**
+<a href="images/unicode-console.png"><img src="images/unicode-console.png" style="width:256px; height:182px"/></a>
+
+**Auto-complete on MacOS**
+<a href="images/autocomplete-osx.png"><img src="images/autocomplete-osx.png" style="width:256px; height:182px"/></a>
+
+**Live coding on Linux**
+<a href="images/scratchpad-linux-mint.png"><img src="images/scratchpad-linux-mint.png" style="width:256px; height:182px"/></a>
+
+**Live coding on a mobile device**
+<a href="images/live-coding-gideros-zerobrane-studio.png"><img src="images/live-coding-gideros-zerobrane-studio.png" style="width:256px; height:182px"/></a>
 
 **Internationalization support**
-<a href="images/internationalization-russian.png"><img src="images/scr-internationalization-russian.png" /></a>
+<a href="images/internationalization-russian.png"><img src="images/internationalization-russian.png" style="width:256px; height:182px"/></a>
 
 **Color schemes**
-<a href="images/colors-zenburn.png"><img src="images/scr-colors-zenburn.png" /></a>
+<a href="images/colors-zenburn.png"><img src="images/colors-zenburn.png" style="width:256px; height:182px"/></a>
