@@ -466,6 +466,13 @@ function debugger:shell(expression, isstatement)
   if debugger.running then debugger:Update() end
   if debugger.server and not debugger.running
   and (not debugger.scratchpad or debugger.scratchpad.paused) then
+    -- default options for shell commands
+    local params = debugger:GetDataOptions({
+        comment=true, maxlength=false, maxlevel=false, numformat=false})
+    -- any explicit options for this command
+    for k, v in pairs(loadstring("return"..(expression:match("--%s*(%b{})%s*$") or "{}"))()) do
+      params[k] = v
+    end
     copas.addthread(function()
         local debugger = debugger
         -- exec command is not expected to return anything.
@@ -477,9 +484,9 @@ function debugger:shell(expression, isstatement)
         -- this may need to be taken into account by other debuggers.
         local addedret, forceexpression = true, expression:match("^%s*=%s*")
         expression = expression:gsub("^%s*=%s*","")
-        local _, values, err = debugger:evaluate(expression)
+        local _, values, err = debugger:evaluate(expression, params)
         if not forceexpression and err then
-          local _, values2, err2 = debugger:execute(expression)
+          local _, values2, err2 = debugger:execute(expression, params)
           -- since the remote execution may fail during compilation- and run-time,
           -- and some expressions may fail in both cases, try to report the "best" error.
           -- for example, `x[1]` fails as statement, and may also fail if `x` is `nil`.
@@ -517,7 +524,8 @@ function debugger:shell(expression, isstatement)
 
         -- refresh Stack and Watch windows if executed a statement (and no err)
         if isstatement and not err and not addedret and #values == 0 then
-          debugger:updateStackSync() debugger:updateWatchesSync()
+          debugger:updateStackSync()
+          debugger:updateWatchesSync()
         end
       end)
   elseif debugger.server then
