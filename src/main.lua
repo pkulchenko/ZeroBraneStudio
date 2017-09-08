@@ -324,7 +324,8 @@ ide.test.setLuaPaths = setLuaPaths
 local filenames = {}
 local configs = {}
 do
-  local arg = {...}
+  -- application parameters are passed as script parameters on Windows
+  local arg = ide.osname == "Windows" and {...} or arg
   -- application name is expected as the first argument
   local fullPath = arg[1] or "zbstudio"
 
@@ -813,9 +814,9 @@ if ide:IsValidProperty(ide:GetMainFrame(), "EnableFullScreenView") then
   ide:GetMainFrame():EnableFullScreenView()
 end
 
-do
+if ide.osname == 'Macintosh' then
   local args = {}
-  for _, a in ipairs(arg or {}) do args[a] = true end
+  for _, a in ipairs(ide.arg or {}) do args[a] = true end
 
   wx.wxGetApp().MacOpenFiles = function(files)
     for _, filename in ipairs(files) do
