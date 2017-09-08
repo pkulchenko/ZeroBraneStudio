@@ -294,7 +294,10 @@ function ide:GetEditorNotebook() return self.frame.notebook end
 function ide:GetOutputNotebook() return self.frame.bottomnotebook end
 function ide:GetOutline() return self.outline end
 function ide:GetProjectNotebook() return self.frame.projnotebook end
-function ide:GetProject() return FileTreeGetDir and FileTreeGetDir() or nil end
+function ide:GetProject()
+  local dir = ide.filetree and ide.filetree.projdir
+  return dir and #dir > 0 and wx.wxFileName.DirName(dir):GetFullPath() or nil
+end
 function ide:SetProject(projdir,skiptree)
   -- strip trailing spaces as this may create issues with "path/ " on Windows
   projdir = projdir:gsub("%s+$","")
