@@ -118,7 +118,7 @@ local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
 
 ok(tree:SetStartFile("test.lua") ~= nil, "SetStartFile sets start file.")
-ok(tree:GetStartFile() == "test.lua", "GetStartFile returns expected value.")
+is(tree:GetStartFile(), "test.lua", "GetStartFile returns expected value.")
 tree:SetStartFile()
 ok(tree:GetStartFile() == nil, "GetStartFile returns `nil` after unsetting start file.")
 

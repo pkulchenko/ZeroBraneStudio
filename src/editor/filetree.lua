@@ -501,7 +501,7 @@ local function treeSetConnectorsAndIcons(tree)
     local project = FileTreeGetDir()
     if not project then return end
 
-    local startfile = tree:GetItemFullName(item_id):gsub(project, "")
+    local startfile = tree:GetItemFullName(item_id):gsub(q(project), "")
     filetree.settings.startfile[project] = startfile
     tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
     return startfile
@@ -516,7 +516,7 @@ local function treeSetConnectorsAndIcons(tree)
     local item_id
     local project = FileTreeGetDir()
     if project and type(path) == "string" then
-      local startfile = path:gsub(project, "")
+      local startfile = path:gsub(q(project), "")
       item_id = self:FindItem(startfile)
     end
     -- unset if explicitly requested or the replacement has been found
