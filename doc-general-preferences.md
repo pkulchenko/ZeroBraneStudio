@@ -22,7 +22,7 @@ The values shown are the default values.
 - `hotexit = false`: enable quick exit without prompting to save files (**v0.71+**).
 The changes in files and all unsaved buffers should be restored during the next launch.
 This session information is saved in the [.ini file](#session-configuration).
-- `ini = nil`: provide an alternative location for the [.ini file](#session-configuration).
+- `ini = false`: provide an alternative location for the [.ini file](#session-configuration).
 If the filename is absolute, it is used as the new location;
 (**v1.11+**) if it is relative and includes a path component (for example, `./file.ini` or `path/file.ini`), then the file is created relative to the IDE directory;
 if it only contains the file name (for example, `file.ini`), then the file is created in the [system-dependent location](#session-configuration).
@@ -229,7 +229,7 @@ When using an older version (**before v0.95**), reference them in the **global e
 
 Images loaded as toolbar and other icons can be **tinted**; this allows for easy changes to the style of the IDE without any modifications to the images themselves.
 
-- `imagetint = nil`: set the color (as `{0-255, 0-255, 0-255}` for red, green, and blue values) to tint images with (**v1.10+**); for example,
+- `imagetint = false`: set the color (as `{0-255, 0-255, 0-255}` for red, green, and blue values) to tint images with (**v1.10+**); for example,
     - `imagetint={ 0, 71, 171}`: <span style="color: rgb(0,71,171)">cobalt color</span>
     - `imagetint={196, 30, 58}`: <span style="color: rgb(196,30,58)">cardinal color</span>
     - `imagetint={168, 81, 11}`: <span style="color: rgb(168,81,11)">amber color</span>
