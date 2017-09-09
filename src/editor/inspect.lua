@@ -87,8 +87,8 @@ else
 
     -- metalua is using 'checks', which noticeably slows the execution
     -- stab it with out own
-    package.loaded.checks = {}
-    checks = function() end
+    package.loaded.checks = {} -- make `require 'checks'` work even without `checks` module
+    rawset(_G, "checks", function() end) -- provide `checks` function
 
     LA = require "luainspect.ast"
     LI = require "luainspect.init"

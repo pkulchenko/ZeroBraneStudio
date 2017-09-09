@@ -130,6 +130,8 @@ return {
     menurecentprojects = "%f | %i",
     apptitle = "%T - %F",
   },
+  ini = false,
+  interpreter = false,
 
   activateoutput = true, -- activate output/console on Run/Debug/Compile
   unhidewindow = false, -- to unhide a gui window
@@ -149,7 +151,7 @@ return {
   showhiddenfiles = false,
   hidpi = false, -- HiDPI/Retina display support
   hotexit = false,
-  imagetint = nil,
+  imagetint = false,
   markertint = true,
   menuicon = true,
   -- file exclusion lists

@@ -198,8 +198,6 @@ end
 function ide:LoadSpec(path)
   loadToTab(path or "spec", ide.specs, true)
   UpdateSpecs()
-  -- force reload of all APIs as some of them may depend on the specs
-  if ReloadAPIs then ReloadAPIs("*") end
 end
 
 function ide:LoadTool(path)
@@ -246,7 +244,7 @@ function ide:LoadAPI(path)
       end
     end
   end
-  if ReloadAPIs then ReloadAPIs("*") end
+  ReloadAPIs("*")
 end
 
 dofile "src/version.lua"
