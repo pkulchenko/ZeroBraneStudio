@@ -2,7 +2,7 @@ function CMarkSymbols(code, pos, vars)
   local idtmpl = "[A-Za-z_][A-Za-z0-9_ ]*"
   local funcdeftmpl = "("..idtmpl.."%s+%*?"..idtmpl..")%s*%(([A-Za-z0-9_ %*,]*)%)%s*%{"
   local isfndef = function(str, pos)
-    local s,e,pref,cap
+    local s,e,pref,cap,parms
     while true do
       s,e,pref,cap,parms = str:find("^(%s*)"..funcdeftmpl, pos)
       if (not s) then

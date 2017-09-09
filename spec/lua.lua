@@ -208,7 +208,6 @@ return {
         end
 
         if (var and typ) then
-          local class,func = typ:match(varname.."["..q(sep).."]"..varname)
           if (assigns[typ] and not req) then
             assigns[var] = assigns[typ]
           else

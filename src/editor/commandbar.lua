@@ -730,9 +730,9 @@ end
 
 ide.test.commandBarScoreItems = commandBarScoreItems
 
-local sep = GetPathSeparator()
+local fsep = GetPathSeparator()
 local function relpath(path, filepath)
-  local pathpatt = "^"..EscapeMagic(path:gsub("[\\/]$",""):gsub("[\\/]", sep))..sep.."?"
+  local pathpatt = "^"..EscapeMagic(path:gsub("[\\/]$",""):gsub("[\\/]", fsep))..fsep.."?"
   return (filepath:gsub(pathpatt, ""))
 end
 
@@ -750,7 +750,7 @@ ide:AddPackage('core.commandbar', {
       if not files or tree:IsDirectory(item) then return end
       addremove[relpath(ide:GetProject(), filepath)] = false
     end,
-    onFiletreeFileRefresh = function(self, tree, item, filepath)
+    onFiletreeFileRefresh = function(self)
       if not files then return end
 
       -- to save time only keep the file cache up-to-date if it's used
