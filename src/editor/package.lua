@@ -368,8 +368,8 @@ function ide:RequestAttention()
       if frame:IsIconized() then frame:Iconize(false) end
       frame:Raise() -- raise the window
 
-      local winapi = require 'winapi'
-      if winapi then
+      local ok, winapi = pcall(require, 'winapi')
+      if ok then
         local pid = winapi.get_current_pid()
         local wins = winapi.find_all_windows(function(w)
           return w:get_process():get_pid() == pid

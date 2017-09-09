@@ -132,7 +132,7 @@ function CommandLineToShell(uid,state)
 end
 
 -- logic to "unhide" wxwidget window using winapi
-pcall(require, 'winapi')
+local ok, winapi = pcall(require, 'winapi')
 local checkstart, checknext, checkperiod
 local pid = nil
 local function unHideWindow(pidAssign)
@@ -141,7 +141,7 @@ local function unHideWindow(pidAssign)
   if pidAssign then
     pid = pidAssign > 0 and pidAssign or nil
   end
-  if pid and winapi then
+  if pid and ok then -- pid provided and winapi loaded
     local now = TimeGet()
     if pidAssign and pidAssign > 0 then
       checkstart, checknext, checkperiod = now, now, 0.02
