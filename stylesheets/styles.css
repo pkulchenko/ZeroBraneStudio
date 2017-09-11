@@ -542,13 +542,13 @@ ul#toc {
 /* set size of inline images */
 .inset {
   width: 280px;
-  height: 120px;
+  height: 160px;
 }
 .inline {
   float: right;
   margin: 12px;
   width: 280px;
-  height: 120px;
+  height: 200px;
 }
 h2 {
   clear: right;

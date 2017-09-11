@@ -34,7 +34,7 @@ You will see a message in the Output window when the program is stopped.
 
 ## Output window
 
-<img style="background:url(images/vera-debugging.png) -10px -575px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -10px -575px no-repeat" src="images/t.gif" class="inline"/>
 
 The **Output window** captures the output of the programs you run, plus any **errors** and additional messages you may get during execution of those programs.
 
@@ -43,7 +43,7 @@ Note that the output of `print` commands will be pretty-printed: `print(sometabl
 
 ## Console window
 
-<img style="background:url(images/vera-debugging.png) -470px -575px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -470px -575px no-repeat" src="images/t.gif" class="inline"/>
 
 The **Console window** allows to run Lua code fragments and calculate values of Lua expressions.
 It will switch automatically between a **local console** that gives you access to the Lua interpreter that runs the IDE
@@ -51,7 +51,7 @@ and a **remote console** that allows you to execute code fragments and change va
 
 ## Project directory
 
-<img style="background:url(images/vera-debugging.png) -10px -70px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -10px -70px no-repeat" src="images/t.gif" class="inline"/>
 
 The current project directory is displayed in the **Project panel**.
 The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting a file and pressing `Enter` or double-clicking on it.
@@ -65,7 +65,7 @@ To **change** the current project directory you have several options:
 
 ## Selecting interpreter
 
-<img style="background:url(images/vera-debugging.png) -744px -608px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -744px -608px no-repeat" src="images/t.gif" class="inline"/>
 
 _ZeroBrane Studio for Vera_ includes support for different Lua engines that may require different parameters or settings when running or debugging.
 The settings are specified by **interpreters** that can be selected by going to `Project | Lua Interpreter` and selecting an interpreter you need from the list.
@@ -75,7 +75,7 @@ The current interpreter is shown on the right side of the status bar (for exampl
 
 ## Debugging programs
 
-<img style="background:url(images/vera-debugging.png) -240px -425px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -240px -425px no-repeat" src="images/t.gif" class="inline"/>
 
 In addition to running programs you can also debug them, which gives you the ability to pause them, inspect variables, evaluate expressions, make changes to the values, and then continue.
 To **start debugging** go to `Project | Start Debugging`.
@@ -95,14 +95,14 @@ When your program is running, you can **pause** it by going to `Project | Break`
 
 ## Stack window
 
-<img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -871px -682px no-repeat" src="images/t.gif" class="inline"/>
 
 The Stack window provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames.
 You can even drill down to get values of individual elements in tables.
 
 ## Watch window
 
-<img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -516px -682px no-repeat" src="images/t.gif" class="inline"/>
 
 The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
 You can also drill down to get values of individual elements in tables.
@@ -122,7 +122,7 @@ You can always select the expression to be shown in the tooltip to avoid ambigui
 
 ## Vera functions
 
-<img style="background:url(images/vera-debugging.png) -345px -375px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -345px -375px no-repeat" src="images/t.gif" class="inline"/>
 
 _ZeroBrane Studio for Vera_ integrates several functions that make your work with Vera devices more convenient.
 If you have an active debugging session, you can **upload a file to the device** by using right click in the Editor or by right clicking on a file in the Project tree.
@@ -144,7 +144,7 @@ you click `Ctrl/Cmd-T` with the cursor being on a function call.
 
 ## Toolbar
 
-<img style="background:url(images/vera-debugging.png) -180px -45px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/vera-debugging.png) -180px -45px no-repeat" src="images/t.gif" class="inline"/>
 
 Some of the most frequently used commands in the editor are also available on the **toolbar** (which is right above the editor window and below the menu bar).
 There you will find commands to open a new or an existing file, save a file, commands to undo and redo your changes, and commands to search and replace text in your programs.
