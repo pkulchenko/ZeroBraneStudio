@@ -46,7 +46,7 @@ and [more](documentation#debugging).
 
 ## Feature highlights
 
-* Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** ([Windows](images/debugging.png), [MacOS](images/autocomplete-osx.png), and [Linux](images/scratchpad-linux-mint.png));
+* Small, portable, [open-source](http://github.com/pkulchenko/ZeroBraneStudio/), and **cross-platform** (Windows, MacOS, and Linux);
 * **Auto-completion** for functions, keywords, and custom APIs;
 * **Syntax highlighting** and folding for 110+ languages and file formats;
 * **Project view** with auto-refresh and ability to hide files and directories from the list;

@@ -35,7 +35,7 @@ You will see a message in the Output window when the program is stopped.
 
 ## Output window
 
-<img style="background:url(images/integrated-materials.png) -9px -497px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/integrated-materials.png) -9px -682px" src="images/t.gif" class="inline"/>
 
 The **Output window** captures the output of the programs you run, plus any **errors** and additional messages you may get during execution of those programs.
 
@@ -43,7 +43,7 @@ The Output window is also used to enter the text your program may read. You will
 
 ## Console window
 
-<img style="background:url(images/unicode-console.png) -9px -499px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -9px -682px" src="images/t.gif" class="inline"/>
 
 The **Console window** allows you to run Lua code fragments and calculate values of Lua expressions.
 It will switch automatically between a **local console** that gives you access to the Lua interpreter that runs the IDE
@@ -51,7 +51,7 @@ and a **remote console** that allows you to execute code fragments and change va
 
 ## Project directory
 
-<img style="background:url(images/debugging.png) -8px -76px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -9px -96px" src="images/t.gif" class="inline"/>
 
 The current project directory is displayed in the **Project panel**.
 The project panel helps you in several ways: it provides a bird's-eye view of all files in your project, it highlights the file you are working with (as long as it is in the same project), and it allows you to open a file by selecting its name and pressing `Enter`, or double-clicking on it.
@@ -65,7 +65,7 @@ To **change** the current project directory you have several options:
 
 ## Selecting interpreter
 
-<img style="background:url(images/debugging.png) -744px -608px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/integrated-materials.png) -994px -750px" src="images/t.gif" class="inline"/>
 
 ZeroBrane Studio provides support for different Lua engines that may require different parameters or settings when running or debugging.
 The settings are specified by **interpreters** that can be selected by going to `Project | Lua Interpreter` and selecting an interpreter you need from the list.
@@ -76,7 +76,7 @@ The current interpreter is shown on the right side of the status bar (for exampl
 
 ## Debugging programs
 
-<img style="background:url(images/debugging.png) -234px -234px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -320px -440px" src="images/t.gif" class="inline"/>
 
 In addition to running programs you can also debug them, which gives you the ability to pause them, inspect variables, evaluate expressions, make changes to the values, and then continue.
 To **start debugging** go to `Project | Start Debugging`.
@@ -94,14 +94,14 @@ and **continue** execution of your program (using `Project | Continue`).
 
 ## Stack window
 
-<img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -871px -682px" src="images/t.gif" class="inline"/>
 
 The **Stack window** provides not only the call stack with function names, but also presents all **local variables and upvalues** for each of the stack frames.
 You can even drill down to get values of individual elements in tables.
 
 ## Watch window
 
-<img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -516px -682px" src="images/t.gif" class="inline"/>
 
 The **Watch window** provides a convenient way to evaluate variables and expressions after every stopping in the debugger.
 You can also drill down to get values of individual elements in tables.
@@ -113,6 +113,8 @@ After entering the new value and pressing `Enter`, the new value will be sent to
 The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
 ## Outline window
+
+<img style="background:url(images/debugging.png) -9px -444px" src="images/t.gif" class="inline"/>
 
 The **Outline window** provides a way to see the structure of the current file with all the functions and their parameters shown either in the order in which they are defined in a file (default) or as a sorted list.
 
@@ -137,7 +139,7 @@ Your code may also need to be written in a way that accomodates requirements of 
 
 ## Toolbar
 
-<img style="background:url(images/debugging.png) -248px -48px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -310px -60px" src="images/t.gif" class="inline"/>
 
 Some of the most frequently used commands in the editor are also available on the **toolbar** (which is right above the editor window, and below the menu bar on Windows and Linux).
 There you will find commands to open a new or existing file, or save a file, commands to undo and redo your changes, and commands to search and replace text in your programs.

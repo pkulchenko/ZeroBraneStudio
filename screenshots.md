@@ -12,20 +12,14 @@ title: Screenshots
 **Static analyzer**
 <a href="images/static-analysis.png"><img src="images/static-analysis.png" style="width:256px; height:182px"/></a>
 
-**Interactive console and Unicode**
-<a href="images/unicode-console.png"><img src="images/unicode-console.png" style="width:256px; height:182px"/></a>
-
-**Auto-complete on MacOS**
+**Auto-complete (MacOS)**
 <a href="images/autocomplete-osx.png"><img src="images/autocomplete-osx.png" style="width:256px; height:182px"/></a>
 
-**Live coding on Linux**
+**Live coding (Linux)**
 <a href="images/scratchpad-linux-mint.png"><img src="images/scratchpad-linux-mint.png" style="width:256px; height:182px"/></a>
 
-**Live coding on a mobile device**
+**Live coding (MacOS/iOS)**
 <a href="images/live-coding-gideros-zerobrane-studio.png"><img src="images/live-coding-gideros-zerobrane-studio.png" style="width:256px; height:182px"/></a>
-
-**Internationalization support**
-<a href="images/internationalization-russian.png"><img src="images/internationalization-russian.png" style="width:256px; height:182px"/></a>
 
 **Color schemes**
 <a href="images/colors-zenburn.png"><img src="images/colors-zenburn.png" style="width:256px; height:182px"/></a>

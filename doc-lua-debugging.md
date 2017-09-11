@@ -7,7 +7,7 @@ title: Lua Debugging
 
 ## General debugging
 
-<img style="background:url(images/debugging.png) -234px -234px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -320px -440px" src="images/t.gif" class="inline"/>
 
 The debugger allows to execute Lua scripts and applications step by step, pause them, inspect variables, evaluate expressions, make changes to variables, and then continue execution.
 To **start debugging** go to `Project | Start Debugging`.
@@ -39,7 +39,7 @@ Your code may also need to be written in a way that accomodates requirements of 
 
 ## Console window
 
-<img style="background:url(images/unicode-console.png) -9px -499px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -9px -682px" src="images/t.gif" class="inline"/>
 
 The **Console window** allows to run Lua code fragments and calculate values of Lua expressions.
 It will switch automatically between a **local console** that gives you access to the Lua interpreter that runs the IDE
@@ -49,14 +49,14 @@ You can execute any expression in the console and the result will be pretty prin
 
 ## Stack window
 
-<img style="background:url(images/debugging.png) -674px -133px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -871px -682px" src="images/t.gif" class="inline"/>
 
 The **Stack window** provides not only the call stack with function names, but also presents all local variables and upvalues for each of the stack frames.
 You can even drill down to get values of individual elements in tables.
 
 ## Watch window
 
-<img style="background:url(images/debugging.png) -674px -360px" src="images/t.gif" class="inline"/>
+<img style="background:url(images/debugging.png) -516px -682px" src="images/t.gif" class="inline"/>
 
 The **Watch window** provides a convenient way to evaluate variables and expressions after every stopping in the debugger.
 You can also drill down to get values of individual elements in tables.
@@ -68,6 +68,8 @@ After entering the new value and pressing `Enter`, the new value will be sent to
 The result is equivalent to executing `tbl[2] = "new value"` in the Console window, but provides an easy way to update the value without retyping the expression.
 
 ## Tooltip
+
+<img style="background:url(images/debugging.png) -392px -460px" src="images/t.gif" class="inline"/>
 
 In addition to being able to use the Console or the Watch window to see the values of variables and expressions,
 you can also mouse over a variable (or select an expression and mouse over it) during debugging to see its value.
