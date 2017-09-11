@@ -22,7 +22,7 @@ Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Cl
 Ever opened a new tool and didn't know where to start? ZeroBrane Studio for Vera includes scripts and instructions to get you started.
 
 **On-device debugging**
-<a href="images/vera-debugging.png"><img style="background:url(images/vera-debugging.png) -240px -425px" src="images/t.gif" class="inset"/></a>
+<a href="images/vera-debugging.png"><img style="background:url(images/vera-debugging.png) -240px -400px" src="images/t.gif" class="inset"/></a>
 Debug your scripts as they run on the device.
 
 **XML file viewer**
@@ -42,11 +42,11 @@ Restart Luup engine and download `LuaUPnP.log` file from the comfort of your IDE
 The Watch view provides a convenient way to evaluate variables and expressions after every step of the debugger.
 
 **Project file browser**
-<a href="images/vera-debugging.png"><img style="background:url(images/vera-debugging.png) -10px -70px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -9px -96px" src="images/t.gif" class="inset"/></a>
 Don't worry about creating a new project, simply open a folder. The current file will be highlighted in the project tree (as long as it is in one of the subfolders).
 
 **Pretty printing**
-<a href="images/vera-debugging.png"><img style="background:url(images/vera-debugging.png) -10px -575px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -9px -756px" src="images/t.gif" class="inset"/></a>
 If using `luup.log()` and `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not have any use for the integrated pretty printing of Lua values when using `print` or the interactive console.
 
 **Stack view**
