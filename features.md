@@ -24,9 +24,6 @@ Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Ty
 **Go to definition**
 Go to a local variable/function definition. Navigate back using the history of saved positions.
 
-**Function outline**
-Review and navigate all functions (and their parameters) defined in the current file, including anonymous ones.
-
 **Multi-cursor editing**
 Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
@@ -41,9 +38,6 @@ Ever opened a new tool and didn't know where to start? ZeroBrane Studio provides
 
 **Debug any Lua application**
 Set breakpoints before or _during_ debugging. Step in, over, and out. Run to cursor, break and continue your script. Review the call stack. Inspect and modify variables.
-
-**Custom interpreters**
-Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
 **Unicode friendly**
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -422px -480px" src="images/t.gif" class="inset"/></a>
@@ -62,12 +56,16 @@ Detect typos, non-localized variables, and unused parameters before running your
 Use auto-complete to save time on typing API functions and variable names (scope-aware).
 
 **Multi-file editing**
-<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -310px -100px" src="images/t.gif" class="inset"/></a>
+<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -311px -96px" src="images/t.gif" class="inset"/></a>
 Keep as many files open as you need and navigate them using the file browser or the editor tabs.
 
 **Color scheme support**
-<a href="images/colors-zenburn.png"><img style="background:url(images/colors-zenburn.png) -30px -350px" src="images/t.gif" class="inset"/></a>
+<a href="images/colors-zenburn.png"><img style="background:url(images/colors-zenburn.png) -30px -96px" src="images/t.gif" class="inset"/></a>
 Use one of the provided color schemes (Tomorrow, Zenburn, Solarized and others) or create your own.
+
+**Function outline**
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -443px" src="images/t.gif" class="inset"/></a>
+Review and navigate all functions (and their parameters) defined in the current file, including anonymous ones.
 
 **Watch view**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -516px -682px" src="images/t.gif" class="inset"/></a>
@@ -86,13 +84,17 @@ If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss th
 Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, and Brazilian Portuguese) or create your own.
 
 **Project file browser**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -9px -96px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -96px" src="images/t.gif" class="inset"/></a>
 Don't worry about creating a new project, simply open a folder. The current file will be highlighted in the project tree (as long as it is in one of the subfolders).
+
+**Custom interpreters**
+<img style="background:url(images/integrated-materials.png) -992px -792px" src="images/t.gif" class="inset"/>
+Want to integrate ZeroBrane Studio with your own Lua engine? If none of the provided interpreters work for you, you can write your own as some of the users have done.
 
 **Stack view**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -871px -682px" src="images/t.gif" class="inset"/></a>
 Explore not only the call stack with function names, but also all local variables and upvalues for each of the stack frames. Drill down to get values of individual elements in tables.
 
 **Interactive console**
-<a href="images/debugging.png"><img style="background:url(images/debugging.png) -9px -682px" src="images/t.gif" class="inset"/></a>
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -682px" src="images/t.gif" class="inset"/></a>
 Want to test something quickly? Run it in the console with full access to your application state and all variables; execute code fragments and change variable values without restarting your application.
