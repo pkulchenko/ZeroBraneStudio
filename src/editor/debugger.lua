@@ -670,7 +670,7 @@ function debugger:Listen(start)
       end
 
       local startpath = wx.wxFileName(startfile):GetPath(wx.wxPATH_GET_VOLUME + wx.wxPATH_GET_SEPARATOR)
-      local basedir = options.basedir or FileTreeGetDir() or startpath
+      local basedir = options.basedir or ide:GetProject() or startpath
       -- guarantee that the path has a trailing separator
       debugger.basedir = wx.wxFileName.DirName(basedir):GetFullPath()
 

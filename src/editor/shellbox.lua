@@ -335,7 +335,7 @@ local function executeShellCode(tx)
 
     -- set the project dir as the current dir to allow "require" calls
     -- to work from shell
-    local projectDir, cwd = FileTreeGetDir(), nil
+    local projectDir, cwd = ide:GetProject(), nil
     if projectDir and #projectDir > 0 then
       cwd = wx.wxFileName.GetCwd()
       wx.wxFileName.SetCwd(projectDir)

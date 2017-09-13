@@ -244,7 +244,7 @@ function OpenFile(event)
   local editor = ide:GetEditor()
   local path = editor and ide:GetDocument(editor):GetFilePath() or nil
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Open file"),
-    (path and GetPathWithSep(path) or FileTreeGetDir() or ""),
+    (path and GetPathWithSep(path) or ide:GetProject() or ""),
     "",
     getExtsString(editor),
     wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST + wx.wxFD_MULTIPLE)
@@ -318,7 +318,7 @@ function SaveFileAs(editor)
   local id = editor:GetId()
   local saved = false
   local filePath = (openDocuments[id].filePath
-    or ((FileTreeGetDir() or "")
+    or ((ide:GetProject() or "")
         ..(openDocuments[id].fileName or ide.config.default.name)))
 
   local fn = wx.wxFileName(filePath)

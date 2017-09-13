@@ -52,8 +52,8 @@ local function createImg(ext)
 end
 
 local function getIcon(name, isdir)
-  local startfile = GetFullPathIfExists(FileTreeGetDir(),
-    filetree.settings.startfile[FileTreeGetDir()])
+  local project = ide:GetProject()
+  local startfile = GetFullPathIfExists(project, filetree.settings.startfile[project])
   local ext = GetFileExt(name)
   local extmap = ide.filetree.extmap
   local known = extmap[ext] or ide:FindSpec(ext)
@@ -79,7 +79,7 @@ local function treeAddDir(tree,parent_id,rootdir)
   local files = FileSysGetRecursive(rootdir)
   local dirmapped = {}
   if tree:IsRoot(parent_id) then
-    local mapped = filetree.settings.mapped[FileTreeGetDir()] or {}
+    local mapped = filetree.settings.mapped[ide:GetProject()] or {}
     table.sort(mapped)
     -- insert into files at the sorted order
     for i, v in ipairs(mapped) do
@@ -273,7 +273,7 @@ local function treeSetConnectorsAndIcons(tree)
   end
 
   local function unMapDir(dir)
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     if not project then return end
 
     local mapped = filetree.settings.mapped[project] or {}
@@ -284,7 +284,7 @@ local function treeSetConnectorsAndIcons(tree)
     refreshAncestors(tree:GetRootItem())
   end
   local function mapDir()
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     if not project then return end
 
     local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
@@ -483,7 +483,7 @@ local function treeSetConnectorsAndIcons(tree)
   end
 
   local function unsetStartFile()
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     if not project then return end
 
     local startfile = filetree.settings.startfile[project]
@@ -498,7 +498,7 @@ local function treeSetConnectorsAndIcons(tree)
   end
 
   local function setStartFile(item_id)
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     if not project then return end
 
     local startfile = tree:GetItemFullName(item_id):gsub(q(project), "")
@@ -508,13 +508,13 @@ local function treeSetConnectorsAndIcons(tree)
   end
 
   function tree:GetStartFile()
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     return project and filetree.settings.startfile[project]
   end
 
   function tree:SetStartFile(path)
     local item_id
-    local project = FileTreeGetDir()
+    local project = ide:GetProject()
     if project and type(path) == "string" then
       local startfile = path:gsub(q(project), "")
       item_id = self:FindItem(startfile)
@@ -609,7 +609,7 @@ local function treeSetConnectorsAndIcons(tree)
         or TR("&Rename"))
       local fname = tree:GetItemText(item_id)
       local ext = GetFileExt(fname)
-      local project = FileTreeGetDir()
+      local project = ide:GetProject()
       local startfile = project and filetree.settings.startfile[project]
       local menu = ide:MakeMenu {
         { ID_NEWFILE, TR("New &File") },
@@ -881,8 +881,6 @@ function filetree:updateProjectDir(newdir)
   return true
 end
 
-function FileTreeGetDir() return appendPathSep(filetree.projdir) end
-
 function FileTreeSetProjects(tab)
   filetree.projdirlist = tab
   if (tab and tab[1]) then
@@ -911,7 +909,7 @@ end
 
 function FileTreeProjectListClear()
   -- remove all items from the list except the current one
-  filetree.projdirlist = {FileTreeGetDir()}
+  filetree.projdirlist = {ide:GetProject()}
 end
 
 function FileTreeProjectListUpdate(menu, items)

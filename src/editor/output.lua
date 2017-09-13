@@ -364,11 +364,11 @@ local function activateByPartialName(fname, jumpline, jumplinepos)
   local name
   local fixedname = fname:match(":%s+(.+)")
   if fixedname then
-    name = GetFullPathIfExists(FileTreeGetDir(), fixedname)
+    name = GetFullPathIfExists(ide:GetProject(), fixedname)
       or FileTreeFindByPartialName(fixedname)
   end
   name = name
-    or GetFullPathIfExists(FileTreeGetDir(), fname)
+    or GetFullPathIfExists(ide:GetProject(), fname)
     or FileTreeFindByPartialName(fname)
 
   local editor = LoadFile(name or fname,nil,true)

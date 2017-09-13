@@ -315,7 +315,7 @@ function ide:SetProject(projdir,skiptree)
   return ide.filetree:updateProjectDir(projdir)
 end
 function ide:GetProjectStartFile()
-  local projectdir = FileTreeGetDir()
+  local projectdir = ide:GetProject()
   local startfile = self.filetree.settings.startfile[projectdir]
   return MergeFullPath(projectdir, startfile), startfile
 end
