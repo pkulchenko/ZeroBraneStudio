@@ -31,11 +31,11 @@ The following configuration will set text background to be light red: `styles.te
 See [style.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/style.lua#L26-L88) for the complete list of elements
 and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua) for an example of how these elements can be used.
 
-(0.50+) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
+(**v0.50+**) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
 
 ## Indicators
 
-(0.38+) Indicators add visual elements to the text in the editor, for example, a dotted underline for local variables or a solid line for global ones.
+(**v0.38+**) Indicators add visual elements to the text in the editor, for example, a dotted underline for local variables or a solid line for global ones.
 
 - `styles.indicator.fncall`: function call
 - `styles.indicator.varlocal`: local variable
