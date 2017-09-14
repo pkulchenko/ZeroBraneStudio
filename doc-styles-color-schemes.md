@@ -42,6 +42,7 @@ and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg
 - `styles.indicator.varglobal`: global variable
 - `styles.indicator.varmasking`: masking variable -- a local variable masking another variable in the same block
 - `styles.indicator.varmasked`: masked variable -- a local variable being masked by another variable in the same block
+- `styles.indicator.varself`: implicit `self` variable used in functions defined with colon syntax (**v1.61+**)
 
 You can change the color of an indicator (by setting its `fg` property), its type (by setting its `st` property) or disable it by setting its value to `nil`:
 
