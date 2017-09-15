@@ -1,5 +1,112 @@
 # ZeroBrane Studio Changelog
 
+## Current master (Sep 14 2017)
+
+### Highlights
+  - Added support for using luacheck.
+  - Added progress bar indicator for commandbar processing.
+  - Added cache for the files in the commandbar.
+  - Added handling of exclusion lists encoded as hashes for convenient updates.
+  - Updated commandbar to improve prefiltering performance on search through large file sets.
+  - Updated moai API to community version 1.8 RC.
+  - Fixed lexlpeg styling on Linux; 110+ languages and formats are now styled on all platforms.
+
+### Special thanks
+  - To [feserr](https://github.com/feserr) for update moai API to community version 1.8 RC.
+  - To [Elias Hogstvedt](https://github.com/CapsAdmin) for adding support for luacheck.
+  - To [Thijs Schreijer](https://github.com/Tieske) for adding and correcting color descriptions.
+  - To [olueiro](https://github.com/olueiro) for update pt-br language translation.
+
+### Improvements
+  - Added `MergePath` method to use instead of a global function (#166).
+  - Added `GetLineWrapped` editor method (#166).
+  - Added `GetAllMarginWidth` editor method (#166).
+  - Added `commandbar.filecache` setting to control commandbar file cache.
+  - Added cache for the files in the commandbar.
+  - Added comment about usage of known files in the project tree imagelist.
+  - Added `onFileTreeFileAdd`, `onFileTreeFileRemove`, and `onFileTreeFileRefresh` events (#166).
+  - Added un/setting Start file to the tab menu (closes #790).
+  - Added checks when project is not set and start file is unset or directory unmap.
+  - Added `GetStartFile` and `SetStartFile` methods for the project tree (#790, #166).
+  - Added `varself` indicator for hidden `self` variable (#777).
+  - Added `RequestAttention` method (#166).
+  - Added restoring app window if minimized during activation on Linux.
+  - Added default value for `staticanalyzer.luacheck` (#768).
+  - Added support for using luacheck (closes #768).
+  - Added handling of leading slash in exclusion lists to anchor at project directory.
+  - Added progress bar indicator for commandbar processing.
+  - Added ability to interrupt long processing in commandbar with more input.
+  - Added `ShowCommandBar` method (#166).
+  - Added more robust checks for format of the colors in the config.
+  - Added support for whitespace size in the editor.
+  - Added and corrected color descriptions (closes #770).
+  - Added support for whitespace type setting.
+  - Added using extension from the current tab for new documents.
+  - Added `GetDefaultFileName` method (#166).
+  - Added toolbar initialization if not provided.
+  - Added handling of `editor.keymap` encoded as hash to simplify modifications.
+  - Added `SETLEXERLANGUAGE` constant to avoid hardcoded values.
+  - Added handling of exclusion lists encoded as hashes.
+  - Added stripping for binary Lua modules (for non-debug builds).
+  - Added skipping stripping for debug builds.
+  - Assigned style defaults to allow simple setting of back/foreground colors.
+  - Converted `excludelist` and `binarylist` to hashes to simplify modifications.
+  - Disabled moving through history in console when selection is on.
+  - Disabled closing commandbar while the text is still processed as it caused unexpected effects.
+  - Disabled interrupts for long commandbar processing on Linux.
+  - Improved support for handling some of the shortcuts with `Ctrl` and `Alt` on Linux.
+  - Moved terminating timer loop to happen after all the timers are stopped.
+  - Moved default configuration into a separate file.
+  - Removed `run` option from the interpreter as it's no longer needed.
+  - Removed functions that are no longer used.
+  - Refactored handling of lost focus event in commandbar.
+  - Refactored methods to score and show commandbar items.
+  - Removed `bin` folder from the module search path as it's no longer used for modules.
+  - Removed `encoding` in the desktop file as it's deprecated.
+  - Update pt-br.lua
+  - Updated global/config usage to avoid warnings running under 'strict' (closes #799).
+  - Updated console to show table content similar to Stack/Watch (#457).
+  - Upgraded Mobdebug (0.70) to show tables with `__tostring` metamethod (closes #457, #569).
+  - Updated console to disallow left cursor moving from the current input line (follow-up to 9d5af184).
+  - Updated console to keep cursor at the beginning of commands when moving up history.
+  - Updated console to allow cursor up/down navigation in multi-line commands.
+  - Updated debugger and style processing to remove some of obsolete global functions.
+  - Updated analyzer to remove usage of obsolete global functions.
+  - Updated README with a reference to uninstallation instructions (#784).
+  - Updated index exclusion to only match paths under the current project.
+  - Update moai API to community version 1.8 RC (closes #762).
+  - Updated commandbar to improve prefiltering performance on search through large file sets.
+  - Updated editor edge settings to use `editor.edge` and `editor.edgemode` instead of style.
+  - Updated single instance logic to activate the running copy when no files are loaded.
+  - Updated auto-complete to skip showing after separators with no match.
+  - Updated port number for singleinstance check to minimize the number of ports used.
+  - Updated MacOS launch script to avoid adding the current folder to `DYLD_LIBRARY_PATH` when not set.
+  - Updated debugger message to remove the default file name from it.
+  - Updated `IsValidProperty` check to work for controls without `Id` field.
+  - Updated .gz and .rar extensions in `binarylist` for consistency.
+  - Updated build scripts to allow loading of os/debug modules from lexlpeg lexers (#760).
+  - Updated MacOS build files to add install name to the build commands.
+
+### Fixes
+  - Fixed setting start file in a project with special characters in the name (#790).
+  - Fixed usage of `arg` on Windows where it may be undefined (#799).
+  - Fixed crash when adding a watch to a docked watch panel on Windows.
+  - Fixed opening Open/Save dialog before the first editor tab is rendered.
+  - Fixed tooltip showing after `(`/`,` and failing type assignment (fixes #796).
+  - Fixed indentation of `do`/`then` that follow strings and table indexes (closes #797, #324).
+  - Fixed loading files into read-only editors.
+  - Fixed lexlpeg styling on Linux (fixes #763).
+  - Fixed closing files after reading to avoid access conflicts when used in commandbar preview.
+  - Fixed restoring maximized window on a secondary monitor.
+  - Fixed commandbar preview when the file fails to read.
+  - Fixed resetting whitespace style to default when not specified.
+  - Fixed setting markers on lines with invalid UTF8 characters.
+  - Fixed highlighting function under cursor in the Outline.
+  - Fixed project tree icon for mapped directory.
+  - Fixed skipping binary files (based on `binarylist`) in file search.
+  - Fixed loading lexlpeg on MacOS when conflicting lpeg is present (fixes #760).
+  - Fixed loading lexlpeg with conflicting lpeg binary present in default path on MacOS (fixes #760).
+
 ## v1.60 (Apr 19 2017)
 
 ### Highlights
