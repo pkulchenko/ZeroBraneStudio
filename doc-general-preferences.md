@@ -64,6 +64,8 @@ or `'d'` for 'default' (only appears in the application output).
 This is mostly useful for remote debugging to specify how the output should be redirected.
 - (**removed in v1.30**) `debugger.requestattention = true`: request attention (in OS-dependent way) when debugging is started and the focus is on another application (**v1.0+**).
 - `debugger.runonstart = false`: execute script immediately after starting debugging (when set to `true`) or stop on the first Lua statement (when set to `false`).
+- `debugger.showtostring = false`: show values returned by `__tostring` when serializing tables with metatables that provide that method (**v1.61+**).
+When set to `false`, the tables are shown as tables; when set to `true`, the value returned by `__tostring` method is shown instead.
 - `debugger.verbose = false`: enable verbose output.
 
 ## Auto-complete and tooltip
