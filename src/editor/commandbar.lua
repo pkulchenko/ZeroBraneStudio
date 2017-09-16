@@ -626,10 +626,10 @@ function ShowCommandBar(default, selected)
             for libname, lib in pairs(ed.api.tip.shortfinfoclass) do
               for method, val in pairs(lib) do
                 local signature, desc = val:match('(.-)\n(.*)')
-                local m = libname..'.'..method
+                local m = (libname > "" and libname..'.' or "")..method
                 desc = desc and desc:gsub("\n", " ") or val
                 methods[num] = m
-                methods.desc[m] = {signature or (libname..'.'..method), desc}
+                methods.desc[m] = {signature or m, desc}
                 num = num + 1
               end
             end
