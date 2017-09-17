@@ -470,7 +470,7 @@ function ide:CreateStyledTextCtrl(...)
 
   -- circle through "fold all" => "hide base lines" => "unfold all"
   function editor:FoldSome(line)
-    local foldall = false -- at least on header unfolded => fold all
+    local foldall = false -- at least one header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
 
     local header = line and bit.band(editor:GetFoldLevel(line),
