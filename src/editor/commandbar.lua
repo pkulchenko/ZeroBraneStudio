@@ -501,6 +501,7 @@ function ShowCommandBar(default, selected)
             ed:EnsureVisibleEnforcePolicy(ed:LineFromPosition(pos))
             ed:GotoPos(pos + #method + (isfunc and 1 or 0))
             if isfunc then -- show the tooltip
+              ide:GetMainFrame():SetFocus()
               ide.frame:AddPendingEvent(wx.wxCommandEvent(
                 wx.wxEVT_COMMAND_MENU_SELECTED, ID_SHOWTOOLTIP))
             end
