@@ -460,8 +460,8 @@ function ide:CreateStyledTextCtrl(...)
   function editor:CanFold()
     local foldable = false
     for m = 0, ide.MAXMARGIN do
-      if editor:GetMarginWidth(m) > 0
-      and editor:GetMarginMask(m) == wxstc.wxSTC_MASK_FOLDERS then
+      if self:GetMarginWidth(m) > 0
+      and self:GetMarginMask(m) == wxstc.wxSTC_MASK_FOLDERS then
         foldable = true
       end
     end
@@ -473,18 +473,18 @@ function ide:CreateStyledTextCtrl(...)
     local foldall = false -- at least one header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
 
-    local header = line and bit.band(editor:GetFoldLevel(line),
+    local header = line and bit.band(self:GetFoldLevel(line),
       wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
-    local from = line and (header and line or editor:GetFoldParent(line)) or 0
-    local to = line and from > -1 and editor:GetLastChild(from, -1) or editor:GetLineCount()-1
+    local from = line and (header and line or self:GetFoldParent(line)) or 0
+    local to = line and from > -1 and self:GetLastChild(from, -1) or self:GetLineCount()-1
 
     for ln = from, to do
-      local foldRaw = editor:GetFoldLevel(ln)
+      local foldRaw = self:GetFoldLevel(ln)
       local foldLvl = foldRaw % 4096
       local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
 
       -- at least one header is expanded
-      foldall = foldall or (foldHdr and editor:GetFoldExpanded(ln))
+      foldall = foldall or (foldHdr and self:GetFoldExpanded(ln))
 
       -- at least one base can be hidden
       hidebase = hidebase or (
@@ -492,34 +492,34 @@ function ide:CreateStyledTextCtrl(...)
         and ln > 1 -- first line can't be hidden, so ignore it
         and foldLvl == wxstc.wxSTC_FOLDLEVELBASE
         and bit.band(foldRaw, wxstc.wxSTC_FOLDLEVELWHITEFLAG) == 0
-        and editor:GetLineVisible(ln))
+        and self:GetLineVisible(ln))
     end
 
     -- shows lines; this doesn't change fold status for folded lines
-    if not foldall and not hidebase then editor:ShowLines(from, to) end
+    if not foldall and not hidebase then self:ShowLines(from, to) end
 
     for ln = from, to do
-      local foldRaw = editor:GetFoldLevel(ln)
+      local foldRaw = self:GetFoldLevel(ln)
       local foldLvl = foldRaw % 4096
       local foldHdr = (math.floor(foldRaw / 8192) % 2) == 1
 
       if foldall then
-        if foldHdr and editor:GetFoldExpanded(ln) then
-          editor:ToggleFold(ln)
+        if foldHdr and self:GetFoldExpanded(ln) then
+          self:ToggleFold(ln)
         end
       elseif hidebase then
         if not foldHdr and (foldLvl == wxstc.wxSTC_FOLDLEVELBASE) then
-          editor:HideLines(ln, ln)
+          self:HideLines(ln, ln)
         end
       else -- unfold all
-        if foldHdr and not editor:GetFoldExpanded(ln) then
-          editor:ToggleFold(ln)
+        if foldHdr and not self:GetFoldExpanded(ln) then
+          self:ToggleFold(ln)
         end
       end
     end
     -- if the entire file is being un/folded, make sure the cursor is on the screen
     -- (although it may be inside a folded fragment)
-    if not line then editor:EnsureCaretVisible() end
+    if not line then self:EnsureCaretVisible() end
   end
 
   function editor:GetAllMarginWidth()
@@ -532,7 +532,7 @@ function ide:CreateStyledTextCtrl(...)
     local line = self:LineFromPosition(pos)
     self:EnsureVisibleEnforcePolicy(line)
     -- skip the rest if line wrapping is on
-    if editor:GetWrapMode() ~= wxstc.wxSTC_WRAP_NONE then return end
+    if self:GetWrapMode() ~= wxstc.wxSTC_WRAP_NONE then return end
     local xwidth = self:GetClientSize():GetWidth() - self:GetAllMarginWidth()
     local xoffset = self:GetTextExtent(self:GetLineDyn(line):sub(1, pos-self:PositionFromLine(line)+1))
     self:SetXOffset(xoffset > xwidth and xoffset-xwidth or 0)
@@ -545,11 +545,11 @@ function ide:CreateStyledTextCtrl(...)
       return editor:PositionFromPoint(wx.wxPoint(point:GetX(), point:GetY() + direction * height))
     end
     direction = tonumber(direction) or 1
-    local line = editor:LineFromPosition(pos)
-    if editor:WrapCount(line) < 2
+    local line = self:LineFromPosition(pos)
+    if self:WrapCount(line) < 2
     or direction < 0 and line == 0
-    or direction > 0 and line == editor:GetLineCount()-1 then return false end
-    return line == editor:LineFromPosition(getPosNear(editor, pos, direction))
+    or direction > 0 and line == self:GetLineCount()-1 then return false end
+    return line == self:LineFromPosition(getPosNear(self, pos, direction))
   end
 
   -- wxSTC included with wxlua didn't have ScrollRange defined, so substitute if not present
@@ -581,17 +581,17 @@ function ide:CreateStyledTextCtrl(...)
   function editor:MarkerGetAll(mask, from, to)
     mask = mask or ide.ANYMARKERMASK
     local markers = {}
-    local line = editor:MarkerNext(from or 0, mask)
+    local line = self:MarkerNext(from or 0, mask)
     while line ~= wx.wxNOT_FOUND do
-      table.insert(markers, {line, editor:MarkerGet(line)})
+      table.insert(markers, {line, self:MarkerGet(line)})
       if to and line > to then break end
-      line = editor:MarkerNext(line + 1, mask)
+      line = self:MarkerNext(line + 1, mask)
     end
     return markers
   end
 
   function editor:IsLineEmpty(line)
-    local text = self:GetLineDyn(line or editor:GetCurrentLine())
+    local text = self:GetLineDyn(line or self:GetCurrentLine())
     local lc = self.spec and self.spec.linecomment
     return not text:find("%S") or (lc and text:find("^%s*"..q(lc)) ~= nil)
   end
