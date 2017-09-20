@@ -391,13 +391,9 @@ local function activateByPartialName(fname, jumpline, jumplinepos)
 end
 
 local jumptopatterns = { -- ["pattern"] = true/false for multiple/single
-  -- <filename>(line,linepos):
-  ["%s*(.-)%((%d+),(%d+)%)%s*:"] = false,
-  -- <filename>(line):
-  ["%s*(.-)%((%d+).*%)%s*:"] = false,
   --[string "<filename>"]:line:
   ['.-%[string "([^"]+)"%]:(%d+)%s*:'] = false,
-  -- <filename>:line:linepos
+  -- <filename>:line:linepos -- this is used in some analyzers, like LuaCheck
   ["%s*(.-):(%d+):(%d+):"] = false,
   -- <filename>:line:
   ["%s*(.-):(%d+)%s*:"] = true,
