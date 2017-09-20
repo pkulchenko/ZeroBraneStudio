@@ -1469,6 +1469,7 @@ function CreateEditor(bare)
       local point = editor:ScreenToClient(event:GetPosition())
       -- capture the position of the click to use in handlers later
       pos = editor:PositionFromPoint(point)
+      if pos == 0 and (point:GetX() < 0 or point:GetY() < 0) then pos = nil end
 
       local _, _, instances = getPositionValues()
       local occurrences = (not instances or #instances == 0) and ""
