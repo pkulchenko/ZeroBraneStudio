@@ -401,6 +401,8 @@ local jumptopatterns = { -- ["pattern"] = true/false for multiple/single
   ["%s*(.-):(%d+):(%d+):"] = false,
   -- <filename>:line:
   ["%s*(.-):(%d+)%s*:"] = true,
+  -- error in __gc metamethod (<filename>:line:...
+  ["%((.-):(%d+)%s*:"] = false,
 }
 
 out:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
