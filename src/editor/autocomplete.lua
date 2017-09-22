@@ -583,18 +583,21 @@ function CreateAutoCompList(editor,key,pos)
   if ide.config.acandtip.symbols and not key:find(q(sep)) then
     local vars, context = {}
     local tokens = editor:GetTokenList()
+    local strategy = tonumber(ide.config.acandtip.symbols)
+    local tkey = "^"..(strategy == 2 and key:gsub(".", "%1.*"):gsub("%.%*$","") or q(key))
+      :gsub("(%w)", function(s) return "["..s:lower()..s:upper().."]" end)
     for _, token in ipairs(tokens) do
       if token.fpos and pos and token.fpos > pos then break end
       if token[1] == 'Id' or token[1] == 'Var' then
         local var = token.name
-        if var:find(key, 1, true) == 1
+        if var:find(tkey)
         -- skip the variable formed by what's being typed
         and (not token.fpos or not pos or token.fpos < pos-#key) then
           -- if it's a global variable, store in the auto-complete list,
           -- but if it's local, store separately as it needs to be checked
           table.insert(token.context[var] and vars or apilist, var)
         end
-        context = token.context
+        context = token.context -- keep track of the last (innermost) context
       end
     end
     for _, var in pairs(context and vars or {}) do
