@@ -473,7 +473,8 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         setPromptText("")
         return
       elseif key == wx.WXK_BACK or key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT then
-        if not caretOnPromptLine(true) then return end
+        if (key == wx.WXK_BACK or console:LineFromPosition(console:GetCurrentPos()) >= getPromptLine())
+        and not caretOnPromptLine(true) then return end
       elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
         if not caretOnPromptLine()
         or console:LineFromPosition(console:GetSelectionStart()) < getPromptLine() then
