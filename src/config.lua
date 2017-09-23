@@ -134,6 +134,7 @@ return {
   interpreter = false,
 
   activateoutput = true, -- activate output/console on Run/Debug/Compile
+  codepage = false, -- set codepage for output conversion (`true` to auto-detect); Windows only
   unhidewindow = false, -- to unhide a gui window
   projectautoopen = true,
   autorecoverinactivity = 10, -- seconds

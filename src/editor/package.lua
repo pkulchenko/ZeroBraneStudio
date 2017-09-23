@@ -1246,3 +1246,19 @@ function ide:ActivateFile(filename)
 end
 
 function ide:MergePath(...) return MergeFullPath(...) end
+
+do
+  local codepage
+  function ide:GetCodePage()
+    if ide.osname ~= "Windows" then return end
+    if codepage == nil then
+      codepage = tonumber(ide.config.codepage) or ide.config.codepage
+      if codepage == true then
+        -- auto-detect the codepage;
+        -- this is done asynchronously, so the current method may still return `nil`
+        ide:ExecuteCommand("cmd /C chcp", nil, function(s) codepage = s:match(":%s*(%d+)") end)
+      end
+    end
+    return tonumber(codepage)
+  end
+end
