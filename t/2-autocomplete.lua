@@ -201,6 +201,24 @@ local status, res = pcall(CreateAutoCompList, editor, "va")
 ok(status and (res or ""):match('value'),
   ("Auto-complete (strategy=%s) offers completions for variables (2/2)."):format(s))
 
+if strategy == 2 then
+  editor:SetText('')
+  editor:AddText('local value,velAcc\nprint(va')
+  IndicateAll(editor)
+
+  local status, res = pcall(CreateAutoCompList, editor, "va")
+  ok(status and (res or ""):match('velAcc'),
+    ("Auto-complete (strategy=%s) offers case-insensitive completions for mixed case match."):format(s))
+  ok(status and (res or ""):match('value'),
+    ("Auto-complete (strategy=%s) offers case-insensitive completions for lower case match."):format(s))
+
+  local status, res = pcall(CreateAutoCompList, editor, "vA")
+  ok(status and (res or ""):match('velAcc'),
+    ("Auto-complete (strategy=%s) offers case-sensitive completions for upper case match (1/2)."):format(s))
+  ok(status and res and not res:match('value'),
+    ("Auto-complete (strategy=%s) offers case-sensitive completions for upper case match (2/2)."):format(s))
+end
+
 end
 
 -- cleanup

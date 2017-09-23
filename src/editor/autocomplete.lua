@@ -585,7 +585,7 @@ function CreateAutoCompList(editor,key,pos)
     local tokens = editor:GetTokenList()
     local strategy = tonumber(ide.config.acandtip.symbols)
     local tkey = "^"..(strategy == 2 and key:gsub(".", "%1.*"):gsub("%.%*$","") or q(key))
-      :gsub("(%w)", function(s) return "["..s:lower()..s:upper().."]" end)
+      :gsub("(%w)", function(s) return s == s:upper() and s or "["..s:lower()..s:upper().."]" end)
     for _, token in ipairs(tokens) do
       if token.fpos and pos and token.fpos > pos then break end
       if token[1] == 'Id' or token[1] == 'Var' then
