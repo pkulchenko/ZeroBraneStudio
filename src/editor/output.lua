@@ -133,6 +133,7 @@ end
 
 -- logic to "unhide" wxwidget window using winapi
 local ok, winapi = pcall(require, 'winapi')
+if not ok then winapi = nil end
 local checkstart, checknext, checkperiod
 local pid = nil
 local function unHideWindow(pidAssign)
@@ -141,7 +142,7 @@ local function unHideWindow(pidAssign)
   if pidAssign then
     pid = pidAssign > 0 and pidAssign or nil
   end
-  if pid and ok then -- pid provided and winapi loaded
+  if pid and winapi then -- pid provided and winapi loaded
     local now = TimeGet()
     if pidAssign and pidAssign > 0 then
       checkstart, checknext, checkperiod = now, now, 0.02
@@ -260,6 +261,8 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
   return pid
 end
 
+ide:GetCodePage() -- populate the codepage value if auto-detection is requested
+
 local readonce = 4096
 local maxread = readonce * 10 -- maximum number of bytes to read before pausing
 local function getStreams()
@@ -272,6 +275,12 @@ local function getStreams()
         -- the buffer has readonce bytes, so cut it to the actual size
         str = str:sub(1, v.stream:LastRead())
         processed = processed + #str
+
+        local codepage = ide:GetCodePage()
+        if codepage and FixUTF8(str) == nil and winapi then
+          -- this looks like invalid UTF-8 content, which may be in a different code page
+          str = winapi.encode(codepage, winapi.CP_UTF8, str)
+        end
 
         local pfn
         if (v.callback) then
