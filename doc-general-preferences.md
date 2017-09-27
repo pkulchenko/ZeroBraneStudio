@@ -17,6 +17,9 @@ The values shown are the default values.
 - `autoanalyzer = true`: enable autoanalyzer that adds scope aware indicators to variables (**up to v0.50** it was spelled as `autoanalizer`).
 - `autorecoverinactivity = 10`: trigger saving autorecovery after N seconds of inactivity; set to `nil` to disable autorecovery.
 - `bordersize = 3`: set the size of the border (sash) between windows and panels (**v0.91+**, updated default in **v1.31+**).
+- `codepage = false`: set the codepage for the script output on Windows (**v1.61+**);
+set to `true` to enable auto-detection of the current code page, or
+set to `<number>` to set a specific code page (for example, use `936` for Simplified Chinese/GB2312).
 - `commandlinehistorylength = 10`: set history length for command lines (**v1.31+**); the history is kept across all projects.
 - `filehistorylength = 20`: set history length for files.
 - `hotexit = false`: enable quick exit without prompting to save files (**v0.71+**).
