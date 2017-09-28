@@ -640,8 +640,22 @@ function ide:CreateTreeCtrl(...)
   local ctrl = wx.wxTreeCtrl(...)
   if not ctrl then return end
 
+  if not self:IsValidProperty(ctrl, "SetFocusedItem") then
+    -- versions of wxlua prior to 3.1 may not have SetFocuseditem
+    function ctrl:SetFocusedItem(item)
+      self:UnselectAll() -- unselect others in case MULTIPLE selection is allowed
+      return self:SelectItem(item)
+    end
+  end
+
+  local hasGetFocused = self:IsValidProperty(ctrl, "GetFocusedItem")
+  if not hasGetFocused then
+    -- versions of wxlua prior to 3.1 may not have SetFocuseditem
+    function ctrl:GetFocusedItem() return self:GetSelections()[1] end
+  end
+
   -- LeftArrow on Linux doesn't collapse expanded nodes as it does on Windows/OSX; do it manually
-  if ide.osname == "Unix" and ide:IsValidProperty(ctrl, "GetFocusedItem") then
+  if ide.osname == "Unix" and hasGetFocused then
     ctrl:Connect(wx.wxEVT_KEY_DOWN, function (event)
         local keycode = event:GetKeyCode()
         local mod = event:GetModifiers()
