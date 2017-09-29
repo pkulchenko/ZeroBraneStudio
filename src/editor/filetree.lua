@@ -376,7 +376,9 @@ local function treeSetConnectorsAndIcons(tree)
     else -- refresh the tree and select the new item
       local itemdst = tree:FindItem(target)
       if itemdst then
+        tree:UnselectAll()
         refreshAncestors(tree:GetItemParent(itemdst))
+        tree:SetFocusedItem(itemdst)
         tree:SelectItem(itemdst)
         tree:EnsureVisible(itemdst)
         tree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
@@ -529,21 +531,21 @@ local function treeSetConnectorsAndIcons(tree)
 
   tree:Connect(ID_NEWFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      tree:EditLabel(addItem(tree:GetSelection(), empty, image.FILEOTHER))
+      tree:EditLabel(addItem(tree:GetFocusedItem(), empty, image.FILEOTHER))
     end)
   tree:Connect(ID_NEWDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      tree:EditLabel(addItem(tree:GetSelection(), empty, image.DIRECTORY))
+      tree:EditLabel(addItem(tree:GetFocusedItem(), empty, image.DIRECTORY))
     end)
   tree:Connect(ID_RENAMEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function() tree:EditLabel(tree:GetSelection()) end)
+    function() tree:EditLabel(tree:GetFocusedItem()) end)
   tree:Connect(ID_DELETEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function() deleteItem(tree:GetSelection()) end)
+    function() deleteItem(tree:GetFocusedItem()) end)
   tree:Connect(ID_COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function() ide:CopyToClipboard(tree:GetItemFullName(tree:GetSelection())) end)
+    function() ide:CopyToClipboard(tree:GetItemFullName(tree:GetFocusedItem())) end)
   tree:Connect(ID_OPENEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      local fname = tree:GetItemFullName(tree:GetSelection())
+      local fname = tree:GetItemFullName(tree:GetFocusedItem())
       local ext = '.'..wx.wxFileName(fname):GetExt()
       local ft = wx.wxTheMimeTypesManager:GetFileTypeFromExtension(ext)
       if ft then
@@ -559,10 +561,10 @@ local function treeSetConnectorsAndIcons(tree)
   tree:Connect(ID_REFRESH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() refreshChildren() end)
   tree:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function() ShowLocation(tree:GetItemFullName(tree:GetSelection())) end)
+    function() ShowLocation(tree:GetItemFullName(tree:GetFocusedItem())) end)
   tree:Connect(ID_HIDEEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      local ext = GetFileExt(tree:GetItemText(tree:GetSelection()))
+      local ext = GetFileExt(tree:GetItemText(tree:GetFocusedItem()))
       filetree.settings.extensionignore[ext] = true
       saveSettings()
       refreshChildren()
@@ -576,7 +578,7 @@ local function treeSetConnectorsAndIcons(tree)
   tree:Connect(ID_SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       unsetStartFile()
-      setStartFile(tree:GetSelection())
+      setStartFile(tree:GetFocusedItem())
       saveSettings()
     end)
   tree:Connect(ID_UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -591,18 +593,18 @@ local function treeSetConnectorsAndIcons(tree)
     end)
   tree:Connect(ID_UNMAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      unMapDir(tree:GetItemText(tree:GetSelection()))
+      unMapDir(tree:GetItemText(tree:GetFocusedItem()))
       saveSettings()
     end)
   tree:Connect(ID_PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      ide:SetProject(tree:GetItemFullName(tree:GetSelection()))
+      ide:SetProject(tree:GetItemFullName(tree:GetFocusedItem()))
     end)
 
   tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
     function (event)
       local item_id = event:GetItem()
-      tree:SelectItem(item_id)
+      tree:SetFocusedItem(item_id)
 
       local renamelabel = (tree:IsRoot(item_id)
         and TR("&Edit Project Directory")
@@ -726,7 +728,6 @@ local function treeSetConnectorsAndIcons(tree)
       if item_id and item_id:IsOk() and bit.band(flags, mask) > 0 then
         if tree:IsDirectory(item_id) then
           tree:Toggle(item_id)
-          tree:SelectItem(item_id)
         else
           local name = tree:GetItemFullName(item_id)
           if wx.wxFileExists(name) then LoadFile(name,nil,true) end
