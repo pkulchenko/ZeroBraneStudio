@@ -803,7 +803,7 @@ if statusbarfix then ide.frame:GetStatusBar():Show(false) end
 -- somehow having wxAuiToolbar "steals" the focus from the editor on OSX;
 -- have to set the focus implicitly on the current editor (if any)
 if ide.osname == 'Macintosh' then
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   if editor then editor:SetFocus() end
 end
 

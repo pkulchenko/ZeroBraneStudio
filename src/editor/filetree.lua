@@ -871,7 +871,7 @@ function filetree:updateProjectDir(newdir)
   treeSetRoot(projtree,newdir)
 
   -- sync with the current editor window and activate selected file
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   if editor then FileTreeMarkSelected(ide:GetDocument(editor):GetFilePath()) end
 
   -- refresh Recent Projects menu item

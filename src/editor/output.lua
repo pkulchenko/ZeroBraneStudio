@@ -345,7 +345,7 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         -- delete markers and set focus to the editor if there is an input marker
         if out:MarkerPrevious(out:GetLineCount(), PROMPT_MARKER_VALUE) > wx.wxNOT_FOUND then
           out:MarkerDeleteAll(PROMPT_MARKER)
-          local editor = GetEditor()
+          local editor = ide:GetEditor()
           -- check if editor still exists; it may not if the window is closed
           if editor then editor:SetFocus() end
         end
@@ -382,7 +382,7 @@ local function activateByPartialName(fname, jumpline, jumplinepos)
 
   local editor = LoadFile(name or fname,nil,true)
   if not editor then
-    local ed = GetEditor()
+    local ed = ide:GetEditor()
     if ed and ide:GetDocument(ed):GetFileName() == (name or fname) then
       editor = ed
     end

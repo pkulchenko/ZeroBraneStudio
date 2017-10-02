@@ -268,7 +268,7 @@ local function createOutlineWindow()
     + wx.wxTR_HIDE_ROOT + wx.wxNO_BORDER)
 
   outline.outlineCtrl = ctrl
-  ide.timers.outline = ide:AddTimer(ctrl, function() outlineRefresh(GetEditor(), false) end)
+  ide.timers.outline = ide:AddTimer(ctrl, function() outlineRefresh(ide:GetEditor(), false) end)
   ide.timers.symbolindex = ide:AddTimer(ctrl, function() ide:DoWhenIdle(indexFromQueue) end)
 
   ctrl:AddRoot("Outline")

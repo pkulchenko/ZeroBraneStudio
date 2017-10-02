@@ -90,7 +90,7 @@ frame:Connect(ID_VIEWFULLSCREEN, wx.wxEVT_COMMAND_MENU_SELECTED, function ()
     ShowFullScreen(not frame:IsFullScreen())
   end)
 frame:Connect(ID_VIEWFULLSCREEN, wx.wxEVT_UPDATE_UI,
-  function (event) event:Enable(GetEditor() ~= nil) end)
+  function (event) event:Enable(ide:GetEditor() ~= nil) end)
 
 frame:Connect(ID_VIEWOUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)
 frame:Connect(ID_VIEWFILETREE, wx.wxEVT_COMMAND_MENU_SELECTED, togglePanel)

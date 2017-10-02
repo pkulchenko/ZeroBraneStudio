@@ -149,23 +149,9 @@ local function navigateBack(editor)
   return true
 end
 
--- ----------------------------------------------------------------------------
--- Get/Set notebook editor page, use nil for current page, returns nil if none
-function GetEditor(selection)
-  if selection == nil then
-    selection = notebook:GetSelection()
-  end
-  local editor
-  if (selection >= 0) and (selection < notebook:GetPageCount())
-    and (notebook:GetPage(selection):GetClassInfo():GetClassName()=="wxStyledTextCtrl") then
-    editor = notebook:GetPage(selection):DynamicCast("wxStyledTextCtrl")
-  end
-  return editor
-end
-
 -- init new notebook page selection, use nil for current page
 function SetEditorSelection(selection)
-  local editor = GetEditor(selection)
+  local editor = ide:GetEditor(selection)
   updateStatusText(editor) -- update even if nil
   ide.frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
 
@@ -188,7 +174,7 @@ function SetEditorSelection(selection)
 end
 
 function GetEditorFileAndCurInfo(nochecksave)
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   if (not (editor and (nochecksave or SaveIfModified(editor)))) then
     return
   end
@@ -474,7 +460,7 @@ end
 local delayed = {}
 
 function IndicateIfNeeded()
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   -- do the current one first
   if delayed[editor] then return IndicateAll(editor) end
   for ed in pairs(delayed) do return IndicateAll(ed) end
@@ -1074,7 +1060,7 @@ function CreateEditor(bare)
       -- the event seems to report "old" position when retrieved using
       -- event:GetX and event:GetY, so instead we use wxGetMousePosition.
       local linux = ide.osname == 'Unix'
-      if linux and editor ~= GetEditor() then return end
+      if linux and editor ~= ide:GetEditor() then return end
 
       -- check if this editor has focus; it may not when Stack/Watch window
       -- is on top, but DWELL events are still triggered in this case.

@@ -311,10 +311,10 @@ end
 frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     ide:GetOutput():Activate()
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
     if not analyzeProgram(editor) then
       CompileProgram(editor, { reportstats = false, keepoutput = true })
     end
   end)
 frame:Connect(ID_ANALYZE, wx.wxEVT_UPDATE_UI,
-  function (event) event:Enable(GetEditor() ~= nil) end)
+  function (event) event:Enable(ide:GetEditor() ~= nil) end)

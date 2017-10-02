@@ -515,7 +515,7 @@ function SettingsRestoreView()
     if newlayout ~= curlayout then m:LoadPerspective(newlayout) end
   end
 
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   if editor then editor:SetFocus() end
 
   settings:SetPath(path)

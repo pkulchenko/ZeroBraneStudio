@@ -196,7 +196,7 @@ local function createNotebook(frame)
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
-      local ed = GetEditor(notebook:GetSelection())
+      local ed = ide:GetEditor(notebook:GetSelection())
       local doc = ed and ide:GetDocument(ed)
 
       -- skip activation when any of the following is true:
@@ -249,7 +249,7 @@ local function createNotebook(frame)
     notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_END_DRAG,
       function (event)
         for page = 0, notebook:GetPageCount()-1 do
-          local editor = GetEditor(page)
+          local editor = ide:GetEditor(page)
           if editor then ide.openDocuments[editor:GetId()].index = page end
         end
 
@@ -371,12 +371,12 @@ local function createNotebook(frame)
     end)
 
   notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ShowLocation(ide:GetDocument(GetEditor(selection)):GetFilePath())
+      ShowLocation(ide:GetDocument(ide:GetEditor(selection)):GetFilePath())
     end)
   notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
   notebook:Connect(ID_COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:CopyToClipboard(ide:GetDocument(GetEditor(selection)):GetFilePath())
+      ide:CopyToClipboard(ide:GetDocument(ide:GetEditor(selection)):GetFilePath())
     end)
 
   frame.notebook = notebook

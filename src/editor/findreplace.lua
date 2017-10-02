@@ -53,7 +53,7 @@ local sep = ';'
 function findReplace:GetEditor(reset)
   if reset or not ide:IsValidCtrl(self.cureditor) then self.cureditor = nil end
   self.cureditor = ide:GetEditorWithLastFocus() or self.cureditor
-  return self.oveditor or self.cureditor or GetEditor()
+  return self.oveditor or self.cureditor or ide:GetEditor()
 end
 
 -------------------- Find replace dialog

@@ -30,7 +30,7 @@ menuBar:Append(findMenu, TR("&Search"))
 
 -- allow search functions for either Editor with focus (which includes editor-like panels)
 -- or editor tabs (even when the current editor is not in focus)
-local function onUpdateUISearchMenu(event) event:Enable((GetEditorWithFocus() or GetEditor()) ~= nil) end
+local function onUpdateUISearchMenu(event) event:Enable((GetEditorWithFocus() or ide:GetEditor()) ~= nil) end
 
 frame:Connect(ID_FIND, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
@@ -55,7 +55,7 @@ frame:Connect(ID_REPLACEINFILES, wx.wxEVT_COMMAND_MENU_SELECTED,
 
 frame:Connect(ID_FINDNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
     if editor and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
       local selection = editor:GetMainSelection() + 1
       if selection >= editor:GetSelections() then selection = 0 end
@@ -73,7 +73,7 @@ frame:Connect(ID_FINDNEXT, wx.wxEVT_UPDATE_UI, onUpdateUISearchMenu)
 
 frame:Connect(ID_FINDPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
     if editor and ide.wxver >= "2.9.5" and editor:GetSelections() > 1 then
       local selection = editor:GetMainSelection() - 1
       if selection < 0 then selection = editor:GetSelections() - 1 end
@@ -117,6 +117,6 @@ frame:Connect(ID_NAVIGATETOMETHOD, wx.wxEVT_COMMAND_MENU_SELECTED,
   function() ide:ShowCommandBar(special.METHOD) end)
 frame:Connect(ID_NAVIGATETOSYMBOL, wx.wxEVT_COMMAND_MENU_SELECTED,
   function()
-    local ed = GetEditor()
+    local ed = ide:GetEditor()
     ide:ShowCommandBar(special.SYMBOL, ed and ed:ValueFromPosition(ed:GetCurrentPos()))
   end)

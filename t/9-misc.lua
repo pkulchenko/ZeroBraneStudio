@@ -77,7 +77,7 @@ for _, tst in ipairs({
   editor:ResetTokenList()
   while IndicateAll(editor) do end
   local defonly = true
-  for _, token in ipairs(GetEditor():GetTokenList()) do
+  for _, token in ipairs(ide:GetEditor():GetTokenList()) do
     if token.name ~= '_' then defonly = false end
   end
   ok(defonly == true, ("Numeric expression '%s' can be checked with inline parser."):format(tst))

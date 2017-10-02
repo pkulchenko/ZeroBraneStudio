@@ -502,7 +502,7 @@ function GetEditorWithFocus(...)
     return isCtrlFocused(ed) and ed or nil
   end
 
-  local editor = GetEditor()
+  local editor = ide:GetEditor()
   if isCtrlFocused(editor) then return editor end
 
   local nb = ide:GetOutputNotebook()

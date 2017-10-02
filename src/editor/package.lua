@@ -134,7 +134,17 @@ function ide:GetDefaultFileName()
   if ed and default.usecurrentextension then ext = self:GetDocument(ed):GetFileExt() end
   return default.name..(ext and ext > "" and "."..ext or "")
 end
-function ide:GetEditor(index) return GetEditor(index) end
+function ide:GetEditor(index)
+  local notebook = self:GetEditorNotebook()
+  if index == nil then index = notebook:GetSelection() end
+
+  local editor
+  if (index >= 0) and (index < notebook:GetPageCount())
+  and notebook:GetPage(index):GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
+    editor = notebook:GetPage(index):DynamicCast("wxStyledTextCtrl")
+  end
+  return editor
+end
 function ide:GetEditorWithFocus(...) return GetEditorWithFocus(...) end
 function ide:GetEditorWithLastFocus()
   -- make sure ide.infocus is still a valid component and not "some" userdata

@@ -52,7 +52,7 @@ local function getCtrlWithFocus(edType)
 end
 
 local function onUpdateUIEditorInFocus(event)
-  event:Enable(GetEditorWithFocus(GetEditor()) ~= nil)
+  event:Enable(GetEditorWithFocus(ide:GetEditor()) ~= nil)
 end
 
 local function onUpdateUIEditMenu(event)
@@ -159,7 +159,7 @@ end
 
 frame:Connect(ID_COMMENT, wx.wxEVT_UPDATE_UI,
   function(event)
-    local editor = GetEditorWithFocus(GetEditor())
+    local editor = GetEditorWithFocus(ide:GetEditor())
     event:Enable(editor ~= nil
       and ide:IsValidProperty(editor, "spec") and editor.spec
       and editor.spec.linecomment and true or false)
@@ -196,7 +196,7 @@ frame:Connect(ID_CLEARDYNAMICWORDS, wx.wxEVT_COMMAND_MENU_SELECTED,
 
 frame:Connect(ID_SHOWTOOLTIP, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
 
     if (editor:CallTipActive()) then
       editor:CallTipCancel()
@@ -207,14 +207,14 @@ frame:Connect(ID_SHOWTOOLTIP, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 
 frame:Connect(ID_AUTOCOMPLETE, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) EditorAutoComplete(GetEditor()) end)
+  function (event) EditorAutoComplete(ide:GetEditor()) end)
 
 frame:Connect(ID_AUTOCOMPLETEENABLE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) ide.config.autocomplete = event:IsChecked() end)
 
 frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
     local lc = editor.spec.linecomment
     if not lc then return end
 
@@ -311,7 +311,7 @@ local function processSelection(editor, func)
 end
 
 frame:Connect(ID_SORT, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) processSelection(GetEditor(), table.sort) end)
+  function (event) processSelection(ide:GetEditor(), table.sort) end)
 
 local function reIndent(editor, buf)
   local decindent, incindent = editor.spec.isdecindent, editor.spec.isincindent
@@ -369,7 +369,7 @@ end
 
 frame:Connect(ID_REINDENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditor()
+    local editor = ide:GetEditor()
     processSelection(editor, function(buf) reIndent(editor, buf) end)
   end)
 
@@ -396,8 +396,8 @@ frame:Connect(ID_FOLDLINE, wx.wxEVT_COMMAND_MENU_SELECTED,
 local BOOKMARK_MARKER = StylesGetMarker("bookmark")
 
 frame:Connect(ID_BOOKMARKTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() GetEditor():BookmarkToggle() end)
+  function() ide:GetEditor():BookmarkToggle() end)
 frame:Connect(ID_BOOKMARKNEXT, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() GetEditor():MarkerGotoNext(BOOKMARK_MARKER) end)
+  function() ide:GetEditor():MarkerGotoNext(BOOKMARK_MARKER) end)
 frame:Connect(ID_BOOKMARKPREV, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function() GetEditor():MarkerGotoPrev(BOOKMARK_MARKER) end)
+  function() ide:GetEditor():MarkerGotoPrev(BOOKMARK_MARKER) end)

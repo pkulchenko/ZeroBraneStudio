@@ -179,24 +179,24 @@ frame:Connect(ID_NEW, wx.wxEVT_COMMAND_MENU_SELECTED, function() return NewFile(
 frame:Connect(ID_OPEN, wx.wxEVT_COMMAND_MENU_SELECTED, OpenFile)
 frame:Connect(ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    local editor = ide.findReplace:CanSave(GetEditorWithFocus()) or GetEditor()
+    local editor = ide.findReplace:CanSave(GetEditorWithFocus()) or ide:GetEditor()
     local doc = ide:GetDocument(editor)
     SaveFile(editor, doc and doc:GetFilePath() or nil)
   end)
 frame:Connect(ID_SAVE, wx.wxEVT_UPDATE_UI,
   function (event)
-    local doc = ide:GetDocument(GetEditor())
+    local doc = ide:GetDocument(ide:GetEditor())
     event:Enable(ide.findReplace:CanSave(GetEditorWithFocus()) and true
       or doc and (doc:IsModified() or doc:IsNew()) or false)
   end)
 
 frame:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
-    SaveFileAs(GetEditor())
+    SaveFileAs(ide:GetEditor())
   end)
 frame:Connect(ID_SAVEAS, wx.wxEVT_UPDATE_UI,
   function (event)
-    event:Enable(GetEditor() ~= nil)
+    event:Enable(ide:GetEditor() ~= nil)
   end)
 
 frame:Connect(ID_SAVEALL, wx.wxEVT_COMMAND_MENU_SELECTED,
@@ -228,7 +228,7 @@ frame:Connect(ID_CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 frame:Connect(ID_CLOSE, wx.wxEVT_UPDATE_UI,
   function (event)
-    event:Enable(ide.findReplace:IsPreview(GetEditorWithFocus()) or GetEditor() ~= nil)
+    event:Enable(ide.findReplace:IsPreview(GetEditorWithFocus()) or ide:GetEditor() ~= nil)
   end)
 
 frame:Connect(ID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED,
