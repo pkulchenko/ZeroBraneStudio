@@ -660,9 +660,9 @@ function debugger:Listen(start)
 
       if PackageEventHandle("onDebuggerPreLoad", debugger, options) == false then return end
 
-      local wxfilepath = GetEditorFileAndCurInfo()
+      local editor = ide:GetEditor()
       local startfile = ide:GetProjectStartFile() or options.startwith
-        or (wxfilepath and wxfilepath:GetFullPath())
+        or (editor and SaveIfModified(editor) and ide:GetDocument(editor):GetFilePath())
 
       if not startfile then
         displayError(TR("Can't start debugging without an opened file or with the current file not being saved."))

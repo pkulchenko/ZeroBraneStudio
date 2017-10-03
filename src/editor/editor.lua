@@ -173,29 +173,6 @@ function SetEditorSelection(selection)
   SetAutoRecoveryMark()
 end
 
-function GetEditorFileAndCurInfo(nochecksave)
-  local editor = ide:GetEditor()
-  if (not (editor and (nochecksave or SaveIfModified(editor)))) then
-    return
-  end
-
-  local id = editor:GetId()
-  local filepath = openDocuments[id].filePath
-  if not filepath then return end
-
-  local fn = wx.wxFileName(filepath)
-  fn:Normalize()
-
-  local info = {}
-  info.pos = editor:GetCurrentPos()
-  info.line = editor:GetCurrentLine()
-  info.sel = editor:GetSelectedText()
-  info.sel = info.sel and info.sel:len() > 0 and info.sel or nil
-  info.selword = info.sel and info.sel:match("([^a-zA-Z_0-9]+)") or info.sel
-
-  return fn,info
-end
-
 function EditorAutoComplete(editor)
   if not (editor and editor.spec) then return end
 
