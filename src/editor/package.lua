@@ -85,8 +85,8 @@ function ide:GetPackagePath(packname)
   )
 end
 function ide:GetLaunchPath(addparams)
-  local path = ide.editorFilename
-  if ide.osname == "Macintosh" then
+  local path = self.editorFilename
+  if self.osname == "Macintosh" then
     -- find .app folder in the path; there are two options:
     -- 1. `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio/zbstudio`(installed path)
     -- 2. `...ZeroBraneStudio/zbstudio` (cloned repository path)
@@ -107,15 +107,15 @@ function ide:GetLaunchPath(addparams)
     end
     -- generate command with `-n` (start a new copy of the application)
     path = ([[open -n -a "%s" --args]]):format(path)
-  elseif ide.osname == "Unix" then
+  elseif self.osname == "Unix" then
     path = ([["%s.sh"]]):format(path)
   else
     path = ([["%s"]]):format(path)
   end
   if addparams then
-    for n, val in ipairs(ide.arg) do
-      if val == "-cfg" and #ide.arg > n then
-        path = path .. ([[ %s "%s"]]):format(ide.arg[n], ide.arg[n+1])
+    for n, val in ipairs(self.arg) do
+      if val == "-cfg" and #self.arg > n then
+        path = path .. ([[ %s "%s"]]):format(self.arg[n], self.arg[n+1])
       end
     end
   end
@@ -159,9 +159,9 @@ function ide:GetDebugger() return self.debugger end
 function ide:SetDebugger(deb)
   self.debugger = deb
   -- if the remote console is already assigned, then assign it based on the new debugger
-  local console = ide:GetConsole()
+  local console = self:GetConsole()
   -- `SetDebugger` may be called before console is set, so need to check if it's available
-  if ide:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
+  if self:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
   return deb
 end
 function ide:GetMainFrame()
@@ -313,19 +313,19 @@ function ide:SetProject(projdir,skiptree)
   projdir = projdir:gsub("%s+$","")
   local dir = wx.wxFileName.DirName(FixDir(projdir))
   dir:Normalize() -- turn into absolute path if needed
-  if not wx.wxDirExists(dir:GetFullPath()) then return ide.filetree:updateProjectDir(projdir) end
+  if not wx.wxDirExists(dir:GetFullPath()) then return self.filetree:updateProjectDir(projdir) end
 
   projdir = dir:GetPath(wx.wxPATH_GET_VOLUME) -- no trailing slash
 
-  ide.config.path.projectdir = projdir ~= "" and projdir or nil
-  ide:SetStatus(projdir)
-  self.frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
+  self.config.path.projectdir = projdir ~= "" and projdir or nil
+  self:SetStatus(projdir)
+  self.frame:SetTitle(ExpandPlaceholders(self.config.format.apptitle))
 
   if skiptree then return true end
-  return ide.filetree:updateProjectDir(projdir)
+  return self.filetree:updateProjectDir(projdir)
 end
 function ide:GetProjectStartFile()
-  local projectdir = ide:GetProject()
+  local projectdir = self:GetProject()
   local startfile = self.filetree.settings.startfile[projectdir]
   return MergeFullPath(projectdir, startfile), startfile
 end
@@ -347,13 +347,13 @@ function ide:SetStatusFor(text, interval, field)
   field = field or 0
   interval = interval or 2
   local statusbar = self:GetStatusBar()
-  if not ide.timers.status then
-    ide.timers.status = ide:AddTimer(statusbar, function(event) if statusreset then statusreset() end end)
+  if not self.timers.status then
+    self.timers.status = self:AddTimer(statusbar, function(event) if statusreset then statusreset() end end)
   end
   statusreset = function()
     if statusbar:GetStatusText(field) == text then statusbar:SetStatusText("", field) end
   end
-  ide.timers.status:Start(interval*1000, wx.wxTIMER_ONE_SHOT)
+  self.timers.status:Start(interval*1000, wx.wxTIMER_ONE_SHOT)
   statusbar:SetStatusText(text, field)
 end
 function ide:SetStatus(text, field) self:GetStatusBar():SetStatusText(text, field or 0) end
@@ -748,7 +748,7 @@ function ide:CreateImageList(group, ...)
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
     if imglist:Add(icon) == -1 then
-      ide:Print(("Failed to add image '%s' to the image list."):format(file or select(i, ...)))
+      self:Print(("Failed to add image '%s' to the image list."):format(file or select(i, ...)))
     end
   end
   return imglist
@@ -1111,7 +1111,7 @@ function ide:AddTool(name, command, updateui)
     local helpMenu, helpindex = self:FindTopMenu('&Help')
     if not helpMenu then helpindex = self:GetMenuBar():GetMenuCount() end
 
-    toolMenu = ide:MakeMenu {}
+    toolMenu = self:MakeMenu {}
     self:GetMenuBar():Insert(helpindex, toolMenu, "&Tools")
   end
   local id = tool2id(name)
@@ -1119,14 +1119,14 @@ function ide:AddTool(name, command, updateui)
   if command then
     toolMenu:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED,
       function (event)
-        local editor = ide:GetEditor()
+        local editor = self:GetEditor()
         if not editor then return end
 
-        command(ide:GetDocument(editor):GetFilePath(), ide:GetProject())
+        command(self:GetDocument(editor):GetFilePath(), self:GetProject())
         return true
       end)
     toolMenu:Connect(id, wx.wxEVT_UPDATE_UI,
-      updateui or function(event) event:Enable(ide:GetEditor() ~= nil) end)
+      updateui or function(event) event:Enable(self:GetEditor() ~= nil) end)
   end
   return id, toolMenu
 end
@@ -1173,8 +1173,8 @@ function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
 function ide:SetHotKey(id, ksc)
-  if not ide:IsValidHotKey(ksc) then
-    ide:Print(("Can't set invalid hotkey value: %s."):format(ksc))
+  if not self:IsValidHotKey(ksc) then
+    self:Print(("Can't set invalid hotkey value: %s."):format(ksc))
     return
   end
 
@@ -1183,7 +1183,7 @@ function ide:SetHotKey(id, ksc)
   -- 2. shortcut is assigned to an ID used in a menu item
   -- 3. shortcut is assigned to an ID linked to an item (but not present in keymap or menu)
   -- 4. shortcut is assigned to a function (passed instead of ID)
-  local keymap = ide.config.keymap
+  local keymap = self.config.keymap
 
   -- remove any potential conflict with this hotkey
   -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
@@ -1194,7 +1194,7 @@ function ide:SetHotKey(id, ksc)
     if ksc:lower():find(kscpat) then
       keymap[gid] = ""
       -- try to find a menu item with this ID (if any) to remove the hotkey
-      local item = ide:FindMenuItem(gid)
+      local item = self:FindMenuItem(gid)
       if item then item:SetText(item:GetText():gsub("\t.+","").."") end
     end
     -- continue with the loop as there may be multiple associations with the same hotkey
@@ -1203,8 +1203,8 @@ function ide:SetHotKey(id, ksc)
   -- if the hotkey is associated with a function, handle it first
   if type(id) == "function" then
     local fakeid = NewID()
-    ide:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
-    ide:SetAccelerator(fakeid, ksc)
+    self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
+    self:SetAccelerator(fakeid, ksc)
     return
   end
 
@@ -1212,7 +1212,7 @@ function ide:SetHotKey(id, ksc)
   -- if not, then it may need an accelerator, which will be set later
   if keymap[id] then keymap[id] = ksc end
 
-  local item = ide:FindMenuItem(id)
+  local item = self:FindMenuItem(id)
   if item then
     -- get the item text and replace the shortcut
     -- since it also needs to keep the accelerator (if any), so can't use `GetLabel`
@@ -1220,7 +1220,7 @@ function ide:SetHotKey(id, ksc)
   end
 
   -- if there is no keymap or menu item, then use the accelerator
-  if not keymap[id] and not item then ide:SetAccelerator(id, ksc) end
+  if not keymap[id] and not item then self:SetAccelerator(id, ksc) end
 end
 
 function ide:IsProjectSubDirectory(dir)
@@ -1235,15 +1235,15 @@ end
 
 function ide:SetCommandLineParameters(params)
   if not params then return end
-  ide:SetConfig("arg.any", #params > 0 and params or nil, ide:GetProject())
-  if #params > 0 then ide:GetPackage("core.project"):AddCmdLine(params) end
-  local interpreter = ide:GetInterpreter()
+  self:SetConfig("arg.any", #params > 0 and params or nil, self:GetProject())
+  if #params > 0 then self:GetPackage("core.project"):AddCmdLine(params) end
+  local interpreter = self:GetInterpreter()
   if interpreter then interpreter:UpdateStatus() end
 end
 
 function ide:ActivateFile(filename)
   if wx.wxDirExists(filename) then
-    ide:SetProject(filename)
+    self:SetProject(filename)
     return true
   end
 
@@ -1253,7 +1253,7 @@ function ide:ActivateFile(filename)
   -- check if non-existing file can be loaded from the project folder;
   -- this is to handle: "project file" used on the command line
   if not wx.wxFileExists(filename) and not wx.wxIsAbsolutePath(filename) then
-    filename = GetFullPathIfExists(ide:GetProject(), filename) or filename
+    filename = GetFullPathIfExists(self:GetProject(), filename) or filename
   end
 
   local opened = LoadFile(filename, nil, true)
@@ -1264,7 +1264,7 @@ function ide:ActivateFile(filename)
   end
 
   if not opened then
-    ide:Print(TR("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
+    self:Print(TR("Can't open file '%s': %s"):format(filename, wx.wxSysErrorMsg()))
   end
   return opened
 end
@@ -1276,13 +1276,13 @@ function ide:GetFileList(...) return FileSysGetRecursive(...) end
 do
   local codepage
   function ide:GetCodePage()
-    if ide.osname ~= "Windows" then return end
+    if self.osname ~= "Windows" then return end
     if codepage == nil then
-      codepage = tonumber(ide.config.codepage) or ide.config.codepage
+      codepage = tonumber(self.config.codepage) or self.config.codepage
       if codepage == true then
         -- auto-detect the codepage;
         -- this is done asynchronously, so the current method may still return `nil`
-        ide:ExecuteCommand("cmd /C chcp", nil, function(s) codepage = s:match(":%s*(%d+)") end)
+        self:ExecuteCommand("cmd /C chcp", nil, function(s) codepage = s:match(":%s*(%d+)") end)
       end
     end
     return tonumber(codepage)
