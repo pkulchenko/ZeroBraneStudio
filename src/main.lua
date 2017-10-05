@@ -150,6 +150,17 @@ if not wx.wxEXEC_NOEVENTS then wx.wxEXEC_NOEVENTS = 16 end
 if not wx.wxEXEC_HIDE_CONSOLE then wx.wxEXEC_HIDE_CONSOLE = 32 end
 if not wx.wxEXEC_BLOCK then wx.wxEXEC_BLOCK = wx.wxEXEC_SYNC + wx.wxEXEC_NOEVENTS end
 
+-- wxwidgets 3.1.1+ replaced wxSTC_SCMOD_* with wxSTC_KEYMOD_*; map both for compatibility
+for _, key in ipairs({"ALT", "CTRL", "SHIFT", "META", "SUPER", "NORM"}) do
+  local scmod = "wxSTC_SCMOD_"..key
+  local keymod = "wxSTC_KEYMOD_"..key
+  if wxstc[scmod] and not wxstc[keymod] then
+    wxstc[keymod] = wxstc[scmod]
+  elseif not wxstc[scmod] and wxstc[keymod] then
+    wxstc[scmod] = wxstc[keymod]
+  end
+end
+
 -- it's an interface constant and is not public in wxlua, so add it
 if not wxstc.wxSTC_SETLEXERLANGUAGE then wxstc.wxSTC_SETLEXERLANGUAGE = 4006 end
 
