@@ -103,6 +103,8 @@ return {
     if (term == 'if' or term == 'elseif') and not str:match("%f[%w_]then%f[^%w_]")
     or (term == 'for') and not str:match("%f[%w_]do%f[^%w_]")
     or (term == 'while') and not str:match("%f[%w_]do%f[^%w_]")
+    -- or `repeat ... until` are on the same line
+    or (term == 'repeat') and str:match("%f[%w_]until%f[^%w_]")
     -- if this is a function definition, then don't increment the level
     or func == 1 then
       terminc = 0
