@@ -765,7 +765,9 @@ function findReplace:createToolbar()
   local optseltool = tb:FindTool(ID.FINDOPTSELECTION)
   if optseltool then
     optseltool:SetSticky(self.inselection)
-    tb:EnableTool(ID.FINDOPTSELECTION, self.inselection)
+    local ed = self:GetEditor()
+    local inselection = ed and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd())
+    tb:EnableTool(ID.FINDOPTSELECTION, self.inselection or inselection)
     ctrl:Connect(ID.FINDOPTSELECTION, wx.wxEVT_COMMAND_MENU_SELECTED,
       function (event)
         self.inselection = not self.inselection
@@ -1031,7 +1033,8 @@ function findReplace:createPanel()
       end
       local bf = self.backfocus
       bf.position = spos == epos and ed:GetCurrentPos() or spos
-      local inselection = ed:LineFromPosition(spos) ~= ed:LineFromPosition(epos)
+      local inselection = (ide.config.search.autoinselection
+        and ed:LineFromPosition(spos) ~= ed:LineFromPosition(epos))
 
       -- when the focus is changed, don't remove current "inselection" status as the
       -- selection may change to highlight the match; not doing this makes it difficult
@@ -1137,8 +1140,8 @@ function findReplace:refreshPanel(replace, infiles)
   end
   if ed then -- check if there is any selection
     self.backfocus = nil
-    self.inselection = ed:LineFromPosition(ed:GetSelectionStart()) ~=
-      ed:LineFromPosition(ed:GetSelectionEnd())
+    self.inselection = (ide.config.search.autoinselection
+      and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd()))
   end
   self:refreshToolbar(value)
 

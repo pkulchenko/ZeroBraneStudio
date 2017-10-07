@@ -85,6 +85,7 @@ return {
     showaseditor = false,
     zoom = 0,
     autohide = false,
+    autoinselection = true,
   },
   print = {
     magnification = -3,
