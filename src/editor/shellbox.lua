@@ -400,9 +400,10 @@ end
 
 local function displayShellIntro()
   DisplayShellMsg(TR("Welcome to the interactive Lua interpreter.").." "
-    ..TR("Enter Lua code and press Enter to run it.").."\n"
-    ..TR("Use Shift-Enter for multiline code.").."  "
-    ..TR("Use 'clear' to clear the shell output and the history.").."\n"
+    ..TR("Enter Lua code and press Enter to run it.").." "
+    ..TR("Use Shift-Enter for multiline code.").."\n"
+    ..TR("Use 'clear' to clear the shell output and the history.").." "
+    ..TR("Use 'reset' to clear the environment.").."\n"
     ..TR("Prepend '=' to show complex values on multiple lines.").." "
     ..TR("Prepend '!' to force local execution."))
   DisplayShellPrompt('')
@@ -502,6 +503,9 @@ console:Connect(wx.wxEVT_KEY_DOWN,
         if #promptText == 0 then return end -- nothing to execute, exit
         if promptText == 'clear' then
           console:Erase()
+        elseif promptText == 'reset' then
+          console:Reset()
+          setPromptText("")
         else
           displayShellDirect('\n')
           executeShellCode(promptText)
@@ -587,4 +591,8 @@ function console:Erase()
   self:SetReadOnly(false)
   self:ClearAll()
   displayShellIntro()
+end
+
+function console:Reset()
+  env = createenv() -- recreate the environment to "forget" all changes in it
 end
