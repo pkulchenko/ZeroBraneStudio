@@ -1,12 +1,13 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Sep 14 2017)
+## Current master (Oct 08 2017)
 
 ### Highlights
   - Added support for using luacheck.
   - Added progress bar indicator for commandbar processing.
   - Added cache for the files in the commandbar.
   - Added handling of exclusion lists encoded as hashes for convenient updates.
+  - Added encoding output based on `codepage` setting.
   - Updated commandbar to improve prefiltering performance on search through large file sets.
   - Updated moai API to community version 1.8 RC.
   - Fixed lexlpeg styling on Linux; 110+ languages and formats are now styled on all platforms.
@@ -18,6 +19,15 @@
   - To [olueiro](https://github.com/olueiro) for update pt-br language translation.
 
 ### Improvements
+  - Added console `reset` command and `Reset` method to reset the current environment.
+  - Added config setting to specify if `inselection` search needs to be on by default.
+  - Added `GetFileList` method (#166).
+  - Added `GetFocusedItem` and `SetFocusedItem` methods for wxlua <3.x (if not present).
+  - Added encoding output based on codepage setting (closes #804, closes #710).
+  - Added `GetCodePage` method (#166, #804, #710).
+  - Added support for discontinuous match strategry in variable auto-complete (closes #805).
+  - Added handling of `error in __gc` messages in error navigation (#808).
+  - Added handling of `AppKey` for local menu in the editor (closes #809).
   - Added `MergePath` method to use instead of a global function (#166).
   - Added `GetLineWrapped` editor method (#166).
   - Added `GetAllMarginWidth` editor method (#166).
@@ -57,6 +67,8 @@
   - Improved support for handling some of the shortcuts with `Ctrl` and `Alt` on Linux.
   - Moved terminating timer loop to happen after all the timers are stopped.
   - Moved default configuration into a separate file.
+  - Removed obsolete `GetEditorFileAndCurInfo` global function (#166).
+  - Removed obsolete `GetEditor` global function (#166).
   - Removed `run` option from the interpreter as it's no longer needed.
   - Removed functions that are no longer used.
   - Refactored handling of lost focus event in commandbar.
@@ -64,6 +76,10 @@
   - Removed `bin` folder from the module search path as it's no longer used for modules.
   - Removed `encoding` in the desktop file as it's deprecated.
   - Update pt-br.lua
+  - Updated tests to check for `acandtip.symbols=2` setting (#805).
+  - Updated project tree to work with multiple selection enabled (#815).
+  - Upgraded Mobdebug (0.702) to fix line numbering in files starting with empty lines.
+  - Updated variable auto-complete to do case-sensitive match on upper case (#805).
   - Updated global/config usage to avoid warnings running under 'strict' (closes #799).
   - Updated console to show table content similar to Stack/Watch (#457).
   - Upgraded Mobdebug (0.70) to show tables with `__tostring` metamethod (closes #457, #569).
@@ -88,6 +104,9 @@
   - Updated MacOS build files to add install name to the build commands.
 
 ### Fixes
+  - Fixed formatting of `repeat ... until` on one line (#324).
+  - Fixed showing tooltip after using `Inserting Library Function` from commandbar.
+  - Fixed simple name substitution in `Insert Library Function`.
   - Fixed setting start file in a project with special characters in the name (#790).
   - Fixed usage of `arg` on Windows where it may be undefined (#799).
   - Fixed crash when adding a watch to a docked watch panel on Windows.
@@ -106,6 +125,12 @@
   - Fixed skipping binary files (based on `binarylist`) in file search.
   - Fixed loading lexlpeg on MacOS when conflicting lpeg is present (fixes #760).
   - Fixed loading lexlpeg with conflicting lpeg binary present in default path on MacOS (fixes #760).
+
+### Incompatibilities
+  - Removed deprecated `GetEditorFileAndCurInfo` global function; use `ide:GetEditor()` instead.
+  - Removed deprecated `GetEditor` global function; use `ide:GetEditor()` instead.
+  - Deprecated `GetEditorWithFocus` global function; use `ide:GetEditorWithFocus()` instead.
+  - Deprecated `FileSysGetRecursive` global function; use `ide:GetFileList()` instead.
 
 ## v1.60 (Apr 19 2017)
 
