@@ -238,8 +238,11 @@ fi
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
   git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
-
   cd "$WXWIDGETS_BASENAME"
+
+  # checkout the version that was used in wxwidgets upgrade to 3.1.x
+  git checkout WX_3_1_0-7d9d59
+
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat28 \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
@@ -255,7 +258,9 @@ fi
 if [ $BUILD_WXLUA ]; then
   git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
-  git checkout wxwidgets311
+
+  # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
+  git checkout WX_3_1_0-7d9d59
 
   # the following patches wxlua source to fix live coding support in wxlua apps
   # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
