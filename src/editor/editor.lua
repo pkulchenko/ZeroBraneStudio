@@ -1285,6 +1285,7 @@ function CreateEditor(bare)
       local mod = event:GetModifiers()
       if PackageEventHandle("onEditorKeyDown", editor, event) == false then
         -- this event has already been handled
+        return
       elseif keycode == wx.WXK_ESCAPE then
         if editor:CallTipActive() or editor:AutoCompActive() then
           event:Skip()
