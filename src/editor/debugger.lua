@@ -826,6 +826,9 @@ local function nameOutputTab(name)
   if index ~= wx.wxNOT_FOUND then nbk:SetPageText(index, name) end
 end
 
+local ok, winapi = pcall(require, 'winapi')
+if not ok then winapi = nil end
+
 function debugger:handle(command, server, options)
   local debugger = self
   local verbose = ide.config.debugger.verbose
@@ -842,6 +845,12 @@ function debugger:handle(command, server, options)
   debugger.running = false
   -- only set suspended if the debugging hasn't been terminated
   debugger:UpdateStatus(debugger.server and "suspended" or "stopped")
+
+  -- some filenames may be represented in a different code page; check and re-encode as UTF8
+  local codepage = ide:GetCodePage()
+  if codepage and file and FixUTF8(file) == nil and winapi then
+    file = winapi.encode(codepage, winapi.CP_UTF8, file)
+  end
 
   return file, line, err
 end
