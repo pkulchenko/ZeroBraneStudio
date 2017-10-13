@@ -317,6 +317,10 @@ local function treeSetConnectorsAndIcons(tree)
     -- on case insensitive systems, but need to be allowed in renaming.
     if source == target then return end
 
+    if PackageEventHandle("onFiletreeFilePreRename", tree, itemsrc, source, target) == false then
+      return false
+    end
+
     local docs = {}
     if not isnew then -- find if source is already opened in the editor
       docs = (isdir
@@ -389,6 +393,8 @@ local function treeSetConnectorsAndIcons(tree)
       local doc = ide:FindDocument(target)
       if doc then LoadFile(doc:GetFilePath(), doc:GetEditor()) end
     end
+
+    PackageEventHandle("onFiletreeFileRename", tree, itemsrc, source, target)
 
     return true
   end
