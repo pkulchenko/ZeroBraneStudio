@@ -307,10 +307,9 @@ local function treeSetConnectorsAndIcons(tree)
 
   local empty = ""
   local function renameItem(itemsrc, target)
-    local cache = type(itemsrc) == 'table' and itemsrc or nil
-    local isdir = not cache and tree:IsDirectory(itemsrc) or cache and cache.isdir or false
-    local isnew = not cache and tree:GetItemText(itemsrc) == empty or cache and cache.isnew or false
-    local source = cache and cache.fullname or tree:GetItemFullName(itemsrc)
+    local isdir = tree:IsDirectory(itemsrc)
+    local isnew = tree:GetItemText(itemsrc) == empty
+    local source = tree:GetItemFullName(itemsrc)
     local fn = wx.wxFileName(target)
 
     -- check if the target is the same as the source;
@@ -356,7 +355,7 @@ local function treeSetConnectorsAndIcons(tree)
       end
     end
 
-    refreshAncestors(cache and cache.parent or tree:GetItemParent(itemsrc))
+    refreshAncestors(tree:GetItemParent(itemsrc))
     -- load file(s) into the same editor (if any); will also refresh the tree
     if #docs > 0 then
       for _, doc in ipairs(docs) do
@@ -768,23 +767,11 @@ local function treeSetConnectorsAndIcons(tree)
       local target = MergeFullPath(tree:GetItemFullName(parent), label)
       if cancelled or label == empty then refreshAncestors(parent)
       elseif target then
-        -- normally, none of this caching would be needed as `renameItem`
-        -- would be called to check if the item can be renamed;
-        -- however, as it may open a dialog box, on Linux it's causing a crash
-        -- (caused by the same END_LABEL_EDIT even triggered one more time),
-        -- so to protect from that, `renameItem` is called from IDLE event.
-        -- Unfortunately, by that time, the filetree item (`itemsrc`) may
-        -- already have incorrect state (as it's removed from the tree),
-        -- so its properties need to be cached to be used from IDLE event.
-        local cache = {
-          isdir = tree:IsDirectory(itemsrc),
-          isnew = tree:GetItemText(itemsrc) == empty,
-          fullname = tree:GetItemFullName(itemsrc),
-          parent = parent,
-        }
-        ide:DoWhenIdle(function()
-            if not renameItem(cache, target) then refreshAncestors(parent) end
-          end)
+        -- wxwidgets v2.9.5 and earlier crashes when the IDE loses focus
+        -- during renaming a file that has a conflict with an exising one
+        -- (caused by the same END_LABEL_EDIT even triggered one more time).
+        if ide.osname == "Linux" and ide.wxver <= "2.9.5" then return end
+        if not renameItem(itemsrc, target) then refreshAncestors(parent) end
       end
     end)
 
