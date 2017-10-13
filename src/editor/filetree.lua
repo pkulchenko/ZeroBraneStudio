@@ -408,6 +408,10 @@ local function treeSetConnectorsAndIcons(tree)
     local isdir = tree:IsDirectory(item_id)
     local source = tree:GetItemFullName(item_id)
 
+    if PackageEventHandle("onFiletreeFilePreDelete", tree, item_id, source) == false then
+      return false
+    end
+
     if isdir and FileDirHasContent(source..pathsep) then return false end
     if wx.wxMessageBox(
       TR("Do you want to delete '%s'?"):format(source),
@@ -428,6 +432,7 @@ local function treeSetConnectorsAndIcons(tree)
       end
     end
     refreshAncestors(tree:GetItemParent(item_id))
+    PackageEventHandle("onFiletreeFileDelete", tree, item_id, source)
     return true
   end
 
