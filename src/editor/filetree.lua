@@ -813,7 +813,7 @@ end
 -- project
 local projtree = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
   wx.wxDefaultPosition, wx.wxDefaultSize,
-  wx.wxTR_HAS_BUTTONS + wx.wxTR_SINGLE + wx.wxTR_LINES_AT_ROOT
+  wx.wxTR_HAS_BUTTONS + wx.wxTR_MULTIPLE + wx.wxTR_LINES_AT_ROOT
   + wx.wxTR_EDIT_LABELS + wx.wxNO_BORDER)
 projtree:SetFont(ide.font.fNormal)
 filetree.projtreeCtrl = projtree
