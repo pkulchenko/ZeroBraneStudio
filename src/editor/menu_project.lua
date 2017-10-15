@@ -255,7 +255,7 @@ frame:Connect(ID_BREAKPOINTTOGGLE, wx.wxEVT_COMMAND_MENU_SELECTED,
 frame:Connect(ID_BREAKPOINTTOGGLE, wx.wxEVT_UPDATE_UI,
   function (event)
     local debugger = ide:GetDebugger()
-    local editor = GetEditorWithFocus(ide:GetEditor())
+    local editor = ide:GetEditorWithFocus(ide:GetEditor())
     event:Enable(ide.interpreter and ide.interpreter.hasdebugger and (not debugger.scratchpad)
       and (editor ~= nil) and (not editor:IsLineEmpty()))
   end)

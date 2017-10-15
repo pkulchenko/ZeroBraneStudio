@@ -52,12 +52,12 @@ local function getCtrlWithFocus(edType)
 end
 
 local function onUpdateUIEditorInFocus(event)
-  event:Enable(GetEditorWithFocus(ide:GetEditor()) ~= nil)
+  event:Enable(ide:GetEditorWithFocus(ide:GetEditor()) ~= nil)
 end
 
 local function onUpdateUIEditMenu(event)
   local menu_id = event:GetId()
-  local editor = GetEditorWithFocus()
+  local editor = ide:GetEditorWithFocus()
   if editor == nil then
     local editor = getCtrlWithFocus("wxTextCtrl")
     event:Enable(editor and (
@@ -89,7 +89,7 @@ end
 
 local function onEditMenu(event)
   local menu_id = event:GetId()
-  local editor = GetEditorWithFocus()
+  local editor = ide:GetEditorWithFocus()
   if editor == nil then
     local editor = getCtrlWithFocus("wxTextCtrl")
     if not editor or not (
@@ -159,7 +159,7 @@ end
 
 frame:Connect(ID_COMMENT, wx.wxEVT_UPDATE_UI,
   function(event)
-    local editor = GetEditorWithFocus(ide:GetEditor())
+    local editor = ide:GetEditorWithFocus(ide:GetEditor())
     event:Enable(editor ~= nil
       and ide:IsValidProperty(editor, "spec") and editor.spec
       and editor.spec.linecomment and true or false)
@@ -374,18 +374,18 @@ frame:Connect(ID_REINDENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 
 local function canfold(event)
-  local editor = GetEditorWithFocus()
+  local editor = ide:GetEditorWithFocus()
   event:Enable(editor and editor:CanFold() or false)
 end
 
 frame:Connect(ID_FOLD, wx.wxEVT_UPDATE_UI, canfold)
 frame:Connect(ID_FOLD, wx.wxEVT_COMMAND_MENU_SELECTED,
-  function (event) GetEditorWithFocus():FoldSome() end)
+  function (event) ide:GetEditorWithFocus():FoldSome() end)
 
 frame:Connect(ID_FOLDLINE, wx.wxEVT_UPDATE_UI, canfold)
 frame:Connect(ID_FOLDLINE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
-    local editor = GetEditorWithFocus()
+    local editor = ide:GetEditorWithFocus()
     local current = editor:GetCurrentLine()
     editor:ToggleFold(current)
     -- move up to the parent line if the current one is not visible
