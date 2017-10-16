@@ -129,7 +129,7 @@
 ### Incompatibilities
   - Removed deprecated `GetEditorFileAndCurInfo` global function; use `ide:GetEditor()` instead.
   - Removed deprecated `GetEditor` global function; use `ide:GetEditor()` instead.
-  - Deprecated `GetEditorWithFocus` global function; use `ide:GetEditorWithFocus()` instead.
+  - Removed deprecated `GetEditorWithFocus` global function; use `ide:GetEditorWithFocus()` instead.
   - Deprecated `FileSysGetRecursive` global function; use `ide:GetFileList()` instead.
 
 ## v1.60 (Apr 19 2017)

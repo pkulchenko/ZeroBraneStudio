@@ -486,36 +486,6 @@ function LoadSafe(data)
   return ok, res
 end
 
-local function isCtrlFocused(e)
-  local ctrl = e and e:FindFocus()
-  return ctrl and
-    (ctrl:GetId() == e:GetId()
-     or ide.osname == 'Macintosh' and
-       ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
-end
-
-function GetEditorWithFocus(...)
-  -- need to distinguish GetEditorWithFocus() and GetEditorWithFocus(nil)
-  -- as the latter may happen when GetEditor() is passed and returns `nil`
-  if select('#', ...) > 0 then
-    local ed = ...
-    return isCtrlFocused(ed) and ed or nil
-  end
-
-  local editor = ide:GetEditor()
-  if isCtrlFocused(editor) then return editor end
-
-  local nb = ide:GetOutputNotebook()
-  for p = 0, nb:GetPageCount()-1 do
-    local ctrl = nb:GetPage(p)
-    if ctrl:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
-    and isCtrlFocused(ctrl) then
-      return ctrl:DynamicCast("wxStyledTextCtrl")
-    end
-  end
-  return nil
-end
-
 function GenerateProgramFilesPath(exec, sep)
   local env = os.getenv('ProgramFiles')
   return
