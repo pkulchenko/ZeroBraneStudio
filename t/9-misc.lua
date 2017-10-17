@@ -96,6 +96,14 @@ ide:SetHotKey(ID.STARTDEBUG, "F1")
 is(ide:FindMenuItem(ID.STARTDEBUG):GetText():match("\t(.*)"), "F1", "`SetHotKey` sets the requested hotkey.")
 ok(ide:FindMenuItem(ID.ABOUT):GetText():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (1/2).")
 
+local keyid, keysc = ide:GetHotKey(ID.STARTDEBUG)
+is(keysc, "F1", "`GetHotKey` returns hotkey assigned with SetHotKey using id lookup.")
+is(ide:GetHotKey("F1"), ID.STARTDEBUG, "`GetHotKey` returns hotkey assigned with SetHotKey using shortcut lookup.")
+
+ok(ide:GetHotKey("F13") == nil, "`GetHotKey` returns nothing for nonexisting shortcut.")
+ok(ide:GetHotKey(1) == nil, "`GetHotKey` returns nothing for nonexisting id.")
+ok(ide:GetHotKey() == nil, "`GetHotKey` returns nothing when no parameters are passed.")
+
 ide:SetHotKey(ID.STARTDEBUG, "Ctrl+N") -- this should resolve conflict with `Ctrl-N`
 ok(ide:FindMenuItem(ID.NEW):GetText():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (2/2).")
 

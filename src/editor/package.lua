@@ -1199,6 +1199,43 @@ function ide:SetAccelerator(id, ksc) at[id] = ksc; setAcceleratorTable(at) end
 function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
+function ide:GetHotKey(idOrKsc)
+  if not idOrKsc then
+    self:Print("GetHotKey requires id or key shortcut.")
+    return
+  end
+
+  local id, ksc = idOrKsc
+  if type(idOrKsc) == type("") then id, ksc = ksc, id end
+
+  local accelerators = ide:GetAccelerators()
+  local keymap = self.config.keymap
+  if id then
+    ksc = keymap[id] or accelerators[id]
+  else -- ksc is provided
+    -- search the keymap for the match
+    local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
+    for gid, ksc in pairs(keymap) do
+      if ksc:lower():find(kscpat) then
+        id = gid
+        break
+      end
+    end
+
+    -- if `SetHotKey` is used, there shouldn't be any conflict between keymap and accelerators,
+    -- but accelerators can be set directly and will take precedence, so search them as well.
+    -- this will overwrite the value from the keymap
+    for gid, ksc in pairs(accelerators) do
+      if ksc:lower():find(kscpat) then
+        id = gid
+        break
+      end
+    end
+  end
+  if id and ksc then return id, ksc end
+  return -- couldn't find the match
+end
+
 function ide:SetHotKey(id, ksc)
   if not ksc or not self:IsValidHotKey(ksc) then
     self:Print(("Can't set invalid hotkey value: '%s'."):format(ksc))
