@@ -1200,8 +1200,8 @@ function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
 function ide:SetHotKey(id, ksc)
-  if not self:IsValidHotKey(ksc) then
-    self:Print(("Can't set invalid hotkey value: %s."):format(ksc))
+  if not ksc or not self:IsValidHotKey(ksc) then
+    self:Print(("Can't set invalid hotkey value: '%s'."):format(ksc))
     return
   end
 
@@ -1232,7 +1232,7 @@ function ide:SetHotKey(id, ksc)
     local fakeid = NewID()
     self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
     self:SetAccelerator(fakeid, ksc)
-    return
+    return fakeid, ksc
   end
 
   -- if the keymap is already asigned, then reassign it
@@ -1248,6 +1248,7 @@ function ide:SetHotKey(id, ksc)
 
   -- if there is no keymap or menu item, then use the accelerator
   if not keymap[id] and not item then self:SetAccelerator(id, ksc) end
+  return id, ksc
 end
 
 function ide:IsProjectSubDirectory(dir)
