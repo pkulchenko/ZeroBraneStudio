@@ -136,6 +136,8 @@ set to `false` to show functions in the order of their appearance.
 
 - `search.autohide = false`: hide search panel after find/replace operation (**v1.01+**).
 - `search.autocomplete = true`: enable auto-complete suggestions in find/replace fields (**v1.01+**).
+- `search.autoinselection = true`: enable search-in-selection when the find/replace dialog is opened and the selected fragment has more than one line (**v1.61+**);
+set to `false` to disable, in which case search-in-selection will have to be manually selected.
 - `search.contextlinesafter = 2`: set the number of context lines to shown _after_ the match line in search results (**v1.01+**).
 - `search.contextlinesbefore = 2`: set the number of context lines to shown _before_ the match line in search results (**v1.01+**).
 - `search.showaseditor = false`: show search results next to the `Output` tab (**v1.01+**);
