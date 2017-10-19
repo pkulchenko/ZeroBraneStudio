@@ -80,6 +80,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   local optpath = (opts or {}).path ~= false
   local optskipbinary = (opts or {}).skipbinary
   local optondirectory = (opts or {}).ondirectory
+  local optmaxnum = tonumber((opts or {}).maxnum)
 
   local function spec2list(spect, list)
     -- return empty list if no spec is provided
@@ -144,6 +145,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   end
 
   local dir = wx.wxDir()
+  local num = 0
   local function getDir(path)
     dir:Open(path)
     if not dir:IsOpened() then
@@ -170,6 +172,10 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       and select(2, fname:gsub(EscapeMagic(file..sep),'')) <= 2 then
         table.insert(queue, fname)
       end
+
+      num = num + 1
+      if optmaxnum and num >= optmaxnum then break end
+
       found, file = dir:GetNext()
     end
     found, file = dir:GetFirst(spec or "*",
@@ -179,6 +185,10 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       if ismatch(fname, inmasks, exmasks) then
         report(optpath and fname or fname:gsub(pathpatt, ""))
       end
+
+      num = num + 1
+      if optmaxnum and num >= optmaxnum then break end
+
       found, file = dir:GetNext()
     end
     -- wxlua < 3.1 doesn't provide Close method for the directory, so check for it

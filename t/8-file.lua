@@ -26,6 +26,8 @@ is(ide:GetFileList('t/', true, 'test.lua', {path = false})[1], "test.lua",
 is(ide:GetFileList('t\\', true, 'test.lua', {path = false})[1], "test.lua",
   "Traversing `t\\`, not including path in the results (6/6)")
 
+is(#ide:GetFileList('t', true, '*.lua', {maxnum = 2}), 2, "List of files returned can be limited with `maxnum`.")
+
 local luas = ide:GetFileList('t', true, '*.lua')
 local more = ide:GetFileList('t', true, '*.lua; *.more')
 cmp_ok(#luas, '>', 0, "List of files is returned for '.lua' extension.")
