@@ -441,7 +441,7 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
   end
 
   local files = coroutine.wrap(function()
-      FileSysGetRecursive(startdir, subdirs, mask, {yield = true, folder = false, skipbinary = true})
+      ide:GetFileList(startdir, subdirs, mask, {yield = true, folder = false, skipbinary = true})
     end)
   while true do
     local file = files()

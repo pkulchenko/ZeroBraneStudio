@@ -687,7 +687,7 @@ function outline:RefreshSymbols(path, callback)
     -- skip those directories that are on the "ignore" list
     ondirectory = function(name) return outline.settings.ignoredirs[name] == nil end
   }
-  local nextfile = coroutine.wrap(function() FileSysGetRecursive(path, true, table.concat(exts, ";"), opts) end)
+  local nextfile = coroutine.wrap(function() ide:GetFileList(path, true, table.concat(exts, ";"), opts) end)
   while true do
     local file = nextfile()
     if not file then break end

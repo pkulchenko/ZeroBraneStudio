@@ -94,7 +94,7 @@ function ide:GetLaunchPath(addparams)
     if app then -- check if the application is already in the path
       path = app
     else
-      local apps = FileSysGetRecursive(path, true, "Info.plist", {ondirectory = function(dir)
+      local apps = ide:GetFileList(path, true, "Info.plist", {ondirectory = function(dir)
             -- don't recurse for more than necessary
             return dir:find("%.app/Contents/.+") == nil
           end}

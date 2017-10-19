@@ -1,4 +1,4 @@
-local i18n = FileSysGetRecursive('cfg/i18n/', true)
+local i18n = ide:GetFileList('cfg/i18n/', true)
 is(#i18n, 10, "Language files are present in i18n directory.")
 for _, ln in ipairs(i18n) do
   local func = loadfile(ln)

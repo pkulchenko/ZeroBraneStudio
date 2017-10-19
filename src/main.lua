@@ -200,7 +200,7 @@ end
 
 local function loadToTab(folder, tab, recursive, proto)
   local files = (wx.wxFileExists(folder) and {folder}
-    or wx.wxDirExists(folder) and FileSysGetRecursive(folder, recursive, "*.lua")
+    or wx.wxDirExists(folder) and ide:GetFileList(folder, recursive, "*.lua")
     or {})
   for _, file in ipairs(files) do LoadLuaFileExt(tab, file, proto) end
   return tab
@@ -241,7 +241,7 @@ end
 function ide:LoadAPI(path)
   local folder = path or "api"
   local files = (wx.wxFileExists(folder) and {folder}
-    or wx.wxDirExists(folder) and FileSysGetRecursive(folder, true, "*.lua")
+    or wx.wxDirExists(folder) and ide:GetFileList(folder, true, "*.lua")
     or {})
   for _, file in ipairs(files) do
     if not IsDirectory(file) then

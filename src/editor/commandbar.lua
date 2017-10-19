@@ -652,7 +652,7 @@ function ShowCommandBar(default, selected)
         if toline and ed then markLine(ed, toline) end
       elseif text and #text > 0 and projdir and #projdir > 0 then
         -- populate the list of files
-        files = files or FileSysGetRecursive(projdir, true, "*",
+        files = files or ide:GetFileList(projdir, true, "*",
           {sort = false, path = false, folder = false, skipbinary = true})
         local topscore
         for _, item in ipairs(commandBarScoreItems(files, text, maxitems)) do

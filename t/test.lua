@@ -39,7 +39,7 @@ local function runtests()
   end
 
   -- find all test files and load them
-  local files = FileSysGetRecursive("t", true, "*.lua")
+  local files = ide:GetFileList("t", true, "*.lua")
   for k = #files, 1, -1 do
     if files[k]:find("[/\\]test%.lua$") then table.remove(files, k) end
   end

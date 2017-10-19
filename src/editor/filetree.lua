@@ -76,7 +76,7 @@ local function treeAddDir(tree,parent_id,rootdir)
 
   local cache = {}
   local curr
-  local files = FileSysGetRecursive(rootdir)
+  local files = ide:GetFileList(rootdir)
   local dirmapped = {}
   if tree:IsRoot(parent_id) then
     local mapped = filetree.settings.mapped[ide:GetProject()] or {}
@@ -978,7 +978,7 @@ function FileTreeFindByPartialName(name)
   local pattern = q(name:gsub("^%.%.%.","")):gsub("[\\/]", "[\\/]").."$"
   local lpattern = pattern:lower()
 
-  for _, file in ipairs(FileSysGetRecursive(filetree.projdir, true)) do
+  for _, file in ipairs(ide:GetFileList(filetree.projdir, true)) do
     if file:find(pattern) or iscaseinsensitive and file:lower():find(lpattern) then
       filetree.projdirpartmap[name] = file
       return file
