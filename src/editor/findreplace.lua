@@ -665,6 +665,10 @@ function findReplace:RunInFiles(replace)
     reseditor.searchpreview = findText
   end
 
+  -- the IDE may be closing during search, in which case simply return,
+  -- as the controls are likely to be in some invalid state anyway
+  if not ide:IsValidCtrl(self.oveditor) then return end
+
   self:SetStatus(not completed and TR("Cancelled by the user.")
     or TR("Found %d instance.", self.occurrences):format(self.occurrences))
   self.oveditor:Destroy()
