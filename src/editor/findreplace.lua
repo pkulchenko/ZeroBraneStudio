@@ -542,6 +542,14 @@ function findReplace:RunInFiles(replace)
             editor:ToggleFold(line)
           end
         end)
+      reseditor:Connect(wx.wxEVT_KEY_DOWN,
+        function (event)
+          if event:GetKeyCode() == wx.WXK_ESCAPE and self:IsShown() then
+            self:Hide()
+          else
+            event:Skip()
+          end
+        end)
 
       -- mark as searchpreview to allow AddPage to add "close" button
       reseditor.searchpreview = findText
