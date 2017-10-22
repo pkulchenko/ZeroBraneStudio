@@ -440,12 +440,25 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
     text = text:gsub("%w",function(s) return "["..s:lower()..s:upper().."]" end)
   end
 
+  local function yield(dir)
+    ide:Yield() -- give time to the UI to refresh
+    -- the IDE may be quitting after Yield or the tab may be closed,
+    local ok, mgr = pcall(function() return ide:GetUIManager() end)
+    -- so check to make sure the manager is still active
+    -- and check that the search results tab is still open
+    -- return `nil` to abort processing if one of the checks fails
+    return ok and mgr:GetPane(searchpanel):IsShown() and ide:IsValidCtrl(self.reseditor) or nil
+  end
+
   local files = coroutine.wrap(function()
-      ide:GetFileList(startdir, subdirs, mask, {yield = true, folder = false, skipbinary = true})
+      ide:GetFileList(startdir, subdirs, mask, {
+          yield = true, folder = false, skipbinary = true, ondirectory = yield
+        })
     end)
   while true do
     local file = files()
-    if not file then break end
+    if file == false then return false end -- aborted processing
+    if file == nil then break end -- out of files to process
 
     if checkBinary(GetFileExt(file)) ~= true then
       self.curfilename = file
@@ -459,17 +472,7 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
           self.oveditor:SetTextDyn(filetext)
 
           if self:FindAll(onFileRegister) then self.files = self.files + 1 end
-
-          -- give time to the UI to refresh
-          ide:Yield()
-          -- the IDE may be quitting after Yield or the tab may be closed,
-          local ok, mgr = pcall(function() return ide:GetUIManager() end)
-          -- so check to make sure the manager is still active
-          if not (ok and mgr:GetPane(searchpanel):IsShown())
-          -- and check that the search results tab is still open
-          or not ide:IsValidCtrl(self.reseditor) then
-            return false
-          end
+          if not yield() then return false end
         end
       end
     end

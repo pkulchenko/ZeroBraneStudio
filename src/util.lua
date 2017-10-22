@@ -164,8 +164,14 @@ function FileSysGetRecursive(path, recursive, spec, opts)
         report((optpath and fname or fname:gsub(pathpatt, ""))..sep)
       end
 
-      if recursive and ismatch(fname..sep, nil, exmasks)
-      and (not optondirectory or optondirectory(fname) ~= false)
+      -- `optondirectory` may return:
+      -- `true` to traverse the directory and continue
+      -- `false` to skip the directory and continue
+      -- `nil` to abort the process
+      local ondirectory = optondirectory and optondirectory(fname)
+      if optondirectory and ondirectory == nil then return false end
+
+      if recursive and ismatch(fname..sep, nil, exmasks) and (ondirectory ~= false)
       -- check if this name already appears in the path earlier;
       -- Skip the processing if it does as it could lead to infinite
       -- recursion with circular references created by symlinks.
@@ -174,7 +180,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       end
 
       num = num + 1
-      if optmaxnum and num >= optmaxnum then break end
+      if optmaxnum and num >= optmaxnum then return false end
 
       found, file = dir:GetNext()
     end
@@ -187,16 +193,20 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       end
 
       num = num + 1
-      if optmaxnum and num >= optmaxnum then break end
+      if optmaxnum and num >= optmaxnum then return false end
 
       found, file = dir:GetNext()
     end
     -- wxlua < 3.1 doesn't provide Close method for the directory, so check for it
     if ide:IsValidProperty(dir, "Close") then dir:Close() end
+    return true
   end
-  while #queue > 0 do getDir(table.remove(queue)) end
+  while #queue > 0 and getDir(table.remove(queue)) do end
 
-  if optyield then return end
+  if optyield then
+    if #queue > 0 then coroutine.yield(false) end -- signal aborted processing
+    return
+  end
 
   if optsort then
     local prefix = '\001' -- prefix to sort directories first
