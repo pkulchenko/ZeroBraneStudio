@@ -369,7 +369,7 @@ local function onFileRegister(pos, length)
       reseditor:MarkerAdd(lines-1, FILE_MARKER)
       reseditor:SetFoldLevel(lines-1, reseditor:GetFoldLevel(lines-1)
         + wxstc.wxSTC_FOLDLEVELHEADERFLAG)
-      findReplace:SetStatus(GetFileName(findReplace.curfilename))
+      findReplace:SetStatus(TR("Found match in '%s'."):format(GetFileName(findReplace.curfilename)))
 
       lines = lines + 1
 
@@ -441,6 +441,8 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
   end
 
   local function yield(dir)
+    if dir then self:SetStatus(TR("Searching in '%s'."):format(dir:gsub(startdir,""))) end
+
     ide:Yield() -- give time to the UI to refresh
     -- the IDE may be quitting after Yield or the tab may be closed,
     local ok, mgr = pcall(function() return ide:GetUIManager() end)
@@ -636,7 +638,8 @@ function findReplace:RunInFiles(replace)
     end
   end
 
-  self:SetStatus(TR("Searching for '%s'."):format(findText))
+  self:SetStatus(TR("Searching for '%s'."):format(findText)
+    .." "..TR("Use %s to close."):format("`Escape`"))
   wx.wxSafeYield() -- allow the status to update
 
   local startdir, mask = self:GetScope()
