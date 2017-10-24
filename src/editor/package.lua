@@ -1264,6 +1264,10 @@ function ide:SetHotKey(id, ksc)
     -- continue with the loop as there may be multiple associations with the same hotkey
   end
 
+  -- remove an existing accelerator (if any)
+  local acid = self:GetHotKey(ksc)
+  if acid then self:SetAccelerator(acid) end
+
   -- if the hotkey is associated with a function, handle it first
   if type(id) == "function" then
     local fakeid = NewID()
