@@ -441,7 +441,7 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
   end
 
   local function yield(dir)
-    if dir then self:SetStatus(TR("Searching in '%s'."):format(dir:gsub(startdir,""))) end
+    if dir then self:SetStatus(TR("Searching in '%s'."):format(dir:gsub("^"..q(startdir),""))) end
 
     ide:Yield() -- give time to the UI to refresh
     -- the IDE may be quitting after Yield or the tab may be closed,
