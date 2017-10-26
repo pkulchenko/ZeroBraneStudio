@@ -440,7 +440,12 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
     text = text:gsub("%w",function(s) return "["..s:lower()..s:upper().."]" end)
   end
 
-  local function yield(dir)
+  local lastupdate = os.clock()
+  local function yield(dir, force)
+    local now = os.clock()
+    if now-lastupdate < 0.1 and not force then return true end -- skip too frequent requests
+    lastupdate = now
+
     if dir then self:SetStatus(TR("Searching in '%s'."):format(dir:gsub("^"..q(startdir),""))) end
 
     ide:Yield() -- give time to the UI to refresh
@@ -474,7 +479,8 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
           self.oveditor:SetTextDyn(filetext)
 
           if self:FindAll(onFileRegister) then self.files = self.files + 1 end
-          if not yield() then return false end
+          -- force a UI update on a match and abort if the user canceled the search
+          if not yield(nil, true) then return false end
         end
       end
     end
