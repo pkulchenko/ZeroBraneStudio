@@ -150,7 +150,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
     dir:Open(path)
     if not dir:IsOpened() then
       if TR then ide:Print(TR("Can't open '%s': %s"):format(path, wx.wxSysErrorMsg())) end
-      return
+      return true -- report and continue
     end
 
     -- recursion is done in all folders if requested,
