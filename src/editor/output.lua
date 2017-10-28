@@ -31,6 +31,17 @@ if (ide.config.outputshell.usewrap) then
   out:SetWrapVisualFlagsLocation(wxstc.wxSTC_WRAPVISUALFLAGLOC_END_BY_TEXT)
 end
 
+if ide.config.output.showansi and wxstc.wxSTC_LEX_ERRORLIST
+and type(ide.config.output.ansimap) == type({}) then
+  out:SetLexer(wxstc.wxSTC_LEX_ERRORLIST)
+  out:SetProperty("lexer.errorlist.escape.sequences","1")
+
+  -- assign ansimap styles
+  for k,v in pairs(ide.config.output.ansimap) do
+    ide.config.stylesoutshell["ansi"..k] = v
+  end
+end
+
 StylesApplyToEditor(ide.config.stylesoutshell,out,ide.font.oNormal,ide.font.oItalic)
 
 function ClearOutput(force)
