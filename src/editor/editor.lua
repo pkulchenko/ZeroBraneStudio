@@ -675,8 +675,8 @@ function CreateEditor(bare)
   editor:SetBufferedDraw(not ide.config.hidpi and true or false)
   editor:StyleClearAll()
 
-  editor:SetFont(ide.font.eNormal)
-  editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.eNormal)
+  editor:SetFont(ide.font.editor)
+  editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, editor:GetFont())
 
   editor:SetTabWidth(tonumber(edcfg.tabwidth) or 2)
   editor:SetIndent(tonumber(edcfg.tabwidth) or 2)
@@ -1752,12 +1752,5 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   editor:SetProperty("lexer.cpp.track.preprocessor", "0")
   editor:SetProperty("lexer.cpp.update.preprocessor", "0")
 
-  -- create italic font if only main font is provided
-  if font and not fontitalic then
-    fontitalic = wx.wxFont(font)
-    fontitalic:SetStyle(wx.wxFONTSTYLE_ITALIC)
-  end
-
-  StylesApplyToEditor(styles or ide.config.styles, editor,
-    font or ide.font.eNormal,fontitalic or ide.font.eItalic,lexerstyleconvert)
+  StylesApplyToEditor(styles or ide.config.styles, editor, font, fontitalic, lexerstyleconvert)
 end

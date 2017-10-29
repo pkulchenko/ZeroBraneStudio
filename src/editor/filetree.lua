@@ -39,7 +39,7 @@ local function createImg(ext)
   local iconmap = ide.config.filetree.iconmap
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
   local bitmap = wx.wxBitmap(16, 16)
-  local font = wx.wxFont(ide.font.eNormal)
+  local font = wx.wxFont(ide.font.editor)
   font:SetPointSize(ide.osname == "Macintosh" and 6 or 5)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
@@ -815,7 +815,7 @@ local projtree = ide:CreateTreeCtrl(ide.frame, wx.wxID_ANY,
   wx.wxDefaultPosition, wx.wxDefaultSize,
   wx.wxTR_HAS_BUTTONS + wx.wxTR_MULTIPLE + wx.wxTR_LINES_AT_ROOT
   + wx.wxTR_EDIT_LABELS + wx.wxNO_BORDER)
-projtree:SetFont(ide.font.fNormal)
+projtree:SetFont(ide.font.tree)
 filetree.projtreeCtrl = projtree
 
 ide:GetProjectNotebook():AddPage(projtree, TR("Project"), true)

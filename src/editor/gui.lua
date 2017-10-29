@@ -6,23 +6,17 @@
 local ide = ide
 local unpack = table.unpack or unpack
 
--- Pick some reasonable fixed width fonts to use for the editor
-local function setFont(style, config)
-  return wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, style,
-    wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
+do local config = ide.config.editor
+  ide.font.editor = wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN,
+    wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
     config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 end
-ide.font.eNormal = setFont(wx.wxFONTSTYLE_NORMAL, ide.config.editor)
-ide.font.eItalic = setFont(wx.wxFONTSTYLE_ITALIC, ide.config.editor)
-
-ide.font.oNormal = setFont(wx.wxFONTSTYLE_NORMAL, ide.config.outputshell)
-ide.font.oItalic = setFont(wx.wxFONTSTYLE_ITALIC, ide.config.outputshell)
 
 -- treeCtrl font requires slightly different handling
-do local gui, config = wx.wxTreeCtrl():GetFont(), ide.config.filetree
-  if config.fontsize then gui:SetPointSize(config.fontsize) end
-  if config.fontname then gui:SetFaceName(config.fontname) end
-  ide.font.fNormal = gui
+do local font, config = wx.wxTreeCtrl():GetFont(), ide.config.filetree
+  if config.fontsize then font:SetPointSize(config.fontsize) end
+  if config.fontname then font:SetFaceName(config.fontname) end
+  ide.font.tree = font
 end
 
 -- ----------------------------------------------------------------------------

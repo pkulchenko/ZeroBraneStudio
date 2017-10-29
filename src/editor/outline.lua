@@ -273,7 +273,7 @@ local function createOutlineWindow()
 
   ctrl:AddRoot("Outline")
   ctrl:SetImageList(outline.imglist)
-  ctrl:SetFont(ide.font.fNormal)
+  ctrl:SetFont(ide.font.tree)
 
   function ctrl:ActivateItem(item_id)
     local data = ctrl:GetItemData(item_id)

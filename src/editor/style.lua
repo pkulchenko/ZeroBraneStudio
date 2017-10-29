@@ -291,6 +291,15 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   local defaultfg = styles.text and iscolor(styles.text.fg) and wx.wxColour(unpack(styles.text.fg)) or nil
   local defaultbg = styles.text and iscolor(styles.text.bg) and wx.wxColour(unpack(styles.text.bg)) or nil
 
+  -- get the font as the default one
+  if not font then font = editor:GetFont() end
+
+  -- create italic font if only main font is provided
+  if font and not fontitalic then
+    fontitalic = wx.wxFont(font)
+    fontitalic:SetStyle(wx.wxFONTSTYLE_ITALIC)
+  end
+
   local function applystyle(style,id)
     editor:StyleSetFont(id, style.i and fontitalic or font)
     editor:StyleSetBold(id, style.b or false)
@@ -399,8 +408,8 @@ function ReApplySpecAndStyles()
 
   local errorlog = ide.frame.bottomnotebook.errorlog
   local shellbox = ide.frame.bottomnotebook.shellbox
-  SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
-  StylesApplyToEditor(ide.config.stylesoutshell,errorlog,ide.font.oNormal,ide.font.oItalic)
+  SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell)
+  StylesApplyToEditor(ide.config.stylesoutshell,errorlog)
 
   for _, doc in pairs(ide:GetDocuments()) do
     if doc.editor.spec then doc.editor:SetupKeywords(nil, doc.editor.spec) end

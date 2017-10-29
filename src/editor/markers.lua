@@ -132,7 +132,7 @@ local function createMarkersWindow()
 
   ctrl:AddRoot("Markers")
   ctrl:SetImageList(markers.imglist)
-  ctrl:SetFont(ide.font.fNormal)
+  ctrl:SetFont(ide.font.tree)
 
   function ctrl:ActivateItem(item_id, marker)
     local itemimage = ctrl:GetItemImage(item_id)

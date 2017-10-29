@@ -15,8 +15,13 @@ local ERROR_MARKER = StylesGetMarker("error")
 local OUTPUT_MARKER = StylesGetMarker("output")
 local MESSAGE_MARKER = StylesGetMarker("message")
 
-console:SetFont(ide.font.oNormal)
-console:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
+local config = ide.config.outputshell
+
+console:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+  wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
+  config.fontencoding or wx.wxFONTENCODING_DEFAULT)
+)
+console:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, console:GetFont())
 console:SetBufferedDraw(not ide.config.hidpi and true or false)
 console:StyleClearAll()
 
@@ -37,7 +42,7 @@ console:MarkerDefine(StylesGetMarker("output"))
 console:MarkerDefine(StylesGetMarker("message"))
 console:SetReadOnly(false)
 
-SetupKeywords(console,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
+SetupKeywords(console,"lua",nil,ide.config.stylesoutshell)
 
 local function getPromptLine()
   local totalLines = console:GetLineCount()
@@ -571,7 +576,7 @@ console:Connect(wxstc.wxEVT_STC_DO_DROP,
     end
   end)
 
-if ide.config.outputshell.nomousezoom then
+if config.nomousezoom then
   -- disable zoom using mouse wheel as it triggers zooming when scrolling
   -- on OSX with kinetic scroll and then pressing CMD.
   console:Connect(wx.wxEVT_MOUSEWHEEL,

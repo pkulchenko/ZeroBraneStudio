@@ -13,9 +13,13 @@ local ERROR_MARKER = StylesGetMarker("error")
 local PROMPT_MARKER = StylesGetMarker("prompt")
 local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 
-out:Show(true)
-out:SetFont(ide.font.oNormal)
-out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
+local config = ide.config.outputshell
+
+out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+  wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
+  config.fontencoding or wx.wxFONTENCODING_DEFAULT)
+)
+out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
 out:SetBufferedDraw(not ide.config.hidpi and true or false)
 out:StyleClearAll()
 out:SetMarginWidth(1, 16) -- marker margin
@@ -24,7 +28,7 @@ out:MarkerDefine(StylesGetMarker("message"))
 out:MarkerDefine(StylesGetMarker("error"))
 out:MarkerDefine(StylesGetMarker("prompt"))
 out:SetReadOnly(true)
-if (ide.config.outputshell.usewrap) then
+if config.usewrap then
   out:SetWrapMode(wxstc.wxSTC_WRAP_WORD)
   out:SetWrapStartIndent(0)
   out:SetWrapVisualFlags(wxstc.wxSTC_WRAPVISUALFLAG_END)
@@ -42,7 +46,7 @@ and type(ide.config.output.ansimap) == type({}) then
   end
 end
 
-StylesApplyToEditor(ide.config.stylesoutshell,out,ide.font.oNormal,ide.font.oItalic)
+StylesApplyToEditor(ide.config.stylesoutshell,out)
 
 function ClearOutput(force)
   if not (force or ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)) then return end
@@ -516,8 +520,7 @@ local function inputEditable(line)
     not (out:LineFromPosition(out:GetSelectionStart()) < getInputLine())
 end
 
-out:Connect(wxstc.wxEVT_STC_UPDATEUI,
-  function () out:SetReadOnly(not inputEditable()) end)
+out:Connect(wxstc.wxEVT_STC_UPDATEUI, function() out:SetReadOnly(not inputEditable()) end)
 
 -- only allow copy/move text by dropping to the input line
 out:Connect(wxstc.wxEVT_STC_DO_DROP,
@@ -527,7 +530,7 @@ out:Connect(wxstc.wxEVT_STC_DO_DROP,
     end
   end)
 
-if ide.config.outputshell.nomousezoom then
+if config.nomousezoom then
   -- disable zoom using mouse wheel as it triggers zooming when scrolling
   -- on OSX with kinetic scroll and then pressing CMD.
   out:Connect(wx.wxEVT_MOUSEWHEEL,
