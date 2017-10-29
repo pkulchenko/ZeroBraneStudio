@@ -404,7 +404,8 @@ end
 function ReApplySpecAndStyles()
   -- re-register markup styles as they are special:
   -- these styles need to be updated as they are based on comment styles
-  if MarkupAddStyles then MarkupAddStyles(ide.config.styles) end
+  MarkupAddStyles(ide.config.styles)
+  OutputAddStyles(ide.config.stylesoutshell)
 
   local errorlog = ide.frame.bottomnotebook.errorlog
   local shellbox = ide.frame.bottomnotebook.shellbox
