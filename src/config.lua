@@ -47,11 +47,9 @@ return {
     name = 'untitled',
     usecurrentextension = true,
   },
-  outputshell = {
-    usewrap = true,
+  console = {
   },
   output = {
-    showansi = true,
     ansimap = { -- using mIRC colors from https://en.wikipedia.org/wiki/ANSI_escape_code
       escape = {st = 23, v = false},
       unknown = {st = 24, bg = {255,85,85}},
@@ -72,6 +70,8 @@ return {
       brightcyan = {st = 54, fg = {0,255,255}},
       brightwhite = {st = 55, fg = {255,255,255}},
     },
+    showansi = true,
+    usewrap = true,
   },
   filetree = {
     mousemove = true,

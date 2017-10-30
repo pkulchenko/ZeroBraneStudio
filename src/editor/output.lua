@@ -13,7 +13,7 @@ local ERROR_MARKER = StylesGetMarker("error")
 local PROMPT_MARKER = StylesGetMarker("prompt")
 local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 
-local config = ide.config.outputshell
+local config = ide.config.output
 
 out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",

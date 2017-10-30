@@ -15,7 +15,7 @@ local ERROR_MARKER = StylesGetMarker("error")
 local OUTPUT_MARKER = StylesGetMarker("output")
 local MESSAGE_MARKER = StylesGetMarker("message")
 
-local config = ide.config.outputshell
+local config = ide.config.console
 
 console:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",

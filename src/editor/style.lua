@@ -421,8 +421,7 @@ function ApplyStyleConfig(config, style)
   if not wx.wxIsAbsolutePath(config)
     then config = MergeFullPath(GetPathWithSep(ide.editorFilename), config) end
 
-  local cfg = {wxstc = wxstc, math = math, print = function(...) ide:Print(...) end,
-    path = {}, editor = {}, view ={}, acandtip = {}, outputshell = {}, debugger={}}
+  local cfg = {wxstc = wxstc, math = math, print = function(...) ide:Print(...) end}
   local cfgfn, err = loadfile(config)
   if not cfgfn then
     ide:Print(TR("Error while loading configuration file: %s"):format(err))

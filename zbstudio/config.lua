@@ -5,20 +5,24 @@ if mac then
   filetree.fontsize = defaultsize
   if ide.wxver >= "2.9.5" then
     editor.fontsize = defaultsize+1
-    outputshell.fontsize = defaultsize
+    output.fontsize = defaultsize
+    console.fontsize = defaultsize
   end
 
   editor.fontname = "Monaco"
-  outputshell.fontname = editor.fontname
+  output.fontname = editor.fontname
+  console.fontname = editor.fontname
 else
   local defaultsize = 10
   editor.fontsize = defaultsize+1
-  outputshell.fontsize = defaultsize
+  output.fontsize = defaultsize
+  console.fontsize = defaultsize
 
   local sysid, major, minor = wx.wxGetOsVersion()
   editor.fontname =
     win and (major == 5 and "Courier New" or "Consolas") or "Monospace"
-  outputshell.fontname = editor.fontname
+  output.fontname = editor.fontname
+  console.fontname = editor.fontname
 end
 
 singleinstance = not mac
