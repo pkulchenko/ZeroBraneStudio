@@ -123,6 +123,9 @@ local function ismarkup (tx)
       s,e,cap = string.find(tx,
         "^(%b"..MD_MARK_LINK..MD_MARK_LINZ
         .."%b"..MD_MARK_LINA..MD_MARK_LINT..")", st)
+      -- if either part of the link is empty `[]` or `()`, skip the match
+      if cap and cap:find("^"..q(MD_MARK_LINK..MD_MARK_LINZ))
+      or cap and cap:find(q(MD_MARK_LINA..MD_MARK_LINT).."$") then s = nil end
     elseif markup[sep] then
       -- try a single character first, then 2+ characters between separators;
       -- this is to handle "`5` `6`" as two sequences, not one.
