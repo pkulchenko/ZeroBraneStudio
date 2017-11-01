@@ -149,9 +149,9 @@ set the value to a to a negative number (from -1 to -7) to make the results smal
 
 - `staticanalyzer.infervalue = false`: enable static analysis that infers values (**v0.96+**).
 This allows for additional reporting on unknown fields, but takes significantly more time.
-This setting only has effect with the default (lua-inspect-based) analyzer.
-- `staticanalyzer.luacheck = false`: set to use luacheck as the static analyzer instead of the default one based on luainspect (**v1.61+**);
-set to `true` to enable or to a table with options to pass to luacheck.
+This setting only has effect with the default ([LuaInspect](https://github.com/davidm/lua-inspect)-based) analyzer.
+- `staticanalyzer.luacheck = false`: set to use [LuaCheck](https://github.com/mpeterv/luacheck) as the static analyzer instead of the default one based on LuaInspect (**v1.61+**);
+set to `true` to enable or to a table with options to pass to LuaCheck.
 
 ## Command Bar
 
