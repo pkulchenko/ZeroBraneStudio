@@ -3,6 +3,8 @@ layout: default
 title: Configuration
 ---
 
+<ul id='toc'>&nbsp;</ul>
+
 ZeroBrane Studio uses Lua files to allow users to modify its default settings and to set editor color scheme, UI language, paths to executables, and other [general](doc-general-preferences) and [editor](doc-editor-preferences) preferences.
 These configuration files can be specified in three ways: **system-wide**, **per user**, and via **command line**.
 The settings set in these files are applied in the same **order**: system, user, command line (thus parameters specified using the command line will overwrite those specified in the system-wide configuration file).
