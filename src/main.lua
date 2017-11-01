@@ -33,8 +33,7 @@ package.cpath = (
   islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch) or
   --[[isosx]] 'bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
     .. package.cpath
-package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;lualibs/?/?/?.lua;lualibs/?/?/init.lua;'
-              .. package.path
+package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;' .. package.path
 
 require("wx")
 require("bit")
@@ -314,6 +313,12 @@ local function setLuaPaths(mainpath, osname)
         mainpath..("bin/linux/%s/clibs/lib?.so"):format(arch),
       },";") or
     assert(false, "Unexpected OS name")
+
+  ide.oslibs = table.concat({
+        mainpath.."lualibs/?.lua",
+        mainpath.."lualibs/?/?.lua",
+        mainpath.."lualibs/?/init.lua",
+      },";")
 
   wx.wxSetEnv("LUA_CPATH",
     (os.getenv("LUA_CPATH") or ';') .. ';' .. ide.osclibs
