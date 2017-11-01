@@ -1,16 +1,20 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Oct 08 2017)
+## Current master (Oct 31 2017)
 
 ### Highlights
   - Added support for using luacheck.
   - Added progress bar indicator for commandbar processing.
-  - Added cache for the files in the commandbar.
-  - Added handling of exclusion lists encoded as hashes for convenient updates.
+  - Added cache for files in the commandbar.
+  - Added handling of exclusion lists encoded as hashes to simplify modifications.
   - Added encoding output based on `codepage` setting.
+  - Added support for ansi escapes to color text in Output window.
+  - Improved UI responsiveness during find-in-files search.
   - Updated commandbar to improve prefiltering performance on search through large file sets.
   - Updated moai API to community version 1.8 RC.
+  - Updated app launch script to make single instance detection work with High Sierra.
   - Fixed lexlpeg styling on Linux; 110+ languages and formats are now styled on all platforms.
+  - Fixed debugging for Lua 5.2/5.3 when `LUA_PATH_5_2`/`5_3` env variable is set.
 
 ### Special thanks
   - To [feserr](https://github.com/feserr) for update moai API to community version 1.8 RC.
@@ -19,6 +23,14 @@
   - To [olueiro](https://github.com/olueiro) for update pt-br language translation.
 
 ### Improvements
+  - Added reapplying ansi color styles after color scheme switching (#684).
+  - Added support for ansi escapes to color text in Output window (closes #684).
+  - Added status messages for find-in-files to better report search progress (#822).
+  - Added option to limit number of files returned by `GetFileList`.
+  - Added `GetHotKey` method to return shortcut/id (#166).
+  - Added `onFiletreeFileDelete` and `onFiletreeFilePreDelete` events (closes #815, #166).
+  - Added `onFiletreeFileRename` and `onFiletreeFilePreRename` events (#815, #166).
+  - Added re-encoding of the path when codepage is set to activate in debugger (closes #817, #804).
   - Added console `reset` command and `Reset` method to reset the current environment.
   - Added config setting to specify if `inselection` search needs to be on by default.
   - Added `GetFileList` method (#166).
@@ -67,14 +79,27 @@
   - Improved support for handling some of the shortcuts with `Ctrl` and `Alt` on Linux.
   - Moved terminating timer loop to happen after all the timers are stopped.
   - Moved default configuration into a separate file.
+  - Reorganized font handling to prepare for splitting configuration for Output and Console (#684).
+  - Removed switching control back to the search panel after find-in-files, as it's not needed.
+  - Removed deprecated `GetEditorWithFocus` global function (#166).
+  - Removed workaround for crash on Linux after filetree editing (#425, #464).
   - Removed obsolete `GetEditorFileAndCurInfo` global function (#166).
   - Removed obsolete `GetEditor` global function (#166).
   - Removed `run` option from the interpreter as it's no longer needed.
   - Removed functions that are no longer used.
-  - Refactored handling of lost focus event in commandbar.
-  - Refactored methods to score and show commandbar items.
   - Removed `bin` folder from the module search path as it's no longer used for modules.
   - Removed `encoding` in the desktop file as it's deprecated.
+  - Refactored handling of lost focus event in commandbar.
+  - Refactored methods to score and show commandbar items.
+  - Replaced obsolete global function `FileSysGetRecursive` with `GetFileList` method (#166).
+  - Split `outputshell` into `output` and `console` settings (#684).
+  - Updated app launch script to make single instance detection work with High Sierra (closes #813).
+  - Updated search status refresh to avoid too frequent updates that delay the search (#822).
+  - Updated find-in-files to allow aborting for better UI responsiveness (closes #822).
+  - Updated `SetHotKey` to return assigned values (#166).
+  - Updated to use `GetEditorWithFocus` method instead of global function (#166).
+  - Updated filetree to allow selection of multiple files (#815).
+  - Updated build scripts to use tags to build the specific version of binaries (#260).
   - Update pt-br.lua
   - Updated tests to check for `acandtip.symbols=2` setting (#805).
   - Updated project tree to work with multiple selection enabled (#815).
@@ -104,6 +129,14 @@
   - Updated MacOS build files to add install name to the build commands.
 
 ### Fixes
+  - Fixed debugging for Lua 5.2/5.3 when `LUA_PATH_5_2`/`5_3` env var is set (closes #806).
+  - Fixed markdown markup to skip empty `[]` or `()` parts in link formatting (closes #827).
+  - Fixed directory traversal in search after failure to open a directory (#822).
+  - Fixed search status showing directories with special characters (#822).
+  - Fixed `SetHotKey` to remove the accelerator in case of a conflict (#166).
+  - Fixed closing the app while search is in progress.
+  - Fixed aborting find-in-files with `Escape` when results are in non-editor panel (#822).
+  - Fixed closing editor tab using document method (fixes #818).
   - Fixed formatting of `repeat ... until` on one line (#324).
   - Fixed showing tooltip after using `Inserting Library Function` from commandbar.
   - Fixed simple name substitution in `Insert Library Function`.
@@ -127,10 +160,11 @@
   - Fixed loading lexlpeg with conflicting lpeg binary present in default path on MacOS (fixes #760).
 
 ### Incompatibilities
+  - Deprecated `FileSysGetRecursive` global function; use `ide:GetFileList()` instead.
   - Removed deprecated `GetEditorFileAndCurInfo` global function; use `ide:GetEditor()` instead.
   - Removed deprecated `GetEditor` global function; use `ide:GetEditor()` instead.
   - Removed deprecated `GetEditorWithFocus` global function; use `ide:GetEditorWithFocus()` instead.
-  - Deprecated `FileSysGetRecursive` global function; use `ide:GetFileList()` instead.
+  - Split `outputshell` into `output` and `console` settings (#684).
 
 ## v1.60 (Apr 19 2017)
 
