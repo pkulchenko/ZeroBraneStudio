@@ -61,11 +61,7 @@ GSL-shell, and other engines.
 * Several **ways to extend** the current functionality:
   - packages (`packages/`): [plugins](http://studio.zerobrane.com/doc-plugin) that provide additional functionality;
   - translations (`cfg/i18n/`): [translations](http://studio.zerobrane.com/doc-translation) of the menus and messages to other languages;
-  - user configuration (`cfg/`): settings for various components, styles, color themes, and other preferences;
-  - apis (`api/`): descriptions for [code completion and tooltips](http://studio.zerobrane.com/doc-api-auto-complete);
-  - interpreters (`interpreters/`): components for setting debugging and run-time project environment;
-  - specs (`spec/`): specifications for file syntax, lexer, and keywords;
-  - tools (`tools/`): additional tools.
+  - user configuration (`cfg/`): settings for various components, styles, color themes, and other preferences.
 
 ## Documentation
 
