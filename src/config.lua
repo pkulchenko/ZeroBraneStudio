@@ -222,4 +222,6 @@ return {
     ["*.gz"] = true,
     ["*.rar"] = true,
   },
+  -- deprecated
+  outputshell = {},
 }

@@ -487,9 +487,9 @@ do
     __index = setmetatable({
         -- these are provided for compatibility only to avoid breaking configs using `load.*`
         load = {
-          interpreters = function() ide:Print("Warning: using `load.interpreters()` in config is deprecated.") end,
-          specs = function() ide:Print("Warning: using `load.specs()` in config is deprecated.") end,
-          tools = function() ide:Print("Warning: using `load.tools()` in config is deprecated.") end,
+          interpreters = function() ide:Print("Warning: using `load.interpreters()` in configuration settings is deprecated.") end,
+          specs = function() ide:Print("Warning: using `load.specs()` in configuration settings is deprecated.") end,
+          tools = function() ide:Print("Warning: using `load.tools()` in configuration settings is deprecated.") end,
         },
         package = package,
         include = include,
@@ -844,6 +844,11 @@ if ide.osname == 'Macintosh' then
     end
     args = {} -- reset the argument cache as it only needs to be checked on the initial launch
   end
+end
+
+-- check for deprecated items in the config
+if type(ide.config.outputshell) == type({}) and next(ide.config.outputshell) then
+  ide:Print("Warning: using `outputshell.*` in configuration settings is no longer supported; use `output.*` and `console.*` instead.")
 end
 
 wx.wxGetApp():MainLoop()
