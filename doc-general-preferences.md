@@ -95,12 +95,24 @@ Other possible values include setting strategy for selecting auto-complete candi
 - `acandtip.width = 60`: specify width of the tooltip window in characters.
 - `autocomplete = true`: enable auto-complete.
 
-## Output and Console
+## Output
 
-- `outputshell.fontname = "Courier New"`: set font name.
-- `outputshell.fontsize = 10`: set font size (the default value is `11` on MacOS).
-- `outputshell.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
-- `outputshell.usewrap = true`: wrap long lines (**v0.51+**); set to `nil` or `false` to disable. This setting only applies to the Output window; the Console always wraps its lines.
+`outputshell` option to specify Output window attributes has been replaced by `output` in  **v1.61+**.
+Use `outputshell` instead of `output` in earlier versions.
+
+- `output.fontname = "Courier New"`: set font name.
+- `output.fontsize = 10`: set font size (the default value is `11` on MacOS).
+- `output.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
+- `output.usewrap = true`: wrap long lines (**v0.51+**); set to `nil` or `false` to disable.
+
+## Console
+
+`outputshell` option to specify Console window attributes has been replaced by `console` in  **v1.61+**.
+Use `outputshell` instead of `console` in earlier versions.
+
+- `console.fontname = "Courier New"`: set font name.
+- `console.fontsize = 10`: set font size (the default value is `11` on MacOS).
+- `console.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
 
 ## Project/Filetree
 
