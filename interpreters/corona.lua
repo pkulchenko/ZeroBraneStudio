@@ -14,6 +14,7 @@ return {
       local sep = win and ';' or ':'
       local default =
            win and (GenerateProgramFilesPath('Corona SDK', sep)..sep..
+                    GenerateProgramFilesPath('Corona Labs\\Corona', sep)..sep..
                     GenerateProgramFilesPath('Corona Labs\\Corona SDK', sep)..sep)
         or mac and ('/Applications/CoronaSDK/Corona Simulator.app/Contents/MacOS'..sep)
         or ''
