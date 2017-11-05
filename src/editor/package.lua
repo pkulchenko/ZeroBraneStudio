@@ -850,7 +850,16 @@ function ide:GetBitmap(id, client, size)
   if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
-  else return wx.wxArtProvider.GetBitmap(id, client, size) end
+  else
+    if width > 16 and width % 2 == 0 then
+      local _, f = self:GetBitmap(id, client, wx.wxSize(width/2, width/2))
+      if f then
+        local img = wx.wxBitmap(f):ConvertToImage()
+        file = img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST)
+      end
+    end
+    if not file then return wx.wxArtProvider.GetBitmap(id, client, size) end
+  end
   local icon = icons[file] or iconFilter(wx.wxBitmap(file), self.config.imagetint)
   icons[file] = icon
   return icon, file
