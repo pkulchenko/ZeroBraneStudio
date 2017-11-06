@@ -421,19 +421,19 @@ function SettingsRestoreView()
   local path = settings:GetPath()
   settings:SetPath(listname)
 
-  local frame = ide.frame
-  local uimgr = frame.uimgr
+  local frame = ide:GetMainFrame()
+  local uimgr = ide:GetUIManager()
   
   local layoutcur = uimgr:SavePerspective()
   local layout = settingsReadSafe(settings,layoutlabel.UIMANAGER,"")
   if (layout ~= layoutcur) then
     -- save the current toolbar besth and re-apply after perspective is loaded
-    -- bestw and besth has two separate issues:
+    -- bestw and besth have two separate issues:
     -- (1) layout includes bestw that is only as wide as the toolbar size,
     -- this leaves default background on the right side of the toolbar;
     -- fix it by explicitly replacing with the screen width.
     -- (2) besth may be wrong after icon size changes.
-    local toolbar = frame.uimgr:GetPane("toolbar")
+    local toolbar = uimgr:GetPane("toolbar")
     local besth = toolbar:IsOk() and tonumber(uimgr:SavePaneInfo(toolbar):match("besth=([^;]+)"))
 
     -- reload the perspective if the saved one is not empty as it's different from the default
@@ -444,18 +444,18 @@ function SettingsRestoreView()
 
     -- check if debugging panes are not mentioned and float them
     for _, name in pairs({"stackpanel", "watchpanel"}) do
-      local pane = frame.uimgr:GetPane(name)
+      local pane = uimgr:GetPane(name)
       if pane:IsOk() and not layout:find(name) then pane:Float() end
     end
 
     -- check if the toolbar is not mentioned in the layout and show it
     for _, name in pairs({"toolbar"}) do
-      local pane = frame.uimgr:GetPane(name)
+      local pane = uimgr:GetPane(name)
       if pane:IsOk() and not layout:find(name) then pane:Show() end
     end
 
     -- remove captions from all panes
-    local panes = frame.uimgr:GetAllPanes()
+    local panes = uimgr:GetAllPanes()
     for index = 0, panes:GetCount()-1 do
       uimgr:GetPane(panes:Item(index).name):CaptionVisible(false)
     end
@@ -470,8 +470,7 @@ function SettingsRestoreView()
   if (layout ~= layoutcur) then
     loadNotebook(ide:GetOutputNotebook(),layout,
       -- treat "Output (running)" same as "Output"
-      function(name) return
-        name:match(TR("Output")) or name:match("Output") or name end)
+      function(name) return name:match(TR("Output")) or name:match("Output") or name end)
   end
 
   layoutcur = saveNotebook(ide:GetProjectNotebook())
