@@ -437,10 +437,10 @@ function SettingsRestoreView()
     local besth = toolbar:IsOk() and tonumber(uimgr:SavePaneInfo(toolbar):match("besth=([^;]+)"))
 
     -- reload the perspective if the saved one is not empty as it's different from the default
-    if #layout > 0 then uimgr:LoadPerspective(layout, false) end
+    if #layout > 0 then uimgr:LoadPerspective(layout, true) end
 
     local screenw = frame:GetClientSize():GetWidth()
-    if toolbar:IsOk() and screenw > 0 then toolbar:BestSize(screenw, besth or -1) end
+    if toolbar:IsOk() then toolbar:BestSize(screenw, besth or -1) end
 
     -- check if debugging panes are not mentioned and float them
     for _, name in pairs({"stackpanel", "watchpanel"}) do
