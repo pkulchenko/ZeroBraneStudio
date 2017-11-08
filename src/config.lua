@@ -12,6 +12,8 @@ return {
     edgemode = wxstc.wxSTC_EDGE_NONE,
     fold = true,
     foldcompact = true,
+    fontname = nil,
+    fontsize = nil,
     indentguide = true,
     linenumber = true,
     saveallonrun = false,
@@ -48,6 +50,8 @@ return {
     usecurrentextension = true,
   },
   console = {
+    fontname = nil,
+    fontsize = nil,
   },
   output = {
     ansimap = { -- using mIRC colors from https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -70,6 +74,8 @@ return {
       brightcyan = {st = 54, fg = {0,255,255}},
       brightwhite = {st = 55, fg = {255,255,255}},
     },
+    fontname = nil,
+    fontsize = nil,
     showansi = true,
     usewrap = true,
   },
