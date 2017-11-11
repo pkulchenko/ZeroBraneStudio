@@ -52,6 +52,7 @@ return {
   console = {
     fontname = nil,
     fontsize = nil,
+    nomousezoom = false,
   },
   output = {
     ansimap = { -- using mIRC colors from https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -76,6 +77,7 @@ return {
     },
     fontname = nil,
     fontsize = nil,
+    nomousezoom = false,
     showansi = true,
     usewrap = true,
   },
