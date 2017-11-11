@@ -1353,6 +1353,8 @@ function ide:GetFileList(...) return FileSysGetRecursive(...) end
 
 function ide:AnalyzeString(...) return AnalyzeString(...) end
 
+function ide:AnalyzeFile(...) return AnalyzeFile(...) end
+
 do
   local codepage
   function ide:GetCodePage()
