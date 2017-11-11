@@ -230,6 +230,8 @@ else
     return err and err:gsub(".-:%d+: file%s+",""):gsub(", line (%d+), char %d+", ":%1")
   end
 
+  init()
+
   warnings_from_string = function(src, file)
     init()
 
