@@ -1,6 +1,6 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Oct 31 2017)
+## v1.70 (Nov 11 2017)
 
 ### Highlights
   - Added support for using luacheck.
@@ -12,7 +12,7 @@
   - Improved UI responsiveness during find-in-files search.
   - Updated commandbar to improve prefiltering performance on search through large file sets.
   - Updated moai API to community version 1.8 RC.
-  - Updated app launch script to make single instance detection work with High Sierra.
+  - Fixed multiple instance launch on MacOS High Sierra.
   - Fixed lexlpeg styling on Linux; 110+ languages and formats are now styled on all platforms.
   - Fixed debugging for Lua 5.2/5.3 when `LUA_PATH_5_2`/`5_3` env variable is set.
 
@@ -23,6 +23,12 @@
   - To [olueiro](https://github.com/olueiro) for update pt-br language translation.
 
 ### Improvements
+  - Added `AnalyzeFile` method (#166).
+  - Added `AnalyzeString` method (#166).
+  - Added `fontname` and `fontsize` to the default config.
+  - Added auto-rescaling of toolbar icons if smaller sizes are available.
+  - Added more locations to the default installation path to check for Corona.
+  - Added warning on using removed `outputshell` settings in the config.
   - Added reapplying ansi color styles after color scheme switching (#684).
   - Added support for ansi escapes to color text in Output window (closes #684).
   - Added status messages for find-in-files to better report search progress (#822).
@@ -93,6 +99,8 @@
   - Refactored methods to score and show commandbar items.
   - Replaced obsolete global function `FileSysGetRecursive` with `GetFileList` method (#166).
   - Split `outputshell` into `output` and `console` settings (#684).
+  - Updated settings processing to use methods.
+  - Updated to reset toolbar size after configuration changes.
   - Updated app launch script to make single instance detection work with High Sierra (closes #813).
   - Updated search status refresh to avoid too frequent updates that delay the search (#822).
   - Updated find-in-files to allow aborting for better UI responsiveness (closes #822).
@@ -164,6 +172,7 @@
   - Removed deprecated `GetEditorFileAndCurInfo` global function; use `ide:GetEditor()` instead.
   - Removed deprecated `GetEditor` global function; use `ide:GetEditor()` instead.
   - Removed deprecated `GetEditorWithFocus` global function; use `ide:GetEditorWithFocus()` instead.
+  - Reorganized `ide.font` table.
   - Split `outputshell` into `output` and `console` settings (#684).
 
 ## v1.60 (Apr 19 2017)
