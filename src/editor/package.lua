@@ -1351,6 +1351,8 @@ function ide:MergePath(...) return MergeFullPath(...) end
 
 function ide:GetFileList(...) return FileSysGetRecursive(...) end
 
+function ide:AnalyzeString(...) return AnalyzeString(...) end
+
 do
   local codepage
   function ide:GetCodePage()
