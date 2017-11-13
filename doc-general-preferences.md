@@ -102,8 +102,8 @@ Use `outputshell` instead of `output` in earlier versions.
 
 - `output.fontname = "Courier New"`: set font name.
 - `output.fontsize = 10`: set font size (the default value is `11` on MacOS).
-- `output.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
-- `output.showansi = true`: enable handling of ANSI escapes in Output window (**v1.70+**).
+- `output.nomousezoom = false`: disable zoom with mouse wheel in the Output window as it may be too sensitive.
+- `output.showansi = true`: enable handling of ANSI escapes in the Output window (**v1.70+**).
 - `output.usewrap = true`: wrap long lines (**v0.51+**); set to `nil` or `false` to disable.
 
 ## Console
@@ -113,7 +113,7 @@ Use `outputshell` instead of `console` in earlier versions.
 
 - `console.fontname = "Courier New"`: set font name.
 - `console.fontsize = 10`: set font size (the default value is `11` on MacOS).
-- `console.nomousezoom = false`: disable zoom with mouse wheel in Output/Console windows as it may be too sensitive.
+- `console.nomousezoom = false`: disable zoom with mouse wheel in the Console window as it may be too sensitive.
 
 ## Project/Filetree
 
