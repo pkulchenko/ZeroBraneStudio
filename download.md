@@ -7,7 +7,7 @@ title: Download
 
 <ul class="download" id="download-options">
   <li><a class="mac" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.70-macos.dmg" onclick="var that=this;_gaq.push(['_trackEvent','Download-macos','ZeroBraneStudioEduPack-1.70-macos.dmg',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
-    Mac OS X 10.6.8+ (dmg file)</a></li>
+    macOS 10.7+ (dmg file)</a></li>
   <li><a class="winzip" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.70-win32.zip" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.70-win32.zip',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
     Windows 32bit (zip archive)</a>
       <a class="winexe" href="https://download.zerobrane.com/ZeroBraneStudioEduPack-1.70-win32.exe" onclick="var that=this;_gaq.push(['_trackEvent','Download-win32','ZeroBraneStudioEduPack-1.70-win32.exe',this.href]);setTimeout(function(){location.href=that.href;},200);return false;">
@@ -36,7 +36,7 @@ Full details are in the [changelog](https://github.com/pkulchenko/ZeroBraneStudi
 
 ## Upgrade warnings.
 
-If you are using **MacOS**, make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
+If you are using **macOS**, make sure to **save your ZeroBrane Studio system settings** (`Edit | Preferences | Settings: System`) before upgrading as those are saved inside the application folder and **will be lost** during the upgrade.
 As an alternative, you can **move those system settings to user settings** (`Edit | Preferences | Settings: User`) as those are not affected by the upgrade process.
 
 If you are using **Windows or Linux**, made any modifications to the files in the distribution,

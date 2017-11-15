@@ -17,7 +17,7 @@ All options provide **immediate access** to the product and include **personal s
 
 ## What do I get?
 You get packages for three platforms:
-**Windows** XP or later (zip or self-extracting archive), **Mac OS X** 10.6.8+ (dmg file), or **Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
+**Windows** XP or later (zip or self-extracting archive), **macOS** 10.7+ (dmg file), or **Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
 
 You also get a product key that allows you to use _ZeroBrane Studio for Vera_ from up to three computers.
 
