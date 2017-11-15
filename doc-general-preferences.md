@@ -101,7 +101,7 @@ Other possible values include setting strategy for selecting auto-complete candi
 Use `outputshell` instead of `output` in earlier versions.
 
 - `output.fontname = "Courier New"`: set font name.
-- `output.fontsize = 10`: set font size (the default value is `11` on MacOS).
+- `output.fontsize = 10`: set font size (the default value is `11` on macOS).
 - `output.nomousezoom = false`: disable zoom with mouse wheel in the Output window as it may be too sensitive.
 - `output.showansi = true`: enable handling of ANSI escapes in the Output window (**v1.70+**).
 - `output.usewrap = true`: wrap long lines (**v0.51+**); set to `nil` or `false` to disable.
@@ -112,13 +112,13 @@ Use `outputshell` instead of `output` in earlier versions.
 Use `outputshell` instead of `console` in earlier versions.
 
 - `console.fontname = "Courier New"`: set font name.
-- `console.fontsize = 10`: set font size (the default value is `11` on MacOS).
+- `console.fontsize = 10`: set font size (the default value is `11` on macOS).
 - `console.nomousezoom = false`: disable zoom with mouse wheel in the Console window as it may be too sensitive.
 
 ## Project/Filetree
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
-- `filetree.fontsize = 10`: set font size (the default size is `11` on MacOS).
+- `filetree.fontsize = 10`: set font size (the default size is `11` on macOS).
 - `filetree.iconmap = {}`: set mapping from extension to colors to use in Project/Filetree icons (**v1.51+**);
 set to `false` to disable showing extensions in icons.
 The color associated with an extension is in `{r,g,b}` format; for example, to associate `lua` extension with `red` color, use `filetree.iconmap.lua = {fg = {255, 0, 0}}`.
@@ -238,7 +238,7 @@ For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all inter
 - `toolbar.icons = { ID.NEW, ID.OPEN, ... ID.SEPARATOR, ...}`: set the order of the buttons in the toolbar.
 - `toolbar.iconsize = nil`: set the size of the icons in the toolbar.
 Only two sizes are currently supported: `16` and `24` pixels.
-**Starting from 1.11+** the default size for icons is 24 pixels on MacOS or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
+**Starting from 1.11+** the default size for icons is 24 pixels on macOS or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
 You can still set the values to `16` or `24` as desired.
 
 The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) or to `wx.wxBitmap` object; see this plugin for an [example on how to create a toolbar bitmap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/maketoolbar.lua).
@@ -301,7 +301,7 @@ The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can 
 Some configuration information that needs to be preserved between launches (windows and panels sizes and positions, open editor tabs, recently used projects and files and so on) is saved in a special file.
 The location (and the name) of this file is system dependent:
 it is located in `%HOME%\ZeroBraneStudio.ini` (**for v0.35 and earlier**) and in `%APPDATA%\ZeroBraneStudio.ini` (**for v0.36 and later**) on Windows (`%APPDATA%` is mapped to a hidden folder `C:\Users\<user>\AppData\Roaming`),
-`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on MacOS, and in
+`$HOME/Library/Preferences/ZeroBraneStudio Preferences` on macOS, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
 
@@ -332,7 +332,7 @@ You can use this setting to specify an alternative interpreter you want to use (
 
 Note that the **full executable name** is expected, not a directory name.
 The values shown are example values for a Windows-based system, not default values.
-If you are using MacOS or Linux, set the path accordingly.
+If you are using macOS or Linux, set the path accordingly.
 
 - `path.lua = 'd:/lua/lua'`: specify path to the default Lua interpreter.
 - `path.lua52 = 'd:/lua/lua52'`: specify path to the Lua 5.2 interpreter (used when `Lua 5.2` interpreter is selected).

@@ -10,13 +10,13 @@ title: Getting Started
 The editor allows you to open several programs or files and work on them at the same time.
 Each file is opened in its own page, with its name in a tab at the top of the page.
 You can **switch** between pages by clicking on those tabs.
-You can also **close** those pages when you don't need them by using the `File | Close Page` menu command or its shortcut `Ctrl-W` (`Cmd-W` on MacOS).
+You can also **close** those pages when you don't need them by using the `File | Close Page` menu command or its shortcut `Ctrl-W` (`Cmd-W` on macOS).
 
 ## Opening and saving files
 
-To **open** a program or file you can select the `File | Open` menu command or use its shortcut `Ctrl-O` (`Cmd-O` on MacOS). Or, you can double click on the file name in the `Project` panel on the left. The editor will open that file for you in a new tab, or will activate one of the existing tabs if the file is already opened.
+To **open** a program or file you can select the `File | Open` menu command or use its shortcut `Ctrl-O` (`Cmd-O` on macOS). Or, you can double click on the file name in the `Project` panel on the left. The editor will open that file for you in a new tab, or will activate one of the existing tabs if the file is already opened.
 
-To **save** a program you can select the `File | Save` menu command at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on MacOS). If the program does not have a name yet, you will be asked to provide a name for it.
+To **save** a program you can select the `File | Save` menu command at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on macOS). If the program does not have a name yet, you will be asked to provide a name for it.
 
 ## Exiting the IDE
 

@@ -25,7 +25,7 @@ If you still want to see the log content, it provides a convenient option to **d
 
 ## Feature highlights
 
-* Small, portable, and **cross-platform** (Windows, MacOS, and Linux);
+* Small, portable, and **cross-platform** (Windows, macOS, and Linux);
 * **Integrated [debugger](vera-debugging)** for applications running locally or on Vera devices;
 * **[Interactive console](vera-getting-started#console-window)** to test code snippets with local and remote execution;
 * Ability to **[push files to the device](vera-getting-started#vera-functions)** and to **[retrieve log files](vera-getting-started#vera-functions)** from it;

@@ -12,13 +12,13 @@ title: Screenshots
 **Static analyzer**
 <a href="images/static-analysis.png"><img src="images/static-analysis.png" style="width:256px; height:182px"/></a>
 
-**Auto-complete (MacOS)**
+**Auto-complete (macOS)**
 <a href="images/autocomplete-osx.png"><img src="images/autocomplete-osx.png" style="width:256px; height:182px"/></a>
 
 **Live coding (Linux)**
 <a href="images/scratchpad-linux-mint.png"><img src="images/scratchpad-linux-mint.png" style="width:256px; height:182px"/></a>
 
-**Live coding (MacOS/iOS)**
+**Live coding (macOS/iOS)**
 <a href="images/live-coding-gideros-zerobrane-studio.png"><img src="images/live-coding-gideros-zerobrane-studio.png" style="width:256px; height:182px"/></a>
 
 **Color schemes**

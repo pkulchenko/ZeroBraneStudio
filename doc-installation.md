@@ -13,7 +13,7 @@ ZeroBrane Studio can be **installed** in three different ways:
 
 The IDE can be installed into and **run from any directory**.
 No additional installation steps are needed for repository clones and snapshots (you only need to unpack the files into a destination directory).
-**No compilation is needed** as the binary components are already included, although the scripts to compile required libraries for Windows, MacOS, and Linux platforms are available in the `build/` directory.
+**No compilation is needed** as the binary components are already included, although the scripts to compile required libraries for Windows, macOS, and Linux platforms are available in the `build/` directory.
 
 ## Windows
 
@@ -22,7 +22,7 @@ The only modification that is done to the system outside of the installation dir
 
 To **uninstall** the IDE you can simply remove the directory where it was installed and delete the link added to the startup menu.
 
-## MacOS
+## macOS
 
 The IDE can be installed by dragging its directory icon from the downloaded dmg installer file into `/Applications` or any other directory.
 You can also execute the IDE directly from the mounted dmg file, but you will not be able to make modifications to the sample scripts in the `myprograms` directory.

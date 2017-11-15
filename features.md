@@ -7,7 +7,7 @@ title: Features
 Written in Lua. Extensible and open.
 
 **Cross-platform**
-Windows, MacOS, and Linux: your choice.
+Windows, macOS, and Linux: your choice.
 
 **Portable**
 Run it from any folder. No installation required.
@@ -28,7 +28,7 @@ Go to a local variable/function definition. Navigate back using the history of s
 Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
 **Small**
-With the Windows and MacOS installation packages being around 6MB, it is one of the smallest if not _the smallest_ fully featured IDE.
+With the Windows and macOS installation packages being around 6MB, it is one of the smallest if not _the smallest_ fully featured IDE.
 
 **Configurable**
 Tabs or spaces? 2 or 4? As everyone has its own preferences, ZeroBrane Studio gives you _sensible defaults_ and a way to change them.

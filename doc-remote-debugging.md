@@ -50,8 +50,8 @@ If you are debugging a **64bit application on Windows**, you need to make the 64
 and set `package.cpath` appropriately (to make sure it references 64bit libraries before any other library that may be referenced there)
 as the libraries included with the IDE are compiled for 32bit architecture and will not work with 64bit applications.
 
-MacOS and Linux don't require any special handling for 64bit applications as Linux version are available for both 32bit and 64bit architectures
-and MacOS libraries are compiled as universal libraries (and can be loaded from 32bit and 64bit applications).
+macOS and Linux don't require any special handling for 64bit applications as Linux version are available for both 32bit and 64bit architectures
+and macOS libraries are compiled as universal libraries (and can be loaded from 32bit and 64bit applications).
 
 If you also plan to launch the 64bit application from the IDE (instead of or in addition to
 launching it outside of the IDE), you need to configure `path.lua` to point to the location of your Lua executable
@@ -74,8 +74,8 @@ See [Debugging Wireshark lua scripts](http://notebook.kulchenko.com/zerobrane/de
 The location of ZeroBrane Studio is system dependent;
 on **Windows** it is the location of the directory you installed ZeroBrane Studio to;
 on **Linux** it is `/opt/zbstudio`;
-and on **Mac OS X** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio`
-(You may need to right click on the application and select `Show Package Contents` to navigate to that location on OS X).
+and on **macOS** it is `/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio`
+(You may need to right click on the application and select `Show Package Contents` to navigate to that location on macOS).
 
 * **I can't step into functions defined in other files in my project.**
 You either need to open them in the IDE before you want to step through them, or to [configure](doc-configuration) the IDE to auto-open files requested during debugging using `editor.autoactivate = true`.

@@ -28,7 +28,7 @@ title: Download
 - Improved UI responsiveness during find-in-files search.
 - Updated commandbar to improve prefiltering performance on search through large file sets.
 - Updated moai API to community version 1.8 RC.
-- Fixed multiple instance launch on **MacOS High Sierra**.
+- Fixed multiple instance launch on **macOS High Sierra**.
 - Fixed lexlpeg styling on Linux; **110+ languages and formats** are now styled on all platforms.
 - Fixed debugging for Lua 5.2/5.3 when `LUA_PATH_5_2`/`5_3` env variable is set.
 

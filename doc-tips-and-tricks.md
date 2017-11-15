@@ -99,12 +99,12 @@ This also works for messages in the stack trace as long as they include the file
 ## Run multiple instances of the IDE
 
 To run **multiple instances of the IDE**, you can start one instance as you normally do, and then start the second instance using this command: `zbstudio -cfg "singleinstance=false"`.
-If you are on MacOS, you may need to use `open -n ZeroBraneStudio.app`.
+If you are on macOS, you may need to use `open -n ZeroBraneStudio.app`.
 
 ## Run multiple instances of the IDE to debug two applications at the same time
 
 To run **multiple instances of the IDE to debug two applications**, you can start one instance as you normally do, and then start the second instance using this command: `zbstudio -cfg "singleinstance=false; debugger.port = 8173"`.
-If you are on MacOS, you may need to use `open -n ZeroBraneStudio.app --args -cfg "debugger.port = 8173"`.
+If you are on macOS, you may need to use `open -n ZeroBraneStudio.app --args -cfg "debugger.port = 8173"`.
 
 ## Merge and split windows and tabs
 
