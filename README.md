@@ -26,7 +26,7 @@ and others).
 
 ## Features
 
-* Small, portable, and **cross-platform** (Windows, Mac OSX, and Linux).
+* Small, portable, and **cross-platform** (Windows, macOS, and Linux).
 * Written in Lua and is extensible with Lua packages.
 * **Syntax highlighting** and folding for 110+ languages and file formats.
 * **Project view** with auto-refresh and ability to hide files and directories from the list.
@@ -88,7 +88,7 @@ The IDE can be launched by using the `zbstudio` command with slight variations d
 
 * **Windows**: Run `zbstudio` from the directory that the IDE is installed to or create a shortcut pointing to `zbstudio.exe`.
 * **Linux**: Run `zbstudio` when installed from the package installation or run `./zbstudio.sh` when using a snapshot/clone of the repository.
-* **Mac OSX**: Launch the `ZeroBrane Studio` application if installed or run `./zbstudio.sh` when using a snapshot/clone of the repository.
+* **macOS**: Launch the `ZeroBrane Studio` application if installed or run `./zbstudio.sh` when using a snapshot/clone of the repository.
 
 The general command for launching is the following: `zbstudio [option] [<project directory>] [<filename>...]`.
 
