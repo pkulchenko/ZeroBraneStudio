@@ -141,7 +141,7 @@ local identifier = token(l.IDENTIFIER, l.word)
 local label = token(l.LABEL, '::' * l.word * '::')
 
 -- Operators.
-local operator = token(l.OPERATOR, S('+-*/%^#=<>&|~;:,.{}[]()'))
+local operator = token(l.OPERATOR, P('..')+S('+-*/%^#=<>&|~;:,.{}[]()'))
 
 M._rules = {
   {'whitespace', ws},
