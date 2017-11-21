@@ -1187,7 +1187,7 @@ end
 local timers = {}
 local function evhandler(event)
   local callback = timers[event:GetId()]
-  if callback then callback() end
+  if callback then callback(event) end
 end
 function ide:AddTimer(ctrl, callback)
   table.insert(timers, callback or function() end)
