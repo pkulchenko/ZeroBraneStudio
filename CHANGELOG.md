@@ -3,7 +3,7 @@
 ## v1.70 (Nov 11 2017)
 
 ### Highlights
-  - Added support for using luacheck.
+  - Added support for using LuaCheck.
   - Added progress bar indicator for commandbar processing.
   - Added cache for files in the commandbar.
   - Added handling of exclusion lists encoded as hashes to simplify modifications.
@@ -12,13 +12,13 @@
   - Improved UI responsiveness during find-in-files search.
   - Updated commandbar to improve prefiltering performance on search through large file sets.
   - Updated moai API to community version 1.8 RC.
-  - Fixed multiple instance launch on MacOS High Sierra.
+  - Fixed multiple instance launch on macOS High Sierra.
   - Fixed lexlpeg styling on Linux; 110+ languages and formats are now styled on all platforms.
   - Fixed debugging for Lua 5.2/5.3 when `LUA_PATH_5_2`/`5_3` env variable is set.
 
 ### Special thanks
   - To [feserr](https://github.com/feserr) for update moai API to community version 1.8 RC.
-  - To [Elias Hogstvedt](https://github.com/CapsAdmin) for adding support for luacheck.
+  - To [Elias Hogstvedt](https://github.com/CapsAdmin) for adding support for LuaCheck.
   - To [Thijs Schreijer](https://github.com/Tieske) for adding and correcting color descriptions.
   - To [olueiro](https://github.com/olueiro) for update pt-br language translation.
 
