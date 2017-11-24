@@ -43,8 +43,10 @@ protocol.server.answerok = "Sure. You may now leave."
 if success then -- ok, server was started, we are solo
   svr:settimeout(0) -- don't block
   ide.timers.idle = ide:AddTimer(wx.wxGetApp(), function()
-      local msg, ip, port = svr:receivefrom()
-      if msg then
+      while true do
+        local msg, ip, port = svr:receivefrom()
+        if not msg then break end
+
         if msg == protocol.client.greeting then
           svr:sendto(protocol.server.greeting:format(wx.wxGetUserName()),ip,port)
         elseif msg == protocol.client.show then
