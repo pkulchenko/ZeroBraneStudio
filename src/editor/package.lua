@@ -125,6 +125,13 @@ function ide:Exit(hotexit)
   if hotexit then self.config.hotexit = true end
   self:GetMainFrame():Close()
 end
+function ide:Restart(hotexit)
+  self:AddPackage("core.restart", {
+      onAppShutdown = function() wx.wxExecute(self:GetLaunchPath(true), wx.wxEXEC_ASYNC) end
+    })
+  if self.singleinstanceserver then self.singleinstanceserver:close() end
+  self:Exit(hotexit)
+end
 function ide:GetApp() return self.editorApp end
 function ide:GetAppName() return self.appname end
 function ide:GetDefaultFileName()

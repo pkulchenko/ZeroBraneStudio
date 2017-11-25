@@ -15,19 +15,11 @@ probably a pitfal: an instance is running but is not visible
   (because it was finished though the UDP thing still runs)
 ]]
 
+if not ide.config.singleinstance then return end
+
 local socket = require "socket"
 local svr = socket.udp()
-
-function ide:Restart(hotexit)
-  self:AddPackage("core.restart", {
-      onAppShutdown = function() wx.wxExecute(ide:GetLaunchPath(true), wx.wxEXEC_ASYNC) end
-    })
-  if self.timers.idle then self.timers.idle:Stop() end
-  if svr then svr:close() end
-  self:Exit(hotexit)
-end
-
-if not ide.config.singleinstance then return end
+ide.singleinstanceserver = svr
 
 local port = ide.config.singleinstanceport
 local delay = tonumber(ide.config.singleinstance) or 1000 -- in ms
