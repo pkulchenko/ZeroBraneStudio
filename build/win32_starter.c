@@ -149,18 +149,26 @@ int WINAPI WinMain(HINSTANCE hInstance,  HINSTANCE hPrevInstance,  LPSTR lpCmdLi
 
   if (!GetFullPathName(argv[0],MAX_PATH,buffer,&file)) {
     MessageBox(NULL,
-      TEXT("Couldn't find the correct working directory"),
+      TEXT("Couldn't find the executable path"),
       TEXT("Failed to start editor"),
       MB_OK|MB_ICONERROR);
     return 0;
   }
   if (file!=NULL) *file = 0; // finish the string, don't need the appname
 
+  LPWSTR path = (LPWSTR)GlobalAlloc(GMEM_FIXED, MAX_PATH+1);
+  if (GetCurrentDirectoryW(MAX_PATH, path) == 0) {
+    MessageBox(NULL,
+      TEXT("Couldn't find the current working directory"),
+      TEXT("Failed to start editor"),
+      MB_OK|MB_ICONERROR);
+    return 0;
+  }
+
   SetCurrentDirectory(buffer);
 
   hinstLib = LoadLibrary(".\\bin\\lua51.dll");
-  if (hinstLib != NULL)
-  {
+  if (hinstLib != NULL) {
     luaL_newstate = (voidfunc*) GetProcAddress(hinstLib, "luaL_newstate");
     luaL_loadbuffer = (varfunc*) GetProcAddress(hinstLib, "luaL_loadbuffer");
     luaL_openlibs = (varfunc*) GetProcAddress(hinstLib, "luaL_openlibs");
@@ -182,13 +190,19 @@ int WINAPI WinMain(HINSTANCE hInstance,  HINSTANCE hPrevInstance,  LPSTR lpCmdLi
       // of the whole process, it SHOULD be pretty unlikely to fail here
       // but don't come back on me if it does...
       void *L = luaL_newstate();
-      int i;
 
       if (L!=NULL) {
-        lua_createtable(L,argc,0);
-        for (i=0;i<argc;i++) {
+        int i;
+        lua_createtable(L,argc+2,0);
+        lua_pushstring(L,argv[0]); // executable name goes first
+        lua_rawseti(L,-2,1);
+        lua_pushstring(L,"-cwd");
+        lua_rawseti(L,-2,2);
+        lua_pushstring(L,WideCharToUTF8(path));
+        lua_rawseti(L,-2,3);
+        for (i=1;i<argc;i++) {
           lua_pushstring(L,argv[i]);
-          lua_rawseti(L,-2,i+1);
+          lua_rawseti(L,-2,i+3);
         }
         lua_setfield(L,LUA_GLOBALSINDEX,"_ARG");
         luaL_openlibs(L);

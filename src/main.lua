@@ -71,6 +71,7 @@ ide = {
   onidle = {},
 
   proto = {}, -- prototypes for various classes
+  filenames = {}, -- names for files to load
 
   app = nil, -- application engine
   interpreter = nil, -- current Lua interpreter
@@ -335,7 +336,6 @@ ide.test.setLuaPaths = setLuaPaths
 
 ---------------
 -- process args
-local filenames = {}
 local configs = {}
 do
   -- application parameters are passed as script parameters on Windows
@@ -365,10 +365,12 @@ do
   for index = 2, #arg do
     if (arg[index] == "-cfg" and index+1 <= #arg) then
       table.insert(configs,arg[index+1])
-    elseif arg[index-1] ~= "-cfg"
+    elseif (arg[index] == "-cwd" and index+1 <= #arg) then
+      ide.cwd = arg[index+1]
+    elseif arg[index-1] ~= "-cfg" and arg[index-1] ~= "-cwd"
     -- on OSX command line includes -psn... parameter, don't include these
     and (ide.osname ~= 'Macintosh' or not arg[index]:find("^-psn")) then
-      table.insert(filenames,arg[index])
+      table.insert(ide.filenames,arg[index])
     end
   end
 
@@ -598,8 +600,8 @@ SettingsRestoreView()
 -- Load the filenames
 
 do
-  for _, filename in ipairs(filenames) do
-    if filename ~= "--" then ide:ActivateFile(filename) end
+  for _, filename in ipairs(ide.filenames) do
+    ide:ActivateFile(ide:MergePath(ide.cwd or "", filename))
   end
   if ide:GetEditorNotebook():GetPageCount() == 0 then NewFile() end
 end

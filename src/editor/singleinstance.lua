@@ -69,21 +69,16 @@ else -- something different is running on our port
       ide:Print(("Another instance is running under user '%s' and can't be activated. This instance will continue running, which may cause interference with the debugger."):format(username))
     else
       local failed = false
-      for index = 2, #arg do
-        local fileName = arg[index]
-        if fileName ~= "--"
-        -- on OSX, the command line includes -psn parameter, so ignore it
-        and (ide.osname ~= 'Macintosh' or not fileName:find("^-psn")) then
-          cln:send(protocol.client.requestloading:format(fileName))
+      for _, filename in ipairs(ide.filenames) do
+        cln:send(protocol.client.requestloading:format(ide:MergePath(ide.cwd or "", filename)))
 
-          local msg, err = cln:receive()
-          if msg ~= protocol.server.answerok then
-            failed = true
-            ide:Print(err,msg)
-          end
+        local msg, err = cln:receive()
+        if msg ~= protocol.server.answerok then
+          failed = true
+          ide:Print(err,msg)
         end
       end
-      if #arg == 1 then -- no files are being loaded; just active the IDE
+      if #ide.filenames == 0 then -- no files are being loaded; just active the IDE
         cln:send(protocol.client.show)
         if cln:receive() ~= protocol.server.answerok then failed = true end
       end
