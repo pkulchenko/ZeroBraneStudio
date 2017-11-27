@@ -159,7 +159,7 @@ local function unHideWindow(pidAssign)
     pid = pidAssign > 0 and pidAssign or nil
   end
   if pid and winapi then -- pid provided and winapi loaded
-    local now = TimeGet()
+    local now = ide:GetTime()
     if pidAssign and pidAssign > 0 then
       checkstart, checknext, checkperiod = now, now, 0.02
     end
@@ -266,7 +266,7 @@ function CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
 
   OutputSetCallbacks(pid, proc, stringcallback, endcallback)
   customprocs[pid].uid=uid
-  customprocs[pid].started = TimeGet()
+  customprocs[pid].started = ide:GetTime()
 
   local streamout = proc and proc:GetOutputStream()
   if streamout then streamouts[pid] = {stream=streamout, callback=stringcallback, out=true} end
@@ -369,7 +369,7 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         ide:SetLaunchedProcess(nil)
         nameTab(out, TR("Output"))
         DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
-          :format(TimeGet() - customprocs[pid].started, pid))
+          :format(ide:GetTime() - customprocs[pid].started, pid))
       end
       customprocs[pid] = nil
     end

@@ -563,7 +563,7 @@ function IndicateAll(editor, lines)
     cleared[indic] = pos+length
   end
 
-  local s = TimeGet()
+  local s = ide:GetTime()
   local canwork = start and 0.010 or 0.100 -- use shorter interval when typing
   local f = editor.spec.marksymbols(editor:GetTextDyn(), pos, vars)
   while true do
@@ -603,7 +603,7 @@ function IndicateAll(editor, lines)
     end
     -- in some rare cases `nobreak` may be a number indicating a desired
     -- position from which to start in case of a break
-    if lineinfo and nobreak ~= true and (op == 'Statement' or op == 'String') and TimeGet()-s > canwork then
+    if lineinfo and nobreak ~= true and (op == 'Statement' or op == 'String') and ide:GetTime()-s > canwork then
       delayed[editor] = {tonumber(nobreak) or lineinfo, vars}
       break
     end
@@ -885,7 +885,7 @@ function CreateEditor(bare)
       local evtype = event:GetModificationType()
       if bit.band(evtype, wxstc.wxSTC_MOD_CHANGEMARKER) == 0 then
         -- this event is being called on OSX too frequently, so skip these notifications
-        editor.updated = TimeGet()
+        editor.updated = ide:GetTime()
       end
       local pos = event:GetPosition()
       local firstLine = editor:LineFromPosition(pos)

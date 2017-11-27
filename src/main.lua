@@ -52,6 +52,7 @@ config.path = {
   app = nil,
 }
 ide = {
+  GetTime = (function(ok, socket) return ok and socket.gettime or os.clock end)(pcall(require, "socket")),
   MODPREF = "* ",
   MAXMARGIN = wxstc.wxSTC_MAX_MARGIN or 4,
   ANYMARKERMASK = 2^24-1,
@@ -113,7 +114,6 @@ ide = {
     and (os.getenv('HOMEDRIVE')..os.getenv('HOMEPATH'))),
   wxver = string.match(wx.wxVERSION_STRING, "[%d%.]+"),
 
-  startedat = TimeGet(),
   test = {}, -- local functions used for testing
 
   Print = function(self, ...)
@@ -127,6 +127,8 @@ ide = {
     pendingOutput[#pendingOutput + 1] = {...}
   end,
 }
+ide.startedat = ide:GetTime()
+
 -- Scintilla switched to using full byte for style numbers from using only first 5 bits
 ide.STYLEMASK = ide.wxver <= "2.9.5" and 31 or 255
 

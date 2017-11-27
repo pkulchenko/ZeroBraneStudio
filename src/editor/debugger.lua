@@ -971,7 +971,7 @@ end
 
 do
   local nextupdatedelta = 0.250
-  local nextupdate = TimeGet() + nextupdatedelta
+  local nextupdate = ide:GetTime() + nextupdatedelta
   local function forceUpdateOnWrap(editor)
     -- http://www.scintilla.org/ScintillaDoc.html#LineWrapping
     -- Scintilla doesn't perform wrapping immediately after a content change
@@ -983,9 +983,9 @@ do
   function debugger:Update()
     local debugger = self
     local smth = false
-    if debugger.server or debugger.listening and TimeGet() > nextupdate then
+    if debugger.server or debugger.listening and ide:GetTime() > nextupdate then
       smth = copas.step(0)
-      nextupdate = TimeGet() + nextupdatedelta
+      nextupdate = ide:GetTime() + nextupdatedelta
     end
 
     -- if there is any pending activation
@@ -1773,7 +1773,7 @@ function debugger:ScratchpadRefresh()
     if debugger.scratchpad.running then
       -- break the current execution first
       -- don't try too frequently to avoid overwhelming the debugger
-      local now = TimeGet()
+      local now = ide:GetTime()
       if now - debugger.scratchpad.running > 0.250 then
         debugger:Break()
         debugger.scratchpad.running = now
@@ -1788,14 +1788,14 @@ function debugger:ScratchpadRefresh()
       -- this is a special error message that is generated at the very end
       -- of each script to avoid exiting the (debugee) scratchpad process.
       -- these errors are handled and not reported to the user
-      local errormsg = 'execution suspended at ' .. TimeGet()
+      local errormsg = 'execution suspended at ' .. ide:GetTime()
       local stopper = "error('" .. errormsg .. "')"
       -- store if interpreter requires a special handling for external loop
       local extloop = ide.interpreter.scratchextloop
 
       local function reloadScratchpadCode()
         local debugger = debugger
-        debugger.scratchpad.running = TimeGet()
+        debugger.scratchpad.running = ide:GetTime()
         debugger.scratchpad.updated = false
         debugger.scratchpad.runs = (debugger.scratchpad.runs or 0) + 1
 

@@ -67,11 +67,11 @@ local function runtests()
 end
 
 pkg.onAppLoad = function()
-  local start = G.TimeGet()
+  local start = ide:GetTime()
   G.setfenv(runtests, env)
   G.print = function(s, ...)
     G.DisplayOutput(s, ...)
-    G.DisplayOutputLn(s:match("ok %d") and (" -- %.3fs"):format(G.TimeGet()-start) or "")
+    G.DisplayOutputLn(s:match("ok %d") and (" -- %.3fs"):format(ide:GetTime()-start) or "")
   end
   runtests()
 end

@@ -47,7 +47,7 @@ local function outlineRefresh(editor, force)
   local tokens = editor:GetTokenList()
   local sep = editor.spec.sep
   local varname = "([%w_][%w_"..q(sep:sub(1,1)).."]*)"
-  local funcs = {updated = TimeGet()}
+  local funcs = {updated = ide:GetTime()}
   local var = {}
   local outcfg = ide.config.outline or {}
   local scopes = {}
@@ -229,7 +229,7 @@ local function indexFromQueue()
 
   local editor = ide:GetEditor()
   local inactivity = ide.config.symbolindexinactivity
-  if editor and inactivity and editor.updated > TimeGet()-inactivity then
+  if editor and inactivity and editor.updated > ide:GetTime()-inactivity then
     -- reschedule timer for later time
     resetIndexTimer()
   else
@@ -700,7 +700,7 @@ function outline:UpdateSymbols(fname, symb)
   symbols[fname] = symb
 
   -- purge outdated records
-  local threshold = TimeGet() - 60*60*24*7 -- cache for 7 days
+  local threshold = ide:GetTime() - 60*60*24*7 -- cache for 7 days
   if not self.indexpurged then
     for k, v in pairs(symbols) do
       if v.updated < threshold then symbols[k] = nil end
