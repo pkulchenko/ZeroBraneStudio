@@ -30,7 +30,7 @@ end)
 
 -- Numbers.
 local number = #l.digit * l.last_char_includes('=') *
-               token(l.NUMBER, l.digit^1 * P('%')^-1) * in_tag
+               token(l.NUMBER, l.digit^1 * P('%')^-1) --* in_tag
 
 local alpha = R('az', 'AZ', '\127\255')
 local word_char = l.alnum + S('_-:.??')
@@ -48,7 +48,7 @@ local attribute = token('attribute', identifier) * namespace^-1 *
 local close_tag = token('element', P('/')^-1 * '>')
 
 -- Equals.
-local equals = token(l.OPERATOR, '=') * in_tag
+local equals = token(l.OPERATOR, '=') --* in_tag
 
 -- Entities.
 local entity = token('entity', '&' * word_match{
