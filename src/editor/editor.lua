@@ -44,8 +44,8 @@ local function updateStatusText(editor)
     local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
 
     texts = {
-      iff(editor:GetOvertype(), TR("OVR"), TR("INS")),
-      iff(editor:GetReadOnly(), TR("R/O"), TR("R/W")),
+      (editor:GetOvertype() and TR("OVR") or TR("INS")),
+      (editor:GetReadOnly() and TR("R/O") or TR("R/W")),
       table.concat({
         TR("Ln: %d"):format(editor:LineFromPosition(pos) + 1),
         TR("Col: %d"):format(editor:GetColumn(pos) + 1),

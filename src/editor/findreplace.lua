@@ -75,10 +75,10 @@ local function setTarget(editor, flags)
   local s, e
   if fDown then
     e = flags.EndPos or len
-    s = math.min(e, math.max(flags.StartPos or 0, iff(fAll, selStart, selEnd)))
+    s = math.min(e, math.max(flags.StartPos or 0, (fAll and selStart or selEnd)))
   else -- reverse the range for the backward search
     e = flags.StartPos or 0
-    s = math.max(e, math.min(flags.EndPos or len, iff(fAll, selEnd, selStart)))
+    s = math.max(e, math.min(flags.EndPos or len, (fAll and selEnd or selStart)))
   end
   -- if wrap around and search all requested, then search the entire document
   if fAll and fWrap then s, e = 0, len end
@@ -190,14 +190,14 @@ function findReplace:Find(reverse)
   local msg = ""
   local editor = self:GetEditor()
   if editor and self:HasText() then
-    local fDown = iff(reverse, not self:GetFlags().Down, self:GetFlags().Down)
+    local fDown = (reverse and not self:GetFlags().Down) or (not reverse and self:GetFlags().Down)
     local bf = self.inselection and self.backfocus or {}
     setSearchFlags(editor)
     setTarget(editor, {Down = fDown, StartPos = bf.spos, EndPos = bf.epos})
     local posFind = editor:SearchInTarget(findText)
     if (posFind == wx.wxNOT_FOUND) and self:GetFlags().Wrap then
-      editor:SetTargetStart(iff(fDown, bf.spos or 0, bf.epos or editor:GetLength()))
-      editor:SetTargetEnd(iff(fDown, bf.epos or editor:GetLength(), bf.spos or 0))
+      editor:SetTargetStart(fDown and (bf.spos or 0) or (bf.epos or editor:GetLength()))
+      editor:SetTargetEnd(fDown and (bf.epos or editor:GetLength()) or (bf.spos or 0))
       posFind = editor:SearchInTarget(findText)
       msg = (self.inselection
         and TR("Reached end of selection and wrapped around.")
