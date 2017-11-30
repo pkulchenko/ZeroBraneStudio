@@ -210,7 +210,7 @@ local interpreter = {
     if rundebug then
       ide:GetDebugger():SetOptions({ --[[ pass debugging options here if needed ]] })
     end
-    CommandLineRun("lua "..wfilename,self:fworkdir(wfilename),true,false)
+    CommandLineRun(('lua "%s"'):format(wfilename:GetFullPath()),self:fworkdir(wfilename),true,false)
   end,
   hasdebugger = true,
 }
