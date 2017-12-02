@@ -618,13 +618,18 @@ function CreateAutoCompList(editor,key,pos)
 
   local li
   if apilist then
-    if (#rest > 0) then
+    if (#rest > 0 and #apilist > 1) then
       local strategy = ide.config.acandtip.strategy
 
       if (strategy == 2 and #apilist < 128) then
         -- when matching "ret": "ret." < "re.t" < "r.et"
-        local patany = rest:gsub(".", function(c) return "["..c:lower()..c:upper().."](.-)" end)
-        local patcase = rest:gsub(".", function(c) return c.."(.-)" end)
+        -- only do this for the first 32 captures as this is the default in Lua;
+        -- having more captures will trigger "too many captures" error
+        local MAXCAPTURES = 32
+        local patany = rest:gsub("()(.)", function(p,c)
+            return "["..c:lower()..c:upper().."]"..(p<=MAXCAPTURES and "(.-)" or "") end)
+        local patcase = rest:gsub("()(.)", function(p,c)
+            return c..(p<=MAXCAPTURES and "(.-)" or "") end)
         local weights = {}
         local penalty = 0.1
         local function weight(str)

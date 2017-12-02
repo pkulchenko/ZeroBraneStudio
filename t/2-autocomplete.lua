@@ -8,6 +8,18 @@ local strategy = ide.config.acandtip.strategy
 for s = 2, 0, -1 do -- execute all tests for different `strategy` values
 ide.config.acandtip.strategy = s
 
+local longname = "longmorethan32charnamethatjustgoingonandonandonandon"
+for _, k in ipairs({"1", "2"}) do
+  ide.apis.lua.baselib[longname..k] = {type = "value", description = "Something long"}
+end
+ReloadAPIs()
+
+editor:SetText('')
+editor:AddText(longname)
+
+ok(pcall(function() EditorAutoComplete(editor) end),
+  ("Auto-complete (strategy=%s) doesn't fail for matches more than 32 chars long."):format(s))
+
 editor:SetText('') -- use Set/Add to position cursor after added text
 editor:AddText([[
   local line = '123'
@@ -105,7 +117,8 @@ editor:AddText([[
 ok(limitdepth(1000, function() EditorAutoComplete(editor) end),
   ("Auto-complete (strategy=%s) doesn't loop for classes that self-reference with 'valuetype'."):format(s))
 
--- restore valuetype
+-- restore values
+for _, k in ipairs({"1", "2"}) do ide.apis.lua.baselib[longname..k] = nil end
 ide.apis.lua.baselib.io.valuetype = nil
 ReloadAPIs()
 
