@@ -3,7 +3,7 @@
 
 -- Alt-Shift-Cmd-X (Alt maps to Option, Ctrl maps to Command)
 -- The mapping is largely based on [Xcode Keyboard Shortcuts](http://developer.apple.com/library/mac/#documentation/IDEs/Conceptual/xcode_help-command_shortcuts/MenuCommands/MenuCommands014.html).
-local xcode = {
+local map = {
 -- File menu
   [ID.NEW]              = "Ctrl-N",
   [ID.OPEN]             = "Ctrl-O",
@@ -69,4 +69,4 @@ local xcode = {
   [ID.QUICKEVAL]        = "",
 }
 
-for id, key in pairs(xcode) do keymap[id] = key end
+for id, key in pairs(map) do keymap[id] = key end

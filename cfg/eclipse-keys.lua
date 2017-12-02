@@ -3,7 +3,7 @@
 
 -- Alt-Shift-Cmd-X (Alt maps to Option, Ctrl maps to Command)
 -- The mapping is largely based on [Eclipse Keyboard Shortcuts](http://eclipse-tools.sourceforge.net/Keyboard_shortcuts_(3.0).pdf).
-local xcode = {
+local map = {
 -- File menu
   [ID.NEW]              = "Ctrl-N",
   [ID.OPEN]             = "Ctrl-O",
@@ -96,4 +96,4 @@ local xcode = {
   [ID.NOTEBOOKTABPREV]  = "RawCtrl-PgUp",
 }
 
-for id, key in pairs(xcode) do keymap[id] = key end
+for id, key in pairs(map) do keymap[id] = key end
