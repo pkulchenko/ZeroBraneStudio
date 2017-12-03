@@ -92,13 +92,7 @@ ide = {
   infocus = nil, -- last component with a focus
   editorApp = wx.wxGetApp(),
   editorFilename = nil,
-  openDocuments = {},-- open notebook editor documents[winId] = {
-  -- editor = wxStyledTextCtrl,
-  -- index = wxNotebook page index,
-  -- filePath = full filepath, nil if not saved,
-  -- fileName = just the filename,
-  -- modTime = wxDateTime of disk file or nil,
-  -- isModified = bool is the document modified? }
+  openDocuments = {}, -- see `Document` prototype in proto.lua for the methods
   ignoredFilesList = {},
   font = {
     eNormal = nil,
