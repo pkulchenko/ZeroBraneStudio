@@ -179,7 +179,7 @@ frame:Connect(ID_PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
     for n, style in pairs(indics) do editor:IndicatorSetStyle(n, style) end
     for n, style in pairs(keywords) do editor:StyleSetBold(n, style) end
     if not ok and printer:GetLastError() == wx.wxPRINTER_ERROR then
-      ReportError("There was a problem while printing.\nCheck if your current printer is set correctly.")
+      ide:ReportError("There was a problem while printing.\nCheck if your current printer is set correctly.")
     end
   end)
 

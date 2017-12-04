@@ -433,6 +433,11 @@ function ide:RequestAttention()
   end
 end
 
+function ide:ReportError(msg)
+  self:RequestAttention() -- request attention first in case the app is minimized or in the background
+  return wx.wxMessageBox(msg, TR("Error"), wx.wxICON_ERROR + wx.wxOK + wx.wxCENTRE, self.frame)
+end
+
 local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
   "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
 local useraw = nil

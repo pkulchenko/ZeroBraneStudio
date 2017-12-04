@@ -235,11 +235,6 @@ local function getExtsString(ed)
   .. TR("All files").." (*)|*"
 end
 
-function ReportError(msg)
-  ide:RequestAttention() -- request attention first in case the app is minimized or in the background
-  return wx.wxMessageBox(msg, TR("Error"), wx.wxICON_ERROR + wx.wxOK + wx.wxCENTRE, ide.frame)
-end
-
 function OpenFile(event)
   local editor = ide:GetEditor()
   local path = editor and ide:GetDocument(editor):GetFilePath() or nil
@@ -251,7 +246,7 @@ function OpenFile(event)
   if fileDialog:ShowModal() == wx.wxID_OK then
     for _, path in ipairs(fileDialog:GetPaths()) do
       if not LoadFile(path, nil, true) then
-        ReportError(TR("Unable to load file '%s'."):format(path))
+        ide:ReportError(TR("Unable to load file '%s'."):format(path))
       end
     end
   end
@@ -273,7 +268,7 @@ function SaveFile(editor, filePath)
     if ide.config.savebak then
       local ok, err = FileRename(filePath, filePath..".bak")
       if not ok then
-        ReportError(TR("Unable to save file '%s': %s"):format(filePath..".bak", err))
+        ide:ReportError(TR("Unable to save file '%s': %s"):format(filePath..".bak", err))
         return
       end
     end
@@ -300,7 +295,7 @@ function SaveFile(editor, filePath)
 
       return true
     else
-      ReportError(TR("Unable to save file '%s': %s"):format(filePath, err))
+      ide:ReportError(TR("Unable to save file '%s': %s"):format(filePath, err))
     end
   end
 

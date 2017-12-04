@@ -340,20 +340,20 @@ local function treeSetConnectorsAndIcons(tree)
     if overwrite and not ApproveFileOverwrite() then return false end
 
     if not fn:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then
-      ReportError(TR("Unable to create directory '%s'."):format(target))
+      ide:ReportError(TR("Unable to create directory '%s'."):format(target))
       return false
     end
 
     if isnew then -- new directory or file; create manually
       if (isdir and not wx.wxFileName.DirName(target):Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL))
       or (not isdir and not FileWrite(target, "")) then
-        ReportError(TR("Unable to create file '%s'."):format(target))
+        ide:ReportError(TR("Unable to create file '%s'."):format(target))
         return false
       end
     else -- existing directory or file; rename/move it
       local ok, err = FileRename(source, target)
       if not ok then
-        ReportError(TR("Unable to rename file '%s'."):format(source)
+        ide:ReportError(TR("Unable to rename file '%s'."):format(source)
           .."\nError: "..err)
         return false
       end
@@ -420,14 +420,14 @@ local function treeSetConnectorsAndIcons(tree)
 
     if isdir then
       if not wx.wxRmdir(source) then
-        ReportError(TR("Unable to delete directory '%s': %s")
+        ide:ReportError(TR("Unable to delete directory '%s': %s")
           :format(source, wx.wxSysErrorMsg()))
       end
     else
       local doc = ide:FindDocument(source)
       if doc then ClosePage(doc.index) end
       if not wx.wxRemoveFile(source) then
-        ReportError(TR("Unable to delete file '%s': %s")
+        ide:ReportError(TR("Unable to delete file '%s': %s")
           :format(source, wx.wxSysErrorMsg()))
       end
     end
