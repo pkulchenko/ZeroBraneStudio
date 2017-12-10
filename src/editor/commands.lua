@@ -728,7 +728,8 @@ local function getOpenTabs()
       filename = document:GetFileName(),
       filepath = document:GetFilePath(),
       tabname = document:GetTabText(),
-      modified = document:GetModTime() and document:GetModTime():GetTicks(), -- get number of seconds
+      -- get number of seconds
+      modified = document:GetFileModifiedTime() and document:GetFileModifiedTime():GetTicks(),
       content = document:IsModified() and editor:GetTextDyn() or nil,
       id = document:GetTabIndex(),
       cursorpos = editor:GetCurrentPos()})

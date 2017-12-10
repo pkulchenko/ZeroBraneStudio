@@ -8,13 +8,13 @@ ide.proto.Document = {__index = {
   GetFileName = function(self) return self.fileName end,
   GetFilePath = function(self) return self.filePath end,
   GetFileExt = function(self) return GetFileExt(self.fileName) end,
-  GetModTime = function(self) return self.modTime end,
+  GetFileModifiedTime = function(self) return self.modTime end,
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self) return self.index end,
   IsModified = function(self) return self.isModified end,
   IsNew = function(self) return self.filePath == nil end,
   SetFilePath = function(self, path) self.filePath = path end,
-  SetModTime = function(self, modtime) self.modTime = modtime end,
+  SetFileModifiedTime = function(self, modtime) self.modTime = modtime end,
   SetModified = function(self, modified)
     self.isModified = modified
     self:SetTabText()
