@@ -334,7 +334,7 @@ local missing = 3 -- penalty for missing symbols (1 missing == N matching)
 local casemismatch = 0.9 -- score for case mismatch (%% of full match)
 local function score(p, v)
   local function ngrams(str, num, low, needcache)
-    local key = str..'\1'..num
+    local key = str..(low and '\1' or '\2')..num
     if cache[key] then return unpack(cache[key]) end
 
     local t, l, p = {}, {}, 0
@@ -358,7 +358,7 @@ local function score(p, v)
     return is / (ps + vs) - (num == 1 and missing * (ps - is) / (ps + vs) or 0)
   end
 
-  local key = p..'\2'..v
+  local key = p..'\3'..v
   if not cache[key] then
     -- ignore all whitespaces in the pattern for one-gram comparison
     local score = weights.onegram * overlap(p:gsub("%s+",""), v, 1)
