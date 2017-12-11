@@ -667,6 +667,8 @@ function ide:CreateStyledTextCtrl(...)
     return true
   end
 
+  function editor:GetModifiedTime() return self.updated end
+
   editor:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
       local keycode = event:GetKeyCode()
