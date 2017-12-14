@@ -507,14 +507,13 @@ function ide:CreateStyledTextCtrl(...)
   end
 
   function editor:CanFold()
-    local foldable = false
     for m = 0, ide.MAXMARGIN do
       if self:GetMarginWidth(m) > 0
       and self:GetMarginMask(m) == wxstc.wxSTC_MASK_FOLDERS then
-        foldable = true
+        return true
       end
     end
-    return foldable
+    return false
   end
 
   -- circle through "fold all" => "hide base lines" => "unfold all"
