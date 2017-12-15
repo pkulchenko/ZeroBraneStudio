@@ -516,7 +516,7 @@ function ide:CreateStyledTextCtrl(...)
     return false
   end
 
-  -- circle through "fold all" => "hide base lines" => "unfold all"
+  -- cycle through "fold all" => "hide base lines" => "unfold all"
   function editor:FoldSome(line)
     local foldall = false -- at least one header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
