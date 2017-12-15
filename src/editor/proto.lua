@@ -20,11 +20,13 @@ ide.proto.Document = {__index = {
     self:SetTabText()
   end,
   SetTabText = function(self, text)
+    local modpref = ide.config.editor.modifiedprefix or modpref
     ide:GetEditorNotebook():SetPageText(self.index,
       (self.isModified and modpref or '')..(text or self:GetTabText()))
   end,
   GetTabText = function(self)
     if self.index == nil then return self.fileName end
+    local modpref = ide.config.editor.modifiedprefix or modpref
     return ide:GetEditorNotebook():GetPageText(self.index):gsub("^"..q(modpref), "")
   end,
   SetActive = function(self) SetEditorSelection(self.index) end,
