@@ -40,6 +40,7 @@ set to `false` or `nil` to disable;
 set to `wxstc.wxSTC_IV_LOOKFORWARD` to show indentation guides beyond the actual indentation up to the level of the next non-empty line
 and to `wxstc.wxSTC_IV_LOOKBOTH` to show indentation guides beyond the actual indentation up to the level of the next non-empty line or previous non-empty line whichever is the greater (**v1.11+**).
 - `editor.linenumber = true`: show line numbers (**v1.31+**).
+- `editor.modifiedprefix = "✱ "`: set prefix to be shown on modified editor tabs (**v1.71+**).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (**v0.39+**).
 - `editor.showfncall = false`: mark function calls;
