@@ -279,9 +279,9 @@ Note that you can still use the IDE to debug your applications as the luasocket 
 By default the execution of the project starts with the file in the current editor tab (at least with the default Lua interpreters).
 If you want to start the execution from a different file, you may set it using the following steps:
 
-1. selecting the file in the [Project panel](doc-getting-started#project-directory),
-2. right-click with the mouse to open the popup menu, and
-3. using `Set As Start File`.
+1. Select the file in the [Project panel](doc-getting-started#project-directory),
+2. Open popup menu using mouse right-click, and
+3. Select `Set As Start File`.
 
 This will set the selected file as the start file; the file will have a different icon to help distinguish it from other files.
 You can later change it to a different file or unset by selecting `Unset .... As Start File` from the same menu.
