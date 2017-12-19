@@ -49,6 +49,7 @@ set to `true` to add an [indicator for function calls](doc-styles-color-schemes#
 - `editor.tabwidth = 2`: set tab width.
 - `editor.usetabs = false`: enable using tabs.
 - `editor.usewrap = true`: wrap long lines.
+All `editor.wrap*` settings are taken into account only when this setting is set to `true`.
 - `editor.whitespace = false`: display whitespaces;
 set to `true` or `wxstc.wxSTC_WS_VISIBLEALWAYS` to display white space characters drawn as dots and arrows;
 set to `wxstc.wxSTC_WS_VISIBLEAFTERINDENT` to show white spaces after the first visible character only
