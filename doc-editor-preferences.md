@@ -55,7 +55,7 @@ set to `true` or `wxstc.wxSTC_WS_VISIBLEALWAYS` to display white space character
 set to `wxstc.wxSTC_WS_VISIBLEAFTERINDENT` to show white spaces after the first visible character only
 and to `wxstc.wxSTC_WS_VISIBLEONLYININDENT` to show white spaces used for indentation only (**v1.61+**).
 - `editor.whitespacesize = 1`: set the size of dots indicating whitespaces when shown (**v1.61+**).
-- `editor.wrapflags = nil`: enable drawing of visual flags to indicate wrapped lines (**v0.51+**).
+- `editor.wrapflags = wxstc.wxSTC_WRAPVISUALFLAG_NONE`: enable drawing of visual flags to indicate wrapped lines (**v0.51+**).
 Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subline), `wxstc.wxSTC_WRAPVISUALFLAG_START` (beginning of subline), and `wxstc.wxSTC_WRAPVISUALFLAG_MARGIN` (line number margin).
 - `editor.wrapindentmode = wxstc.wxSTC_WRAPINDENT_FIXED`: enable wrapped sublines to be indented to the position of their first subline or one more indent level (**v0.61+**).
 Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus amount set by `editor.wrapstartindent`), `wxstc.wxSTC_WRAPINDENT_SAME` (align to first subline indent), and `wxstc.wxSTC_WRAPINDENT_INDENT` (align to first subline indent plus one more level of indentation).
