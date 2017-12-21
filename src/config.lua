@@ -14,6 +14,8 @@ return {
     extradescent = nil,
     fold = true,
     foldcompact = true,
+    foldtype = 'box',
+    foldflags = wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED,
     fontname = nil,
     fontsize = nil,
     indentguide = true,
