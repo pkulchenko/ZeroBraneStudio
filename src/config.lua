@@ -21,6 +21,7 @@ return {
     indentguide = true,
     linenumber = true,
     modifiedprefix = "✱ ", -- U+2731 \xe2\x9c\xb1 HEAVY ASTERISK
+    nomousezoom = false,
     saveallonrun = false,
     showfncall = false,
     smartindent = true,
