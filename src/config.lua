@@ -10,6 +10,8 @@ return {
     commentlinetoggle = false,
     edge = false,
     edgemode = wxstc.wxSTC_EDGE_NONE,
+    extraascent = nil,
+    extradescent = nil,
     fold = true,
     foldcompact = true,
     fontname = nil,
