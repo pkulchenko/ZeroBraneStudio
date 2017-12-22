@@ -98,7 +98,7 @@ local function connectPrintEvents(printer, printOut)
       }
       dc:SetFont(editor:GetFont())
       if cfg.header then
-        local left, center, right = ExpandPlaceholders(cfg.header, placeholders):match(format)
+        local left, center, right = ide:ExpandPlaceholders(cfg.header, placeholders):match(format)
         dc:DrawText(left, printRect.X, printRect.Y)
         dc:DrawText(center, printRect.Left + (printRect.Left + printRect.Width - dc:GetTextExtentSize(center).Width)/2, printRect.Y)
         dc:DrawText(right, printRect.Left + printRect.Width - dc:GetTextExtentSize(right).Width,  printRect.Y)
@@ -106,7 +106,7 @@ local function connectPrintEvents(printer, printOut)
       end
       if cfg.footer then
         local footerY = printRect.Y + printRect.Height - headerHeight
-        local left, center, right = ExpandPlaceholders(cfg.footer, placeholders):match(format)
+        local left, center, right = ide:ExpandPlaceholders(cfg.footer, placeholders):match(format)
         dc:DrawText(left, printRect.X, footerY)
         dc:DrawText(center, printRect.Left + (printRect.Left + printRect.Width - dc:GetTextExtentSize(center).Width)/2, footerY)
         dc:DrawText(right, printRect.Left + printRect.Width - dc:GetTextExtentSize(right).Width,  footerY)

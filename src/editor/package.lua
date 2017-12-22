@@ -353,7 +353,7 @@ function ide:SetProject(projdir,skiptree)
 
   self.config.path.projectdir = projdir ~= "" and projdir or nil
   self:SetStatus(projdir)
-  self.frame:SetTitle(ExpandPlaceholders(self.config.format.apptitle))
+  self.frame:SetTitle(self:ExpandPlaceholders(self.config.format.apptitle))
 
   if skiptree then return true end
   return self.filetree:updateProjectDir(projdir)
@@ -1367,6 +1367,41 @@ function ide:GetFileList(...) return FileSysGetRecursive(...) end
 function ide:AnalyzeString(...) return AnalyzeString(...) end
 
 function ide:AnalyzeFile(...) return AnalyzeFile(...) end
+
+--[[ format placeholders
+    - %f -- full project name (project path)
+    - %s -- short project name (directory name)
+    - %i -- interpreter name
+    - %S -- file name
+    - %F -- file path
+    - %n -- line number
+    - %c -- line content
+    - %T -- application title
+    - %v -- application version
+    - %t -- current tab name
+--]]
+function ide:ExpandPlaceholders(msg, ph)
+  ph = ph or {}
+  if type(msg) == 'function' then return msg(ph) end
+  local editor = self:GetEditor()
+  local proj = self:GetProject() or ""
+  local dirs = wx.wxFileName(proj):GetDirs()
+  local doc = editor and self:GetDocument(editor)
+  local nb = self:GetEditorNotebook()
+  local def = {
+    f = proj,
+    s = dirs[#dirs] or "",
+    i = self:GetInterpreter():GetName() or "",
+    S = doc and doc:GetFileName() or "",
+    F = doc and doc:GetFilePath() or "",
+    n = editor and editor:GetCurrentLine()+1 or 0,
+    c = editor and editor:GetLineDyn(editor:GetCurrentLine()) or "",
+    T = self:GetProperty("editor") or "",
+    v = self.VERSION,
+    t = editor and nb:GetPageText(nb:GetPageIndex(editor)) or "",
+  }
+  return(msg:gsub('%%(%w)', function(p) return ph[p] or def[p] or '?' end))
+end
 
 do
   local codepage

@@ -153,7 +153,7 @@ end
 function SetEditorSelection(selection)
   local editor = ide:GetEditor(selection)
   updateStatusText(editor) -- update even if nil
-  ide.frame:SetTitle(ExpandPlaceholders(ide.config.format.apptitle))
+  ide.frame:SetTitle(ide:ExpandPlaceholders(ide.config.format.apptitle))
 
   if editor then
     editor:SetFocus()
