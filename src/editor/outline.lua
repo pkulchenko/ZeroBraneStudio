@@ -229,7 +229,7 @@ local function indexFromQueue()
 
   local editor = ide:GetEditor()
   local inactivity = ide.config.symbolindexinactivity
-  if editor and inactivity and editor.updated > ide:GetTime()-inactivity then
+  if editor and inactivity and editor:GetModifiedTime() > ide:GetTime()-inactivity then
     -- reschedule timer for later time
     resetIndexTimer()
   else
@@ -471,7 +471,7 @@ local package = ide:AddPackage('core.outline', {
       end
       local path = doc and doc:GetFilePath()
       if path and cache and cache.funcs then
-        outline:UpdateSymbols(path, cache.funcs.updated > editor.updated and cache.funcs or nil)
+        outline:UpdateSymbols(path, cache.funcs.updated > editor:GetModifiedTime() and cache.funcs or nil)
         outline:SaveSettings()
       end
     end,
