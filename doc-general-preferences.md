@@ -172,6 +172,7 @@ set to `true` to enable or to a table with options to pass to LuaCheck.
 - `commandbar.filecache = true`: enable caching for files shown in the commandbar (**v1.61+**).
 set to `false` to disable.
 - `commandbar.maxitems = 30`: set maximum number of items to show (**v1.11+**).
+- `commandbar.maxlines = 8`: set maximum number of lines to show (**v1.50+**).
 - `commandbar.prefilter = 250`: set the number of records processed in command bar at which to apply pre filtering to speed up fuzzy matching process (**v0.91+**).
 The records that don't have all symbols entered will be filtered out before matching algorithm is applied.
 - `commandbar.showallsymbols = true`: show symbols from all indexed files in the project and not just from currently opened files (**v1.11+**);
