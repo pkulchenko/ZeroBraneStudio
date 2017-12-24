@@ -77,6 +77,7 @@ When set to `false`, the tables are shown as tables; when set to `true`, the val
 set to `false` to disable and keep the rest of the word.
 - `acandtip.fillups = nil`: set characters that can be used to confirm the current selection during auto-complete (**v1.41+**);
 for example, `acandtip.fillups = ".("` will allow `.` and `(` to complete the auto-complete selection (instead of canceling it).
+- `acandtip.ignorecase = false`: set to ignore character case during auto-complete.
 - `acandtip.nodynwords = true`: do not offer dynamic (user entered) words;
 set to `false` to collect all words from all open editor tabs and offer them as part of the auto-complete list.
 - `acandtip.shorttip = true`: show short calltip when typing;
