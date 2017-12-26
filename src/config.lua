@@ -93,28 +93,30 @@ return {
     usewrap = true,
   },
   filetree = {
+    fontname = nil,
+    fontsize = 9,
+    iconmap = {},
     mousemove = true,
     showchanges = true,
-    iconmap = {},
   },
   outline = {
     activateonclick = true,
     jumptocurrentfunction = true,
     showanonymous = '~',
-    showcurrentfunction = true,
     showcompact = false,
+    showcurrentfunction = true,
     showflat = false,
     showmethodindicator = false,
     showonefile = false,
     sort = false,
   },
   commandbar = {
-    prefilter = 250, -- number of records after which to apply filtering
+    filecache = true, -- caches files for the current session
     maxitems = 30, -- max number of items to show
     maxlines = 8, -- max number of lines to show
-    filecache = true, -- caches files for the current session
-    width = 0.35, -- <1 -- size in proportion to the app frame width; >=1 -- size in pixels
+    prefilter = 250, -- number of records after which to apply filtering
     showallsymbols = true, -- show all symbols in a project
+    width = 0.35, -- <1 -- size in proportion to the app frame width; >=1 -- size in pixels
   },
   staticanalyzer = {
     infervalue = false, -- run more detailed static analysis; off by default as it's a slower mode
