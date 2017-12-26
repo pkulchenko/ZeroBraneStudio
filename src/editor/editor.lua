@@ -695,7 +695,7 @@ function CreateEditor(bare)
         editor:SetWrapStartIndent(tonumber(edcfg.wrapstartindent) or 0)
       end
       if edcfg.wrapindentmode then
-        editor:SetWrapIndentMode(edcfg.wrapindentmode)
+        editor:SetWrapIndentMode(tonumber(edcfg.wrapindentmode) or wxstc.wxSTC_WRAPINDENT_FIXED)
       end
     end
   else
