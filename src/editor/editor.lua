@@ -858,7 +858,13 @@ function CreateEditor(bare)
       local line = editor:LineFromPosition(event:GetPosition())
       local marginno = event:GetMargin()
       if marginno == margin.MARKER then
-        editor:BreakpointToggle(line)
+
+        local ctrl = wx.wxGetKeyState(wx.WXK_CONTROL)
+        if ctrl then
+          editor:BookmarkToggle(line)
+        else
+          editor:BreakpointToggle(line)
+        end
       elseif marginno == margin.FOLD then
         local header = bit.band(editor:GetFoldLevel(line),
           wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
