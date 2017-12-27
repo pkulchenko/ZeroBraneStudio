@@ -309,6 +309,15 @@ function debugger:ActivateDocument(file, line, activatehow)
   if not file then return end
   line = tonumber(line)
 
+  local dir_map = ide.config.debugger and ide.config.debugger.dir_map
+  if dir_map then
+    for _, map in ipairs(dir_map) do
+      local n
+      file, n = string.gsub(file, map[1], map[2])
+      if n > 0 then break end
+    end
+  end
+
   -- file can be a filename or serialized file content; deserialize first.
   -- check if the filename starts with '"' and is deserializable
   -- to avoid showing filenames that may look like valid lua code
