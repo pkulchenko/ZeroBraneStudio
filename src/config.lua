@@ -33,6 +33,7 @@ return {
     whitespace = false,
     whitespacesize = 1,
     wrapflags = wxstc.wxSTC_WRAPVISUALFLAG_NONE,
+    wrapflagslocation = wxstc.wxSTC_WRAPVISUALFLAGLOC_DEFAULT,
     wrapindentmode = wxstc.wxSTC_WRAPINDENT_FIXED,
     wrapmode = wxstc.wxSTC_WRAP_WORD,
     wrapstartindent = 0,

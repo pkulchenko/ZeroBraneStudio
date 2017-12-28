@@ -697,6 +697,9 @@ function CreateEditor(bare)
       if edcfg.wrapindentmode then
         editor:SetWrapIndentMode(tonumber(edcfg.wrapindentmode) or wxstc.wxSTC_WRAPINDENT_FIXED)
       end
+      if edcfg.wrapflagslocation then
+        editor:SetWrapVisualFlagsLocation(tonumber(edcfg.wrapflagslocation) or wxstc.wxSTC_WRAPVISUALFLAGLOC_DEFAULT)
+      end
     end
   else
     editor:SetScrollWidth(100) -- set default width
