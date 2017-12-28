@@ -57,6 +57,9 @@ and to `wxstc.wxSTC_WS_VISIBLEONLYININDENT` to show white spaces used for indent
 - `editor.whitespacesize = 1`: set the size of dots indicating whitespaces when shown (**v1.61+**).
 - `editor.wrapflags = wxstc.wxSTC_WRAPVISUALFLAG_NONE`: enable drawing of visual flags to indicate wrapped lines (**v0.51+**).
 Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAG_END` (end of subline), `wxstc.wxSTC_WRAPVISUALFLAG_START` (beginning of subline), and `wxstc.wxSTC_WRAPVISUALFLAG_MARGIN` (line number margin).
+- `editor.wrapflagslocation = wxstc.wxSTC_WRAPVISUALFLAGLOC_DEFAULT`: set whether the visual flags to indicate a line is wrapped are drawn near the border or near the text (**v1.71+**).
+Possible values (can be combined): `wxstc.wxSTC_WRAPVISUALFLAGLOC_DEFAULT` (flags drawn near border), `wxstc.wxSTC_WRAPVISUALFLAGLOC_END_BY_TEXT` (flag at end of subline drawn near text), and `wxstc.wxSTC_WRAPVISUALFLAGLOC_START_BY_TEXT` (flag at beginning of subline drawn near text).
+Note that the the location value set by `wrapflagslocation` has to correspond to the flag value set by `wrapflags`. For example, setting flag location to be shown at the start of text (`wxstc.wxSTC_WRAPVISUALFLAGLOC_START_BY_TEXT`) when flags are shown at the end (`wrapflags` set to `wxstc.wxSTC_WRAPVISUALFLAG_END`) will have no effect.
 - `editor.wrapindentmode = wxstc.wxSTC_WRAPINDENT_FIXED`: enable wrapped sublines to be indented to the position of their first subline or one more indent level (**v0.61+**).
 Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus amount set by `editor.wrapstartindent`), `wxstc.wxSTC_WRAPINDENT_SAME` (align to first subline indent), and `wxstc.wxSTC_WRAPINDENT_INDENT` (align to first subline indent plus one more level of indentation).
 - `editor.wrapmode = wxstc.wxSTC_WRAP_WORD`: set the type of wrapping applied (**v1.21+**).
