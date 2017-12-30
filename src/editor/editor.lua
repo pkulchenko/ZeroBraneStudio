@@ -683,6 +683,7 @@ function CreateEditor(bare)
   editor:SetUseTabs(edcfg.usetabs and true or false)
   editor:SetIndentationGuides(tonumber(edcfg.indentguide) or (edcfg.indentguide and true or false))
   editor:SetViewWhiteSpace(tonumber(edcfg.whitespace) or (edcfg.whitespace and true or false))
+  editor:SetEndAtLastLine(edcfg.endatlastline and true or false)
 
   if (edcfg.usewrap) then
     editor:SetWrapMode(edcfg.wrapmode)

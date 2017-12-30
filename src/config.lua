@@ -10,6 +10,7 @@ return {
     commentlinetoggle = false,
     edge = false,
     edgemode = wxstc.wxSTC_EDGE_NONE,
+    endatlastline = true,
     extraascent = nil,
     extradescent = nil,
     fold = true,
