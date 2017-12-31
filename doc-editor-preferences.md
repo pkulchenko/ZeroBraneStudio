@@ -26,6 +26,8 @@ set to `true` to enable (at 80 columns) or to a number to set to specific column
 set to `wxstc.wxSTC_EDGE_LINE` to display as a line or
 set to `wxstc.wxSTC_EDGE_BACKGROUND` to display as a different background color of characters after the column limit.
 The color of the characters or the edge line is controlled by `style.edge.fg` configuration setting.
+- `editor.endatlastline = true`: set the scroll range so that maximum scroll position has the last line at the bottom of the view (**v1.71+**);
+set to `false` to allow scrolling one page below the last line.
 - `editor.extraascent = nil`: extra spacing (in pixels) above the baseline (**v0.51+**).
 - `editor.extradescent = nil`: extra spacing (in pixels) below the baseline (**v0.61+**).
 - `editor.fold = true`: enable folding (**v0.39+**).
