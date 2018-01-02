@@ -272,29 +272,30 @@ local function treeSetConnectorsAndIcons(tree)
     end
   end
 
-  local function unMapDir(dir)
+  function tree:UnmapDirectory(path)
     local project = ide:GetProject()
     if not project then return end
 
     local mapped = filetree.settings.mapped[project] or {}
     for k, m in ipairs(mapped) do
-      if m == dir then table.remove(mapped, k) end
+      if m == path then table.remove(mapped, k) end
     end
     filetree.settings.mapped[project] = #mapped > 0 and mapped or nil
-    refreshAncestors(tree:GetRootItem())
+    refreshAncestors(self:GetRootItem())
   end
-  local function mapDir()
+  function tree:MapDirectory(path)
     local project = ide:GetProject()
     if not project then return end
 
-    local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
-      project ~= "" and project or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
-    if dirPicker:ShowModal(true) ~= wx.wxID_OK then return end
-    local dir = wx.wxFileName.DirName(FixDir(dirPicker:GetPath()))
-    local path = dir:GetFullPath()
-
-    -- don't remap the project directory
-    if dir:SameAs(wx.wxFileName(project)) then return end
+    if not path then
+      local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
+        project ~= "" and project or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
+      if dirPicker:ShowModal(true) ~= wx.wxID_OK then return end
+      local dir = wx.wxFileName.DirName(FixDir(dirPicker:GetPath()))
+      -- don't remap the project directory
+      if dir:SameAs(wx.wxFileName(project)) then return end
+      path = dir:GetFullPath()
+    end
 
     local mapped = filetree.settings.mapped[project] or {}
     for _, m in ipairs(mapped) do
@@ -302,7 +303,7 @@ local function treeSetConnectorsAndIcons(tree)
     end
     table.insert(mapped, path)
     filetree.settings.mapped[project] = mapped
-    refreshAncestors(tree:GetRootItem())
+    refreshAncestors(self:GetRootItem())
   end
 
   local empty = ""
@@ -401,7 +402,7 @@ local function treeSetConnectorsAndIcons(tree)
   local function deleteItem(item_id)
     -- if delete is for mapped directory, unmap it instead
     if tree:IsDirMapped(item_id) then
-      unMapDir(tree:GetItemText(item_id))
+      tree:UnmapDirectory(tree:GetItemText(item_id))
       return
     end
 
@@ -598,12 +599,12 @@ local function treeSetConnectorsAndIcons(tree)
     end)
   tree:Connect(ID_MAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      mapDir()
+      tree:MapDirectory()
       saveSettings()
     end)
   tree:Connect(ID_UNMAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      unMapDir(tree:GetItemText(tree:GetFocusedItem()))
+      tree:UnmapDirectory(tree:GetItemText(tree:GetFocusedItem()))
       saveSettings()
     end)
   tree:Connect(ID_PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
