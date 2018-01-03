@@ -78,8 +78,9 @@ local function treeAddDir(tree,parent_id,rootdir)
   local curr
   local files = ide:GetFileList(rootdir)
   local dirmapped = {}
+  local projpath = ide:GetProject()
   if tree:IsRoot(parent_id) then
-    local mapped = filetree.settings.mapped[ide:GetProject()] or {}
+    local mapped = filetree.settings.mapped[projpath] or {}
     table.sort(mapped)
     -- insert into files at the sorted order
     for i, v in ipairs(mapped) do
@@ -96,7 +97,7 @@ local function treeAddDir(tree,parent_id,rootdir)
 
       -- keep full name for the mapped directories
       if dirmapped[file] then
-        name = file:gsub(pathsep.."$","")
+        name = file:gsub(q(projpath), ""):gsub(pathsep.."$","")
         icon = image.DIRECTORYMAPPED
       end
 
