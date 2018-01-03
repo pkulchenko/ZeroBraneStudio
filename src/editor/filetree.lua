@@ -95,7 +95,10 @@ local function treeAddDir(tree,parent_id,rootdir)
       local icon = getIcon(file, isdir)
 
       -- keep full name for the mapped directories
-      if dirmapped[file] then name, icon = file, image.DIRECTORYMAPPED end
+      if dirmapped[file] then
+        name = file:gsub(pathsep.."$","")
+        icon = image.DIRECTORYMAPPED
+      end
 
       local item = items[name .. icon]
       if item then -- existing item
