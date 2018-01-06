@@ -1144,7 +1144,7 @@ function findReplace:refreshPanel(replace, infiles)
   end
 
   local value = self.scope:GetValue()
-  local ed = ide:GetEditor()
+  local ed = self:GetEditor()
   if not value or #value == 0 then
     local doc = ed and ide:GetDocument(ed)
     local ext = doc and doc:GetFileExt() or ""
