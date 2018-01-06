@@ -480,6 +480,7 @@ function SaveModifiedDialog(editor, allow_cancel)
   local filePath = document.filePath
   local fileName = document.fileName
   if document.isModified then
+    document:GetEditor():SetFocus()
     local message = TR("Do you want to save the changes to '%s'?")
       :format(fileName or ide.config.default.name)
     local dlg_styles = wx.wxYES_NO + wx.wxCENTRE + wx.wxICON_QUESTION
