@@ -34,12 +34,25 @@ return {
       pathcache = corona
     end
 
-    local file = GetFullPathIfExists(self:fworkdir(wfilename), 'main.lua')
-    if not file then
-      ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
-        :format(self:fworkdir(wfilename)))
-      return
+    local projdir = self:fworkdir(wfilename)
+    if not GetFullPathIfExists(projdir, 'main.lua') then
+      local altpath = wfilename:GetPath(wx.wxPATH_GET_VOLUME)
+      local altname = GetFullPathIfExists(altpath, 'main.lua')
+      if altname and wx.wxMessageBox(
+          ("Can't find 'main.lua' file in the current project folder.\n"
+           .."Would you like to switch the project directory to '%s'?"):format(altpath),
+          "Corona SDK",
+          wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES then
+        ide:SetProject(altpath)
+        projdir = altpath
+      else
+        ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
+          :format(projdir))
+        return
+      end
     end
+
+    local file = ide:MergePath(projdir, 'main.lua')
 
     if rundebug then
       -- start running the application right away
@@ -53,7 +66,7 @@ return {
 
       -- copy mobdebug.lua to Resources/ folder on Win and to the project folder on OSX
       -- as copying it to Resources/ folder seems to break the signature of the app.
-      local mdbc = mac and MergeFullPath(self:fworkdir(wfilename), "mobdebug.lua")
+      local mdbc = mac and MergeFullPath(projdir, "mobdebug.lua")
         or MergeFullPath(GetPathWithSep(corona), "Resources/mobdebug.lua")
       local mdbl = MergeFullPath(GetPathWithSep(ide.editorFilename), "lualibs/mobdebug/mobdebug.lua")
       local needed = needRefresh(mdbl, mdbc)
@@ -94,7 +107,7 @@ return {
     local cwc = uhw and uhw.ConsoleWindowClass
     if uhw and cfg.showconsole then uhw.ConsoleWindowClass = 0 end
     -- CommandLineRun(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-    return CommandLineRun(cmd,self:fworkdir(wfilename),true,true,nil,nil,
+    return CommandLineRun(cmd,projdir,true,true,nil,nil,
       function() if uhw and cfg.showconsole then uhw.ConsoleWindowClass = cwc end end)
   end,
   hasdebugger = true,
