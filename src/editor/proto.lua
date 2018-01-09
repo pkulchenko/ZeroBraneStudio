@@ -11,18 +11,17 @@ ide.proto.Document = {__index = {
   GetFileModifiedTime = function(self) return self.modTime end,
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self) return self.index end,
-  IsModified = function(self) return self.isModified end,
+  IsModified = function(self) return self.editor:GetModify() end,
   IsNew = function(self) return self.filePath == nil end,
   SetFilePath = function(self, path) self.filePath = path end,
   SetFileModifiedTime = function(self, modtime) self.modTime = modtime end,
   SetModified = function(self, modified)
-    self.isModified = modified
-    self:SetTabText()
+    if modified == false then self.editor:SetSavePoint() end
   end,
   SetTabText = function(self, text)
     local modpref = ide.config.editor.modifiedprefix or modpref
     ide:GetEditorNotebook():SetPageText(self.index,
-      (self.isModified and modpref or '')..(text or self:GetTabText()))
+      (self:IsModified() and modpref or '')..(text or self:GetTabText()))
   end,
   GetTabText = function(self)
     if self.index == nil then return self.fileName end

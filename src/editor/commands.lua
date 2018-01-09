@@ -30,7 +30,7 @@ local function findUnusedEditor()
   local editor
   for _, document in pairs(openDocuments) do
     if (document.editor:GetLength() == 0) and
-    (not document.isModified) and (not document.filePath) and
+    (not document:IsModified()) and document:IsNew() and
     not (document.editor:GetReadOnly() == true) then
       editor = document.editor
       break
@@ -286,7 +286,6 @@ function SaveFile(editor, filePath)
       doc.filePath = filePath
       doc.fileName = wx.wxFileName(filePath):GetFullName()
       doc.modTime = GetFileModTime(filePath)
-      doc:SetModified(false)
       doc:SetTabText(doc:GetFileName())
       SetAutoRecoveryMark()
       FileTreeMarkSelected(filePath)
@@ -369,8 +368,8 @@ function SaveAll(quiet)
     local editor = document.editor
     local filePath = document.filePath
 
-    if (document.isModified or not document.filePath) -- need to save
-    and (document.filePath or not quiet) then -- have path or can ask user
+    if (document:IsModified() or document:IsNew()) -- need to save
+    and (filePath or not quiet) then -- have path or can ask user
       SaveFile(editor, filePath) -- will call SaveFileAs if necessary
     end
   end
@@ -475,14 +474,11 @@ end
 -- returns wxID_YES, wxID_NO, or wxID_CANCEL if allow_cancel
 function SaveModifiedDialog(editor, allow_cancel)
   local result = wx.wxID_NO
-  local id = editor:GetId()
-  local document = openDocuments[id]
-  local filePath = document.filePath
-  local fileName = document.fileName
-  if document.isModified then
+  local document = ide:GetDocument(editor)
+  if document:IsModified() then
     document:GetEditor():SetFocus()
     local message = TR("Do you want to save the changes to '%s'?")
-      :format(fileName or ide.config.default.name)
+      :format(document:GetFileName() or ide.config.default.name)
     local dlg_styles = wx.wxYES_NO + wx.wxCENTRE + wx.wxICON_QUESTION
     if allow_cancel then dlg_styles = dlg_styles + wx.wxCANCEL end
     local dialog = wx.wxMessageDialog(ide.frame, message,
@@ -491,7 +487,7 @@ function SaveModifiedDialog(editor, allow_cancel)
     result = dialog:ShowModal()
     dialog:Destroy()
     if result == wx.wxID_YES then
-      if not SaveFile(editor, filePath) then
+      if not document:Save() then
         return wx.wxID_CANCEL -- cancel if canceled save dialog
       end
     end
@@ -511,7 +507,7 @@ function SaveOnExit(allow_cancel)
   -- are still modified as not modified (they don't need to be saved)
   -- to keep their tab names correct
   for _, document in pairs(openDocuments) do
-    if document.isModified then document:SetModified(false) end
+    if document:IsModified() then document:SetModified(false) end
   end
 
   return true
@@ -589,10 +585,10 @@ end
 -- Save & Close
 
 function SaveIfModified(editor)
-  local id = editor:GetId()
-  if openDocuments[id].isModified then
+  local doc = ide:GetDocument(editor)
+  if doc:IsModified() or doc:IsNew() then
     local saved = false
-    if not openDocuments[id].filePath then
+    if doc:IsNew() then
       local ret = wx.wxMessageBox(
         TR("You must save the program first.").."\n"..TR("Press cancel to abort."),
         TR("Save file?"), wx.wxOK + wx.wxCANCEL + wx.wxCENTRE, ide.frame)
@@ -600,14 +596,9 @@ function SaveIfModified(editor)
         saved = SaveFileAs(editor)
       end
     else
-      saved = SaveFile(editor, openDocuments[id].filePath)
+      saved = doc:Save()
     end
-
-    if saved then
-      openDocuments[id].isModified = false
-    else
-      return false -- not saved
-    end
+    return saved
   end
 
   return true -- saved
@@ -712,7 +703,6 @@ function SetOpenTabs(params)
           ide:Print(TR("File '%s' has more recent timestamp than restored '%s'; please review before saving.")
             :format(doc.filepath, opendoc:GetTabText()))
         end
-        opendoc:SetModified(true)
       end
       editor:GotoPosDelayed(doc.cursorpos or 0)
     end

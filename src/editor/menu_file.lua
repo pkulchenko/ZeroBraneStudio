@@ -207,7 +207,7 @@ frame:Connect(ID_SAVEALL, wx.wxEVT_UPDATE_UI,
   function (event)
     local atLeastOneModifiedDocument = false
     for _, document in pairs(openDocuments) do
-      if document.isModified or not document.filePath then
+      if document:IsModified() or document:IsNew() then
         atLeastOneModifiedDocument = true
         break
       end

@@ -1146,7 +1146,7 @@ function CreateEditor(bare)
   local function updateModified()
     local update = function()
       local doc = ide:GetDocument(editor)
-      if doc then doc:SetModified(editor:GetModify()) end
+      if doc then doc:SetTabText() end
     end
     -- delay update on Unix/Linux as it seems to hang the application on ArchLinux;
     -- execute immediately on other platforms
@@ -1593,7 +1593,6 @@ function AddEditor(editor, name)
   document.fileName = name
   document.filePath = nil
   document.modTime = nil
-  document.isModified = false
   openDocuments[id] = document
 
   -- add page only after document is created as there may be handlers
