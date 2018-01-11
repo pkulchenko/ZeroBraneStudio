@@ -120,6 +120,7 @@ for ARG in "$@"; do
     BUILD_LUASEC=true
     BUILD_LFS=true
     BUILD_LPEG=true
+    BUILD_LEXLPEG=true
     ;;
   *)
     echo "Error: invalid argument $ARG"
