@@ -242,12 +242,15 @@ if [ $BUILD_LEXLPEG ]; then
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dll" ] || { echo "Error: LexLPeg.dll isn't found"; exit 1; }
   [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dll"
   cd ..
-  rm -rf "$WXWIDGETS_BASENAME" "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+  rm -rf "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+  # don't delete wxwidgets, if it's requested to be built
+  [ $BUILD_WXWIDGETS ] || rm -rf "$WXWIDGETS_BASENAME"
 fi
 
 # build wxWidgets
 if [ $BUILD_WXWIDGETS ]; then
-  git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  # don't clone again, as it's already cloned for lexlpeg
+  [ $BUILD_LEXLPEG ] || git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
 
   # checkout the version that was used in wxwidgets upgrade to 3.1.x
