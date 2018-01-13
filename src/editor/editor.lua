@@ -1687,7 +1687,6 @@ local function setLexLPegLexer(editor, lexername)
   if ok then wx.wxSetEnv("LUA_CPATH", ide.osclibs) end
   editor:SetLexerLanguage("lpeg")
   editor:SetProperty("lexer.lpeg.home", lpath)
-  editor:SetProperty("fold", edcfg.fold and "1" or "0")
   editor:PrivateLexerCall(wxstc.wxSTC_SETLEXERLANGUAGE, lexer) --[[ SetLexerLanguage for LexLPeg ]]
   if ok then wx.wxSetEnv("LUA_CPATH", cpath) end
 
@@ -1743,11 +1742,12 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
 
   -- need to set folding property after lexer is set, otherwise
   -- the folds are not shown (wxwidgets 2.9.5)
+  editor:SetProperty("fold", edcfg.fold and "1" or "0")
   if edcfg.fold then
-    editor:SetProperty("fold", "1")
     editor:SetProperty("fold.html", "1")
     editor:SetProperty("fold.compact", edcfg.foldcompact and "1" or "0")
     editor:SetProperty("fold.comment", "1")
+    editor:SetProperty("fold.line.comments", "1")
   end
   
   -- quickfix to prevent weird looks, otherwise need to update styling mechanism for cpp
