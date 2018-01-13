@@ -145,8 +145,8 @@ fi
 
 # check for wget
 if [ ! "$(which wget)" ]; then
-  # NOTE: can't check the return status since mingw-get always returns 0 even in the case of errors :(
-  mingw-get install msys-wget
+  echo "Error: wget isn't found. Please install GNU Wget."
+  exit 1
 fi
 
 # create the installation directory
