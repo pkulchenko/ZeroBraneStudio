@@ -236,6 +236,9 @@ frame:Connect(ID_EXIT, wx.wxEVT_COMMAND_MENU_SELECTED,
     frame:Close() -- this will trigger wxEVT_CLOSE_WINDOW
   end)
 
+frame:Connect(ID_RESTART, wx.wxEVT_COMMAND_MENU_SELECTED,
+  function (event) ide:Restart(true) end)
+
 frame:Connect(ID_RECENTPROJECTSCLEAR, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) FileTreeProjectListClear() end)
 
