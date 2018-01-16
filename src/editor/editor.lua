@@ -1624,7 +1624,8 @@ local function cleanup(paths)
     if not FileRemove(path) then wx.wxRmdir(path) end
   end
 end
-local function setLexLPegLexer(editor, lexername)
+local function setLexLPegLexer(editor, spec)
+  local lexername = spec.lexer
   local lexer = lexername:gsub("^lexlpeg%.","")
 
   local ppath = package.path
@@ -1701,7 +1702,12 @@ local function setLexLPegLexer(editor, lexername)
       end
     end
   end
-  return true, styleconvert
+  spec.lexerstyleconvert = styleconvert
+  -- assign line comment value based on the values in the lexer comment table
+  for k, v in pairs(lexmod._foldsymbols and lexmod._foldsymbols.comment or {}) do
+    if type(v) == 'function' then spec.linecomment = k end
+  end
+  return true
 end
 
 function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
@@ -1710,12 +1716,10 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   -- found a spec setup lexers and keywords
   if spec then
     if type(spec.lexer) == "string" then
-      local ok, res = setLexLPegLexer(editor, spec.lexer)
-      if ok then
-        spec.lexerstyleconvert = res
-      else
+      local ok, err = setLexLPegLexer(editor, spec)
+      if not ok then
         spec.lexerstyleconvert = {}
-        ide:Print(("Can't load LexLPeg '%s' lexer: %s"):format(spec.lexer, res))
+        ide:Print(("Can't load LexLPeg '%s' lexer: %s"):format(spec.lexer, err))
         editor:SetLexer(wxstc.wxSTC_LEX_NULL)
       end
       UpdateSpecs(spec)
