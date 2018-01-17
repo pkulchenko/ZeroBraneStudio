@@ -103,6 +103,7 @@ ide.config.keymap = {
   [ID.BREAKPOINTNEXT]   = "F9",
   [ID.BREAKPOINTPREV]   = "Shift-F9",
   [ID.CLEAROUTPUT]      = "",
+  [ID.CLEAROUTPUTENABLE] = "",
   [ID.INTERPRETER]      = "",
   [ID.PROJECTDIR]       = "",
 -- Help menu

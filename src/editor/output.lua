@@ -50,7 +50,7 @@ OutputAddStyles(ide.config.stylesoutshell)
 StylesApplyToEditor(ide.config.stylesoutshell,out)
 
 function ClearOutput(force)
-  if not (force or ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)) then return end
+  if not (force or ide:GetMenuBar():IsChecked(ID_CLEAROUTPUTENABLE)) then return end
   out:SetReadOnly(false)
   out:ClearAll()
   out:SetReadOnly(true)
