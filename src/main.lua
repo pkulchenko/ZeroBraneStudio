@@ -681,7 +681,9 @@ for lid in pairs(remap) do
 end
 
 if ide.osname == 'Macintosh' then ide:SetAccelerator(ID_VIEWMINIMIZE, "Ctrl-M") end
-if ide.config.keymap[ID.RESTART] then ide:SetAccelerator(ID.RESTART, ide.config.keymap[ID.RESTART]) end
+for _, sc in ipairs({ID.RESTART, ID.CLEAROUTPUT, ID.CLEARCONSOLE}) do
+  if ide.config.keymap[sc] then ide:SetAccelerator(sc, ide.config.keymap[sc]) end
+end
 
 -- these shortcuts need accelerators handling as they are not present anywhere in the menu
 for _, id in ipairs({ ID_GOTODEFINITION, ID_RENAMEALLINSTANCES,

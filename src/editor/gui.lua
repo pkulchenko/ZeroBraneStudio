@@ -598,7 +598,7 @@ local function createBottomNotebook(frame)
           { ID_PASTE, TR("&Paste") },
           { ID_SELECTALL, TR("Select &All") },
           { },
-          { ID_CLEAROUTPUT, TR("C&lear Output Window") },
+          { ID_CLEAROUTPUT, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUT) },
         }
       PackageEventHandle("onMenuOutput", menu, errorlog, event)
 
@@ -607,7 +607,8 @@ local function createBottomNotebook(frame)
       errorlog:PopupMenu(menu)
     end)
 
-  errorlog:Connect(ID_CLEAROUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED,
+  -- connect to the main frame, so it can be called from anywhere
+  frame:Connect(ID_CLEAROUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ide:GetOutput():Erase() end)
 
   local shellbox = ide:CreateStyledTextCtrl(bottomnotebook, wx.wxID_ANY,
@@ -626,7 +627,7 @@ local function createBottomNotebook(frame)
           { ID_SELECTALL, TR("Select &All") },
           { },
           { ID_SELECTCONSOLECOMMAND, TR("&Select Command") },
-          { ID_CLEARCONSOLE, TR("C&lear Console Window") },
+          { ID_CLEARCONSOLE, TR("C&lear Console Window")..KSC(ID_CLEARCONSOLE) },
         }
       menupos = event:GetPosition()
       PackageEventHandle("onMenuConsole", menu, shellbox, event)
@@ -638,7 +639,9 @@ local function createBottomNotebook(frame)
 
   shellbox:Connect(ID_SELECTCONSOLECOMMAND, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ConsoleSelectCommand(menupos) end)
-  shellbox:Connect(ID_CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
+
+  -- connect to the main frame, so it can be called from anywhere
+  frame:Connect(ID_CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ide:GetConsole():Erase() end)
 
   bottomnotebook:AddPage(errorlog, TR("Output"), true)
