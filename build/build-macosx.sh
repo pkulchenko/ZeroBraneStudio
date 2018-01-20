@@ -241,6 +241,9 @@ if [ $BUILD_WXWIDGETS ]; then
   [ $BUILD_LEXLPEG ] || git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXWIDGETS_BASENAME"
 
+  # refresh wxwidgets submodules
+  git submodule update --init --recursive
+
   # checkout the version that was used in wxwidgets upgrade to 3.1.x
   git checkout WX_3_1_0-7d9d59
 
