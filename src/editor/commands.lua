@@ -673,6 +673,12 @@ function ShowFullScreen(setFullScreen)
       uimgr:Update()
     end
   end
+
+  -- accelerator table gets removed on Linux when setting full screen mode, so put it back;
+  -- see wxwidgets ticket https://trac.wxwidgets.org/ticket/18053
+  if ide.osname == 'Unix' and setFullScreen then
+    ide:SetAccelerator(-1) -- only refresh the accelerator table after setting full screen
+  end
 end
 
 function ProjectConfig(dir, config)
