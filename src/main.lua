@@ -574,6 +574,12 @@ ide:LoadTool()
 -- delay loading APIs until auto-complete is loaded
 ide:LoadAPI()
 
+-- register the rest of the shortcuts to allow them to be overwritten from onRegister
+if ide.osname == 'Macintosh' then ide:SetAccelerator(ID_VIEWMINIMIZE, "Ctrl-M") end
+for _, sc in ipairs({ID.RESTART, ID.CLEAROUTPUT, ID.CLEARCONSOLE}) do
+  if ide.config.keymap[sc] then ide:SetAccelerator(sc, ide.config.keymap[sc]) end
+end
+
 -- register all the plugins
 PackageEventHandle("onRegister")
 
@@ -678,11 +684,6 @@ for lid in pairs(remap) do
       ide:SetAccelerator(fakeid, ksc)
     end
   end
-end
-
-if ide.osname == 'Macintosh' then ide:SetAccelerator(ID_VIEWMINIMIZE, "Ctrl-M") end
-for _, sc in ipairs({ID.RESTART, ID.CLEAROUTPUT, ID.CLEARCONSOLE}) do
-  if ide.config.keymap[sc] then ide:SetAccelerator(sc, ide.config.keymap[sc]) end
 end
 
 -- these shortcuts need accelerators handling as they are not present anywhere in the menu
