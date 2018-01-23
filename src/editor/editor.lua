@@ -1296,7 +1296,7 @@ function CreateEditor(bare)
         elseif ide.findReplace:IsShown() then
           ide.findReplace:Hide()
         elseif ide:GetMainFrame():IsFullScreen() then
-          ShowFullScreen(false)
+          ide:ShowFullScreen(false)
         end
       -- Ctrl-Home and Ctrl-End don't work on OSX with 2.9.5+; fix it
       elseif ide.osname == 'Macintosh' and ide.wxver >= "2.9.5"

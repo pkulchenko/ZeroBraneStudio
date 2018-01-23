@@ -449,7 +449,7 @@ function ClosePage(selection)
     removePage(ide.openDocuments[id].index)
 
     -- disable full screen if the last tab is closed
-    if not (notebook:GetSelection() >= 0) then ShowFullScreen(false) end
+    if not (notebook:GetSelection() >= 0) then ide:ShowFullScreen(false) end
     return true
   end
   return false
@@ -631,54 +631,6 @@ function SetOpenFiles(nametab,params)
   end
   notebook:SetSelection(params and params.index or 0)
   SetEditorSelection()
-end
-
-local beforeFullScreenPerspective
-local statusbarShown
-
-function ShowFullScreen(setFullScreen)
-  if setFullScreen then
-    beforeFullScreenPerspective = uimgr:SavePerspective()
-
-    local panes = frame.uimgr:GetAllPanes()
-    for index = 0, panes:GetCount()-1 do
-      local name = panes:Item(index).name
-      if name ~= "notebook" then frame.uimgr:GetPane(name):Hide() end
-    end
-    uimgr:Update()
-    SetEditorSelection() -- make sure the focus is on the editor
-  end
-
-  -- On OSX, status bar is not hidden when switched to
-  -- full screen: http://trac.wxwidgets.org/ticket/14259; do manually.
-  -- need to turn off before showing full screen and turn on after,
-  -- otherwise the window is restored incorrectly and is reduced in size.
-  if ide.osname == 'Macintosh' and setFullScreen then
-    statusbarShown = frame:GetStatusBar():IsShown()
-    frame:GetStatusBar():Hide()
-  end
-
-  -- protect from systems that don't have ShowFullScreen (GTK on linux?)
-  pcall(function() frame:ShowFullScreen(setFullScreen) end)
-
-  if not setFullScreen and beforeFullScreenPerspective then
-    uimgr:LoadPerspective(beforeFullScreenPerspective, true)
-    beforeFullScreenPerspective = nil
-  end
-
-  if ide.osname == 'Macintosh' and not setFullScreen then
-    if statusbarShown then
-      frame:GetStatusBar():Show()
-      -- refresh AuiManager as the statusbar may be shown below the border
-      uimgr:Update()
-    end
-  end
-
-  -- accelerator table gets removed on Linux when setting full screen mode, so put it back;
-  -- see wxwidgets ticket https://trac.wxwidgets.org/ticket/18053
-  if ide.osname == 'Unix' and setFullScreen then
-    ide:SetAccelerator(-1) -- only refresh the accelerator table after setting full screen
-  end
 end
 
 function ProjectConfig(dir, config)
@@ -868,7 +820,7 @@ local function closeWindow(event)
     return
   end
 
-  ShowFullScreen(false)
+  ide:ShowFullScreen(false)
 
   if ide:GetProject() then PackageEventHandle("onProjectClose", ide:GetProject()) end
   PackageEventHandle("onAppClose")
