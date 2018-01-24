@@ -1136,7 +1136,7 @@ function ide:IsValidProperty(ctrl, prop)
 end
 
 function ide:IsValidHotKey(ksc)
-  return wx.wxAcceleratorEntry():FromString(ksc)
+  return ksc and wx.wxAcceleratorEntry():FromString(ksc)
 end
 
 function ide:IsWindowShown(win)
@@ -1217,7 +1217,12 @@ local function setAcceleratorTable(accelerators)
   ide:GetMainFrame():SetAcceleratorTable(#at > 0 and wx.wxAcceleratorTable(at) or wx.wxNullAcceleratorTable)
 end
 local at = {}
-function ide:SetAccelerator(id, ksc) at[id] = ksc; setAcceleratorTable(at) end
+function ide:SetAccelerator(id, ksc)
+  if (not id) or (ksc and not self:IsValidHotKey(ksc)) then return false end
+  at[id] = ksc
+  setAcceleratorTable(at)
+  return true
+end
 function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
