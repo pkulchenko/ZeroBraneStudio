@@ -751,6 +751,8 @@ function CreateEditor(bare)
     editor:SetExtraDescent(tonumber(edcfg.extradescent) or 0)
     -- set whitespace size
     editor:SetWhitespaceSize(tonumber(edcfg.whitespacesize) or 1)
+    -- set virtual space options
+    editor:SetVirtualSpaceOptions(tonumber(edcfg.virtualspace) or 0)
   end
 
   do

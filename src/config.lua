@@ -31,6 +31,7 @@ return {
     tabwidth = 2,
     usetabs  = false,
     usewrap = true,
+    virtualspace = wxstc.wxSTC_VS_NONE,
     whitespace = false,
     whitespacesize = 1,
     wrapflags = wxstc.wxSTC_WRAPVISUALFLAG_NONE,

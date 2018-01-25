@@ -146,6 +146,12 @@ if not wx.wxEXEC_NOEVENTS then wx.wxEXEC_NOEVENTS = 16 end
 if not wx.wxEXEC_HIDE_CONSOLE then wx.wxEXEC_HIDE_CONSOLE = 32 end
 if not wx.wxEXEC_BLOCK then wx.wxEXEC_BLOCK = wx.wxEXEC_SYNC + wx.wxEXEC_NOEVENTS end
 
+for k,v in pairs({
+    VS_NONE = 0, VS_RECTANGULARSELECTION = 1, VS_USERACCESSIBLE = 2, VS_NOWRAPLINESTART = 4
+  }) do
+  if not wxstc["wxSTC_"..k] then wxstc["wxSTC_"..k] = wxstc["wxSTC_SC"..k] or v end
+end
+
 -- wxwidgets 3.1.1+ replaced wxSTC_SCMOD_* with wxSTC_KEYMOD_*; map both for compatibility
 for _, key in ipairs({"ALT", "CTRL", "SHIFT", "META", "SUPER", "NORM"}) do
   local scmod = "wxSTC_SCMOD_"..key
