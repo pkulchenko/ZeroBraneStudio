@@ -1264,7 +1264,7 @@ function ide:GetHotKey(idOrKsc)
 end
 
 function ide:SetHotKey(id, ksc)
-  if not ksc or not self:IsValidHotKey(ksc) then
+  if ksc and not self:IsValidHotKey(ksc) then
     self:Print(("Can't set invalid hotkey value: '%s'."):format(ksc))
     return
   end
@@ -1276,31 +1276,33 @@ function ide:SetHotKey(id, ksc)
   -- 4. shortcut is assigned to a function (passed instead of ID)
   local keymap = self.config.keymap
 
-  -- remove any potential conflict with this hotkey
-  -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
-  -- this doesn't take into account different order in `Ctrl-Shift-F1` and `Shift-Ctrl-F1`.
-  local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
-  for gid, ksc in pairs(keymap) do
-    -- if the same hotkey is used elsewhere (not one of IDs being checked)
-    if ksc:lower():find(kscpat) then
-      keymap[gid] = ""
-      -- try to find a menu item with this ID (if any) to remove the hotkey
-      local item = self:FindMenuItem(gid)
-      if item then item:SetText(item:GetText():gsub("\t.+","").."") end
+  if ksc then
+    -- remove any potential conflict with this hotkey
+    -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
+    -- this doesn't take into account different order in `Ctrl-Shift-F1` and `Shift-Ctrl-F1`.
+    local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
+    for gid, ksc in pairs(keymap) do
+      -- if the same hotkey is used elsewhere (not one of IDs being checked)
+      if ksc:lower():find(kscpat) then
+        keymap[gid] = ""
+        -- try to find a menu item with this ID (if any) to remove the hotkey
+        local item = self:FindMenuItem(gid)
+        if item then item:SetText(item:GetText():gsub("\t.+","").."") end
+      end
+      -- continue with the loop as there may be multiple associations with the same hotkey
     end
-    -- continue with the loop as there may be multiple associations with the same hotkey
-  end
 
-  -- remove an existing accelerator (if any)
-  local acid = self:GetHotKey(ksc)
-  if acid then self:SetAccelerator(acid) end
+    -- remove an existing accelerator (if any)
+    local acid = self:GetHotKey(ksc)
+    if acid then self:SetAccelerator(acid) end
 
-  -- if the hotkey is associated with a function, handle it first
-  if type(id) == "function" then
-    local fakeid = NewID()
-    self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
-    self:SetAccelerator(fakeid, ksc)
-    return fakeid, ksc
+    -- if the hotkey is associated with a function, handle it first
+    if type(id) == "function" then
+      local fakeid = NewID()
+      self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
+      self:SetAccelerator(fakeid, ksc)
+      return fakeid, ksc
+    end
   end
 
   -- if the keymap is already asigned, then reassign it

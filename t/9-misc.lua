@@ -100,6 +100,10 @@ local keyid, keysc = ide:GetHotKey(ID.STARTDEBUG)
 is(keysc, "F1", "`GetHotKey` returns hotkey assigned with SetHotKey using id lookup.")
 is(ide:GetHotKey("F1"), ID.STARTDEBUG, "`GetHotKey` returns hotkey assigned with SetHotKey using shortcut lookup.")
 
+ide:SetHotKey(ID.STARTDEBUG)
+ok(ide:GetHotKey("F1") == nil, "Setting hotkey to `nil` properly removes it (1/2).")
+ok(ide:GetHotKey(ID.STARTDEBUG) == nil, "Setting hotkey to `nil` properly removes it (1/2).")
+
 ok(ide:GetHotKey("F13") == nil, "`GetHotKey` returns nothing for nonexisting shortcut.")
 ok(ide:GetHotKey(1) == nil, "`GetHotKey` returns nothing for nonexisting id.")
 ok(ide:GetHotKey() == nil, "`GetHotKey` returns nothing when no parameters are passed.")
