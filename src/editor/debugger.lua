@@ -144,6 +144,7 @@ function debugger:updateStackSync()
 
     local forceexpand = ide.config.debugger.maxdatalevel == 1
     local params = debugger:GetDataOptions({maxlevel=false})
+    local maxlen = tonumber(ide.config.debugger.maxdatalength)
 
     local root = stackCtrl:AddRoot("Stack")
     callData = {} -- reset call cache
@@ -181,6 +182,7 @@ function debugger:updateStackSync()
         -- format the variable name, value as a single line and,
         -- if not a simple type, the string value.
         local value = val[1]
+        if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
         local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
@@ -190,6 +192,7 @@ function debugger:updateStackSync()
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
         local value = val[1]
+        if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
         local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
