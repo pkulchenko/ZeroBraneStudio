@@ -302,17 +302,20 @@ The editor provides [default shortcuts](doc-editor-keyboard-shortcuts) that can 
 
 Some configuration information that needs to be preserved between launches (windows and panels sizes and positions, open editor tabs, recently used projects and files and so on) is saved in a special file.
 The location (and the name) of this file is system dependent:
-it is located in `%HOME%\ZeroBraneStudio.ini` (**for v0.35 and earlier**) and in `%APPDATA%\ZeroBraneStudio.ini` (**for v0.36 and later**) on Windows (`%APPDATA%` is mapped to a hidden folder `C:\Users\<user>\AppData\Roaming`),
+it is located in `%APPDATA%\ZeroBraneStudio.ini` (**for v0.36 and later**) and in `%HOME%\ZeroBraneStudio.ini` (**for v0.35 and earlier**) on Windows (`%APPDATA%` is mapped to a hidden folder `C:\Users\<user>\AppData\Roaming`),
 `$HOME/Library/Preferences/ZeroBraneStudio Preferences` on macOS, and in
 `$HOME/.ZeroBraneStudio` on Linux. 
 You can see the location of the HOME directory if you type `wx.wxGetHomeDir()` into the Local console.
 
 ## Command line parameters
 
-(**v0.50+**) Command line parameters can be specified in two ways (for those interpreters that support them):
+(**v0.50+**) Command line parameters can be specified in several ways (for those interpreters that support them):
 
-1. by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
-2. by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
+- by going to `Project | Command Line Parameters` and entering command line parameters (if the menu item is disabled, it means that the interpeter doesn't support command line parameters), and
+- by setting `arg.any` value in the config file. For example, `arg.any = 'a "b c"'` will pass two parameters to the script: `a` and `b c`.
+
+The command line parameters will be shown next to the interpreter in the right panel of the status bar.
+You can click the area that shows command line parameters and select other recently used parameters from the list.
 
 (**v1.30+**) Any configured parameters will be saved and restored on the next IDE launch.
 
