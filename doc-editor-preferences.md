@@ -52,6 +52,9 @@ set to `true` to add an [indicator for function calls](doc-styles-color-schemes#
 - `editor.usetabs = false`: enable using tabs.
 - `editor.usewrap = true`: wrap long lines.
 All `editor.wrap*` settings are taken into account only when this setting is set to `true`.
+- `editor.virtualspace = wxstc.wxSTC_VS_NONE`: set virtual space options (**v1.71**).
+Virtual space is space beyond the end of each line. The caret may be moved into virtual space but no real space will be added to the document until there is some text typed or some other text insertion command is used.
+Possible values (can be combined): `wxstc.wxSTC_VS_RECTANGULARSELECTION` (enables virtual space for rectangular selections), `wxstc.wxSTC_VS_USERACCESSIBLE`, and `wxstc.wxSTC_VS_NOWRAPLINESTART` (prevents left arrow movement and selection from wrapping to the previous line).
 - `editor.whitespace = false`: display whitespaces;
 set to `true` or `wxstc.wxSTC_WS_VISIBLEALWAYS` to display white space characters drawn as dots and arrows;
 set to `wxstc.wxSTC_WS_VISIBLEAFTERINDENT` to show white spaces after the first visible character only
