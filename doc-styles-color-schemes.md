@@ -28,8 +28,13 @@ The following configuration will set text background to be light red: `styles.te
 
 ## Style elements
 
-See [style.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/style.lua#L26-L90) for the complete list of elements
-and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua) for an example of how these elements can be used.
+See [style.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/src/editor/style.lua#L26-L90)
+for the complete list of elements
+and [tomorrow.lua](https://github.com/pkulchenko/ZeroBraneStudio/blob/master/cfg/tomorrow.lua)
+for an example of how these elements can be used.
+
+Note that while many of the colors are configurable, some of the colors (the color of the status
+bar, the toolbar background, and the borders between panels) are controlled by the OS color scheme.
 
 (**v0.50+**) `alpha` attribute is supported for `sel`, `seladd`, and `caretlinebg` style elements.
 
