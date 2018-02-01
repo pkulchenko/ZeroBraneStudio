@@ -35,6 +35,11 @@ you can explicitly configure the IDE to use that device
 by adding to the configuration file (`Edit | Preferences | Settings: User`) the following line:
 `path.vera = 'ip.of.vera.device'`.
 
+## What firewall ports do I need to open to get debugging to work?
+
+The debugger needs to connect to your device and the device needs to connect to the IDE for debugging to work.
+This requires ports `3480` and `80` to be opened on the device and port `8172` to be opened on the computer running the IDE.
+
 ## Will the IDE work with my device that is using UI6+?
 
 (**The auto-detection has been improved since v0.27 of the Vera plugin, which is included with v1.40+, so no additional configuration should be needed.**)
