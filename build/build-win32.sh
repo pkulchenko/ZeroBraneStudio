@@ -370,7 +370,7 @@ if [ $BUILD_LUASEC ]; then
   wget --no-check-certificate -c "$OPENSSL_URL" -O "$OPENSSL_FILENAME" || { echo "Error: failed to download OpenSSL"; exit 1; }
   tar -xzf "$OPENSSL_FILENAME"
   cd "$OPENSSL_BASENAME"
-  RANLIB="$(which ranlib)" bash Configure mingw shared
+  RANLIB="$(which ranlib)" bash ./Configure mingw shared
   make
   make install_sw INSTALLTOP="$INSTALL_DIR"
   [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libeay32.dll" "$INSTALL_DIR/bin/ssleay32.dll"
@@ -435,8 +435,8 @@ fi
 if [ $BUILD_LUASEC ]; then
   cp "$INSTALL_DIR/bin/"{ssleay32.dll,libeay32.dll} "$BIN_DIR"
   cp "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll" "$BIN_DIR/clibs$LUAS"
-  cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" ../lualibs
-  cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" ../lualibs/ssl
+  cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" "../lualibs"
+  cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" "../lualibs/ssl"
 fi
 
 # To build lua5.1.dll proxy:
