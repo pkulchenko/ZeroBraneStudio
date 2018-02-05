@@ -80,7 +80,9 @@ return {
   ["Choose a project directory"] = "Выберите папку проекта", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = "Выберите папку поиска", -- src\editor\findreplace.lua
   ["Choose..."] = "Выбрать...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
+  ["Clear Bookmarks In File"] = nil, -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = "Убрать закладки проекта", -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = nil, -- src\editor\markers.lua
   ["Clear Breakpoints In Project"] = "Убрать точки останова проекта", -- src\editor\markers.lua
   ["Clear Items"] = "Очистить список", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "Удалить элементы из списка", -- src\editor\menu_file.lua
@@ -96,7 +98,7 @@ return {
   ["Comment or uncomment current or selected lines"] = "Закомментировать или раскомментировать текущую или выделенные строки", -- src\editor\menu_edit.lua
   ["Compilation error"] = "Ошибка компиляции", -- src\editor\commands.lua, src\editor\debugger.lua
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "Компиляция завершена успешно; процент успеха: %.0f%% (%d/%d).", -- src\editor\commands.lua
-  ["Compile the current file"] = "Скомпилировать текущий файл", -- src\editor\menu_project.lua
+  ["Compile the current file"] = "Скомпилировать текущий файл", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Complete &Identifier"] = "Дополнить &идентификатор", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = "Дополнить текущий идентификатор", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "Рассмотрите вариант удаления backslash из строки '%s'.", -- src\editor\commands.lua
@@ -127,7 +129,7 @@ return {
   ["Error while loading configuration file: %s"] = "Ошибка загрузки файла конфигурации: %s", -- src\editor\style.lua
   ["Error while processing API file: %s"] = "Ошибка обработки файла определений API: %s", -- src\editor\autocomplete.lua
   ["Error while processing configuration file: %s"] = "Ошибка обработки файла конфигурации: %s", -- src\editor\style.lua
-  ["Error"] = "Ошибка", -- src\editor\commands.lua
+  ["Error"] = "Ошибка", -- src\editor\package.lua
   ["Evaluate In Console"] = "Выполнить в консоли", -- src\editor\editor.lua
   ["Execute the current project/file and keep updating the code to see immediate results"] = "Запустить текущий проект/файл и продолжать вносить изменения в код с немедленным выводом результатов", -- src\editor\menu_project.lua
   ["Execute the current project/file"] = "Запустить текущий проект/файл", -- src\editor\toolbar.lua, src\editor\menu_project.lua
@@ -157,6 +159,7 @@ return {
   ["Formatting page %d..."] = "Отформатировано страницы %d...", -- src\editor\print.lua
   ["Found %d instance."] = {"Найдено %d совпадение.", "Найдено %d совпадения.", "Найдено %d совпадений."}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Найдена запись авто-восстановления и восстановлена сохраненная сессия.", -- src\editor\commands.lua
+  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Full &Screen"] = "Во весь экр&ан", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Перейти к определению", -- src\editor\editor.lua
   ["Go To File..."] = "Перейти к файлу...", -- src\editor\menu_search.lua
@@ -216,7 +219,7 @@ return {
   ["Project"] = "Проект", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "Окно &проекта/списка файлов", -- src\editor\menu_view.lua
   ["Provide command line parameters"] = "Установить параметры командной строки", -- src\editor\menu_project.lua
-  ["Queued %d files to index."] = "Помещено %d файлов в очередь на индексирование.", -- src\editor\menu_search.lua
+  ["Queued %d files to index."] = "Помещено %d файлов в очередь на индексирование.", -- src\editor\commandbar.lua
   ["R/O"] = "R/O", -- src\editor\editor.lua
   ["R/W"] = "R/W", -- src\editor\editor.lua
   ["Re&place In Files"] = "Замени&ть в файлах", -- src\editor\menu_search.lua
@@ -260,6 +263,7 @@ return {
   ["Search in selection"] = "Поиск в выделенном тексте", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "Поиск во вложенных папках", -- src\editor\toolbar.lua
   ["Searching for '%s'."] = "Искать '%s'.", -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Выд: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Выделить &все", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Выделить и найти далее", -- src\editor\menu_search.lua
@@ -267,7 +271,7 @@ return {
   ["Select all text in the editor"] = "Выделить весь текст в редакторе", -- src\editor\menu_edit.lua
   ["Select the word under cursor and find its next occurrence"] = "Выделить слово под курсором и найти далее", -- src\editor\menu_search.lua
   ["Select the word under cursor and find its previous occurrence"] = "Выделить слово под курсором и найти ранее", -- src\editor\menu_search.lua
-  ["Set As Start File"] = "Установить как файл запуска", -- src\editor\filetree.lua
+  ["Set As Start File"] = "Установить как файл запуска", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Set From Current File"] = "Установить по текущему файлу", -- src\editor\menu_project.lua
   ["Set To Project Directory"] = "Установить папку проекта", -- src\editor\findreplace.lua
   ["Set To Selected Directory"] = "Установить выбранную папку как проект", -- src\editor\filetree.lua
@@ -306,7 +310,7 @@ return {
   ["Switch to or from full screen mode"] = "Переключить полноэкранный режим", -- src\editor\menu_view.lua
   ["Symbol Index"] = "Индекс символов", -- src\editor\outline.lua
   ["Text not found."] = "Текст не найден.", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "Файл определений API должен быть расположен внутри папки API.", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "Файл определений API должен быть расположен внутри папки API.", -- src\main.lua
   ["Toggle Bookmark"] = "Установить/Снять закладку", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "Установить/Снять точку останова", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Установить/Снять закладку", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -323,13 +327,14 @@ return {
   ["Unable to stop program (pid: %d), code %d."] = "Невозможно завершить программу (pid: %d), код %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "Отменить последнее действие", -- src\editor\menu_edit.lua
   ["Unmap Directory"] = "Убрать папку из списка", -- src\editor\filetree.lua
-  ["Unset '%s' As Start File"] = "Отменить '%s' как файл запуска", -- src\editor\filetree.lua
+  ["Unset '%s' As Start File"] = "Отменить '%s' как файл запуска", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Updated %d file."] = {"Обновлен %d файл.", "Обновлено %d файла.", "Обновлено %d файлов."}, -- src\editor\findreplace.lua
   ["Updating symbol index and settings..."] = "Обновляется индекс символов и установки...", -- src\editor\outline.lua
   ["Use %s to close."] = "Используйте %s для закрытия.", -- src\editor\findreplace.lua
   ["Use '%s' to see full description."] = "Используйте '%s' для полного описания.", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "Используйте '%s' для отображения символов конца строки и '%s' для их преобразования.", -- src\editor\commands.lua
   ["Use 'clear' to clear the shell output and the history."] = "Используйте команду 'clear' для очистки содержимого окна и истории.", -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = nil, -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "Используйте Shift-Enter для многострочного кода.", -- src\editor\shellbox.lua
   ["View the markers window"] = "Показать окно маркеров", -- src\editor\menu_view.lua
   ["View the outline window"] = "Показать окно структуры", -- src\editor\menu_view.lua

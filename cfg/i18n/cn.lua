@@ -79,7 +79,9 @@ return {
   ["Choose a project directory"] = "选择项目文件夹", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = "选择一个搜索目录", -- src\editor\findreplace.lua
   ["Choose..."] = "请选...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
+  ["Clear Bookmarks In File"] = nil, -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = nil, -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = nil, -- src\editor\markers.lua
   ["Clear Breakpoints In Project"] = nil, -- src\editor\markers.lua
   ["Clear Items"] = "清除项目", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "从该列表清除项目", -- src\editor\menu_file.lua
@@ -95,7 +97,7 @@ return {
   ["Comment or uncomment current or selected lines"] = "注释/消除注释 当前或被选的语句", -- src\editor\menu_edit.lua
   ["Compilation error"] = "编译错误", -- src\editor\commands.lua, src\editor\debugger.lua
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "编译成功; 成功率: %.0f%% (%d/%d).", -- src\editor\commands.lua
-  ["Compile the current file"] = "编译当前的文档", -- src\editor\menu_project.lua
+  ["Compile the current file"] = "编译当前的文档", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Complete &Identifier"] = "补全标识符", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = "补全当前标识符", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "考虑删除反斜杠转义序列 '%s'.", -- src\editor\commands.lua
@@ -126,7 +128,7 @@ return {
   ["Error while loading configuration file: %s"] = "导入configuration档时出错误: %s", -- src\editor\style.lua
   ["Error while processing API file: %s"] = "处理API档时出错误: %s", -- src\editor\autocomplete.lua
   ["Error while processing configuration file: %s"] = "处理configuration档时出错误: %s", -- src\editor\style.lua
-  ["Error"] = "错误", -- src\editor\commands.lua
+  ["Error"] = "错误", -- src\editor\package.lua
   ["Evaluate In Console"] = "在控制台里评估", -- src\editor\editor.lua
   ["Execute the current project/file and keep updating the code to see immediate results"] = "执行当前项目/文档和更新代码以便得到执行结果", -- src\editor\menu_project.lua
   ["Execute the current project/file"] = "执行当前项目/文档", -- src\editor\toolbar.lua, src\editor\menu_project.lua
@@ -156,6 +158,7 @@ return {
   ["Formatting page %d..."] = "格式化页面 %d...", -- src\editor\print.lua
   ["Found %d instance."] = "发现 %d 实例", -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "找到自动恢复存档和恢复已存对话", -- src\editor\commands.lua
+  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Full &Screen"] = "全屏", -- src\editor\menu_view.lua
   ["Go To Definition"] = "转到定义", -- src\editor\editor.lua
   ["Go To File..."] = "转到文件...", -- src\editor\menu_search.lua
@@ -215,7 +218,7 @@ return {
   ["Project"] = "项目", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "项目/文档树 视窗", -- src\editor\menu_view.lua
   ["Provide command line parameters"] = "提供命令行参数", -- src\editor\menu_project.lua
-  ["Queued %d files to index."] = "【排列 %d 文件到索引", -- src\editor\menu_search.lua
+  ["Queued %d files to index."] = "【排列 %d 文件到索引", -- src\editor\commandbar.lua
   ["R/O"] = "唯读", -- src\editor\editor.lua
   ["R/W"] = "读写", -- src\editor\editor.lua
   ["Re&place In Files"] = "在文档中替换", -- src\editor\menu_search.lua
@@ -259,6 +262,7 @@ return {
   ["Search in selection"] = "搜索指定项目", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "搜索子目录", -- src\editor\toolbar.lua
   ["Searching for '%s'."] = "搜索 '%s'.", -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "选择： %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "选全部", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "搜索并寻找下一个", -- src\editor\menu_search.lua
@@ -266,7 +270,7 @@ return {
   ["Select all text in the editor"] = "选编辑器内的所有text", -- src\editor\menu_edit.lua
   ["Select the word under cursor and find its next occurrence"] = "选择光标下的词汇并找到下一个", -- src\editor\menu_search.lua
   ["Select the word under cursor and find its previous occurrence"] = "选择光标下的词汇并找到上一个", -- src\editor\menu_search.lua
-  ["Set As Start File"] = "设置为启动文件", -- src\editor\filetree.lua
+  ["Set As Start File"] = "设置为启动文件", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Set From Current File"] = "从当前文档设置", -- src\editor\menu_project.lua
   ["Set To Project Directory"] = "设置到项目目录", -- src\editor\findreplace.lua
   ["Set To Selected Directory"] = "设置到选定目录", -- src\editor\filetree.lua
@@ -305,7 +309,7 @@ return {
   ["Switch to or from full screen mode"] = "切换全屏模式", -- src\editor\menu_view.lua
   ["Symbol Index"] = "符号索引", -- src\editor\outline.lua
   ["Text not found."] = "寻找不到text", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "API file必须存放在API文件夹中的子文件夹", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "API file必须存放在API文件夹中的子文件夹", -- src\main.lua
   ["Toggle Bookmark"] = "切换'标签'", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "切换中断点", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "切换标签", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -322,13 +326,14 @@ return {
   ["Unable to stop program (pid: %d), code %d."] = "停止程序失败 (pid: %d), 代码 %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "清除前编辑动作", -- src\editor\menu_edit.lua
   ["Unmap Directory"] = "禁止映射目录", -- src\editor\filetree.lua
-  ["Unset '%s' As Start File"] = "不设置 '%s' 为启动文件", -- src\editor\filetree.lua
+  ["Unset '%s' As Start File"] = "不设置 '%s' 为启动文件", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Updated %d file."] = "更新 %d 文件", -- src\editor\findreplace.lua
   ["Updating symbol index and settings..."] = "更新符号索引和设置", -- src\editor\outline.lua
   ["Use %s to close."] = "使用 %s 来关闭", -- src\editor\findreplace.lua
   ["Use '%s' to see full description."] = "用 '%s' 来看全解析", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "用 '%s' 来显示语句的终结和 '%s' 来进行转换", -- src\editor\commands.lua
   ["Use 'clear' to clear the shell output and the history."] = "用 'clear' 来清除shell的输出和历史", -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = nil, -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "用 <Shift-Enter> 来处理多行代码", -- src\editor\shellbox.lua
   ["View the markers window"] = "检视标签窗口", -- src\editor\menu_view.lua
   ["View the outline window"] = "检视大纲窗口", -- src\editor\menu_view.lua
