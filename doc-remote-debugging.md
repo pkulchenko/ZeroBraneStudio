@@ -25,7 +25,9 @@ You can see the **domain name** to connect to in the Output window when you star
 
 ## Setup environment for debugging
 
-You can use a simple script to set `LUA_PATH` and `LUA_CPATH` environmental variables to reference `mobdebug` and `luasocket` files that come with the IDE:
+Running debugging with your application requries loading of `mobdebug` and `luasocket` modules. These libraries are **packaged with the IDE for all supported platforms** (Windows/macOS/Linux) and Lua versions (5.1, 5.2, and 5.3).
+
+You can use a simple script to set `LUA_PATH` and `LUA_CPATH` environmental variables to reference `mobdebug` and `luasocket` files that **come with the IDE**:
 
     set ZBS=D:\path\to\ZeroBraneStudio
     set LUA_PATH=./?.lua;%ZBS%/lualibs/?/?.lua;%ZBS%/lualibs/?.lua
