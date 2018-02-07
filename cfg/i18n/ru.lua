@@ -80,9 +80,9 @@ return {
   ["Choose a project directory"] = "Выберите папку проекта", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = "Выберите папку поиска", -- src\editor\findreplace.lua
   ["Choose..."] = "Выбрать...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
-  ["Clear Bookmarks In File"] = nil, -- src\editor\markers.lua
+  ["Clear Bookmarks In File"] = "Убрать закладки файла", -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = "Убрать закладки проекта", -- src\editor\markers.lua
-  ["Clear Breakpoints In File"] = nil, -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = "Убрать точки останова файла", -- src\editor\markers.lua
   ["Clear Breakpoints In Project"] = "Убрать точки останова проекта", -- src\editor\markers.lua
   ["Clear Items"] = "Очистить список", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "Удалить элементы из списка", -- src\editor\menu_file.lua
@@ -159,7 +159,7 @@ return {
   ["Formatting page %d..."] = "Отформатировано страницы %d...", -- src\editor\print.lua
   ["Found %d instance."] = {"Найдено %d совпадение.", "Найдено %d совпадения.", "Найдено %d совпадений."}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Найдена запись авто-восстановления и восстановлена сохраненная сессия.", -- src\editor\commands.lua
-  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
+  ["Found match in '%s'."] = "Найдено совпадение в '%s'.", -- src\editor\findreplace.lua
   ["Full &Screen"] = "Во весь экр&ан", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Перейти к определению", -- src\editor\editor.lua
   ["Go To File..."] = "Перейти к файлу...", -- src\editor\menu_search.lua
@@ -262,8 +262,8 @@ return {
   ["Search direction"] = "Направление поиска", -- src\editor\toolbar.lua
   ["Search in selection"] = "Поиск в выделенном тексте", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "Поиск во вложенных папках", -- src\editor\toolbar.lua
-  ["Searching for '%s'."] = "Искать '%s'.", -- src\editor\findreplace.lua
-  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
+  ["Searching for '%s'."] = "Поиск '%s'.", -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = "Поиск в '%s'.", -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Выд: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Выделить &все", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Выделить и найти далее", -- src\editor\menu_search.lua
@@ -334,7 +334,7 @@ return {
   ["Use '%s' to see full description."] = "Используйте '%s' для полного описания.", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "Используйте '%s' для отображения символов конца строки и '%s' для их преобразования.", -- src\editor\commands.lua
   ["Use 'clear' to clear the shell output and the history."] = "Используйте команду 'clear' для очистки содержимого окна и истории.", -- src\editor\shellbox.lua
-  ["Use 'reset' to clear the environment."] = nil, -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = "Используйте команду 'reset' для очистки среды переменных.", -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "Используйте Shift-Enter для многострочного кода.", -- src\editor\shellbox.lua
   ["View the markers window"] = "Показать окно маркеров", -- src\editor\menu_view.lua
   ["View the outline window"] = "Показать окно структуры", -- src\editor\menu_view.lua
