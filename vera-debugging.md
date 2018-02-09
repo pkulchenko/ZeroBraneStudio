@@ -81,6 +81,10 @@ When you start debugging, the IDE will try to detect the address of the device a
 If you are **running on VPN**, it may cause the IDE to incorrectly detect the address of the device or the computer running the IDE.
 You may want to disable the VPN (and run `ipconfig /renew`) or configure `debugger.hostname` as described above to see if this resolves the issue.
 
+* **Debugging doesn't start because port 3480 on the device is blocked.**
+Port 3480 on the device has to be open to allow the computer running the IDE to connect to it.
+To open the port, log into the vera controller from the home.getvera.com web site and select that device.
+
 * **Debugging doesn't start because of a conflict with existing Lua installation (macOS).**
 In some rare cases the debugging doesn't start as the system fails to load a dynamic library that has incorrect architecture.
 You may see a message `dyld: Library not loaded: liblua.dylib`
