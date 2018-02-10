@@ -25,14 +25,14 @@ but they work in exactly the same way for other types of debugging
 
 ## Method 1
 
-This method will require you to specify the **domain name or IP address** of the computer running ZeroBrane Studio as a parameter to the `.start()` function call.
-You will do this as follows (using `device-IP-address` as the address in this example):
+This method will require you to specify the **domain name or IP address** of the computer running the IDE as a parameter to the `.start()` function call.
+You will do this as follows (using `IDE-IP-address` as the address in this example):
  
 - Copy the following code into a new Automation scene on the Vera under the Luup tab.  You can call the scene whatever you want, but for this example, we will use `ZBSTest`.
 
 ```lua
 local sunset = luup.sunset()
-require('mobdebug').start('device-IP-address')
+require('mobdebug').start('IDE-IP-address') -- address of computer running IDE
 luup.log(luup.version, sunset)
 print(luup.version, os.clock(), 1)
 require('mobdebug').done()
@@ -40,7 +40,7 @@ require('mobdebug').done()
 
 - Run the scene.
 
-When you start this code on your Vera, the code `require('mobdebug').start('device-IP-address')` will initiate a remote debugging session, causing a new window to open on in the IDE showing the code being run on your Vera.
+When you start this code on your Vera, the code `require('mobdebug').start('IDE-IP-address')` will initiate a remote debugging session, causing a new window to open on in the IDE showing the code being run on your Vera.
 This session will continue until it is terminated or the `.done()` function is called.
 
 You **need to have the debugger server started** in the IDE (if it hasn't been started already) for this method to work.
