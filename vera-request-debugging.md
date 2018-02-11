@@ -31,9 +31,7 @@ and [others](vera-documentation#development-and-debugging).
 In this example we will be using the [simpler method](vera-remote-debugging#method-2) that doesn't require
 specifying the IP address of the computer that runs ZeroBrane Studio:
 
-- Open a new editor tab in the IDE, add the following code and
-save it in a file. In this example I am using device 4 and a
-particular serviceId, but you can use whatever device and service you have.
+- Open a new editor tab in the IDE, add the following code and save it in a file.
 
 ```lua
 function room_request (lul_request, lul_parameters, lul_outputformat)
