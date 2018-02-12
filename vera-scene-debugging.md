@@ -27,7 +27,7 @@ the same process as described above.
 
 ## Debugging Lua code in a scene
 
-ZeroBrane Studio provides [two methods to debug Lua code](vera-remote-debugging)
+The IDE provides [two methods to debug Lua code](vera-remote-debugging)
 for events triggered from the Vera device:
 [scenes](vera-scene-debugging),
 [plugins](vera-plugin-debugging),
@@ -36,7 +36,7 @@ for events triggered from the Vera device:
 and [others](vera-documentation#development-and-debugging).
 
 In this example we will be using the [simpler method](vera-remote-debugging#method-2) that doesn't require
-specifying the IP address of the computer that runs ZeroBrane Studio:
+specifying the IP address of the computer that runs the IDE:
 
 - Copy the following code into a new Automation scene on the Vera under the Luup tab.
 You can call the scene whatever you want, but we will use `ZBSTest`.
