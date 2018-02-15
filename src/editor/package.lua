@@ -202,6 +202,9 @@ function ide:GetMainFrame()
   if not self.frame then
     self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, self:GetProperty("editor"),
       wx.wxDefaultPosition, wx.wxSize(1100, 700))
+      -- transparency range: 0 == invisible -> 255 == opaque
+      -- set lower bound of 50 to prevent accidental invisibility
+      ide.frame:SetTransparent(math.max(50, ide:GetConfig().transparency or 255))
   end
   return self.frame
 end
