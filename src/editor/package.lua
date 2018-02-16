@@ -204,7 +204,7 @@ function ide:GetMainFrame()
       wx.wxDefaultPosition, wx.wxSize(1100, 700))
       -- transparency range: 0 == invisible -> 255 == opaque
       -- set lower bound of 50 to prevent accidental invisibility
-      self.frame:SetTransparent(math.max(50, ide:GetConfig().transparency or 255))
+      self.frame:SetTransparent(math.max(50, self:GetConfig().transparency or 255))
   end
   return self.frame
 end
