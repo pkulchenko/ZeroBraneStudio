@@ -326,7 +326,7 @@ local function createOutlineWindow()
       ctrl:ActivateItem(event:GetItem())
     end)
 
-  ctrl:Connect(ID_OUTLINESORT, wx.wxEVT_COMMAND_MENU_SELECTED,
+  ctrl:Connect(ID.OUTLINESORT, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       ide.config.outline.sort = not ide.config.outline.sort
       local ed = ide:GetEditor()
@@ -344,9 +344,9 @@ local function createOutlineWindow()
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
     function (event)
       local menu = ide:MakeMenu {
-        { ID_OUTLINESORT, TR("Sort By Name"), "", wx.wxITEM_CHECK },
+        { ID.OUTLINESORT, TR("Sort By Name"), "", wx.wxITEM_CHECK },
       }
-      menu:Check(ID_OUTLINESORT, ide.config.outline.sort)
+      menu:Check(ID.OUTLINESORT, ide.config.outline.sort)
 
       PackageEventHandle("onMenuOutline", menu, ctrl, event)
 
@@ -539,10 +539,10 @@ local package = ide:AddPackage('core.outline', {
       local item_id = event:GetItem()
       local name = tree:GetItemFullName(item_id)
       local symboldirmenu = ide:MakeMenu {
-        {ID_SYMBOLDIRREFRESH, TR("Refresh Index"), TR("Refresh indexed symbols from files in the selected directory")},
-        {ID_SYMBOLDIRDISABLE, TR("Disable Indexing For '%s'"):format(name), TR("Ignore and don't index symbols from files in the selected directory")},
+        {ID.SYMBOLDIRREFRESH, TR("Refresh Index"), TR("Refresh indexed symbols from files in the selected directory")},
+        {ID.SYMBOLDIRDISABLE, TR("Disable Indexing For '%s'"):format(name), TR("Ignore and don't index symbols from files in the selected directory")},
       }
-      local _, _, projdirpos = ide:FindMenuItem(ID_PROJECTDIR, menu)
+      local _, _, projdirpos = ide:FindMenuItem(ID.PROJECTDIR, menu)
       if projdirpos then
         local ignored = isIgnoredInIndex(name)
         local enabledirmenu = ide:MakeMenu {}
@@ -555,26 +555,26 @@ local package = ide:AddPackage('core.outline', {
           tree:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, function() enableIndex(path) end)
         end
 
-        symboldirmenu:Append(wx.wxMenuItem(symboldirmenu, ID_SYMBOLDIRENABLE,
+        symboldirmenu:Append(wx.wxMenuItem(symboldirmenu, ID.SYMBOLDIRENABLE,
           TR("Enable Indexing"), "", wx.wxITEM_NORMAL, enabledirmenu))
-        menu:Insert(projdirpos+1, wx.wxMenuItem(menu, ID_SYMBOLDIRINDEX,
+        menu:Insert(projdirpos+1, wx.wxMenuItem(menu, ID.SYMBOLDIRINDEX,
           TR("Symbol Index"), "", wx.wxITEM_NORMAL, symboldirmenu))
 
         -- disable "enable" if it's empty
-        menu:Enable(ID_SYMBOLDIRENABLE, #paths > 0)
+        menu:Enable(ID.SYMBOLDIRENABLE, #paths > 0)
         -- disable "refresh" and "disable" if the directory is ignored
         -- or if any of the directories above it are ignored
-        menu:Enable(ID_SYMBOLDIRREFRESH, tree:IsDirectory(item_id) and not ignored)
-        menu:Enable(ID_SYMBOLDIRDISABLE, tree:IsDirectory(item_id) and not ignored)
+        menu:Enable(ID.SYMBOLDIRREFRESH, tree:IsDirectory(item_id) and not ignored)
+        menu:Enable(ID.SYMBOLDIRDISABLE, tree:IsDirectory(item_id) and not ignored)
 
-        tree:Connect(ID_SYMBOLDIRREFRESH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+        tree:Connect(ID.SYMBOLDIRREFRESH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
             -- purge files in this directory as some might have been removed;
             -- files will be purged based on time, but this is a good time to clean.
             purgeIndex(name)
             outline:RefreshSymbols(name)
             resetIndexTimer(1) -- start after 1ms
           end)
-        tree:Connect(ID_SYMBOLDIRDISABLE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+        tree:Connect(ID.SYMBOLDIRDISABLE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
             disableIndex(name)
           end)
        end
