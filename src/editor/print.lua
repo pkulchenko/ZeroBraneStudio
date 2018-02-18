@@ -131,7 +131,7 @@ local function connectPrintEvents(printer, printOut)
   function printOut:OnPreparePrinting() self:OnPrintPage() end
 end
 
-frame:Connect(ID_PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
+frame:Connect(ID.PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     local pageSetupDD = wx.wxPageSetupDialogData()
     pageSetupDD.MarginTopLeft     = wx.wxPoint(margin.left, margin.top)
@@ -146,7 +146,7 @@ frame:Connect(ID_PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
     margin.bottom, margin.right = pageSetupDD.MarginBottomRight.y, pageSetupDD.MarginBottomRight.x
   end)
 
-frame:Connect(ID_PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
+frame:Connect(ID.PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     local cfg = ide.config.print
     local editor = ide:GetEditorWithFocus()
@@ -183,13 +183,13 @@ frame:Connect(ID_PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
     end
   end)
 
-frame:Connect(ID_PRINT, wx.wxEVT_UPDATE_UI, function(event) event:Enable(ide:GetEditorWithFocus() ~= nil) end)
+frame:Connect(ID.PRINT, wx.wxEVT_UPDATE_UI, function(event) event:Enable(ide:GetEditorWithFocus() ~= nil) end)
 
 local _, menu, epos = ide:FindMenuItem(ID.EXIT)
 -- disable printing on Unix/Linux as it generates incorrect layout (wx2.9.5, wx3.1)
 if ide.osname ~= "Unix" and menu and epos then
   -- insert Print-repated menu items (going in the opposite order)
-  menu:Insert(epos-1, ID_PAGESETUP, TR("Page Setup..."), "")
-  menu:Insert(epos-1, ID_PRINT, TR("&Print..."), TR("Print the current document"))
+  menu:Insert(epos-1, ID.PAGESETUP, TR("Page Setup..."), "")
+  menu:Insert(epos-1, ID.PRINT, TR("&Print..."), TR("Print the current document"))
   menu:InsertSeparator(epos-1)
 end

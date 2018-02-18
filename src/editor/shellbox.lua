@@ -285,7 +285,7 @@ local function createenv()
 
   local os = {
     exit = function()
-      ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_EXIT))
+      ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.EXIT))
     end,
   }
   env.os = setmetatable(os, {__index = _G.os})
