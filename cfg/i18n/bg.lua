@@ -1,6 +1,6 @@
 return {
   [0] = function(c) return c == 1 and 1 or 2 end, -- plural
-  ["%s event failed: %s"] = "%s събитиения обработчик върна грешка: %s", -- src\editor\package.lua
+  ["%s event failed: %s"] = "%s събитие се провали: %s", -- src\editor\package.lua
   ["%s%% formatted..."] = "%s%% форматирано...", -- src\editor\print.lua
   ["%s%% loaded..."] = "%s%% заредено...", -- src\editor\commands.lua
   ["&About"] = "&За програмата", -- src\editor\menu_help.lua
@@ -15,7 +15,7 @@ return {
   ["&Delete Watch"] = "&Изтрий изглед", -- src\editor\debugger.lua
   ["&Delete"] = "&Издрий", -- src\editor\filetree.lua
   ["&Documentation"] = "Документация", -- src\editor\menu_help.lua
-  ["&Edit Project Directory"] = "&Редактиране Проектна Директорията", -- src\editor\filetree.lua
+  ["&Edit Project Directory"] = "&Редактиране проектна директорията", -- src\editor\filetree.lua
   ["&Edit Value"] = "&Редактиране стойност", -- src\editor\debugger.lua
   ["&Edit Watch"] = "&Редактиране следене", -- src\editor\debugger.lua
   ["&Edit"] = "&Редакция", -- src\editor\menu_edit.lua
@@ -25,7 +25,7 @@ return {
   ["&Frequently Asked Questions"] = "&Често задавани въпроси", -- src\editor\menu_help.lua
   ["&Getting Started Guide"] = "&Как да започнем", -- src\editor\menu_help.lua
   ["&Help"] = "&Помощ", -- src\editor\menu_help.lua
-  ["&New Directory"] = "&Нова Директория", -- src\editor\filetree.lua
+  ["&New Directory"] = "&Нова директория", -- src\editor\filetree.lua
   ["&New"] = "&Създай", -- src\editor\menu_file.lua
   ["&Open..."] = "&Отвори...", -- src\editor\menu_file.lua
   ["&Output/Console Window"] = "&Изход/Конзолен прозорец", -- src\editor\menu_view.lua
@@ -309,8 +309,8 @@ return {
   ["Symbol Index"] = "Символен индекс", -- src\editor\outline.lua
   ["Text not found."] = "Текста не е намерен.", -- src\editor\findreplace.lua
   ["The API file must be located in a subdirectory of the API directory."] = "API файлът трябва да се намира в под-директория на API директорията.", -- src\editor\autocomplete.lua
-  ["Toggle Bookmark"] = "Превключи Показалец", -- src\editor\markers.lua, src\editor\menu_edit.lua
-  ["Toggle Breakpoint"] = "Превключи Контролна точка", -- src\editor\markers.lua, src\editor\menu_project.lua
+  ["Toggle Bookmark"] = "Превключи показалец", -- src\editor\markers.lua, src\editor\menu_edit.lua
+  ["Toggle Breakpoint"] = "Превключи контролна точка", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Превключи показалец", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
   ["Toggle breakpoint"] = "Превключи контролна точка", -- src\editor\markers.lua, src\editor\toolbar.lua
   ["Tr&ace"] = "Тр&асировка", -- src\editor\menu_project.lua
