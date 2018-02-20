@@ -193,7 +193,7 @@ return {
   ["New &File"] = "Нов &файл", -- src\editor\filetree.lua
   ["OVR"] = "ЗАМ", -- src\editor\editor.lua
   ["Open With Default Program"] = "Отвори с програма по подразбиране", -- src\editor\filetree.lua
-  ["Open an existing document"] = "Ортвори съществуващ документ", -- src\editor\toolbar.lua, src\editor\menu_file.lua
+  ["Open an existing document"] = "Отвори съществуващ документ", -- src\editor\toolbar.lua, src\editor\menu_file.lua
   ["Open file"] = "Отвори файл", -- src\editor\commands.lua
   ["Outline Window"] = "Структорен прозорец", -- src\editor\menu_view.lua
   ["Outline"] = "Структура", -- src\editor\outline.lua
