@@ -181,7 +181,7 @@ return {
   ["Local console"] = "Локална конзола", -- src\editor\gui.lua, src\editor\shellbox.lua
   ["Lua &Interpreter"] = "Lua &Интерпретатор", -- src\editor\menu_project.lua
   ["Map Directory..."] = "Добави Директория...", -- src\editor\filetree.lua
-  ["Mapped remote request for '%s' to '%s'."] = "Добавен отдалечен поиск за '%s' към '%s'.", -- src\editor\debugger.lua
+  ["Mapped remote request for '%s' to '%s'."] = "Добавена отдалечена заявка за '%s' към '%s'.", -- src\editor\debugger.lua
   ["Markers Window"] = "Маркерен прозорец", -- src\editor\menu_view.lua
   ["Markers"] = "Маркери", -- src\editor\markers.lua
   ["Match case"] = "Съвпадение в случая", -- src\editor\toolbar.lua
