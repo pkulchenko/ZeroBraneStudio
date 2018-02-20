@@ -38,7 +38,7 @@ return {
   ["&Replace"] = "&Замени", -- src\editor\menu_search.lua
   ["&Run"] = "&Пусни", -- src\editor\menu_project.lua
   ["&Save"] = "&Съхрани", -- src\editor\gui.lua, src\editor\menu_file.lua
-  ["&Search"] = "&Потърси", -- src\editor\menu_search.lua
+  ["&Search"] = "&Търсене", -- src\editor\menu_search.lua
   ["&Select Command"] = "&Изберете команда", -- src\editor\gui.lua
   ["&Sort"] = "&Cортирай", -- src\editor\menu_edit.lua
   ["&Stack Window"] = "Стеков прозорец", -- src\editor\menu_view.lua
