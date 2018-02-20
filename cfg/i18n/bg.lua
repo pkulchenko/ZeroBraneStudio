@@ -15,7 +15,7 @@ return {
   ["&Delete Watch"] = "&Изтрий изглед", -- src\editor\debugger.lua
   ["&Delete"] = "&Издрий", -- src\editor\filetree.lua
   ["&Documentation"] = "Документация", -- src\editor\menu_help.lua
-  ["&Edit Project Directory"] = "&Редактиране проектна директорията", -- src\editor\filetree.lua
+  ["&Edit Project Directory"] = "&Редактиране проектната директория", -- src\editor\filetree.lua
   ["&Edit Value"] = "&Редактиране стойност", -- src\editor\debugger.lua
   ["&Edit Watch"] = "&Редактиране следене", -- src\editor\debugger.lua
   ["&Edit"] = "&Редакция", -- src\editor\menu_edit.lua
