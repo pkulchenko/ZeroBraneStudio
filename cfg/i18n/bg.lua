@@ -178,7 +178,7 @@ return {
   ["Insert Library Function..."] = "Вмъкни Библиотечна Функция...", -- src\editor\menu_search.lua
   ["Known Files"] = "Известни Файлове", -- src\editor\commands.lua
   ["Ln: %d"] = "Лин: %d", -- src\editor\editor.lua
-  ["Local console"] = "Локальна конзола", -- src\editor\gui.lua, src\editor\shellbox.lua
+  ["Local console"] = "Локална конзола", -- src\editor\gui.lua, src\editor\shellbox.lua
   ["Lua &Interpreter"] = "Lua &Интерпретатор", -- src\editor\menu_project.lua
   ["Map Directory..."] = "Добави Директория...", -- src\editor\filetree.lua
   ["Mapped remote request for '%s' to '%s'."] = "Добавен отдалечен поиск за '%s' към '%s'.", -- src\editor\debugger.lua
