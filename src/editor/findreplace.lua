@@ -503,7 +503,6 @@ function findReplace:RunInFiles(replace)
   ide:Yield() -- let the update of the UI happen
 
   -- save focus to restore after adding a page with search results
-  local ctrl = ide:GetMainFrame():FindFocus()
   local findText = self.findCtrl:GetValue()
   local flags = self:GetFlags()
   local showaseditor = ide.config.search.showaseditor

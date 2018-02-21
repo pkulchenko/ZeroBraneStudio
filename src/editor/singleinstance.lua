@@ -62,7 +62,6 @@ else -- something different is running on our port
   cln:send(protocol.client.greeting)
 
   local msg = cln:receive()
-  local arg = ide.arg
   if msg and msg:match(protocol.server.greeting:gsub("%%s",".+$")) then
     local username = msg:match(protocol.server.greeting:gsub("%%s","(.+)$"))
     if username ~= wx.wxGetUserName() then
