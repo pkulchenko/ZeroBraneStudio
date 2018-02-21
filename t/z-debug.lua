@@ -10,7 +10,7 @@ ok(wx.wxFileExists(debugfile), "File created before starting debugging.")
 local editor = ide:ActivateFile(debugfile)
 editor:BreakpointToggle(4)
 
-ide:GetMenuBar():Check(ID.CLEAROUTPUT, false)
+ide:GetMenuBar():Check(ID.CLEAROUTPUTENABLE, false)
 ProjectDebug()
 
 local commands = {
