@@ -1,5 +1,5 @@
 local i18n = ide:GetFileList('cfg/i18n/', true)
-is(#i18n, 10, "Language files are present in i18n directory.")
+is(#i18n, 11, "Language files are present in i18n directory.")
 for _, ln in ipairs(i18n) do
   local func = loadfile(ln)
   ok(type(func) == 'function' and func() ~= nil, ("Loaded '%s' language file."):format(ln))
