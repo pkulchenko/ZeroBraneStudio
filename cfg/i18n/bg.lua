@@ -122,7 +122,7 @@ return {
   ["Do you want to save the changes to '%s'?"] = "Изкате ли да запазите промените '%s'?", -- src\editor\commands.lua
   ["E&xit"] = "И&зход", -- src\editor\menu_file.lua
   ["Enable Indexing"] = "Разреши Индексирането", -- src\editor\outline.lua
-  ["Enter Lua code and press Enter to run it."] = "Въведете Lua код и натиснете ЕНТЪР за да го изпълните.", -- src\editor\shellbox.lua
+  ["Enter Lua code and press Enter to run it."] = "Въведете Lua код и натиснете Ентър за да го изпълните.", -- src\editor\shellbox.lua
   ["Enter command line parameters"] = "Въведете параметри за командния ред", -- src\editor\menu_project.lua
   ["Enter replacement text"] = "Въведете текст за замяна", -- src\editor\editor.lua
   ["Error while loading API file: %s"] = "Грешка при зареждане на API: %s", -- src\editor\autocomplete.lua
