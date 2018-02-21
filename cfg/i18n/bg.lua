@@ -8,7 +8,7 @@ return {
   ["&Break"] = "&Прекратете", -- src\editor\menu_project.lua
   ["&Close Page"] = "&Затвори страницата", -- src\editor\gui.lua, src\editor\menu_file.lua
   ["&Community"] = "&Общество", -- src\editor\menu_help.lua
-  ["&Compile"] = "&Компилиране", -- src\editor\menu_project.lua
+  ["&Compile"] = "&Компилирай", -- src\editor\menu_project.lua
   ["&Copy Value"] = "Копирай стойност", -- src\editor\debugger.lua
   ["&Copy"] = "&Копирай", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&Default Layout"] = "&Вид по подразбиране", -- src\editor\menu_view.lua
@@ -171,7 +171,7 @@ return {
   ["Go to file"] = "Отиди на файл", -- src\editor\menu_search.lua
   ["Go to line"] = "Отиди на ред", -- src\editor\menu_search.lua
   ["Go to symbol"] = "Отиди на символ", -- src\editor\menu_search.lua
-  ["Hide '.%s' Files"] = "Скрий '.%s' файлове", -- src\editor\filetree.lua
+  ["Hide '.%s' Files"] = "Скрий '.%s' файловете", -- src\editor\filetree.lua
   ["INS"] = "ВСТ", -- src\editor\editor.lua
   ["Ignore and don't index symbols from files in the selected directory"] = "Игнорирай и не индексирай символи от файлове в избраната директория", -- src\editor\outline.lua
   ["Ignored error in debugger initialization code: %s."] = "Игнорирана грешка в инициализационния код на дебъгера: %s.", -- src\editor\debugger.lua
@@ -213,7 +213,7 @@ return {
   ["Program starting as '%s'."] = "Програмата стартира като '%s'.", -- src\editor\output.lua
   ["Program stopped (pid: %d)."] = "Програмата завърши (pid: %d).", -- src\editor\debugger.lua
   ["Program unable to run as '%s'."] = "Програмата неможе да стартира като '%s'.", -- src\editor\output.lua
-  ["Project Directory"] = "Проектна папка", -- src\editor\menu_project.lua, src\editor\filetree.lua
+  ["Project Directory"] = "Проектна директория", -- src\editor\menu_project.lua, src\editor\filetree.lua
   ["Project history"] = "Проектна история", -- src\editor\menu_file.lua
   ["Project"] = "Проект", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "Прозорец проект/&файлово дърво", -- src\editor\menu_view.lua
