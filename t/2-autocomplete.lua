@@ -230,11 +230,10 @@ ok(status and (res or ""):match('value'),
   ("Auto-complete (symbols=%s) offers case-insensitive completions for lower case match."):format(s))
 
 local status, res = pcall(CreateAutoCompList, editor, "vA")
-ide:Print("velAcc/vA", status, res)
-  ok(status and (res or ""):match('velAcc'),
-    ("Auto-complete (symbols=%s) offers case-sensitive completions for upper case match (1/2)."):format(s))
-  ok(status and res and not res:match('value'),
-    ("Auto-complete (symbols=%s) offers case-sensitive completions for upper case match (2/2)."):format(s))
+ok(status and (res or ""):match('velAcc'),
+  ("Auto-complete (symbols=%s) offers case-sensitive completions for upper case match (1/2)."):format(s))
+ok(status and res and not res:match('value'),
+  ("Auto-complete (symbols=%s) offers case-sensitive completions for upper case match (2/2)."):format(s))
 
 -- cleanup
 ide.config.acandtip.strategy = strategy
