@@ -331,8 +331,8 @@ return {
   ["Use %s to close."] = "Използвайте %s да затворите.", -- src\editor\findreplace.lua
   ["Use '%s' to see full description."] = "Използвайте '%s' за видите пълното описание.", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "Използвайте '%s' за да се покажат кодировките за край на ред и '%s' да ги конвертирате.", -- src\editor\commands.lua
-  ["Use 'clear' to clear the shell output and the history."] = "Използвайте команда 'почисти' за почистване на конзолата и историята.", -- src\editor\shellbox.lua
-  ["Use 'reset' to clear the environment."] = "Използвайте команда 'нулиране' за почистване на средата.", -- src\editor\shellbox.lua
+  ["Use 'clear' to clear the shell output and the history."] = "Използвайте команда 'clear' за почистване на конзолата и историята.", -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = "Използвайте команда 'reset' за почистване на средата.", -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "Използвайте Шифт-Ентър за многоредов код.", -- src\editor\shellbox.lua
   ["View the markers window"] = "Покажи прозорец за маркерите", -- src\editor\menu_view.lua
   ["View the outline window"] = "Покажи прозорец за очетание", -- src\editor\menu_view.lua
