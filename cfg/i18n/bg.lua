@@ -13,11 +13,11 @@ return {
   ["&Copy"] = "&Копирай", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&Default Layout"] = "&Вид по подразбиране", -- src\editor\menu_view.lua
   ["&Delete Watch"] = "&Изтрий изглед", -- src\editor\debugger.lua
-  ["&Delete"] = "&Издрий", -- src\editor\filetree.lua
+  ["&Delete"] = "&Изтрий", -- src\editor\filetree.lua
   ["&Documentation"] = "Документация", -- src\editor\menu_help.lua
   ["&Edit Project Directory"] = "&Редактиране проектната директория", -- src\editor\filetree.lua
-  ["&Edit Value"] = "&Редактиране стойност", -- src\editor\debugger.lua
-  ["&Edit Watch"] = "&Редактиране следене", -- src\editor\debugger.lua
+  ["&Edit Value"] = "&Редактиране на стойност", -- src\editor\debugger.lua
+  ["&Edit Watch"] = "&Редактиране на следене", -- src\editor\debugger.lua
   ["&Edit"] = "&Редакция", -- src\editor\menu_edit.lua
   ["&File"] = "&Файл", -- src\editor\menu_file.lua
   ["&Find"] = "&Намери", -- src\editor\menu_search.lua
@@ -157,7 +157,7 @@ return {
   ["Fold or unfold current line"] = "Сгъни или разгъни текущ ред", -- src\editor\menu_edit.lua
   ["Fold/Unfold Current &Line"] = "Сгъни/Разгъни текущ ред", -- src\editor\menu_edit.lua
   ["Formatting page %d..."] = "Форматиране страница %d...", -- src\editor\print.lua
-  ["Found %d instance."] = {"Намерено %d съвпадение.", "Намерени %d совпадения."}, -- src\editor\findreplace.lua
+  ["Found %d instance."] = {"Намерено %d съвпадение.", "Намерени %d съвпадения."}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Намерен авто-възвърнат запис и възстановена записана сесия.", -- src\editor\commands.lua
   ["Full &Screen"] = "На цял екр&ан", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Отиди на дефиниция", -- src\editor\editor.lua
@@ -239,7 +239,7 @@ return {
   ["Replace All Selections"] = "Замени всички маркирания", -- src\editor\editor.lua
   ["Replace all"] = "Замени всички", -- src\editor\toolbar.lua
   ["Replace next instance"] = "Замени следващо съвпадение", -- src\editor\toolbar.lua
-  ["Replaced %d instance."] = {"Заменено %d съвпадение.", "Заменени %d совпадения."}, -- src\editor\findreplace.lua
+  ["Replaced %d instance."] = {"Заменено %d съвпадение.", "Заменени %d съвпадения."}, -- src\editor\findreplace.lua
   ["Replaced an invalid UTF8 character with %s."] = "Некоректен символ UTF8 заменен с %s.", -- src\editor\commands.lua
   ["Reset to default layout"] = "Установи на разположение по подразбиране", -- src\editor\menu_view.lua
   ["Run As Scratchpad"] = "Пусни като чернова", -- src\editor\menu_project.lua
