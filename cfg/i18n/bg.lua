@@ -13,11 +13,11 @@ return {
   ["&Copy"] = "&Копирай", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&Default Layout"] = "&Вид по подразбиране", -- src\editor\menu_view.lua
   ["&Delete Watch"] = "&Изтрий изглед", -- src\editor\debugger.lua
-  ["&Delete"] = "&Издрий", -- src\editor\filetree.lua
+  ["&Delete"] = "&Изтрий", -- src\editor\filetree.lua
   ["&Documentation"] = "Документация", -- src\editor\menu_help.lua
   ["&Edit Project Directory"] = "&Редактиране проектната директория", -- src\editor\filetree.lua
-  ["&Edit Value"] = "&Редактиране стойност", -- src\editor\debugger.lua
-  ["&Edit Watch"] = "&Редактиране следене", -- src\editor\debugger.lua
+  ["&Edit Value"] = "&Редактиране на стойност", -- src\editor\debugger.lua
+  ["&Edit Watch"] = "&Редактиране на следене", -- src\editor\debugger.lua
   ["&Edit"] = "&Редакция", -- src\editor\menu_edit.lua
   ["&File"] = "&Файл", -- src\editor\menu_file.lua
   ["&Find"] = "&Намери", -- src\editor\menu_search.lua
