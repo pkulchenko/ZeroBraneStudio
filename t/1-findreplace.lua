@@ -21,7 +21,7 @@ findReplace:Find()
 is(editor:GetSelectionStart(), selend, "Find Next doesn't skip consecutive matches.")
 
 editor:GotoPos(0) -- reset current selection
-local findnext = wx.wxUpdateUIEvent(ID_FINDNEXT)
+local findnext = wx.wxUpdateUIEvent(ID.FINDNEXT)
 ide.frame:ProcessEvent(findnext)
 ok(findnext:GetEnabled(), "Quick find is enabled without current selection.")
 
