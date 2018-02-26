@@ -205,7 +205,9 @@ local function showCommandBar(params)
 
   local linewas -- line that was reported when updated
   local function onTextUpdated()
-    pending = ide:GetApp():GetMainLoop():IsYielding()
+    if ide:IsValidProperty(ide:GetApp(), "GetMainLoop") then
+      pending = ide:GetApp():GetMainLoop():IsYielding()
+    end
     if pending then return end
 
     local text = search:GetValue()
@@ -228,7 +230,8 @@ local function showCommandBar(params)
   end
 
   local function onKeyDown(event)
-    if ide:GetApp():GetMainLoop():IsYielding() then
+    if ide:IsValidProperty(ide:GetApp(), "GetMainLoop")
+    and ide:GetApp():GetMainLoop():IsYielding() then
       event:Skip()
       return
     end
