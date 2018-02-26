@@ -41,6 +41,8 @@ Other values (can be combined): `wxstc.wxSTC_FOLDFLAG_LINEBEFORE_EXPANDED` (draw
 set to `false` or `nil` to disable;
 set to `wxstc.wxSTC_IV_LOOKFORWARD` to show indentation guides beyond the actual indentation up to the level of the next non-empty line
 and to `wxstc.wxSTC_IV_LOOKBOTH` to show indentation guides beyond the actual indentation up to the level of the next non-empty line or previous non-empty line whichever is the greater (**v1.11+**).
+- `editor.linecopy = true`: allow Copy and Cut editor operations to work on the current line when nothing is selected (**v1.71+**);
+set to `false` to disable (nothing will be cut/copied if nothing is selected).
 - `editor.linenumber = true`: show line numbers (**v1.31+**).
 - `editor.modifiedprefix = "✱ "`: set prefix to be shown on modified editor tabs (**v1.71+**).
 - `editor.nomousezoom = false`: disable zoom with mouse wheel as it may be too sensitive.
