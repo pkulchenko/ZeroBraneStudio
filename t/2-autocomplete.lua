@@ -34,6 +34,24 @@ ok(limit(maxstat, function() CreateAutoCompList(editor, "line.") end),
 
 editor:SetText('') -- use Set/Add to position cursor after added text
 editor:AddText([[
+  local d = f:getSome()
+  local f = d:getMore()
+  f:]])
+
+ok(limit(maxstat, function() CreateAutoCompList(editor, "f:") end),
+  ("Auto-complete (strategy=%s) doesn't loop for recursive definitions (1/2)."):format(s))
+
+editor:SetText('') -- use Set/Add to position cursor after added text
+editor:AddText([[
+  local d = f:getSome()
+  local f = d[0]
+  f:]])
+
+ok(limit(maxstat, function() CreateAutoCompList(editor, "f:") end),
+  ("Auto-complete (strategy=%s) doesn't loop for recursive definitions (2/2)."):format(s))
+
+editor:SetText('') -- use Set/Add to position cursor after added text
+editor:AddText([[
   local foo = io
   foo:]])
 

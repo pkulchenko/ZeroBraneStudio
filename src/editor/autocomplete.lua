@@ -260,15 +260,16 @@ local function resolveAssign(editor,tx)
         classname = classname or assigns[c..w]
         if (s ~= "" and old ~= classname) then
           -- continue checking unless this can lead to recursive substitution
-          change = not classname:find("^"..w..anysep) and not classname:find("^"..c..w..anysep)
+          if refs[w] then change = false; break end
           c = classname..s
         else
           c = c..w..s
         end
+        refs[w] = true
       end
       -- check for loops in type assignment
       if refs[tx] then break end
-      refs[tx] = c
+      refs[tx] = true
       tx = c
       -- if there is any class duplication, abort the loop
       if classname and select(2, c:gsub(classname, classname)) > 1 then break end
