@@ -100,9 +100,9 @@ return {
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "Компилацията завършена успешно; процент успех: %.0f%% (%d/%d).", -- src\editor\commands.lua
   ["Compile the current file"] = "Компилирай текущия ред", -- src\editor\menu_project.lua
   ["Complete &Identifier"] = "Допълни &идентификатор", -- src\editor\menu_edit.lua
-  ["Complete the current identifier"] = "Дополни текущ идентификатор", -- src\editor\menu_edit.lua
-  ["Consider removing backslash from escape sequence '%s'."] = "Рассмотрите вариант удаления backslash из строки '%s'.", -- src\editor\commands.lua
-  ["Copy Full Path"] = "Копирай Пълния Път", -- src\editor\gui.lua, src\editor\filetree.lua
+  ["Complete the current identifier"] = "Допълни текущ идентификатор", -- src\editor\menu_edit.lua
+  ["Consider removing backslash from escape sequence '%s'."] = "Обмислете премахването на обратната наклонена черта от линията '%s'.", -- src\editor\commands.lua
+  ["Copy Full Path"] = "Копирай пълния път", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Copy selected text to clipboard"] = "Копирай маркирания текст в клипборда", -- src\editor\menu_edit.lua
   ["Correct &Indentation"] = "Коригирай отстъпа", -- src\editor\menu_edit.lua
   ["Couldn't activate file '%s' for debugging; continuing without it."] = "Невъзможно активирането на файл '%s' за дебъг; продължава се без него.", -- src\editor\debugger.lua
@@ -113,7 +113,7 @@ return {
   ["Debugger server stopped at %s:%d."] = "Сървърен дебъгер спрян %s:%d.", -- src\editor\debugger.lua
   ["Debugging session completed (%s)."] = "Дебъг сесия завършена (%s).", -- src\editor\debugger.lua
   ["Debugging session started in '%s'."] = "Дебъг сесия сатритрана '%s'.", -- src\editor\debugger.lua
-  ["Debugging suspended at '%s:%s' (couldn't activate the file)."] = "Дебъга увизна '%s:%s' (невъзможно активирането на файл).", -- src\editor\debugger.lua
+  ["Debugging suspended at '%s:%s' (couldn't activate the file)."] = "Дебъга увизна '%s:%s' (невъзможно активирането на файла).", -- src\editor\debugger.lua
   ["Detach &Process"] = "Разкачи процес", -- src\editor\menu_project.lua
   ["Disable Indexing For '%s'"] = "Забрани Индексирането За '%s'", -- src\editor\outline.lua
   ["Do you want to delete '%s'?"] = "Искате ли да изтриете '%s'?", -- src\editor\filetree.lua
