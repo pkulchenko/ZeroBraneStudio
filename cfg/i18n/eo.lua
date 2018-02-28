@@ -46,6 +46,7 @@ return {
   ["&Start Debugger Server"] = "&Ekfunkciigi sencimigilo-servilon", -- src\editor\menu_project.lua
   ["&Status Bar"] = "&Stata breto", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "&Ilobreto", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Lerniloj", -- src\editor\menu_help.lua
   ["&Undo"] = "&Malfari", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Vidi", -- src\editor\menu_view.lua

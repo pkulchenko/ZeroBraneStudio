@@ -44,6 +44,7 @@ return {
   ["&Start Debugger Server"] = "啟動除錯伺服器", -- src\editor\menu_project.lua
   ["&Status Bar"] = "狀態列", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "工具列", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "教學", -- src\editor\menu_help.lua
   ["&Undo"] = "還原", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "視圖", -- src\editor\menu_view.lua

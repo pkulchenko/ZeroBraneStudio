@@ -45,6 +45,7 @@ return {
   ["&Start Debugger Server"] = "&Пусни дебъгер на сървъра", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Панел на състоянието", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Панел за инструменти", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Обучителни материали", -- src\editor\menu_help.lua
   ["&Undo"] = "&Отмени", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Изглед", -- src\editor\menu_view.lua
@@ -80,10 +81,10 @@ return {
   ["Choose a project directory"] = "Изберете диреклтория за проекта", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = "Изберете диреклтория за търсене", -- src\editor\findreplace.lua
   ["Choose..."] = "Изберете...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
-  ["Clear Breakpoints In File"] = "Изчисти Контролните точки във файла", -- src\editor\markers.lua, src\editor\menu_project.lua
-  ["Clear Breakpoints In Project"] = "Почисти контролните точки за проекта", -- src\editor\markers.lua
-  ["Clear Bookmarks In File"] = "Изчисти показалците във файла", -- src\editor\markers.lua, src\editor\menu_project.lua
+  ["Clear Bookmarks In File"] = "Изчисти показалците във файла", -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = "Почисти показалците за проекта", -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = "Изчисти Контролните точки във файла", -- src\editor\markers.lua
+  ["Clear Breakpoints In Project"] = "Почисти контролните точки за проекта", -- src\editor\markers.lua
   ["Clear Items"] = "Изчисти елементите", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "Изчисти елементите от този списък", -- src\editor\menu_file.lua
   ["Clear the output window before compiling or debugging"] = "Изчисти изходния прозорец преди компилация или дебъг", -- src\editor\menu_project.lua
@@ -98,7 +99,7 @@ return {
   ["Comment or uncomment current or selected lines"] = "Коментирай или разкоментирай текущия или маркиран ред", -- src\editor\menu_edit.lua
   ["Compilation error"] = "Компилационна грешка", -- src\editor\commands.lua, src\editor\debugger.lua
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "Компилацията завършена успешно; процент успех: %.0f%% (%d/%d).", -- src\editor\commands.lua
-  ["Compile the current file"] = "Компилирай текущия ред", -- src\editor\menu_project.lua
+  ["Compile the current file"] = "Компилирай текущия ред", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Complete &Identifier"] = "Допълни &идентификатор", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = "Допълни текущ идентификатор", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "Обмислете премахването на обратната наклонена черта от линията '%s'.", -- src\editor\commands.lua
@@ -129,7 +130,7 @@ return {
   ["Error while loading configuration file: %s"] = "Грешка при зареждане на конфигурацията: %s", -- src\editor\style.lua
   ["Error while processing API file: %s"] = "Грешка при обработка на API: %s", -- src\editor\autocomplete.lua
   ["Error while processing configuration file: %s"] = "Грешка при обработка на конфигурация: %s", -- src\editor\style.lua
-  ["Error"] = "Грешка", -- src\editor\commands.lua
+  ["Error"] = "Грешка", -- src\editor\package.lua
   ["Evaluate In Console"] = "Изпълни в конзолата", -- src\editor\editor.lua
   ["Execute the current project/file and keep updating the code to see immediate results"] = "Изпълни текущия проект/файл и продължи да актуализираш кода за незабавни резултати", -- src\editor\menu_project.lua
   ["Execute the current project/file"] = "Изпълни текущия проект/файл", -- src\editor\toolbar.lua, src\editor\menu_project.lua
@@ -159,6 +160,7 @@ return {
   ["Formatting page %d..."] = "Форматиране страница %d...", -- src\editor\print.lua
   ["Found %d instance."] = {"Намерено %d съвпадение.", "Намерени %d съвпадения."}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Намерен авто-възвърнат запис и възстановена записана сесия.", -- src\editor\commands.lua
+  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Full &Screen"] = "На цял екр&ан", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Отиди на дефиниция", -- src\editor\editor.lua
   ["Go To File..."] = "Отиди на файл...", -- src\editor\menu_search.lua
@@ -218,7 +220,7 @@ return {
   ["Project"] = "Проект", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "Прозорец проект/&файлово дърво", -- src\editor\menu_view.lua
   ["Provide command line parameters"] = "Задай параметри от командния ред", -- src\editor\menu_project.lua
-  ["Queued %d files to index."] = {"Поместен %d файл в индекса.","Поместени %d файлове в индекса."}, -- src\editor\menu_search.lua
+  ["Queued %d files to index."] = {"Поместен %d файл в индекса.","Поместени %d файлове в индекса."}, -- src\editor\commandbar.lua
   ["R/O"] = "R/O", -- src\editor\editor.lua
   ["R/W"] = "R/W", -- src\editor\editor.lua
   ["Re&place In Files"] = "За&мени във файлове", -- src\editor\menu_search.lua
@@ -262,6 +264,7 @@ return {
   ["Search in selection"] = "Търсене в маркиран текст", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "Търсене под-директории", -- src\editor\toolbar.lua
   ["Searching for '%s'."] = "Търсене за '%s'.", -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Изб: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Избери &всички", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Избери и намери следващо", -- src\editor\menu_search.lua
@@ -269,7 +272,7 @@ return {
   ["Select all text in the editor"] = "Избери целия текст в редактора", -- src\editor\menu_edit.lua
   ["Select the word under cursor and find its next occurrence"] = "Избери думата под курсора и потърси следваща", -- src\editor\menu_search.lua
   ["Select the word under cursor and find its previous occurrence"] = "Избери думата под курсора и потърси предишна", -- src\editor\menu_search.lua
-  ["Set As Start File"] = "Задай като начален файл", -- src\editor\filetree.lua
+  ["Set As Start File"] = "Задай като начален файл", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Set From Current File"] = "Задай от текущия Файл", -- src\editor\menu_project.lua
   ["Set To Project Directory"] = "Задай като проектна директория", -- src\editor\findreplace.lua
   ["Set To Selected Directory"] = "Задай като избрана директория", -- src\editor\filetree.lua
@@ -308,7 +311,7 @@ return {
   ["Switch to or from full screen mode"] = "Превключи от или към режим на цял екран", -- src\editor\menu_view.lua
   ["Symbol Index"] = "Символен индекс", -- src\editor\outline.lua
   ["Text not found."] = "Текста не е намерен.", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "API файлът трябва да се намира в под-директория на API директорията.", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "API файлът трябва да се намира в под-директория на API директорията.", -- src\main.lua
   ["Toggle Bookmark"] = "Превключи показалец", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "Превключи контролна точка", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Превключи показалец", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -325,7 +328,7 @@ return {
   ["Unable to stop program (pid: %d), code %d."] = "Невъзможно спирането на програната (pid: %d), код %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "Отмяна на последно действие", -- src\editor\menu_edit.lua
   ["Unmap Directory"] = "Премахни диреклтория от списъка", -- src\editor\filetree.lua
-  ["Unset '%s' As Start File"] = "Отмени '%s' като начален файл", -- src\editor\filetree.lua
+  ["Unset '%s' As Start File"] = "Отмени '%s' като начален файл", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Updated %d file."] = {"Обновлен %d файл.", "Обновлени %d файла."}, -- src\editor\findreplace.lua
   ["Updating symbol index and settings..."] = "Актуализация символния индекс и настройки...", -- src\editor\outline.lua
   ["Use %s to close."] = "Използвайте %s да затворите.", -- src\editor\findreplace.lua

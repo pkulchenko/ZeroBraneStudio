@@ -46,6 +46,7 @@ return {
   ["&Start Debugger Server"] = "Iniciar &servidor de depuração", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Barra de &status", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Barra de ferramen&tas", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Tutoriais", -- src\editor\menu_help.lua
   ["&Undo"] = "Desfazer", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "Exibir", -- src\editor\menu_view.lua

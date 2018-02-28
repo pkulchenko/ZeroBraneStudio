@@ -1165,7 +1165,7 @@ function ide:AddTool(name, command, updateui)
     if not helpMenu then helpindex = self:GetMenuBar():GetMenuCount() end
 
     toolMenu = self:MakeMenu {}
-    self:GetMenuBar():Insert(helpindex, toolMenu, "&Tools")
+    self:GetMenuBar():Insert(helpindex, toolMenu, TR("&Tools"))
   end
   local id = tool2id(name)
   toolMenu:Append(id, name)

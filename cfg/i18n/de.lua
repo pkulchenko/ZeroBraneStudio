@@ -45,6 +45,7 @@ return {
   ["&Start Debugger Server"] = "De&bugserver starten", -- src\editor\menu_project.lua
   ["&Status Bar"] = "S&tatuszeile", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "&Werkzeugleiste", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Tutorien", -- src\editor\menu_help.lua
   ["&Undo"] = "&Rückgängig", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Ansicht", -- src\editor\menu_view.lua

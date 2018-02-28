@@ -45,6 +45,7 @@ return {
   ["&Start Debugger Server"] = "Запустить сервер отла&дки", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Панель состояния", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Панель инструментов", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Обучающие материалы", -- src\editor\menu_help.lua
   ["&Undo"] = "&Отменить", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Вид", -- src\editor\menu_view.lua

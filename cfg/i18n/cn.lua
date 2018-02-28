@@ -44,6 +44,7 @@ return {
   ["&Start Debugger Server"] = "开启除错器伺服机", -- src\editor\menu_project.lua
   ["&Status Bar"] = "状态栏", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "工具栏", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "学习指南", -- src\editor\menu_help.lua
   ["&Undo"] = "撤消", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "视图", -- src\editor\menu_view.lua
