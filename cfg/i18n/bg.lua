@@ -45,7 +45,7 @@ return {
   ["&Start Debugger Server"] = "&Пусни дебъгер на сървъра", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Панел на състоянието", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Панел за инструменти", -- src\editor\menu_view.lua
-  ["&Tools"] = nil, -- src\editor\package.lua
+  ["&Tools"] = "Инструменти", -- src\editor\package.lua
   ["&Tutorials"] = "&Обучителни материали", -- src\editor\menu_help.lua
   ["&Undo"] = "&Отмени", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Изглед", -- src\editor\menu_view.lua
@@ -160,7 +160,7 @@ return {
   ["Formatting page %d..."] = "Форматиране страница %d...", -- src\editor\print.lua
   ["Found %d instance."] = {"Намерено %d съвпадение.", "Намерени %d съвпадения."}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Намерен авто-възвърнат запис и възстановена записана сесия.", -- src\editor\commands.lua
-  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
+  ["Found match in '%s'."] = "Намерено съвпадение в '%s'.", -- src\editor\findreplace.lua
   ["Full &Screen"] = "На цял екр&ан", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Отиди на дефиниция", -- src\editor\editor.lua
   ["Go To File..."] = "Отиди на файл...", -- src\editor\menu_search.lua
@@ -264,7 +264,7 @@ return {
   ["Search in selection"] = "Търсене в маркиран текст", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "Търсене под-директории", -- src\editor\toolbar.lua
   ["Searching for '%s'."] = "Търсене за '%s'.", -- src\editor\findreplace.lua
-  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = "Търсене в '%s'.", -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Изб: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Избери &всички", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Избери и намери следващо", -- src\editor\menu_search.lua
