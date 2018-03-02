@@ -199,6 +199,7 @@ return {
   singleinstanceport = 8172,
   showmemoryusage = false,
   showhiddenfiles = false,
+  transparency = nil, -- main window transparency: 0 == invisible -> 255 == opaque
   hidpi = false, -- HiDPI/Retina display support
   hotexit = false,
   imagetint = false,
