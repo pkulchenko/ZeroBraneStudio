@@ -43,6 +43,10 @@ Set breakpoints before or _during_ debugging. Step in, over, and out. Run to cur
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -422px -480px" src="images/t.gif" class="inset"/></a>
 Edit files in Unicode and run scripts with Unicode file names.
 
+**Markers**
+<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -311px -682px" src="images/t.gif" class="inset"/></a>
+Quickly navigate bookmarks and breakpoints in opened project files.
+
 **Function and expression calltip**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -392px -460px" src="images/t.gif" class="inset"/></a>
 Quickly access function description or variable/expression values while debugging.
