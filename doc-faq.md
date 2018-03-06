@@ -138,16 +138,17 @@ For example, when searching for `MyVariable([1-9])` and replacing with `MyOtherV
 
 ## Why is the text blurry when running on Windows 8?
 
-Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
+(**1.10 and earlier**) Right-click on ZeroBrane Studio icon -> `Properties` -> `Compatibility` -> `"Disable display scaling on high DPI settings"`.
 See the link in [this ticket](https://github.com/pkulchenko/ZeroBraneStudio/issues/210) for alternative solutions if this doesn't work.
 
-(**1.11+**) If you are using v1.11 or later, this may no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
+(**1.11+**) If you are using v1.11 or later, this is no longer be needed as the IDE launcher (`zbstudio.exe`) enables dpi awareness by default.
+
 (**1.40+**) HiDPI awareness has also been enabled for Lua executables for all supported versions.
 You may still need to enable it for other executables (not included with the IDE) as needed to make the applications you start from the IDE dpi-aware as well.
 
 ## Why is the text blurry in the editor when running on retina display (macOS)?
 
-You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on macOS **starting from v0.60**.
+(**Not necessary for 0.60+**) You can set `hidpi = true` in [configuration settings](doc-configuration); this setting is enabled by default on macOS **starting from v0.60**.
 
 (**1.30 and earlier**) Note that using this setting negatively affects [indicators](doc-styles-color-schemes#indicators) that have alpha property (the indicators are not shown when this setting is enabled).
 
@@ -166,7 +167,7 @@ For more information on how to modify colors and appearance of IDE elements, che
 
 ## How to accept keyboard input for applications started from the IDE?
 
-(**No longer necessary for 1.21+**) You need to output something using `print` or `io.write` before reading input.
+(**Not necessary for 1.21+**) You need to output something using `print` or `io.write` before reading input.
 You will see a prompt in the Output window where you can enter your input.
 
 If you launch the application outside of the IDE, make sure you **flush the printed output** (or use `io.stdout:setvbuf('no')`) before accepting the input.
