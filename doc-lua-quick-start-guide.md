@@ -61,13 +61,13 @@ message = ('The payment amount for %s is %d'):format(fullName, totalPay)
 -- Placeholders
 -- %d placeholder is for integer numbers
 print(("%d"):format(5)) --> 5
--- %d placeholder truncates real numbers
-print(("%d"):format(1.5)) --> 1
 -- %s placeholder is for strings
 print(("%s"):format('string')) --> string
 -- %f placeholder is for real numbers
 print(("%.2f"):format(1.5)) --> 1.50
 -- `.2` in `%.2f` specifies the number of decimal digits to be printed
+-- %.0f placeholder truncates real numbers
+print(("%.0f"):format(1.5)) --> 1
 
 -- [Patterns and Captures](http://www.lua.org/manual/5.1/manual.html#5.4.1)
 local text = '21.12,24.16,"-1.1%"'
