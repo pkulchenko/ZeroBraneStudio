@@ -1,4 +1,4 @@
--- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 
 -- converted from http://docs.giderosmobile.com/reference/autocomplete.php;
 -- (API for Gideros 2018.2.1 as of March 7th, 2018)
@@ -30,7 +30,8 @@ local api = {
     args = "()",
     description = "Creates new Accelerometer instance",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Accelerometer"
    },
    start = {
     args = "()",
@@ -102,7 +103,8 @@ local api = {
     args = "(adframework)",
     description = "Initializes new ad framework",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Ads"
    },
    set = {
     args = "(property, value)",
@@ -162,7 +164,8 @@ local api = {
     args = "(title, message, cancelButton [, button1, button2])",
     description = "",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "AlertDialog"
    },
    show = {
     args = "()",
@@ -208,7 +211,8 @@ local api = {
     args = "(texture)",
     description = "Creates a new Bitmap object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Bitmap"
    },
    setAnchorPoint = {
     args = "(x, y)",
@@ -659,7 +663,8 @@ local api = {
     args = "(type)",
     description = "Creates a new Event object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Event"
    },
    stopPropagation = {
     args = "()",
@@ -695,7 +700,8 @@ local api = {
     args = "()",
     description = "Creates a new EventDispatcher object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "EventDispatcher"
    },
    removeEventListener = {
     args = "(type, listener, data)",
@@ -803,7 +809,8 @@ local api = {
     args = "(txtfile, imagefile, filtering)",
     description = "Creates a new Font object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Font"
    }
   },
   inherits = "FontBase",
@@ -923,7 +930,8 @@ local api = {
     args = "()",
     description = "Creates new Geolocation instance",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Geolocation"
    },
    setAccuracy = {
     args = "(accuracy)",
@@ -1088,7 +1096,8 @@ local api = {
     args = "()",
     description = "Creates new Gyroscope instance",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Gyroscope"
    },
    start = {
     args = "()",
@@ -1471,7 +1480,8 @@ local api = {
     args = "(m11, m12, m21, m22, tx, ty)",
     description = "Creates a new Matrix object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Matrix"
    },
    orthographicProjection = {
     args = "(left, right, bottom, top, near, far)",
@@ -1723,7 +1733,8 @@ local api = {
     args = "([is3d])",
     description = "",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Mesh"
    },
    resizeColorArray = {
     args = "(size)",
@@ -1843,7 +1854,8 @@ local api = {
     args = "(deviceName, sampleRate, numChannels, bitsPerSample)",
     description = "Creates a new Microphone object.",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Microphone"
    },
    setOutputFile = {
     args = "(fileName)",
@@ -1896,7 +1908,8 @@ local api = {
     args = "(timeline)",
     description = "Creates a new MovieClip object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "MovieClip"
    },
    play = {
     args = "()",
@@ -1990,7 +2003,8 @@ local api = {
     args = "()",
     description = "Creates new notification",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Notification"
    },
    setNumber = {
     args = "()",
@@ -2180,7 +2194,8 @@ local api = {
     args = "()",
     description = "Create new particles group",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Particles"
    },
    removeParticles = {
     args = "(particle indeces)",
@@ -2264,7 +2279,8 @@ local api = {
     args = "()",
     description = "Creates Path2D object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Path2D"
    },
    setConvex = {
     args = "(convex)",
@@ -2348,7 +2364,8 @@ local api = {
     args = "([color, alpha, width, height])",
     description = "Create new pixel",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Pixel"
    },
    setColor = {
     args = "([color, alpha])",
@@ -2432,7 +2449,8 @@ local api = {
     args = "(width, height, filtering, repeat, autoscale)",
     description = "Creates new RenderTarget object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "RenderTarget"
    },
    save = {
     args = "(filename [, x, y, width, height])",
@@ -2486,7 +2504,8 @@ local api = {
     args = "(id)",
     description = "Open a new screen",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Screen"
    },
    setContent = {
     args = "(content)",
@@ -2624,7 +2643,8 @@ local api = {
     args = "(vertex shader, fragment shader, flags, uniform descriptor, attribute descriptor)",
     description = "Create new shader",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Shader"
    },
    setConstant = {
     args = "(uniform name, data type, mult, data)",
@@ -2698,7 +2718,8 @@ local api = {
     args = "()",
     description = "Creates a new Shape object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Shape"
    },
    setFillStyle = {
     args = "(type, ...)",
@@ -2728,7 +2749,8 @@ local api = {
     args = "(filename)",
     description = "Creates a new Sound object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Sound"
    },
    play = {
     args = "(startTime, looping, paused)",
@@ -3066,7 +3088,8 @@ local api = {
     args = "()",
     description = "Creates a new Sprite object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Sprite"
    },
    removeChild = {
     args = "(child)",
@@ -3316,7 +3339,8 @@ local api = {
     args = "(filename, size, text, filtering)",
     description = "Creates a new TTFont object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TTFont"
    }
   },
   inherits = "FontBase",
@@ -3364,7 +3388,8 @@ local api = {
     args = "(font, text [, sample, layout])",
     description = "Creates a new TextField object with the specified font and text",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TextField"
    },
    setFont = {
     args = "(font)",
@@ -3450,7 +3475,8 @@ local api = {
     args = "(title, message, text, cancelButton, button1, button2)",
     description = "",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TextInputDialog"
    },
    setInputType = {
     args = "(type)",
@@ -3480,7 +3506,8 @@ local api = {
     args = "(filename, filtering [, options])",
     description = "Creates a new Texture object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Texture"
    }
   },
   inherits = "TextureBase",
@@ -3544,7 +3571,8 @@ local api = {
     args = "(txtfile, imagefile, filtering, options)",
     description = "",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TexturePack"
    }
   },
   inherits = "TextureBase",
@@ -3562,7 +3590,8 @@ local api = {
     args = "(texture, x, y, width, height)",
     description = "",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TextureRegion"
    },
    setRegion = {
     args = "(x, y, width, height)",
@@ -3604,7 +3633,8 @@ local api = {
     args = "(width, height, texture, tilewidth, tileheight, spacingx, spacingy, marginx, marginy, displaywidth, displayheight)",
     description = "Creates a new TileMap instance",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "TileMap"
    },
    setRepeat = {
     args = "(x, y)",
@@ -3670,7 +3700,8 @@ local api = {
     args = "(delay, repeatCount)",
     description = "Creates a new Timer object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "Timer"
    },
    pauseAll = {
     args = "()",
@@ -3764,7 +3795,8 @@ local api = {
     args = "(url, method, headers, body)",
     description = "Creates a new UrlLoader object",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "UrlLoader"
    }
   },
   inherits = "Object",
@@ -4299,7 +4331,8 @@ local api = {
       args = "()",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "ChainShape"
      }
     },
     inherits = "b2.Shape",
@@ -4311,7 +4344,8 @@ local api = {
       args = "(centerx, centery, radius)",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "CircleShape"
      },
      set = {
       args = "(centerx, centery, radius)",
@@ -4464,7 +4498,8 @@ local api = {
       args = "()",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "DebugDraw"
      },
      setFlags = {
       args = "(flags)",
@@ -4524,7 +4559,8 @@ local api = {
       args = "(v1x, v1y, v2x, v2y)",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "EdgeShape"
      },
      set = {
       args = "(v1x, v1y, v2x, v2y)",
@@ -4862,7 +4898,8 @@ local api = {
       args = "()",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "PolygonShape"
      },
      set = {
       args = "(vertices)",
@@ -5266,7 +5303,8 @@ local api = {
       args = "(gravityx, gravityy, doSleep)",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "World"
      },
      queryAABB = {
       args = "(minx, miny, maxx, maxy)",
@@ -5478,7 +5516,8 @@ local api = {
       args = "(alignment, orientation)",
       description = "",
       returns = "()",
-      type = "function"
+      type = "function",
+      valuetype = "Banner"
      },
      setAlignment = {
       args = "(alignment)",
@@ -5511,7 +5550,8 @@ local api = {
     args = "(value)",
     description = "Create 64 bit integer",
     returns = "()",
-    type = "function"
+    type = "function",
+    valuetype = "int64"
    }
   },
   type = "class"
