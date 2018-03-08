@@ -1,7 +1,7 @@
 -- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
 
 -- converted from http://docs.giderosmobile.com/reference/autocomplete.php;
--- (API for Gideros 2016.06 as of July 4, 2016)
+-- (API for Gideros 2018.2.1 as of March 7th, 2018)
 -- also available in <Gideros>/Resources/gideros_annot.api.
 -- the conversion script is at the bottom of this file.
 
@@ -258,7 +258,7 @@ local api = {
     returns = "()",
     type = "method"
    },
-   virbate = {
+   vibrate = {
     args = "(ms)",
     description = "Vibrate the controller for provided amount of miliseconds",
     returns = "()",
@@ -284,7 +284,43 @@ local api = {
    },
    frameStatistics = {
     args = "()",
-    description = "Return data about frame",
+    description = "Return table with data about frame",
+    returns = "()",
+    type = "function"
+   },
+   profilerReport = {
+    args = "()",
+    description = "Output profiling results",
+    returns = "()",
+    type = "function"
+   },
+   profilerReset = {
+    args = "()",
+    description = "Clear recorded profiling data",
+    returns = "()",
+    type = "function"
+   },
+   profilerStart = {
+    args = "()",
+    description = "Start profiling lua code",
+    returns = "()",
+    type = "function"
+   },
+   profilerStop = {
+    args = "()",
+    description = "Stop profiling",
+    returns = "()",
+    type = "function"
+   },
+   random = {
+    args = "([generator, bound1, bound2])",
+    description = "Generate a random number",
+    returns = "()",
+    type = "function"
+   },
+   randomSeed = {
+    args = "([generator, seed])",
+    description = "Set the random generator seed",
     returns = "()",
     type = "function"
    },
@@ -397,6 +433,10 @@ local api = {
    },
    BEGIN_CONTACT = {
     description = "value \"beginContact\"",
+    type = "value"
+   },
+   BEGIN_CONTACT_PARTICLE = {
+    description = "value \"beginContactParticle\"",
     type = "value"
    },
    CHECK_BILLING_SUPPORTED_COMPLETE = {
@@ -771,6 +811,54 @@ local api = {
  },
  FontBase = {
   childs = {
+   TLF_BOTTOM = {
+    description = "value \"TLF_BOTTOM\"",
+    type = "value"
+   },
+   TLF_CENTER = {
+    description = "value \"TLF_CENTER\"",
+    type = "value"
+   },
+   TLF_JUSTIFIED = {
+    description = "value \"TLF_JUSTIFIED\"",
+    type = "value"
+   },
+   TLF_LEFT = {
+    description = "value \"TLF_LEFT\"",
+    type = "value"
+   },
+   TLF_NOWRAP = {
+    description = "value \"TLF_NOWRAP\"",
+    type = "value"
+   },
+   TLF_REF_BASELINE = {
+    description = "value \"TLF_REF_BASELINE\"",
+    type = "value"
+   },
+   TLF_REF_BOTTOM = {
+    description = "value \"TLF_REF_BOTTOM\"",
+    type = "value"
+   },
+   TLF_REF_MIDDLE = {
+    description = "value \"TLF_REF_MIDDLE\"",
+    type = "value"
+   },
+   TLF_REF_TOP = {
+    description = "value \"TLF_REF_TOP\"",
+    type = "value"
+   },
+   TLF_RIGHT = {
+    description = "value \"TLF_RIGHT\"",
+    type = "value"
+   },
+   TLF_TOP = {
+    description = "value \"TLF_TOP\"",
+    type = "value"
+   },
+   TLF_VCENTER = {
+    description = "value \"TLF_VCENTER\"",
+    type = "value"
+   },
    getAdvanceX = {
     args = "(text, letterSpacing, size)",
     description = "",
@@ -792,6 +880,12 @@ local api = {
    getLineHeight = {
     args = "()",
     description = "Returns the distance from one base line to the next",
+    returns = "()",
+    type = "method"
+   },
+   layoutText = {
+    args = "(text, width, height, flags, letterSpacing, lineSpacing, tabSpace)",
+    description = "Compute layout of text with given constraints",
     returns = "()",
     type = "method"
    }
@@ -1010,6 +1104,17 @@ local api = {
    }
   },
   inherits = "Object",
+  type = "class"
+ },
+ JS = {
+  childs = {
+   eval = {
+    args = "(code)",
+    description = "",
+    returns = "()",
+    type = "function"
+   }
+  },
   type = "class"
  },
  KeyCode = {
@@ -1350,6 +1455,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   invert = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    multiply = {
     args = "(matrix)",
     description = "Multiply current matrix with new one",
@@ -1361,6 +1472,18 @@ local api = {
     description = "Creates a new Matrix object",
     returns = "()",
     type = "function"
+   },
+   orthographicProjection = {
+    args = "(left, right, bottom, top, near, far)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   perspectiveProjection = {
+    args = "(fov, aspect, near, far)",
+    description = "",
+    returns = "()",
+    type = "method"
    },
    rotate = {
     args = "(angle, x vector, y vector, z vector)",
@@ -1500,6 +1623,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   transformPoint = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    translate = {
     args = "(x [, y, z])",
     description = "Combine existing translation with provided translation",
@@ -1525,7 +1654,7 @@ local api = {
     type = "method"
    },
    clearTexture = {
-    args = "()",
+    args = "([slot])",
     description = "",
     returns = "()",
     type = "method"
@@ -1638,6 +1767,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   setGenericArray = {
+    args = "(index, type, mult, count, data)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    setIndex = {
     args = "(i, index)",
     description = "",
@@ -1657,7 +1792,7 @@ local api = {
     type = "method"
    },
    setTexture = {
-    args = "(texture)",
+    args = "(texture [, slot])",
     description = "",
     returns = "()",
     type = "method"
@@ -1736,6 +1871,12 @@ local api = {
    clearAction = {
     args = "(frame)",
     description = "Clears the action at the specified frame",
+    returns = "()",
+    type = "method"
+   },
+   getFrame = {
+    args = "(frame)",
+    description = "",
     returns = "()",
     type = "method"
    },
@@ -1959,7 +2100,6 @@ local api = {
     type = "method"
    }
   },
-  inherits = "Object",
   type = "class"
  },
  Particles = {
@@ -1988,6 +2128,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   getParticleDecay = {
+    args = "(i)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    getParticlePosition = {
     args = "(i)",
     description = "Get position of particle",
@@ -2006,9 +2152,27 @@ local api = {
     returns = "()",
     type = "method"
    },
+   getParticleTag = {
+    args = "(i)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    getParticleTtl = {
     args = "(i)",
     description = "Get initial time to live of particle",
+    returns = "()",
+    type = "method"
+   },
+   getParticles = {
+    args = "([set, tag])",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   isPaused = {
+    args = "()",
+    description = "",
     returns = "()",
     type = "method"
    },
@@ -2036,6 +2200,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   setParticleDecay = {
+    args = "(i, decay, decayAlpha, decayGrowth, decayAngular)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    setParticlePosition = {
     args = "(i, x, y)",
     description = "Set position of particle",
@@ -2049,14 +2219,32 @@ local api = {
     type = "method"
    },
    setParticleSpeed = {
-    args = "(i [, x, y, a, decay])",
+    args = "(i [, x, y, a, s])",
     description = "Set speed of particles",
+    returns = "()",
+    type = "method"
+   },
+   setParticleTag = {
+    args = "(i, tag)",
+    description = "",
     returns = "()",
     type = "method"
    },
    setParticleTtl = {
     args = "(i, ttl)",
     description = "Set time to live",
+    returns = "()",
+    type = "method"
+   },
+   setParticlesTag = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setPaused = {
+    args = "(paused)",
+    description = "",
     returns = "()",
     type = "method"
    },
@@ -2109,7 +2297,7 @@ local api = {
     type = "method"
    },
    setPath = {
-    args = "(commands, coordinates [, coordinates])",
+    args = "(commands, coordinates [, more coordinates])",
     description = "Set path to draw",
     returns = "()",
     type = "method"
@@ -2121,8 +2309,8 @@ local api = {
     type = "method"
    },
    setTexture = {
-    args = "(texture)",
-    description = "Sets texture for fill (Not implemented yet)",
+    args = "(texture [, matrix])",
+    description = "Sets texture for fill",
     returns = "()",
     type = "method"
    }
@@ -2134,7 +2322,25 @@ local api = {
   childs = {
    getColor = {
     args = "()",
-    description = "Gets the color of the Pixe",
+    description = "Gets the color(s) of the Pixel",
+    returns = "()",
+    type = "method"
+   },
+   getDimensions = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   getTexturePosition = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   getTextureScale = {
+    args = "()",
+    description = "",
     returns = "()",
     type = "method"
    },
@@ -2162,6 +2368,30 @@ local api = {
     returns = "()",
     type = "method"
    },
+   setTexture = {
+    args = "(texture [, slot, matrix])",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setTextureMatrix = {
+    args = "(matrix)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setTexturePosition = {
+    args = "(x, y)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setTextureScale = {
+    args = "(sx, sy)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    setWidth = {
     args = "(w)",
     description = "Sets the width of the pixel sprite.",
@@ -2181,7 +2411,7 @@ local api = {
     type = "method"
    },
    draw = {
-    args = "(sprite)",
+    args = "(sprite [, x, y])",
     description = "Renders provided object",
     returns = "()",
     type = "method"
@@ -2199,13 +2429,91 @@ local api = {
     type = "method"
    },
    new = {
-    args = "(width, height, filtering)",
+    args = "(width, height, filtering, repeat, autoscale)",
     description = "Creates new RenderTarget object",
     returns = "()",
     type = "function"
+   },
+   save = {
+    args = "(filename [, x, y, width, height])",
+    description = "Save contents of RenderTarget as image",
+    returns = "()",
+    type = "method"
    }
   },
   inherits = "TextureBase",
+  type = "class"
+ },
+ Screen = {
+  childs = {
+   clear = {
+    args = "(color, alpha)",
+    description = "Sets the background color of this screen",
+    returns = "()",
+    type = "method"
+   },
+   getId = {
+    args = "()",
+    description = "Returns the screen's id",
+    returns = "()",
+    type = "method"
+   },
+   getMaxSize = {
+    args = "()",
+    description = "Returns the maximum size this screen can have",
+    returns = "()",
+    type = "method"
+   },
+   getPosition = {
+    args = "()",
+    description = "Returns the position of this screen",
+    returns = "()",
+    type = "method"
+   },
+   getSize = {
+    args = "()",
+    description = "Returns the size of this screen",
+    returns = "()",
+    type = "method"
+   },
+   getState = {
+    args = "()",
+    description = "Returns the state of this screen",
+    returns = "()",
+    type = "method"
+   },
+   new = {
+    args = "(id)",
+    description = "Open a new screen",
+    returns = "()",
+    type = "function"
+   },
+   setContent = {
+    args = "(content)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setPosition = {
+    args = "(x, y)",
+    description = "Sets the position of this screen, if possible.",
+    returns = "()",
+    type = "method"
+   },
+   setSize = {
+    args = "(w, h)",
+    description = "Sets the size of this screen, if possible.",
+    returns = "()",
+    type = "method"
+   },
+   setState = {
+    args = "(state)",
+    description = "Sets the state of this screen, if possible.",
+    returns = "()",
+    type = "method"
+   }
+  },
+  inherits = "Sprite",
   type = "class"
  },
  Shader = {
@@ -2254,6 +2562,10 @@ local api = {
     description = "value 3",
     type = "value"
    },
+   FLAG_FROM_CODE = {
+    description = "value 4",
+    type = "value"
+   },
    FLAG_NONE = {
     description = "value 0",
     type = "value"
@@ -2293,6 +2605,18 @@ local api = {
    getEngineVersion = {
     args = "()",
     description = "Get shader version",
+    returns = "()",
+    type = "method"
+   },
+   getProperties = {
+    args = "()",
+    description = "Get graphics engine properties",
+    returns = "()",
+    type = "method"
+   },
+   getShaderLanguage = {
+    args = "()",
+    description = "Get shader language",
     returns = "()",
     type = "method"
    },
@@ -2411,6 +2735,12 @@ local api = {
     description = "Creates a new SoundChannel object to play the sound",
     returns = "()",
     type = "method"
+   },
+   setListenerPosition = {
+    args = "(x, y [, z, vx, vy, vz, dx, dy, dz, ux, uy, uz])",
+    description = "",
+    returns = "()",
+    type = "function"
    }
   },
   inherits = "Object",
@@ -2481,6 +2811,12 @@ local api = {
    setVolume = {
     args = "(volume)",
     description = "Sets the volume of the sound channel",
+    returns = "()",
+    type = "method"
+   },
+   setWorldPosition = {
+    args = "(x, y [, z, vx, vy, vz])",
+    description = "",
     returns = "()",
     type = "method"
    },
@@ -2576,6 +2912,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   getClip = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    getColorTransform = {
     args = "()",
     description = "Returns the red, green, blue and alpha channel multipliers",
@@ -2583,7 +2925,7 @@ local api = {
     type = "method"
    },
    getHeight = {
-    args = "()",
+    args = "([withoutTransform])",
     description = "Returns the height",
     returns = "()",
     type = "method"
@@ -2654,8 +2996,26 @@ local api = {
     returns = "()",
     type = "method"
    },
-   getWidth = {
+   getSkew = {
     args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   getSkewX = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   getSkewY = {
+    args = "()",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   getWidth = {
+    args = "([withoutTransform])",
     description = "Returns the width",
     returns = "()",
     type = "method"
@@ -2745,7 +3105,7 @@ local api = {
     type = "method"
    },
    setBlendMode = {
-    args = "(blendMode)",
+    args = "(blendMode or src [, dst])",
     description = "Sets the blend mode of the sprite",
     returns = "()",
     type = "method"
@@ -2819,6 +3179,36 @@ local api = {
    setShader = {
     args = "(shader)",
     description = "Set shader for this sprite",
+    returns = "()",
+    type = "method"
+   },
+   setShaderConstant = {
+    args = "(uniform name, data type, mult, data)",
+    description = "Change the value of a uniform for this sprite",
+    returns = "()",
+    type = "method"
+   },
+   setSkew = {
+    args = "(kx, ky)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setSkewX = {
+    args = "(kx)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setSkewY = {
+    args = "(ky)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   setStencilOperation = {
+    args = "(op)",
+    description = "Set the stencil operation for this sprite",
     returns = "()",
     type = "method"
    },
@@ -2934,9 +3324,27 @@ local api = {
  },
  TextField = {
   childs = {
+   getLayout = {
+    args = "()",
+    description = "Retrieve the layout parameters of this Textfield",
+    returns = "()",
+    type = "method"
+   },
    getLetterSpacing = {
     args = "()",
     description = "Returns the letter-spacing property which is used to increase or decrease the space between characters in a text",
+    returns = "()",
+    type = "method"
+   },
+   getLineHeight = {
+    args = "()",
+    description = "Get line height",
+    returns = "()",
+    type = "method"
+   },
+   getSample = {
+    args = "()",
+    description = "Get string that was used as sample for determining line height",
     returns = "()",
     type = "method"
    },
@@ -2953,14 +3361,32 @@ local api = {
     type = "method"
    },
    new = {
-    args = "(font, text)",
+    args = "(font, text [, sample, layout])",
     description = "Creates a new TextField object with the specified font and text",
     returns = "()",
     type = "function"
    },
+   setFont = {
+    args = "(font)",
+    description = "Set font to use",
+    returns = "()",
+    type = "method"
+   },
+   setLayout = {
+    args = "(layout)",
+    description = "Change the layout parameters for this TextField",
+    returns = "()",
+    type = "method"
+   },
    setLetterSpacing = {
     args = "(spacing)",
     description = "Sets the letter-spacing property which is used to increase or decrease the space between characters in a text",
+    returns = "()",
+    type = "method"
+   },
+   setSample = {
+    args = "(sample)",
+    description = "Set string that will be used as sample for determining text's line height",
     returns = "()",
     type = "method"
    },
@@ -3051,7 +3477,7 @@ local api = {
  Texture = {
   childs = {
    new = {
-    args = "(filename, filtering, options)",
+    args = "(filename, filtering [, options])",
     description = "Creates a new Texture object",
     returns = "()",
     type = "function"
@@ -3180,8 +3606,20 @@ local api = {
     returns = "()",
     type = "function"
    },
+   setRepeat = {
+    args = "(x, y)",
+    description = "Indicate if the tilemap should repeat itself",
+    returns = "()",
+    type = "method"
+   },
+   setTexture = {
+    args = "(texture, tilewidth, tileheight, spacingx, spacingy, marginx, marginy)",
+    description = "Change the tile texture/atlas used by the tilemap",
+    returns = "()",
+    type = "method"
+   },
    setTile = {
-    args = "(x, y, tx, ty, flip)",
+    args = "(x, y, tx, ty, flip [, color, alpha])",
     description = "Sets the index of the tile",
     returns = "()",
     type = "method"
@@ -3334,6 +3772,18 @@ local api = {
  },
  Viewport = {
   childs = {
+   lookAngles = {
+    args = "(eyex, eyey, eyez, pitch, yaw, roll)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
+   lookAt = {
+    args = "(eyex, eyey, eyez, targetx, targety, targetz, upx, upy, upz)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    setContent = {
     args = "(content)",
     description = "",
@@ -3382,6 +3832,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   getAppId = {
+    args = "()",
+    description = "Returns the app id or bundle id",
+    returns = "()",
+    type = "method"
+   },
    getBackgroundColor = {
     args = "()",
     description = "Returns the background color in hexadecimal format",
@@ -3418,6 +3874,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   getDeviceSafeArea = {
+    args = "([logical])",
+    description = "Returns the safe display area bounds",
+    returns = "()",
+    type = "method"
+   },
    getDeviceWidth = {
     args = "()",
     description = "Returns the physical width of the device in pixels",
@@ -3439,6 +3901,12 @@ local api = {
    getLocale = {
     args = "()",
     description = "Returns the device locale",
+    returns = "()",
+    type = "method"
+   },
+   getLogicalBounds = {
+    args = "()",
+    description = "Returns the physical screen bounds in logical space",
     returns = "()",
     type = "method"
    },
@@ -3538,6 +4006,12 @@ local api = {
     returns = "()",
     type = "method"
    },
+   setKeyboardVisibility = {
+    args = "(visible)",
+    description = "",
+    returns = "()",
+    type = "method"
+   },
    setLogicalDimensions = {
     args = "(width, height)",
     description = "Sets the logical dimensions of the application",
@@ -3563,7 +4037,7 @@ local api = {
     type = "method"
    },
    vibrate = {
-    args = "()",
+    args = "([ms])",
     description = "Vibrates the device",
     returns = "()",
     type = "method"
@@ -4331,6 +4805,12 @@ local api = {
       description = "value 2",
       type = "value"
      },
+     containsParticle = {
+      args = "(id)",
+      description = "",
+      returns = "()",
+      type = "method"
+     },
      createParticle = {
       args = "(particleDef)",
       description = "Create new particle",
@@ -4346,6 +4826,24 @@ local api = {
      destroyParticle = {
       args = "(id)",
       description = "Destroy particle by id",
+      returns = "()",
+      type = "method"
+     },
+     destroyParticles = {
+      args = "(ids)",
+      description = "",
+      returns = "()",
+      type = "method"
+     },
+     getParticleCount = {
+      args = "()",
+      description = "",
+      returns = "()",
+      type = "method"
+     },
+     getParticleGroupList = {
+      args = "()",
+      description = "",
       returns = "()",
       type = "method"
      },
@@ -4892,6 +5390,29 @@ local api = {
   },
   type = "class"
  },
+ camera = {
+  childs = {
+   availableDevices = {
+    args = "()",
+    description = "Return a list of available devices.",
+    returns = "()",
+    type = "function"
+   },
+   start = {
+    args = "(texture [, device])",
+    description = "Start streaming camera pictures to a Texture",
+    returns = "()",
+    type = "function"
+   },
+   stop = {
+    args = "()",
+    description = "Stop camera streaming.",
+    returns = "()",
+    type = "function"
+   }
+  },
+  type = "class"
+ },
  flurry = {
   childs = {
    endTimedEvent = {
@@ -4978,6 +5499,17 @@ local api = {
    isAvailable = {
     args = "()",
     description = "",
+    returns = "()",
+    type = "function"
+   }
+  },
+  type = "class"
+ },
+ int64 = {
+  childs = {
+   new = {
+    args = "(value)",
+    description = "Create 64 bit integer",
     returns = "()",
     type = "function"
    }
