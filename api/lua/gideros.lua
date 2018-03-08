@@ -5827,6 +5827,7 @@ while true do
         args = args or "()",
         description = desc,
         returns = "()",
+        valuetype = (fun == "new" and class or nil),
       }
     elseif const then
       t[class].childs[const] = {type = "value", description = value}
