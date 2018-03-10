@@ -16,7 +16,7 @@ Run it from any folder. No installation required.
 Run it without fearing it will take over your computer.
 
 **Extensible**
-50+ plugins in the [package repository](https://github.com/pkulchenko/ZeroBranePackage); [add your own](doc-plugin).
+60+ plugins in the [package repository](https://github.com/pkulchenko/ZeroBranePackage); [add your own](doc-plugin).
 
 **Scope aware selection**
 Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Type a new name.
@@ -49,7 +49,7 @@ Quickly navigate bookmarks and breakpoints in opened project files.
 
 **Function and expression calltip**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -392px -460px" src="images/t.gif" class="inset"/></a>
-Quickly access function description or variable/expression values while debugging.
+Access function description or variable/expression values while debugging.
 
 **Static analyzer**
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -260px -720px" src="images/t.gif" class="inset"/></a>
