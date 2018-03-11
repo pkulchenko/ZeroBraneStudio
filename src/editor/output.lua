@@ -42,6 +42,15 @@ function OutputAddStyles(styles)
     out:SetProperty("lexer.errorlist.escape.sequences","1")
 
     -- assign ansimap styles
+    -- if this styles table is the same as the default one, then make a copy
+    -- to avoid modifying all editor styles with "ansi" ones,
+    -- as they will conflict with lexer-specific styles
+    if ide.config.styles == styles then
+      local stylecopy = {}
+      for k,v in pairs(styles) do stylecopy[k] = v end
+      styles = stylecopy
+      ide.config.stylesoutshell = styles
+    end
     for k,v in pairs(ide.config.output.ansimap) do styles["ansi"..k] = v end
   end
 end
