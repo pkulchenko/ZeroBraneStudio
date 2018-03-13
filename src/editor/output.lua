@@ -424,24 +424,13 @@ local function activateByPartialName(fname, jumpline, jumplinepos)
   return true
 end
 
-local jumptopatterns = { -- ["pattern"] = true/false for multiple/single
-  --[string "<filename>"]:line:
-  ['.-%[string "([^"]+)"%]:(%d+)%s*:'] = false,
-  -- <filename>:line:linepos -- this is used in some analyzers, like LuaCheck
-  ["%s*(.-):(%d+):(%d+):"] = false,
-  -- <filename>:line:
-  ["%s*(.-):(%d+)%s*:"] = true,
-  -- error in __gc metamethod (<filename>:line:...
-  ["%((.-):(%d+)%s*:"] = false,
-}
-
 out:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
   function(event)
     local line = out:GetCurrentLine()
     local linetx = out:GetLineDyn(line)
 
     -- try to detect a filename and line in linetx
-    for pattern, multiple in pairs(jumptopatterns) do
+    for pattern, multiple in pairs(ide.config.output.lineactivate or {}) do
       local results = {}
       for fname, jumpline, jumplinepos in linetx:gmatch(pattern) do
         -- insert matches in reverse order (if any)
