@@ -435,7 +435,8 @@ out:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
       for fname, jumpline, jumplinepos in linetx:gmatch(pattern) do
         -- insert matches in reverse order (if any)
         table.insert(results, 1, {fname, jumpline, jumplinepos})
-        if not multiple then break end -- one match is enough if no multiple is requested
+        if type(multiple) == "function" then results[1] = {multiple(unpack(results[1]))} end
+        if multiple ~= true then break end -- one match is enough if no multiple is requested
       end
       for _, result in ipairs(results) do
         if activateByPartialName(unpack(result)) then
