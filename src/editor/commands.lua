@@ -67,6 +67,11 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   end
 
   local filesize = FileSize(filePath)
+  if filesize == wx.wxInvalidOffset then
+    ide:ReportError(TR("Can't open file '%s': %s")
+      :format(filePath, "symlink is broken or access is denied."))
+    return nil
+  end
   if not filesize and file_must_exist then return nil end
 
   local current = editor and editor:GetCurrentPos()
