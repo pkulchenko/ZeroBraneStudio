@@ -271,12 +271,12 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 
 local function processSelection(editor, func)
-  local text = editor:GetSelectedText()
+  local text = editor:GetSelectedTextDyn()
   local line = editor:GetCurrentLine()
   local posinline = editor:GetCurrentPos() - editor:PositionFromLine(line)
   if #text == 0 then
     editor:SelectAll()
-    text = editor:GetSelectedText()
+    text = editor:GetSelectedTextDyn()
   end
   local wholeline = text:find("\n$")
   local buf = {}
@@ -305,11 +305,11 @@ local function processSelection(editor, func)
         for line = #buf, 1, -1 do
           editor:SetTargetStart(line == 1 and ssel or editor:PositionFromLine(sline+line-1))
           editor:SetTargetEnd(line == eline-sline+1 and esel or editor:GetLineEndPosition(sline+line-1))
-          editor:ReplaceTarget((buf[line]:gsub("\r?\n$", "")))
+          editor:ReplaceTargetDyn((buf[line]:gsub("\r?\n$", "")))
         end
       else
         editor:TargetFromSelection()
-        editor:ReplaceTarget(newtext)
+        editor:ReplaceTargetDyn(newtext)
       end
       editor:EndUndoAction()
     end

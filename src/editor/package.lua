@@ -443,7 +443,9 @@ function ide:ReportError(msg)
 end
 
 local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
-  "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
+  "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn",
+  "ReplaceTargetDyn", -- this method is not available in wxlua 3.1, so it's simulated
+}
 local useraw = nil
 
 local invalidUTF8, invalidLength
@@ -458,6 +460,13 @@ function ide:CreateStyledTextCtrl(...)
     useraw = true
     for _, m in ipairs(rawMethods) do
       if not pcall(function() return editor[m:gsub("Dyn", "Raw")] end) then useraw = false; break end
+    end
+  end
+
+  if not editor.ReplaceTargetRaw then
+    editor.ReplaceTargetRaw = function(self, ...)
+      self:ReplaceTarget("")
+      self:InsertTextDyn(self:GetTargetStart(), ...)
     end
   end
 
