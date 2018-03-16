@@ -68,6 +68,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
 
   local filesize = FileSize(filePath)
   if filesize == wx.wxInvalidOffset then
+    -- invalid offset is also reported on empty files with no read access (at least on Windows)
     ide:ReportError(TR("Can't open file '%s': %s")
       :format(filePath, "symlink is broken or access is denied."))
     return nil
@@ -87,7 +88,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local inputfilter = GetConfigIOFilter("input")
   local file_text
   ide:PushStatus("")
-  FileRead(filePath, 1024*1024, function(s) -- callback is only called when the file exists
+  local ok, err = FileRead(filePath, 1024*1024, function(s) -- callback is only called when the file exists
       if not file_text then
         -- remove BOM from UTF-8 encoded files; store BOM to add back when saving
         if s and editor:GetCodePage() == wxstc.wxSTC_CP_UTF8 and s:find("^"..editor.bom) then
@@ -135,6 +136,10 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
         ide:PushStatus(TR("%s%% loaded..."):format(math.floor(100*editor:GetLength()/filesize)))
       end
     end)
+  if not ok then
+    ide:ReportError(TR("Can't open file '%s': %s"):format(filePath, err))
+    return nil
+  end
   ide:PopStatus()
 
   -- empty or non-existing files don't have bom

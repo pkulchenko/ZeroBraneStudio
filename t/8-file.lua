@@ -2,7 +2,14 @@ ok(not ide:LoadFile(''), "Don't load file with an empty name.")
 ok(not ide:LoadFile("\r\n "), "Don't load file with name that only has whitespaces.")
 ok(not ide:LoadFile('t'), "Don't load file with directory as the name (1/2).")
 ok(not ide:LoadFile('./'), "Don't load file with directory as the name (2/2).")
-ok(pcall(function() ide:LoadFile('some-nonexisting-name') end), "Load non-existing files.")
+do
+  local re = ide.ReportError
+  local called = false
+  ide.ReportError = function() called = true end
+  ok(not ide:LoadFile('some-nonexisting-name'), "Load non-existing files.")
+  ok(called, "Error is shown on loading non-existing file.")
+  ide.ReportError = re
+end
 ClosePage()
 
 local fullpath = MergeFullPath(wx.wxFileName.GetCwd(), 't/test.lua')
