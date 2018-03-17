@@ -1,6 +1,6 @@
 -- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 
-local busted
+local pathcache
 local win = ide.osname == "Windows"
 
 return {
@@ -8,7 +8,7 @@ return {
   description = "Busted Lua testing",
   api = {"baselib"},
   frun = function(self,wfilename,rundebug)
-    busted = busted or ide.config.path.busted -- check if the path is configured
+    local busted = ide.config.path.busted or pathcache -- check if the path is configured
     if not busted then
       local sep = win and ';' or ':'
       local default =
@@ -27,6 +27,7 @@ return {
           ..table.concat(paths, ", "))
         return
       end
+      pathcache = busted
     end
 
     local file = wfilename:GetFullPath()

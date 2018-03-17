@@ -1,6 +1,6 @@
 -- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
 
-local love2d
+local pathcache
 local win = ide.osname == "Windows"
 local mac = ide.osname == "Macintosh"
 
@@ -9,7 +9,7 @@ return {
   description = "LÖVE game engine",
   api = {"baselib", "love2d"},
   frun = function(self,wfilename,rundebug)
-    love2d = love2d or ide.config.path.love2d -- check if the path is configured
+    local love2d = ide.config.path.love2d or pathcache -- check if the path is configured
     local projdir = self:fworkdir(wfilename)
     if not love2d then
       local sep = win and ';' or ':'
@@ -31,6 +31,7 @@ return {
           ..table.concat(paths, ", "))
         return
       end
+      pathcache = love2d
     end
 
     if not GetFullPathIfExists(projdir, 'main.lua') then

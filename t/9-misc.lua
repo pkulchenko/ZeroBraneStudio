@@ -5,6 +5,11 @@ for _, ln in ipairs(i18n) do
   ok(type(func) == 'function' and func() ~= nil, ("Loaded '%s' language file."):format(ln))
 end
 
+local ints = ide:GetFileList('interpreters/', true)
+for _, i in ipairs(ints) do
+  ok(type(loadfile(i)) == 'function', ("Loaded '%s' interpreter file."):format(i))
+end
+
 local fixed, invalid = FixUTF8("+\128\129\130+\194\127+", "+")
 is(fixed, "++++++\127+", "Invalid UTF8 is fixed (1/2).")
 is(#invalid, 4, "Invalid UTF8 is fixed (2/2).")
