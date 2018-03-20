@@ -220,3 +220,16 @@ To set project-specific settings, you can use [project settings plugin](https://
 ## Auto-start debugger (plugin)
 
 To start the debugger server automatically when the IDE is started, you can use [autostart debugger plugin](https://github.com/pkulchenko/ZeroBranePackage/blob/master/autostartdebug.lua).
+
+## Add confirmation on move/rename in the project tree
+
+To add a confirmation dialog on moving or renaming files in the project tree, the following fragment can be added to the [configuration](doc-configuration) file.
+
+```lua
+package {
+  onFiletreeFilePreRename = function(self, tree, itemsrc, source, target)
+    return wx.wxMessageBox(("Do you want to move '%s' to '%s'?"):format(source, target),
+      "Move/Rename file", wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES
+  end
+}
+```
