@@ -409,7 +409,7 @@ function ReApplySpecAndStyles()
 
   local errorlog = ide.frame.bottomnotebook.errorlog
   local shellbox = ide.frame.bottomnotebook.shellbox
-  SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell)
+  shellbox:SetupKeywords("lua",nil,ide.config.stylesoutshell)
   StylesApplyToEditor(ide.config.stylesoutshell,errorlog)
 
   for _, doc in pairs(ide:GetDocuments()) do

@@ -42,7 +42,7 @@ console:MarkerDefine(StylesGetMarker("output"))
 console:MarkerDefine(StylesGetMarker("message"))
 console:SetReadOnly(false)
 
-SetupKeywords(console,"lua",nil,ide.config.stylesoutshell)
+console:SetupKeywords("lua",nil,ide.config.stylesoutshell)
 
 local function getPromptLine()
   local totalLines = console:GetLineCount()

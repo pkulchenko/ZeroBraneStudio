@@ -788,7 +788,6 @@ function CreateEditor(bare)
   function editor:GetTokenList() return self.tokenlist end
   function editor:ResetTokenList() self.tokenlist = {}; return self.tokenlist end
 
-  function editor:SetupKeywords(...) return SetupKeywords(self, ...) end
   function editor:ValueFromPosition(pos) return getValAtPosition(self, pos) end
 
   function editor:MarkerGotoNext(marker)
