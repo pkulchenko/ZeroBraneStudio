@@ -856,6 +856,8 @@ local function closeWindow(event)
   frame.uimgr:UnInit()
   frame:Hide() -- hide the main frame while the IDE exits
 
+  wx.wxClipboard:Get():Flush() -- keep the clipboard content after exit
+
   -- stop all the timers
   for _, timer in pairs(ide.timers) do timer:Stop() end
   wx.wxGetApp():Disconnect(wx.wxEVT_TIMER)
