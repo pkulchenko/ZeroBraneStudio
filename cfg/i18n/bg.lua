@@ -114,7 +114,7 @@ return {
   ["Debugger server stopped at %s:%d."] = "Сървърен дебъгер спрян %s:%d.", -- src\editor\debugger.lua
   ["Debugging session completed (%s)."] = "Дебъг сесия завършена (%s).", -- src\editor\debugger.lua
   ["Debugging session started in '%s'."] = "Дебъг сесия сатритрана '%s'.", -- src\editor\debugger.lua
-  ["Debugging suspended at '%s:%s' (couldn't activate the file)."] = "Дебъга увизна '%s:%s' (невъзможно активирането на файла).", -- src\editor\debugger.lua
+  ["Debugging suspended at '%s:%s' (couldn't activate the file)."] = "Дебъга увисна '%s:%s' (невъзможно активирането на файла).", -- src\editor\debugger.lua
   ["Detach &Process"] = "Разкачи процес", -- src\editor\menu_project.lua
   ["Disable Indexing For '%s'"] = "Забрани Индексирането За '%s'", -- src\editor\outline.lua
   ["Do you want to delete '%s'?"] = "Искате ли да изтриете '%s'?", -- src\editor\filetree.lua
