@@ -85,7 +85,7 @@ If `for k,v in pairs(tbl) do print(k,v) end` works for you, you will not miss th
 
 **Translatable interface**
 <a href="images/static-analysis.png"><img style="background:url(images/static-analysis.png) -40px -240px" src="images/t.gif" class="inset"/></a>
-Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, and Brazilian Portuguese) or create your own.
+Use one of the provided translations (English, French, Spanish, Russian, German, Chinese, Esperanto, Italian, Bulgarian, and Brazilian Portuguese) or create your own.
 
 **Project file browser**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -8px -96px" src="images/t.gif" class="inset"/></a>
