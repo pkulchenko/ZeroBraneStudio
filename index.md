@@ -58,5 +58,7 @@ and [more](documentation#debugging).
 [Moai](http://notebook.kulchenko.com/zerobrane/live-coding-with-moai-and-zerobrane-studio),
 [Corona](http://notebook.kulchenko.com/zerobrane/debugging-and-live-coding-with-corona-sdk-applications-and-zerobrane-studio),
 GSL-Shell and other Lua engines;
+* **Multi-language support** with translations to French, Spanish, Russian, German, Chinese, Esperanto, Italian, Bulgarian, and Brazilian Portuguese languages
+and documentation to add your own;
 * **50+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage);
 * **Fuzzy search** for files, symbols, and library functions, **function outline**, and **[more](features)**.
