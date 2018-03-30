@@ -7,10 +7,10 @@ ZeroBrane Studio provides a way to translate its interface elements (menus and c
 
 ## Language file
 
-Create `i18n/*.lua` file for your language-country. The name of the file (`ll-cc.lua`) has two segments:
+Create `i18n/ll-cc.lua` file for your language-country. The name of the file (`ll-cc.lua`) has two segments:
 
-* ll (mandatory) -- two letter [language code](http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes);
-* cc (optional) -- two letter [country code](http://en.wikipedia.org/wiki/ISO_3166-1#Officially_assigned_code_elements).
+* `ll` (mandatory) -- two letter [language code](http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes);
+* `cc` (optional) -- two letter [country code](http://en.wikipedia.org/wiki/ISO_3166-1#Officially_assigned_code_elements).
 
 You can either copy one of the existing files or create a new one with all messages that need to be translated using the following command (let's say your language is "fr"; use `bin\lua` if you are on Windows):
 
