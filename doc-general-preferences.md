@@ -103,6 +103,10 @@ Use `outputshell` instead of `output` in earlier versions.
 
 - `output.fontname = "Courier New"`: set font name.
 - `output.fontsize = 10`: set font size (the default value is `11` on macOS).
+- `output.lineactivate = {['.-%[string "([^"]+)"%]:(%d+)%s*:'] = false, ["%s*(.-):(%d+):(%d+):"] = false, ["%s*(.-):(%d+)%s*:"] = true, ["%((.-):(%d+)%s*:"] = false}`: specify pattern for activating line in the output window (**v1.71+**).
+The pattern "returns" `filename`, `line`, and (optional) `position` values that are used to navigate to that file and location.
+The value corresponding to the pattern may be `false` (stop and actiate), `true` (continue checking other values), or function (in which case the function will get the matches returned by the pattern ans is expected to return `filename`, `line`, and (optional) `position`.
+Activation is triggered on double click on the line, at which time patterns are checked (in unspecified order), and the first matched pattern is handled (unless its value is `true`, in which case other patterns are checked as well).
 - `output.nomousezoom = false`: disable zoom with mouse wheel in the Output window as it may be too sensitive.
 - `output.showansi = true`: enable handling of ANSI escapes in the Output window (**v1.70+**).
 - `output.usewrap = true`: wrap long lines (**v0.51+**); set to `nil` or `false` to disable.
