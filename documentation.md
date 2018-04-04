@@ -26,6 +26,7 @@ title: Documentation
 - [LuaJIT debugging](doc-luajit-debugging)
 - [Lua 5.2 debugging](doc-lua52-debugging)
 - [Lua 5.3 debugging](doc-lua53-debugging)
+- [Lua 5.4 debugging](doc-lua54-debugging)
 - [Remote debugging](doc-remote-debugging)
 - [LÖVE/Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)

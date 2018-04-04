@@ -100,6 +100,10 @@ Yes; see [Lua 5.2 debugging](doc-lua52-debugging) section for details.
 
 Yes; see [Lua 5.3 debugging](doc-lua53-debugging) section for details.
 
+## Is debugging of Lua 5.4 applications supported?
+
+Yes; see [Lua 5.4 debugging](doc-lua54-debugging) section for details.
+
 ## Is debugging of LuaJIT applications supported?
 
 **Starting from v0.35** the debugging of LuaJIT applications is supported out-of-the-box.
