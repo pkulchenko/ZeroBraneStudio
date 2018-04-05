@@ -1,4 +1,4 @@
-local i18n = ide:GetFileList('cfg/i18n/', true)
+local i18n = ide:GetFileList('cfg/i18n/', true, '*.lua')
 is(#i18n, 11, "Language files are present in i18n directory.")
 for _, ln in ipairs(i18n) do
   local func = loadfile(ln)

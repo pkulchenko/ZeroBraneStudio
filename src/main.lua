@@ -478,13 +478,13 @@ do
   local include = function(c)
     if c then
       for _, config in ipairs({
-          -- `or false` is needed to make sure that the loop is not stopped on `nil`
-          ide.configqueue[#ide.configqueue] or false,
-          ide.configs.user or false,
-          ide.configs.system or false,
+          -- `or ""` is needed to make sure that the loop is not stopped on `nil`
+          ide.configqueue[#ide.configqueue] or "",
+          (wx.wxFileName.SplitPath(ide.configs.user or "")),
+          (wx.wxFileName.SplitPath(ide.configs.system or "")),
       }) do
-        if config then
-          local p = MergeFullPath(config.."/../", c)
+        if config > "" then
+          local p = MergeFullPath(config, c)
           includes[p] = (includes[p] or 0) + 1
           if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
           includes[p] = includes[p] - 1
