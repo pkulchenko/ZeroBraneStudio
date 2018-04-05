@@ -477,11 +477,18 @@ do
   local includes = {}
   local include = function(c)
     if c then
-      for _, config in ipairs({ide.configqueue[#ide.configqueue], ide.configs.user, ide.configs.system}) do
-        local p = config and MergeFullPath(config.."/../", c)
-        includes[p] = (includes[p] or 0) + 1
-        if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
-        includes[p] = includes[p] - 1
+      for _, config in ipairs({
+          -- `or false` is needed to make sure that the loop is not stopped on `nil`
+          ide.configqueue[#ide.configqueue] or false,
+          ide.configs.user or false,
+          ide.configs.system or false,
+      }) do
+        if config then
+          local p = MergeFullPath(config.."/../", c)
+          includes[p] = (includes[p] or 0) + 1
+          if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
+          includes[p] = includes[p] - 1
+        end
       end
       ide:Print(("Can't find configuration file '%s' to process."):format(c))
     end
