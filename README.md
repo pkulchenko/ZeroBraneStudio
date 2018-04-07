@@ -6,6 +6,7 @@ and debugging support for various Lua engines
 ([Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
 [Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
+[Lua 5.4](http://studio.zerobrane.com/doc-lua54-debugging),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
 [Moai](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio),
@@ -42,6 +43,7 @@ compiled for all supported Lua versions.
 for [Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
 [Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
+[Lua 5.4](http://studio.zerobrane.com/doc-lua54-debugging),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
 and [other Lua engines](http://studio.zerobrane.com/documentation#debugging).
 * **Interactive console** to directly test code snippets with local and remote execution.
