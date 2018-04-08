@@ -47,6 +47,10 @@ Edit files in Unicode and run scripts with Unicode file names.
 <a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -311px -682px" src="images/t.gif" class="inset"/></a>
 Quickly navigate bookmarks and breakpoints in opened project files.
 
+**Fuzzy file search**
+<a href="images/debugging.png"><img style="background:url(images/debugging.png) -682px -132px" src="images/t.gif" class="inset"/></a>
+Search project files by partial name (Search | Navigate | Go To File...).
+
 **Function and expression calltip**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -392px -460px" src="images/t.gif" class="inset"/></a>
 Access function description or variable/expression values while debugging.
