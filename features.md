@@ -24,6 +24,9 @@ Select instances of a variable in the current scope with `Ctrl/Cmd-DblClick`. Ty
 **Go to definition**
 Go to a local variable/function definition. Navigate back using the history of saved positions.
 
+**Fuzzy symbol search**
+Search project symbols by partial function or argument name (Search | Navigate | Go To Symbol...).
+
 **Multi-cursor editing**
 Select and edit at multiple cursor positions at the same time using `Ctrl/Cmd-Click` and `Ctrl/Cmd-Select`.
 
