@@ -53,7 +53,7 @@ Other shortcuts used in the application can be modified as described in the [key
 - `Ctrl-Keypad/`: Restore text size to normal
 - `Ctrl-MouseWheel`: Magnify/Reduce text size
 
-Note that some of the keyboard shortcuts can't be modified using the mechanism described in [doc-editor-preferences#keyboard-shortcuts](Keyboard shortcuts) section.
+Note that some of the keyboard shortcuts can't be modified using the mechanism described in [Keyboard shortcuts](doc-editor-preferences#keyboard-shortcuts) section.
 Specifically, none of the `Click`, `DblClick`, or `FoldMarginClick` shortcuts can be modified.
 
 **Note for macOS users**: in all these editor commands `Ctrl` means `Cmd` key, except in `Ctrl-Tab`, `Ctrl-Shift-Tab`, `Ctrl-PgUp`, and `Ctrl-PgDn` commands.
