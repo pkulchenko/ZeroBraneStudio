@@ -15,7 +15,7 @@ For example, one can write a plugin to add a menu item to turn line wrapping `on
 
 ## Plugin repository
 
-There are **50+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage),
+There are **60+ extension packages** in the [package repository](https://github.com/pkulchenko/ZeroBranePackage),
 including packages like
 [DocumentMap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/documentmap.lua),
 [UniqueTabName](https://github.com/pkulchenko/ZeroBranePackage/blob/master/uniquetabname.lua),
