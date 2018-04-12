@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
@@ -544,21 +544,21 @@ local function treeSetConnectorsAndIcons(tree)
     return item_id
   end
 
-  tree:Connect(ID_NEWFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.NEWFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:EditLabel(addItem(tree:GetFocusedItem(), empty, image.FILEOTHER))
     end)
-  tree:Connect(ID_NEWDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.NEWDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:EditLabel(addItem(tree:GetFocusedItem(), empty, image.DIRECTORY))
     end)
-  tree:Connect(ID_RENAMEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.RENAMEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() tree:EditLabel(tree:GetFocusedItem()) end)
-  tree:Connect(ID_DELETEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.DELETEFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() deleteItem(tree:GetFocusedItem()) end)
-  tree:Connect(ID_COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() ide:CopyToClipboard(tree:GetItemFullName(tree:GetFocusedItem())) end)
-  tree:Connect(ID_OPENEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.OPENEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       local fname = tree:GetItemFullName(tree:GetFocusedItem())
       local ext = '.'..wx.wxFileName(fname):GetExt()
@@ -573,45 +573,45 @@ local function treeSetConnectorsAndIcons(tree)
         wx.wxExecute(cmd, wx.wxEXEC_ASYNC)
       end
     end)
-  tree:Connect(ID_REFRESH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.REFRESH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() refreshChildren() end)
-  tree:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function() ShowLocation(tree:GetItemFullName(tree:GetFocusedItem())) end)
-  tree:Connect(ID_HIDEEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.HIDEEXTENSION, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       local ext = GetFileExt(tree:GetItemText(tree:GetFocusedItem()))
       filetree.settings.extensionignore[ext] = true
       saveSettings()
       refreshChildren()
     end)
-  tree:Connect(ID_SHOWEXTENSIONALL, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.SHOWEXTENSIONALL, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       filetree.settings.extensionignore = {}
       saveSettings()
       refreshChildren()
     end)
-  tree:Connect(ID_SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       unsetStartFile()
       setStartFile(tree:GetFocusedItem())
       saveSettings()
     end)
-  tree:Connect(ID_UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       unsetStartFile()
       saveSettings()
     end)
-  tree:Connect(ID_MAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.MAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:MapDirectory()
       saveSettings()
     end)
-  tree:Connect(ID_UNMAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.UNMAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:UnmapDirectory(tree:GetItemText(tree:GetFocusedItem()))
       saveSettings()
     end)
-  tree:Connect(ID_PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
+  tree:Connect(ID.PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       ide:SetProject(tree:GetItemFullName(tree:GetFocusedItem()))
     end)
@@ -629,27 +629,27 @@ local function treeSetConnectorsAndIcons(tree)
       local project = ide:GetProject()
       local startfile = project and filetree.settings.startfile[project]
       local menu = ide:MakeMenu {
-        { ID_NEWFILE, TR("New &File") },
-        { ID_NEWDIRECTORY, TR("&New Directory") },
+        { ID.NEWFILE, TR("New &File") },
+        { ID.NEWDIRECTORY, TR("&New Directory") },
         { },
-        { ID_RENAMEFILE, renamelabel..KSC(ID_RENAMEFILE) },
-        { ID_DELETEFILE, TR("&Delete")..KSC(ID_DELETEFILE) },
-        { ID_REFRESH, TR("Refresh") },
+        { ID.RENAMEFILE, renamelabel..KSC(ID.RENAMEFILE) },
+        { ID.DELETEFILE, TR("&Delete")..KSC(ID.DELETEFILE) },
+        { ID.REFRESH, TR("Refresh") },
         { },
-        { ID_HIDEEXTENSION, TR("Hide '.%s' Files"):format(ext) },
+        { ID.HIDEEXTENSION, TR("Hide '.%s' Files"):format(ext) },
         { },
-        { ID_SETSTARTFILE, TR("Set As Start File") },
-        { ID_UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
+        { ID.SETSTARTFILE, TR("Set As Start File") },
+        { ID.UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
         { },
-        { ID_MAPDIRECTORY, TR("Map Directory...") },
-        { ID_UNMAPDIRECTORY, TR("Unmap Directory") },
-        { ID_OPENEXTENSION, TR("Open With Default Program") },
-        { ID_COPYFULLPATH, TR("Copy Full Path") },
-        { ID_SHOWLOCATION, TR("Show Location") },
+        { ID.MAPDIRECTORY, TR("Map Directory...") },
+        { ID.UNMAPDIRECTORY, TR("Unmap Directory") },
+        { ID.OPENEXTENSION, TR("Open With Default Program") },
+        { ID.COPYFULLPATH, TR("Copy Full Path") },
+        { ID.SHOWLOCATION, TR("Show Location") },
       }
       local extlist = {
         {},
-        { ID_SHOWEXTENSIONALL, TR("Show All Files"), TR("Show all files") },
+        { ID.SHOWEXTENSIONALL, TR("Show All Files"), TR("Show all files") },
       }
       for extignore in pairs(filetree.settings.extensionignore) do
         local id = ID("filetree.showextension."..extignore)
@@ -660,21 +660,21 @@ local function treeSetConnectorsAndIcons(tree)
           refreshChildren()
         end)
       end
-      local _, _, hideextpos = ide:FindMenuItem(ID_HIDEEXTENSION, menu)
+      local _, _, hideextpos = ide:FindMenuItem(ID.HIDEEXTENSION, menu)
       assert(hideextpos, "Can't find HideExtension menu item")
-      menu:Insert(hideextpos+1, wx.wxMenuItem(menu, ID_SHOWEXTENSION,
+      menu:Insert(hideextpos+1, wx.wxMenuItem(menu, ID.SHOWEXTENSION,
         TR("Show Hidden Files"), TR("Show files previously hidden"),
         wx.wxITEM_NORMAL, ide:MakeMenu(extlist)))
 
       local projectdirectorymenu = ide:MakeMenu {
         { },
-        {ID_PROJECTDIRCHOOSE, TR("Choose...")..KSC(ID_PROJECTDIRCHOOSE), TR("Choose a project directory")},
-        {ID_PROJECTDIRFROMDIR, TR("Set To Selected Directory")..KSC(ID_PROJECTDIRFROMDIR), TR("Set project directory to the selected one")},
+        {ID.PROJECTDIRCHOOSE, TR("Choose...")..KSC(ID.PROJECTDIRCHOOSE), TR("Choose a project directory")},
+        {ID.PROJECTDIRFROMDIR, TR("Set To Selected Directory")..KSC(ID.PROJECTDIRFROMDIR), TR("Set project directory to the selected one")},
       }
-      local projectdirectory = wx.wxMenuItem(menu, ID_PROJECTDIR,
+      local projectdirectory = wx.wxMenuItem(menu, ID.PROJECTDIR,
         TR("Project Directory"), TR("Set the project directory to be used"),
         wx.wxITEM_NORMAL, projectdirectorymenu)
-      local _, _, unmapdirpos = ide:FindMenuItem(ID_UNMAPDIRECTORY, menu)
+      local _, _, unmapdirpos = ide:FindMenuItem(ID.UNMAPDIRECTORY, menu)
       assert(unmapdirpos, "Can't find UnMapDirectory menu item")
       menu:Insert(unmapdirpos+1, projectdirectory)
       FileTreeProjectListUpdate(projectdirectorymenu, 0)
@@ -682,22 +682,22 @@ local function treeSetConnectorsAndIcons(tree)
       -- disable Delete on non-empty directories
       local isdir = tree:IsDirectory(item_id)
       local ismapped = tree:IsDirMapped(item_id)
-      menu:Destroy(ismapped and ID_MAPDIRECTORY or ID_UNMAPDIRECTORY)
-      if not startfile then menu:Destroy(ID_UNSETSTARTFILE) end
-      if ismapped then menu:Enable(ID_RENAMEFILE, false) end
+      menu:Destroy(ismapped and ID.MAPDIRECTORY or ID.UNMAPDIRECTORY)
+      if not startfile then menu:Destroy(ID.UNSETSTARTFILE) end
+      if ismapped then menu:Enable(ID.RENAMEFILE, false) end
       if isdir then
         local source = tree:GetItemFullName(item_id)
-        menu:Enable(ID_DELETEFILE, not FileDirHasContent(source..pathsep))
-        menu:Enable(ID_OPENEXTENSION, false)
-        menu:Enable(ID_HIDEEXTENSION, false)
+        menu:Enable(ID.DELETEFILE, not FileDirHasContent(source..pathsep))
+        menu:Enable(ID.OPENEXTENSION, false)
+        menu:Enable(ID.HIDEEXTENSION, false)
       else
         local ft = wx.wxTheMimeTypesManager:GetFileTypeFromExtension('.'..ext)
-        menu:Enable(ID_OPENEXTENSION, ft and #ft:GetOpenCommand("") > 0)
-        menu:Enable(ID_HIDEEXTENSION, not filetree.settings.extensionignore[ext])
-        menu:Enable(ID_PROJECTDIRFROMDIR, false)
+        menu:Enable(ID.OPENEXTENSION, ft and #ft:GetOpenCommand("") > 0)
+        menu:Enable(ID.HIDEEXTENSION, not filetree.settings.extensionignore[ext])
+        menu:Enable(ID.PROJECTDIRFROMDIR, false)
       end
-      menu:Enable(ID_SETSTARTFILE, tree:IsFileOther(item_id) or tree:IsFileKnown(item_id))
-      menu:Enable(ID_SHOWEXTENSION, next(filetree.settings.extensionignore) ~= nil)
+      menu:Enable(ID.SETSTARTFILE, tree:IsFileOther(item_id) or tree:IsFileKnown(item_id))
+      menu:Enable(ID.SHOWEXTENSION, next(filetree.settings.extensionignore) ~= nil)
 
       PackageEventHandle("onMenuFiletree", menu, tree, event)
 
@@ -878,7 +878,7 @@ function filetree:updateProjectDir(newdir)
   if editor then FileTreeMarkSelected(ide:GetDocument(editor):GetFilePath()) end
 
   -- refresh Recent Projects menu item
-  ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID_RECENTPROJECTS))
+  ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID.RECENTPROJECTS))
 
   PackageEventHandle("onProjectLoad", appendPathSep(newdir))
 
@@ -918,7 +918,7 @@ end
 
 function FileTreeProjectListUpdate(menu, items)
   -- protect against recent project menu not being present
-  if not ide:FindMenuItem(ID_RECENTPROJECTS) then return end
+  if not ide:FindMenuItem(ID.RECENTPROJECTS) then return end
 
   local list = getProjectLabels()
   for i=#list, 1, -1 do
