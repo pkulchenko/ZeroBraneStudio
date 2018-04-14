@@ -1,4 +1,4 @@
--- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 ---------------------------------------------------------
 
 local ide = ide
@@ -506,7 +506,7 @@ function ShowCommandBar(default, selected)
             if isfunc then -- show the tooltip
               ide:GetMainFrame():SetFocus()
               ide.frame:AddPendingEvent(wx.wxCommandEvent(
-                wx.wxEVT_COMMAND_MENU_SELECTED, ID_SHOWTOOLTIP))
+                wx.wxEVT_COMMAND_MENU_SELECTED, ID.SHOWTOOLTIP))
             end
           end
         -- set line position in the (current) editor if requested
