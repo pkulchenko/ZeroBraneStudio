@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -704,7 +704,7 @@ local icons = {
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
     infiles = {
-      ID.FIND, ID_SEPARATOR,
+      ID.FIND, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
       ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
