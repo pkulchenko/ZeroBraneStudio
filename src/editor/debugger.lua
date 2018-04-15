@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- Original authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- Integration with MobDebug
@@ -1590,34 +1590,34 @@ local function debuggerCreateWatchWindow()
       item = watchCtrl:HitTest(watchCtrl:ScreenToClient(wx.wxGetMousePosition()))
       local editlabel = watchCtrl:IsWatch(item) and TR("&Edit Watch") or TR("&Edit Value")
       local menu = ide:MakeMenu {
-        { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
-        { ID_EDITWATCH, editlabel..KSC(ID_EDITWATCH) },
-        { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) },
-        { ID_COPYWATCHVALUE, TR("&Copy Value")..KSC(ID_COPYWATCHVALUE) },
+        { ID.ADDWATCH, TR("&Add Watch")..KSC(ID.ADDWATCH) },
+        { ID.EDITWATCH, editlabel..KSC(ID.EDITWATCH) },
+        { ID.DELETEWATCH, TR("&Delete Watch")..KSC(ID.DELETEWATCH) },
+        { ID.COPYWATCHVALUE, TR("&Copy Value")..KSC(ID.COPYWATCHVALUE) },
       }
       PackageEventHandle("onMenuWatch", menu, watchCtrl, event)
       watchCtrl:PopupMenu(menu)
       item = nil
     end)
 
-  watchCtrl:Connect(ID_ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
+  watchCtrl:Connect(ID.ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
       watchCtrl:SetFocus()
       watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, image.LOCAL))
     end)
 
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:EditLabel(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_UPDATE_UI,
+  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_UPDATE_UI,
     function (event) event:Enable(watchCtrl:IsEditable(item or watchCtrl:GetSelection())) end)
 
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:Delete(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_UPDATE_UI,
+  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_UPDATE_UI,
     function (event) event:Enable(watchCtrl:IsWatch(item or watchCtrl:GetSelection())) end)
 
-  watchCtrl:Connect(ID_COPYWATCHVALUE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.COPYWATCHVALUE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:CopyItemValue(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_COPYWATCHVALUE, wx.wxEVT_UPDATE_UI, function (event)
+  watchCtrl:Connect(ID.COPYWATCHVALUE, wx.wxEVT_UPDATE_UI, function (event)
       -- allow copying only when the debugger is available
       local debugger = ide:GetDebugger()
       event:Enable(item:IsOk() and debugger.server and not debugger.running
@@ -2016,7 +2016,7 @@ function debugger:ScratchpadOff()
   -- disable menu if it is still enabled
   -- (as this may be called when the debugger is being shut down)
   local menuBar = ide.frame.menuBar
-  if menuBar:IsChecked(ID_RUNNOW) then menuBar:Check(ID_RUNNOW, false) end
+  if menuBar:IsChecked(ID.RUNNOW) then menuBar:Check(ID.RUNNOW, false) end
 
   return true
 end
