@@ -1,4 +1,4 @@
--- Copyright 2012-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2012-18 Paul Kulchenko, ZeroBrane LLC
 -- Integration with LuaInspect or LuaCheck
 ---------------------------------------------------------
 
@@ -282,9 +282,9 @@ end
 local frame = ide.frame
 
 -- insert after "Compile" item
-local _, menu, compilepos = ide:FindMenuItem(ID_COMPILE)
+local _, menu, compilepos = ide:FindMenuItem(ID.COMPILE)
 if compilepos then
-  menu:Insert(compilepos+1, ID_ANALYZE, TR("Analyze")..KSC(ID_ANALYZE), TR("Analyze the source code"))
+  menu:Insert(compilepos+1, ID.ANALYZE, TR("Analyze")..KSC(ID.ANALYZE), TR("Analyze the source code"))
 end
 
 local function analyzeProgram(editor)
@@ -310,7 +310,7 @@ local function analyzeProgram(editor)
   return true -- analyzed ok
 end
 
-frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
+frame:Connect(ID.ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function ()
     ide:GetOutput():Activate()
     local editor = ide:GetEditor()
@@ -318,5 +318,5 @@ frame:Connect(ID_ANALYZE, wx.wxEVT_COMMAND_MENU_SELECTED,
       CompileProgram(editor, { reportstats = false, keepoutput = true })
     end
   end)
-frame:Connect(ID_ANALYZE, wx.wxEVT_UPDATE_UI,
+frame:Connect(ID.ANALYZE, wx.wxEVT_UPDATE_UI,
   function (event) event:Enable(ide:GetEditor() ~= nil) end)
