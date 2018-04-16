@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 
 local ide = ide
 
@@ -113,8 +113,12 @@ ide.config.keymap = {
   [ID.EDITWATCH]        = "F2",
   [ID.DELETEWATCH]      = "Del",
 -- Editor popup menu items
+  [ID.GOTODEFINITION]   = "",
+  [ID.RENAMEALLINSTANCES] = "",
+  [ID.REPLACEALLSELECTIONS] = "",
   [ID.QUICKADDWATCH]    = "",
   [ID.QUICKEVAL]        = "",
+  [ID.ADDTOSCRATCHPAD]  = "",
 -- Filetree popup menu items
   [ID.RENAMEFILE]       = "F2",
   [ID.DELETEFILE]       = "Del",
