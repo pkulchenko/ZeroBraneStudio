@@ -12,13 +12,13 @@ local frame = ide.frame
 local menuBar = frame.menuBar
 
 local editMenu = ide:MakeMenu {
+  { ID_UNDO, TR("&Undo")..KSC(ID_UNDO), TR("Undo last edit") },
+  { ID_REDO, TR("&Redo")..KSC(ID_REDO), TR("Redo last edit undone") },
+  { },
   { ID_CUT, TR("Cu&t")..KSC(ID_CUT), TR("Cut selected text to clipboard") },
   { ID_COPY, TR("&Copy")..KSC(ID_COPY), TR("Copy selected text to clipboard") },
   { ID_PASTE, TR("&Paste")..KSC(ID_PASTE), TR("Paste text from the clipboard") },
   { ID_SELECTALL, TR("Select &All")..KSC(ID_SELECTALL), TR("Select all text in the editor") },
-  { },
-  { ID_UNDO, TR("&Undo")..KSC(ID_UNDO), TR("Undo last edit") },
-  { ID_REDO, TR("&Redo")..KSC(ID_REDO), TR("Redo last edit undone") },
   { },
   { ID_SHOWTOOLTIP, TR("Show &Tooltip")..KSC(ID_SHOWTOOLTIP), TR("Show tooltip for current position; place cursor after opening bracket of function") },
   { ID_AUTOCOMPLETE, TR("Complete &Identifier")..KSC(ID_AUTOCOMPLETE), TR("Complete the current identifier") },
