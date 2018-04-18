@@ -1446,13 +1446,13 @@ function CreateEditor(bare)
       local line = instances and instances[0] and editor:LineFromPosition(instances[0]-1)+1
       local def =  line and " ("..TR("on line %d"):format(line)..")" or ""
       local menu = ide:MakeMenu {
-        { ID.UNDO, TR("&Undo") },
-        { ID.REDO, TR("&Redo") },
+        { ID.UNDO, TR("&Undo")..KSC(ID.UNDO) },
+        { ID.REDO, TR("&Redo")..KSC(ID.REDO) },
         { },
-        { ID.CUT, TR("Cu&t") },
-        { ID.COPY, TR("&Copy") },
-        { ID.PASTE, TR("&Paste") },
-        { ID.SELECTALL, TR("Select &All") },
+        { ID.CUT, TR("Cu&t")..KSC(ID.CUT) },
+        { ID.COPY, TR("&Copy")..KSC(ID.COPY) },
+        { ID.PASTE, TR("&Paste")..KSC(ID.PASTE) },
+        { ID.SELECTALL, TR("Select &All")..KSC(ID.SELECTALL) },
         { },
         { ID.GOTODEFINITION, TR("Go To Definition")..def..KSC(ID.GOTODEFINITION) },
         { ID.RENAMEALLINSTANCES, TR("Rename All Instances")..occurrences..KSC(ID.RENAMEALLINSTANCES) },
