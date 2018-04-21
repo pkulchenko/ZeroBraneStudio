@@ -1,4 +1,4 @@
--- Copyright 2015-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2015-18 Paul Kulchenko, ZeroBrane LLC
 
 local ide = ide
 ide.markers = {
@@ -18,6 +18,14 @@ for markertype in pairs(markertypes) do
   markertypes[markertype] = 2^ide:GetMarker(markertype)
   maskall = maskall + markertypes[markertype]
 end
+
+-- make these two IDs local to this menu,
+-- as their status differs from bookmarks/breakpoints in the editor
+local BOOKMARKTOGGLE = ID("markers.bookmarktoggle")
+local BREAKPOINTTOGGLE = ID("markers.breakpointtoggle")
+
+ide.config.toolbar.iconmap[BOOKMARKTOGGLE] = ide.config.toolbar.iconmap[ID.BOOKMARKTOGGLE]
+ide.config.toolbar.iconmap[BREAKPOINTTOGGLE] = ide.config.toolbar.iconmap[ID.BREAKPOINTTOGGLE]
 
 local function resetMarkersTimer()
   if ide.config.markersinactivity then
@@ -202,8 +210,6 @@ local function createMarkersWindow()
   ctrl:Connect(wx.wxEVT_COMMAND_TREE_ITEM_MENU,
     function (event)
       local item_id = event:GetItem()
-      local BOOKMARKTOGGLE = ID("markers.bookmarktoggle")
-      local BREAKPOINTTOGGLE = ID("markers.breakpointtoggle")
       local menu = ide:MakeMenu {
         { BOOKMARKTOGGLE, TR("Toggle Bookmark"), TR("Toggle bookmark") },
         { BREAKPOINTTOGGLE, TR("Toggle Breakpoint"), TR("Toggle breakpoint") },
