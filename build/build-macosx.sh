@@ -70,6 +70,11 @@ for ARG in "$@"; do
     BUILD_53=true
     BUILD_FLAGS="$BUILD_FLAGS -DLUA_COMPAT_APIINTCASTS"
     ;;
+  5.4)
+    BUILD_LUA=true
+    BUILD_54=true
+    BUILD_FLAGS="$BUILD_FLAGS -DLUA_COMPAT_APIINTCASTS"
+    ;;
   jit)
     BUILD_LUA=true
     BUILD_JIT=true
@@ -166,6 +171,15 @@ if [ $BUILD_53 ]; then
   LUA_BASENAME="lua-5.3.1"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
+fi
+
+if [ $BUILD_54 ]; then
+  LUAV="54"
+  LUAS=$LUAV
+  LUA_BASENAME="lua-5.4.0-work1"
+  LUA_FILENAME="$LUA_BASENAME.tar.gz"
+  LUA_URL="http://www.lua.org/work/$LUA_FILENAME"
+  LUA_COMPAT="MYCFLAGS=-DLUA_COMPAT_MODULE"
 fi
 
 if [ $BUILD_JIT ]; then
