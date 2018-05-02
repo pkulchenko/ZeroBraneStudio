@@ -39,6 +39,7 @@ title: Documentation
 - [Redis Lua debugging](http://notebook.kulchenko.com/zerobrane/redis-lua-debugging-with-zerobrane-studio)
 - [Torch7 debugging](http://notebook.kulchenko.com/zerobrane/torch-debugging-with-zerobrane-studio)
 - [Adobe Lightroom plugin debugging](http://notebook.kulchenko.com/zerobrane/debugging-lightroom-plugins-zerobrane-studio-ide)
+- [Moonscript debugging](http://notebook.kulchenko.com/zerobrane/moonscript-debugging-with-zerobrane-studio)
 - [OpenResty and Nginx Lua script debugging](http://notebook.kulchenko.com/zerobrane/debugging-openresty-nginx-lua-scripts-with-zerobrane-studio)
 - [Mashape Kong plugin debugging](http://notebook.kulchenko.com/zerobrane/debugging-mashape-kong-plugins-with-zerobrane-studio)
 - [Vera (home automation) device debugging](http://notebook.kulchenko.com/zerobrane/debugging-on-vera-devices-with-zerobrane-studio)
