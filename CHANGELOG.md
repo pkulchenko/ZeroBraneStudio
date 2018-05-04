@@ -1,5 +1,84 @@
 # ZeroBrane Studio Changelog
 
+## Current master (May 03 2018)
+
+### Highlights
+  - Tested debugger and luasocket support with Lua 5.4-work1 version.
+  - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types
+
+### Special thanks
+  - To [Deyan Dobromirov](https://github.com/dvdvideo1234) for adding bulgarian language translation.
+  - To [Alexey Melnichuk](https://github.com/moteus) for adding support for `fold.compact` flag to lpeg lexer.
+  - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
+  - To [Paul Reilly](https://github.com/paul-reilly) for adding config option for transparency of window.
+
+### Improvements
+  - Added shortcuts to popup menus for edit operations.
+  - Added keeping the clipboard content after exiting.
+  - Added reporting failures on file open.
+  - Added support for function to remap results in output line activation (#881).
+  - Added configuration setting for output line activation patterns (closes #881).
+  - Added showing tab name in the search status bar when no text is found (#887).
+  - Added Bulgarian translation (closes #876, #70).
+  - Added config option for transparency of window.
+  - Added support for configuring virtual space in the editor (closes #861).
+  - Added `ShowFullScreen` method (#166).
+  - Added recognition of `linecomment` option in lexlpeg lexers.
+  - Added support for `fold.compact` flag by lpeg lexer (closes #853, #847).
+  - Added switching to the editor tab being saved during confirmation.
+  - Added project tree methods to map and unmap directories (#166).
+  - Added `editor.endatlastline` to set the editor maximum scroll position (closes #842).
+  - Added `editor.wrapflagslocation` setting for specifying wrap flag location.
+  - Added `ExpandPlaceholders` method (#166).
+  - Added `GetModifiedTime` editor method (#166).
+  - Added `ReportError` method (#166).
+  - Enabled global shortcuts for clearing output and console (closes #844).
+  - Renamed `ID.CLEAROUTPUT` to `ID.CLEAROUTPUTENABLE` to avoid conflict between actions (#844).
+  - Renamed document method `Get/SetModTime` to `Get/SetFileModifiedTime` (#166).
+  - Refactored document 'modified' status to match the editor modification status.
+  - Reorganized setting accelerators to allow all of them to be set from `onRegister` events.
+  - Upgraded Mobdebug (0.704) to fix serialization issue (fixes #900).
+  - Updated markers menu to show images when available and configured.
+  - Updated IDs to reference the ID table instead of global variables.
+  - Updated order of items in Edit menu for consistency with other menus and apps.
+  - Updated README to add Lua 5.4 support.
+  - Updated build scripts to add Lua 5.4.0-work1.
+  - Upgraded Mobdebug (0.703) to include Serpent updates.
+  - Updated to use editor method `SetupKeywords` instead of global function.
+  - Updated path caching in intepreters to allow changing path configuration without restarting.
+  - Updated Gideros API to include `valuetype` values where needed (closes #889).
+  - Updated Gideros API script to add `valuetype` attribute to `new` methods (#889).
+  - Updated Gideros API for v2018.2.1.
+  - Updated build scripts to refresh submodules after checkout (follow-up to ebe9f572).
+  - Updated Copy/Cut commands to make line copying configurable (closes #878).
+  - Updated `SetHotKey` to allow removing hotkeys by setting to `nil` value.
+  - Updated build scripts to optimize when building wxwidgets and lexlpeg.
+  - Updated Corona interpreter to suggest project path when `main.lua` is not found in the current project.
+  - Updated to show relative path for mapped directories when it is a project subdirectory.
+  - Updated project tree to remove trailing separator from mapped directories.
+  - Updated symbol for modified tabs to a better looking unicode asterisk.
+  - Updated `xml` lexlpeg lexer to improve its performance on large files (closes #835).
+  - Updated loading files when starting second instance to speed up the process.
+
+### Fixes
+  - Fixed indentation on functions with `_function` in the name (fixes #905, #324).
+  - Fixed associating hotkey with editor menu items.
+  - Fixed `include` to work relative to included locations (#555).
+  - Fixed checking system location for `include` command when `HOME` is not set (#555).
+  - Fixed sorting text with invalid unicode characters (fixes #893).
+  - Fixed opening files pointing to broken symlinks or with denied access.
+  - Fixed custom lexer highlighting caused by a conflict with ansi styles (closes #891, #684).
+  - Fixed autocomplete to avoid looping on recursive references.
+  - Fixed `self` reference (#873).
+  - Fixed showing large strings in the Stack window that was slowing the IDE (fixes #863).
+  - Fixed issue with setting an accelerator for an empty shortcut (#844).
+  - Fixed keeping acccelerators after switching to full screen on Linux (fixes #857).
+  - Fixed search in selection to use correct editor when activated from Output/Console.
+  - Fixed fuzzy matching with lower case match following upper case or vise versa.
+  - Fixed autocomplete on a string longer than 32 chars with a match (fixes #837).
+  - Fixed loading files using relative names (closes #829, #830).
+  - Fixed lexlpeg Lua lexer to style numbers next to concatenation operator (closes #831).
+
 ## v1.70 (Nov 11 2017)
 
 ### Highlights
