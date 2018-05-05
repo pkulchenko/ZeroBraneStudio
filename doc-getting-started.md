@@ -121,6 +121,14 @@ The **Outline window** provides a way to see the structure of the current file w
 Clicking on the function name will scroll the file to the position where the function is defined.
 Anonymous functions are indicated using `~` for the name. There are several settings specific to display of the outlines, as documented in the [Outline section](doc-general-preferences#outline).
 
+## Markers window
+
+<img style="background:url(images/integrated-materials.png) -311px -682px" src="images/t.gif" class="inline"/>
+
+The **Markers window** provides a way to see and navigate **bookmarks and breakpoints** in all opened project files.
+
+Clicking on the marker line will jump to the line in the file where the marker is set, while clicking on the marker icon will remove the marker.
+
 ## Live coding
 
 <img style="background:url(images/scratchpad-linux-mint.png) -270px -120px" src="images/t.gif" class="inline"/>
