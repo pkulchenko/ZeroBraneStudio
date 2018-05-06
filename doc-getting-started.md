@@ -129,6 +129,21 @@ The **Markers window** provides a way to see and navigate **bookmarks and breakp
 
 Clicking on the marker line will jump to the line in the file where the marker is set, while clicking on the marker icon will remove the marker.
 
+## Command bar
+
+<img style="background:url(images/debugging.png) -682px -132px" src="images/t.gif" class="inline"/>
+
+The **Command bar** provides a way to navigate and apply **fuzzy search for files, symbols, and lines**.
+For example, to search project files by partial name, go to `Search | Navigate | Go To File...` to activate the command bar and then start typing the file name.
+The names that closely match the typed fragment will appear on the list with the more closely matching appering at the top.
+Each match also includes the rank with 100 being a full match and 0 being no match.
+
+The symbol search is activated by going to `Search | Navigate | Go To Symbol...` and
+the line search is activated by going to `Search | Navigate | Go To Line...`.
+
+The line and symbol searches are done in the currently selected file and can be combined with the file search,
+so you can type `myfile:123` to navigate to line `123` in the currently selected file (based on `myfile` search).
+
 ## Live coding
 
 <img style="background:url(images/scratchpad-linux-mint.png) -270px -120px" src="images/t.gif" class="inline"/>
