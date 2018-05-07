@@ -144,6 +144,16 @@ the line search is activated by going to `Search | Navigate | Go To Line...`.
 The line and symbol searches are done in the currently selected file and can be combined with the file search,
 so you can type `myfile:123` to navigate to line `123` in the currently selected file (based on `myfile` search).
 
+## Static analyzer
+
+<img style="background:url(images/static-analysis.png) -260px -720px" src="images/t.gif" class="inline"/>
+
+The **Static analyzer** allows to detect typos, non-localized variables, and unused parameters before running your code.
+
+The analyzer can be activated by going to `Project | Analyze`, which will execute the analysis on the current file and show the results in the [Output window](#output-window).
+
+There are two analyzers available: one based on [LuaInspect](https://github.com/davidm/lua-inspect) (the default one) and the other one based on [Luacheck](https://github.com/mpeterv/luacheck), which can be configured as described in the [Static analyzer documentation section](doc-general-preferences#static-analyzer).
+
 ## Live coding
 
 <img style="background:url(images/scratchpad-linux-mint.png) -270px -120px" src="images/t.gif" class="inline"/>
