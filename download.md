@@ -20,7 +20,7 @@ title: Download
 
 ## What are the most significant changes in this version?
 
-- Added support for using **luacheck**.
+- Added support for using **Luacheck**.
 - Added progress bar indicator for commandbar processing.
 - Added cache for files in the commandbar.
 - Added encoding output based on `codepage` setting.
