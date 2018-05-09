@@ -54,6 +54,10 @@ Quickly navigate bookmarks and breakpoints in opened project files.
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -682px -132px" src="images/t.gif" class="inset"/></a>
 Search project files by partial name (Search | Navigate | Go To File...).
 
+**File Search/Replace**
+<a href="images/integrated-materials.png"><img style="background:url(images/integrated-materials.png) -640px -682px" src="images/t.gif" class="inset"/></a>
+Search project files for text fragments and replace with preview and undo.
+
 **Function and expression calltip**
 <a href="images/debugging.png"><img style="background:url(images/debugging.png) -392px -460px" src="images/t.gif" class="inset"/></a>
 Access function description or variable/expression values while debugging.
