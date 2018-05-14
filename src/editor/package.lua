@@ -1242,10 +1242,7 @@ function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
 function ide:GetHotKey(idOrKsc)
-  if not idOrKsc then
-    self:Print("GetHotKey requires id or key shortcut.")
-    return
-  end
+  if not idOrKsc then return nil, "GetHotKey requires id or key shortcut." end
 
   local id, ksc = idOrKsc
   if type(idOrKsc) == type("") then id, ksc = ksc, id end
