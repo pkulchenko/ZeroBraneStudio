@@ -125,27 +125,23 @@ for ARG in "$@"; do
   esac
 done
 
-# check for g++
 if [ ! "$(which g++)" ]; then
   echo "Error: g++ isn't found. Please install GNU C++ compiler."
   exit 1
 fi
 
-# check for cmake
 if [ ! "$(which cmake)" ]; then
   echo "Error: cmake isn't found. Please install CMake and add it to PATH."
   exit 1
 fi
 
-# check for git
 if [ ! "$(which git)" ]; then
   echo "Error: git isn't found. Please install console GIT client."
   exit 1
 fi
 
-# check for wget
-if [ ! "$(which wget)" ]; then
-  echo "Error: wget isn't found. Please install GNU Wget."
+if [ ! "$(which curl)" ]; then
+  echo "Error: curl isn't found. Please install curl."
   exit 1
 fi
 
@@ -193,7 +189,7 @@ if [ $BUILD_LUA ]; then
     git clone "$LUA_URL" "$LUA_BASENAME"
     (cd "$LUA_BASENAME"; git checkout v2.0.4)
   else
-    wget -c "$LUA_URL" -O "$LUA_FILENAME" || { echo "Error: failed to download Lua"; exit 1; }
+    curl -L "$LUA_URL" > "$LUA_FILENAME" || { echo "Error: failed to download Lua"; exit 1; }
     tar -xzf "$LUA_FILENAME"
   fi
   cd "$LUA_BASENAME"
@@ -226,7 +222,7 @@ fi
 if [ $BUILD_LEXLPEG ]; then
   # need wxwidgets/Scintilla and lua files
   git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
-  wget --no-check-certificate -c "$LEXLPEG_URL" -O "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
+  curl -L "$LEXLPEG_URL" > "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
   unzip "$LEXLPEG_FILENAME"
   cd "$LEXLPEG_BASENAME"
 
@@ -321,7 +317,7 @@ fi
 
 # build LuaSocket
 if [ $BUILD_LUASOCKET ]; then
-  wget --no-check-certificate -c "$LUASOCKET_URL" -O "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
+  curl -L "$LUASOCKET_URL" > "$LUASOCKET_FILENAME" || { echo "Error: failed to download LuaSocket"; exit 1; }
   unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
@@ -342,7 +338,7 @@ fi
 
 # build lfs
 if [ $BUILD_LFS ]; then
-  wget --no-check-certificate -c "$LFS_URL" -O "$LFS_FILENAME" || { echo "Error: failed to download lfs"; exit 1; }
+  curl -L "$LFS_URL" > "$LFS_FILENAME" || { echo "Error: failed to download lfs"; exit 1; }
   tar -xzf "$LFS_FILENAME"
   mv "luafilesystem-$LFS_BASENAME" "$LFS_BASENAME"
   cd "$LFS_BASENAME/src"
@@ -357,7 +353,7 @@ fi
 
 # build lpeg
 if [ $BUILD_LPEG ]; then
-  wget --no-check-certificate -c "$LPEG_URL" -O "$LPEG_FILENAME" || { echo "Error: failed to download lpeg"; exit 1; }
+  curl -L "$LPEG_URL" > "$LPEG_FILENAME" || { echo "Error: failed to download lpeg"; exit 1; }
   tar -xzf "$LPEG_FILENAME"
   cd "$LPEG_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
@@ -371,8 +367,7 @@ fi
 
 # build LuaSec
 if [ $BUILD_LUASEC ]; then
-  # build LuaSec
-  wget --no-check-certificate -c "$LUASEC_URL" -O "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
+  curl -L "$LUASEC_URL" > "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
   unzip "$LUASEC_FILENAME"
   # the folder in the archive is "luasec-luasec-....", so need to fix
   mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
