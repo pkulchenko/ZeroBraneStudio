@@ -310,6 +310,8 @@ if [ $BUILD_WXLUA ]; then
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
   (cd modules/luamodule; make install)
   [ -f "$INSTALL_DIR/lib/libwx.dylib" ] || { echo "Error: libwx.dylib isn't found"; exit 1; }
+  # update install name to remove absolute path
+  install_name_tool -id libwx.dylib "$INSTALL_DIR/lib/libwx.dylib"
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/libwx.dylib"
   cd ../..
   rm -rf "$WXLUA_BASENAME"
