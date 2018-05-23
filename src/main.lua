@@ -616,7 +616,7 @@ SettingsRestoreView()
 
 do
   for _, filename in ipairs(ide.filenames) do
-    ide:ActivateFile(ide:MergePath(ide.cwd or "", filename))
+    ide:ActivateFile(ide.cwd and GetFullPathIfExists(ide.cwd, filename) or filename)
   end
   if ide:GetEditorNotebook():GetPageCount() == 0 then NewFile() end
 end
