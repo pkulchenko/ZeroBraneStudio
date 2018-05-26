@@ -7,7 +7,7 @@ title: Getting Started
 
 ## Editor
 
-The editor allows you to open several programs or files and work on them at the same time.
+The IDE allows you to open several programs or files and work on them at the same time.
 Each file is opened in its own page, with its name in a tab at the top of the page.
 You can **switch** between pages by clicking on those tabs.
 You can also **close** those pages when you don't need them by using the `File | Close Page` menu command or its shortcut `Ctrl-W` (`Cmd-W` on macOS).
@@ -18,9 +18,9 @@ To **open** a program or file you can select the `File | Open` menu command or u
 
 To **save** a program you can select the `File | Save` menu command at the top of the window or use its shortcut `Ctrl-S` (`Cmd-S` on macOS). If the program does not have a name yet, you will be asked to provide a name for it.
 
-## Exiting the IDE
+## Quitting the IDE
 
-To **exit** ZeroBrane Studio, select the `File | Quit` menu command.
+To **quit** the IDE, select the `File | Quit` menu command.
 You will be prompted to save any unsaved changes.
 The IDE will restore the editor tabs you are using the next time you start it.
 
@@ -67,7 +67,7 @@ To **change** the current project directory you have several options:
 
 <img style="background:url(images/integrated-materials.png) -994px -750px" src="images/t.gif" class="inline"/>
 
-ZeroBrane Studio provides support for different Lua engines that may require different parameters or settings when running or debugging.
+The IDE provides support for different Lua engines that may require different parameters or settings when running or debugging.
 The settings are specified by **interpreters** that can be selected by going to `Project | Lua Interpreter` and selecting an interpreter you need from the list.
 This not only sets the environment for running and debugging of your application, but also auto-complete, scratchpad, and other engine-dependent settings.
 
