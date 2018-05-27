@@ -686,8 +686,8 @@ function findReplace:RunInFiles(replace)
   -- as the controls are likely to be in some invalid state anyway
   if not ide:IsValidCtrl(self.oveditor) then return end
 
-  self:SetStatus(not completed and TR("Cancelled by the user.")
-    or TR("Found %d instance.", self.occurrences):format(self.occurrences))
+  local msg = TR(replace and "Replaced %d instance." or "Found %d instance.", self.occurrences)
+  self:SetStatus(not completed and TR("Cancelled by the user.") or msg:format(self.occurrences))
   self.oveditor:Destroy()
   self.oveditor = nil
   self.toolbar:UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
