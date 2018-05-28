@@ -144,6 +144,17 @@ the line search is activated by going to `Search | Navigate | Go To Line...`.
 The line and symbol searches are done in the currently selected file and can be combined with the file search,
 so you can type `myfile:123` to navigate to line `123` in the currently selected file (based on `myfile` search).
 
+## Search and replace
+
+<img style="background:url(images/integrated-materials.png) -640px -682px" src="images/t.gif" class="inline"/>
+
+The **Search and replace panel** allows to search for text fragments in the currently activated editor window (`Search | Find`),
+replace text fragments in the current editor window (`Search | Replace`),
+search in files (`Search | Find in Files`), and search and replace in files (`search | Replace in Files`).
+
+If there is some currently selected text (on one line), it will be copied to the `search` text area;
+if there is a selection ares that spans more than one line, then `search in selection` will be activated and the search scope will be limited to the selected text.
+
 ## Static analyzer
 
 <img style="background:url(images/static-analysis.png) -260px -720px" src="images/t.gif" class="inline"/>
