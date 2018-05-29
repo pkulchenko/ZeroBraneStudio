@@ -1,4 +1,4 @@
--- Copyright 2011-16 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 
 -- Converted from love_api.lua in https://github.com/love2d-community/love-api
 -- (API for LÖVE 0.10.2 as of November 2, 2016)
@@ -7519,11 +7519,12 @@ local function convert(l)
   if l.modules then
     l.description = 'Love2d modules, functions, and callbacks.'
     l.type = "lib"
-    l.childs = merge(l.modules, l.functions or {}, l.callbacks or {})
-    l.types = nil -- don't need types
+    l.childs = merge(l.modules, l.functions or {}, l.callbacks or {}, l.types or {})
+    l.types = nil
     l.callbacks = nil
     l.functions = nil
     l.modules = nil
+    l.subtypes = nil
   end
 
   if not l.childs then return end
@@ -7552,8 +7553,8 @@ local function convert(l)
     local nochildren = #v.childs == 0 or v.returns or v.args
     v.type = nochildren and ((v.returns or v.args or v.variants) and "function" or "value")
       or v.types and "class"
-      or v.constants and "class"
       or v.functions and "lib"
+      or v.constants and "class"
       or "function"
     if v.constants then v.description = "class constants" end
     v.variants = nil
@@ -7563,11 +7564,17 @@ local function convert(l)
     v.enums = nil
     v.supertypes = nil
     v.constructors = nil
+    v.subtypes = nil
     if nochildren then v.childs = nil end
     if v.type == "function" then
       v.args = v.args or '()'
       v.returns = v.returns or '()'
     end
+    if v.parenttype or v.subtypes then
+      v.inherits = v.parenttype
+      v.type = "class"
+    end
+    v.parenttype = nil
     l.childs[n] = nil
     convert(v)
   end
