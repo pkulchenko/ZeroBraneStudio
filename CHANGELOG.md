@@ -1,10 +1,11 @@
 # ZeroBrane Studio Changelog
 
-## Current master (May 03 2018)
+## Current master (May 30 2018)
 
 ### Highlights
   - Tested debugger and luasocket support with Lua 5.4-work1 version.
   - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types
+  - Updated Love2d API for 0.11.1 (#247).
 
 ### Special thanks
   - To [Deyan Dobromirov](https://github.com/dvdvideo1234) for adding bulgarian language translation.
@@ -13,6 +14,7 @@
   - To [Paul Reilly](https://github.com/paul-reilly) for adding config option for transparency of window.
 
 ### Improvements
+  - Added message in search toolbar after replacement in files (#910).
   - Added shortcuts to popup menus for edit operations.
   - Added keeping the clipboard content after exiting.
   - Added reporting failures on file open.
@@ -38,6 +40,9 @@
   - Refactored document 'modified' status to match the editor modification status.
   - Reorganized setting accelerators to allow all of them to be set from `onRegister` events.
   - Upgraded Mobdebug (0.704) to fix serialization issue (fixes #900).
+  - Updated Love2d API for 0.11.1 (#247).
+  - Updated Love2d script to include class inheritance where available.
+  - Updated `GetHotKey` to return error message instead of printing it.
   - Updated markers menu to show images when available and configured.
   - Updated IDs to reference the ID table instead of global variables.
   - Updated order of items in Edit menu for consistency with other menus and apps.
@@ -61,6 +66,7 @@
   - Updated loading files when starting second instance to speed up the process.
 
 ### Fixes
+  - Fixed activating file from the command line after project path is set (#829, #830).
   - Fixed indentation on functions with `_function` in the name (fixes #905, #324).
   - Fixed associating hotkey with editor menu items.
   - Fixed `include` to work relative to included locations (#555).
