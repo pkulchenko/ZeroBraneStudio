@@ -194,6 +194,10 @@ function MarkupStyle(editor, lines, linee)
             local lsep = w:find(q(MD_MARK_LINZ)..q(MD_MARK_LINA))
             if lsep then emark = #w-lsep+#MD_MARK_LINT end
           end
+          local sp = bit.band(editor:GetStyleAt(p-1), ide.STYLEMASK) -- previous position style
+          if mark == MD_MARK_HEAD and not iscomment[sp] then
+            p = p + 1
+          end
           editor:StartStyling(p, ide.STYLEMASK)
           editor:SetStyling(smark, markup[MD_MARK_MARK].st)
           editor:SetStyling(t-f+1-smark-emark, markup[mark].st or markup[MD_MARK_MARK].st)
