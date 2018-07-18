@@ -11,6 +11,26 @@ local function exePath(self, version)
   ide.config.path['lua'..version] ~= nil
 end
 
+local function shortenIfNeeded(filepath)
+  -- if running on Windows and can't open the file, this may mean that
+  -- the file path includes unicode characters that need special handling
+  local fh = io.open(filepath, "r")
+  if fh then fh:close() end
+  if not fh and ide.osname == 'Windows'
+  and pcall(require, "winapi") and wx.wxFileExists(filepath) then
+    winapi.set_encoding(winapi.CP_UTF8)
+    local shortpath = winapi.short_path(filepath)
+    if shortpath ~= filepath then return shortpath end
+    ide:Print(
+      ("Can't get short path for a Unicode file name '%s' use the file.")
+      :format(filepath))
+    ide:Print(
+      ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
+      :format(wfilename:GetVolume()))
+  end
+  return filepath
+end
+
 return {
   name = ("Lua%s"):format(name or version or ""),
   description = ("Lua%s interpreter with debugger"):format(name or version or ""),
@@ -19,28 +39,7 @@ return {
   fexepath = exePath,
   frun = function(self,wfilename,rundebug)
     local exe, iscustom = self:fexepath(version or "")
-    local filepath = wfilename:GetFullPath()
-
-    do
-      -- if running on Windows and can't open the file, this may mean that
-      -- the file path includes unicode characters that need special handling
-      local fh = io.open(filepath, "r")
-      if fh then fh:close() end
-      if ide.osname == 'Windows' and pcall(require, "winapi")
-      and wfilename:FileExists() and not fh then
-        winapi.set_encoding(winapi.CP_UTF8)
-        local shortpath = winapi.short_path(filepath)
-        if shortpath == filepath then
-          ide:Print(
-            ("Can't get short path for a Unicode file name '%s' to open the file.")
-            :format(filepath))
-          ide:Print(
-            ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
-            :format(wfilename:GetVolume()))
-        end
-        filepath = shortpath
-      end
-    end
+    local filepath = shortenIfNeeded(wfilename:GetFullPath())
 
     if rundebug then
       ide:GetDebugger():SetOptions({runstart = ide.config.debugger.runonstart == true})
@@ -50,14 +49,13 @@ return {
 
       local tmpfile = wx.wxFileName()
       tmpfile:AssignTempFileName(".")
-      filepath = tmpfile:GetFullPath()
-      local f = io.open(filepath, "w")
-      if not f then
-        ide:Print("Can't open temporary file '"..filepath.."' for writing.")
+      filepath = shortenIfNeeded(tmpfile:GetFullPath())
+
+      local ok, err = FileWrite(filepath, rundebug)
+      if not ok then
+        ide:Print(("Can't open temporary file '%s' for writing: %s."):format(filepath, err))
         return
       end
-      f:write(rundebug)
-      f:close()
     end
     local params = self:GetCommandLineArg("lua")
     local code = ([[-e "io.stdout:setvbuf('no')" "%s"]]):format(filepath)
