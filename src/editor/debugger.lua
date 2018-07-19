@@ -851,7 +851,7 @@ function debugger:handle(command, server, options)
 
   -- some filenames may be represented in a different code page; check and re-encode as UTF8
   local codepage = ide:GetCodePage()
-  if codepage and file and FixUTF8(file) == nil and winapi then
+  if codepage and type(file) == "string" and FixUTF8(file) == nil and winapi then
     file = winapi.encode(codepage, winapi.CP_UTF8, file)
   end
 
