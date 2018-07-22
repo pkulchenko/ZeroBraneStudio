@@ -1785,7 +1785,7 @@ function debugger:ScratchpadRefresh()
       local filePath = debuggerMakeFileName(scratchpadEditor)
 
       -- wrap into a function call to make "return" to work with scratchpad
-      code = "(function()"..code.."\nend)()"
+      code = "(function(...)"..code.."\nend)(...)"
 
       -- this is a special error message that is generated at the very end
       -- of each script to avoid exiting the (debugee) scratchpad process.
