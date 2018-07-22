@@ -9,7 +9,7 @@ icon ICON "zbstudio.ico"
             VALUE "CompanyName",      "ZeroBrane LLC"
             VALUE "FileDescription",  "ZeroBrane Studio IDE"
             VALUE "InternalName",     "zbstudio"
-            VALUE "LegalCopyright",   "All rights reserved © 2011-16 Paul Kulchenko, ZeroBrane LLC"
+            VALUE "LegalCopyright",   "All rights reserved © 2011-18 Paul Kulchenko, ZeroBrane LLC"
             VALUE "LegalTrademarks",  "ZeroBrane®"
             VALUE "OriginalFilename", "zbstudio.exe"
         }
