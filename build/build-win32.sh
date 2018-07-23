@@ -29,7 +29,7 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-OPENSSL_BASENAME="openssl-1.0.2h"
+OPENSSL_BASENAME="openssl-1.0.2o"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
 OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
 
@@ -384,7 +384,9 @@ if [ $BUILD_LUASEC ]; then
   wget --no-check-certificate -c "$OPENSSL_URL" -O "$OPENSSL_FILENAME" || { echo "Error: failed to download OpenSSL"; exit 1; }
   tar -xzf "$OPENSSL_FILENAME"
   cd "$OPENSSL_BASENAME"
-  RANLIB="$(which ranlib)" bash ./Configure mingw shared
+  # change `mingw` to `mingw64` to build 64bit library
+  RANLIB="$(which ranlib)" bash ./Configure mingw shared no-asm
+  make depend
   make
   make install_sw INSTALLTOP="$INSTALL_DIR"
   [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libeay32.dll" "$INSTALL_DIR/bin/ssleay32.dll"
