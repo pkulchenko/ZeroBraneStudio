@@ -80,7 +80,7 @@ for _, tst in ipairs({
 
   editor:SetText(tst)
   editor:ResetTokenList()
-  while IndicateAll(editor) do end
+  while editor:IndicateSymbols() do end
   local defonly = true
   for _, token in ipairs(ide:GetEditor():GetTokenList()) do
     if token.name ~= '_' then defonly = false end

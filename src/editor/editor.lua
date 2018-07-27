@@ -439,8 +439,8 @@ local delayed = {}
 function IndicateIfNeeded()
   local editor = ide:GetEditor()
   -- do the current one first
-  if delayed[editor] then return IndicateAll(editor) end
-  for ed in pairs(delayed) do return IndicateAll(ed) end
+  if delayed[editor] then return editor:IndicateSymbols() end
+  for ed in pairs(delayed) do return ed:IndicateSymbols() end
 end
 
 -- find all instances of a symbol at pos
@@ -479,7 +479,7 @@ local function indicateFindInstances(editor, name, pos)
   return this and instances[#instances] or {}
 end
 
-function IndicateAll(editor, lines)
+local function indicateSymbols(editor, lines)
   if not ide.config.autoanalyzer then return end
 
   local d = delayed[editor]
@@ -793,6 +793,8 @@ function CreateEditor(bare)
 
   function editor:GetTokenList() return self.tokenlist end
   function editor:ResetTokenList() self.tokenlist = {}; return self.tokenlist end
+
+  function editor:IndicateSymbols(...) return indicateSymbols(self, ...) end
 
   function editor:ValueFromPosition(pos) return getValAtPosition(self, pos) end
 
@@ -1229,7 +1231,7 @@ function CreateEditor(bare)
         IndicateFunctionsOnly(editor,line,line+iv[2])
       end
       if minupdated then
-        local ok, res = pcall(IndicateAll, editor, minupdated)
+        local ok, res = pcall(indicateSymbols, editor, minupdated)
         if not ok then ide:Print("Internal error: ",res,minupdated) end
       end
       local firstvisible = editor:GetFirstVisibleLine()

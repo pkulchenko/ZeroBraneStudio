@@ -244,7 +244,7 @@ local function indexFromQueue()
       editor:SetTextDyn(content)
       editor:Colourise(0, -1)
       editor:ResetTokenList()
-      while IndicateAll(editor) do end
+      while editor:IndicateSymbols() do end
 
       outline:UpdateSymbols(fname, outlineRefresh(editor))
       editor:Destroy()
@@ -666,7 +666,7 @@ end
 function outline:GetEditorSymbols(editor)
   -- force token refresh (as these may be not updated yet)
   if #editor:GetTokenList() == 0 then
-    while IndicateAll(editor) do end
+    while editor:IndicateSymbols() do end
   end
 
   -- only refresh the functions when none is present

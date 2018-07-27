@@ -142,7 +142,7 @@ ReloadAPIs()
 
 editor:SetText('')
 editor:AddText('local error = true\n')
-IndicateAll(editor)
+editor:IndicateSymbols()
 
 local ac = CreateAutoCompList(editor, "err")
 local _, c = ac:gsub("error", "error")
@@ -187,7 +187,7 @@ ok(not (CreateAutoCompList(editor, "pri.") or ""):match('print'),
 
 editor:SetText('')
 editor:AddText('local name = "abc"; local namelen = #name')
-IndicateAll(editor)
+editor:IndicateSymbols()
 EditorAutoComplete(editor)
 local isactive = editor:AutoCompActive()
 editor:AutoCompCancel() -- cleanup
@@ -219,7 +219,7 @@ ok((CreateAutoCompList(editor, "foo:") or ""):match('byte'),
 
 editor:SetText('')
 editor:AddText('local value\nprint(va')
-IndicateAll(editor)
+editor:IndicateSymbols()
 
 local status, res = pcall(CreateAutoCompList, editor, "va")
 ok(status and (res or ""):match('value'),
@@ -239,7 +239,7 @@ ide.config.acandtip.symbols = 2
 
 editor:SetText('')
 editor:AddText('local value,velAcc\nprint(va')
-IndicateAll(editor)
+editor:IndicateSymbols()
 
 local status, res = pcall(CreateAutoCompList, editor, "va")
 ok(status and (res or ""):match('velAcc'),
