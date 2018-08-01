@@ -189,7 +189,7 @@ return {
   ["Markers Window"] = "Маркерен прозорец", -- src\editor\menu_view.lua
   ["Markers"] = "Маркери", -- src\editor\markers.lua
   ["Match case"] = "Съвпадение в случая", -- src\editor\toolbar.lua
-  ["Match whole word"] = "Съвкадение на цяла дума", -- src\editor\toolbar.lua
+  ["Match whole word"] = "Съвпадение на цяла дума", -- src\editor\toolbar.lua
   ["Mixed end-of-line encodings detected."] = "Различни кодировки за край на ред са открити.", -- src\editor\commands.lua
   ["Navigate"] = "Придвижване", -- src\editor\menu_search.lua
   ["New &File"] = "Нов &файл", -- src\editor\filetree.lua
