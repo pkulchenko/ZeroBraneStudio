@@ -197,6 +197,7 @@ function MarkupStyle(editor, lines, linee)
           local sp = bit.band(editor:GetStyleAt(p-1), ide.STYLEMASK) -- previous position style
           if mark == MD_MARK_HEAD and not iscomment[sp] then
             p = p + 1
+            smark = smark - 1
           end
           editor:StartStyling(p, ide.STYLEMASK)
           editor:SetStyling(smark, markup[MD_MARK_MARK].st)
