@@ -199,12 +199,19 @@ function PARSE.parse_scope(lx, f, level)
       else
         f('Id', c[1], c.lineinfo, true)
         -- this looks like the left side of (multi-variable) assignment
-        -- unless it's a part of `= var, field = value`, so skip if inside a table
+        -- unless it's a part of `= var, field = value`, so skip if inside a table;
+        -- also take into account possible field assignment: `a.b, c = value`.
+        -- this still doesn't handle indexing with square brackets: `a[b], c = value`.
         if not inside_table and not (cprev and cprev.tag == 'Keyword' and cprev[1] == '=') then
-          while lx:peek().tag == 'Keyword' and lx:peek()[1] == ',' do
-            local c = lx:next(); if lx:peek().tag ~= 'Id' then break end
+          local cpeek = lx:peek()
+          while cpeek.tag == 'Keyword' and (cpeek[1] == ',' or cpeek[1] == '.') do
+            local c = lx:next() -- skip the keyword
+            if cpeek[1] == ',' and lx:peek().tag ~= 'Id' then break end
+
             c = lx:next()
-            f('Id', c[1], c.lineinfo, true)
+            f(cpeek[1] == ',' and 'Id' or 'String', c[1], c.lineinfo, true)
+
+            cpeek = lx:peek()
           end
         end
       end
