@@ -134,6 +134,17 @@ is(ide:GetProject("t"):gsub("[/\\]$",""), MergeFullPath(cwd,"t"), "Project is se
 local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
 
+local p = ide:GetProject()
+ide.filetree.settings.mapped[p] = {}
+local sep = GetPathSeparator()
+local dir = "foo"
+tree:MapDirectory(dir)
+is(#ide.filetree.settings.mapped[p], 1, "MapDirectory adds a new directory to the list.")
+tree:MapDirectory(dir..sep)
+is(#ide.filetree.settings.mapped[p], 1, "MapDirectory skips adding the same directory.")
+tree:UnmapDirectory(dir..sep)
+ok(not ide.filetree.settings.mapped[p], "UnmapDirectory removes directory from the list.")
+
 ok(tree:SetStartFile("test.lua") ~= nil, "SetStartFile sets start file.")
 is(tree:GetStartFile(), "test.lua", "GetStartFile returns expected value.")
 tree:SetStartFile()

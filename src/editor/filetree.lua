@@ -280,9 +280,10 @@ local function treeSetConnectorsAndIcons(tree)
     local project = ide:GetProject()
     if not project then return end
 
+    local dir = wx.wxFileName.DirName(ide:MergePath(project, path))
     local mapped = filetree.settings.mapped[project] or {}
-    for k, m in ipairs(mapped) do
-      if m == path then table.remove(mapped, k) end
+    for k = #mapped,1,-1 do
+      if dir:SameAs(wx.wxFileName.DirName(mapped[k])) then table.remove(mapped, k) end
     end
     filetree.settings.mapped[project] = #mapped > 0 and mapped or nil
     refreshAncestors(self:GetRootItem())
@@ -297,15 +298,17 @@ local function treeSetConnectorsAndIcons(tree)
       if dirPicker:ShowModal(true) ~= wx.wxID_OK then return end
       local dir = wx.wxFileName.DirName(FixDir(dirPicker:GetPath()))
       -- don't remap the project directory
-      if dir:SameAs(wx.wxFileName(project)) then return end
+      if dir:SameAs(wx.wxFileName.DirName(project)) then return end
       path = dir:GetFullPath()
     end
 
+    local dir = wx.wxFileName.DirName(ide:MergePath(project, path))
     local mapped = filetree.settings.mapped[project] or {}
     for _, m in ipairs(mapped) do
-      if m == path then return end -- already on the list
+      if dir:SameAs(wx.wxFileName.DirName(m)) then return end -- already on the list
     end
-    table.insert(mapped, path)
+    -- add to the list; the path includes trailing separator used for directory detection
+    table.insert(mapped, dir:GetFullPath())
     filetree.settings.mapped[project] = mapped
     refreshAncestors(self:GetRootItem())
   end
