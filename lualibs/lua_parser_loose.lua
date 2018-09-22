@@ -204,7 +204,7 @@ function PARSE.parse_scope(lx, f, level)
         -- this still doesn't handle indexing with square brackets: `a[b], c = value`.
         if not inside_table and not (cprev and cprev.tag == 'Keyword' and cprev[1] == '=') then
           local cpeek = lx:peek()
-          while cpeek.tag == 'Keyword' and (cpeek[1] == ',' or cpeek[1] == '.') do
+          while cpeek and cpeek.tag == 'Keyword' and (cpeek[1] == ',' or cpeek[1] == '.') do
             local c = lx:next() -- skip the keyword
             if cpeek[1] == ',' and lx:peek().tag ~= 'Id' then break end
 
@@ -213,6 +213,7 @@ function PARSE.parse_scope(lx, f, level)
 
             cpeek = lx:peek()
           end
+          if not cpeek then break end
         end
       end
     end

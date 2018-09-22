@@ -234,6 +234,10 @@ ok(status and (res or ""):match('value'),
 
 end
 
+editor:SetText('lsqlite3.db:execute( lsqlite3.dm.')
+local status = pcall(editor.IndicateSymbols, editor)
+ok(status, "IndicateSymbols doesn't fail on invalid code.")
+
 local symbols = ide.config.acandtip.symbols
 ide.config.acandtip.symbols = 2
 
