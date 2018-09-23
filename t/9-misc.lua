@@ -136,10 +136,14 @@ ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'know
 
 local p = ide:GetProject()
 ide.filetree.settings.mapped[p] = {}
+local res = tree:MapDirectory("foo")
+is(#ide.filetree.settings.mapped[p], 0, "MapDirectory doesn't add non-existing directory.")
+ok(res == nil, "MapDirectory reports failure to add directory.")
 local sep = GetPathSeparator()
-local dir = "foo"
-tree:MapDirectory(dir)
+local dir = "../src"
+res = tree:MapDirectory(dir)
 is(#ide.filetree.settings.mapped[p], 1, "MapDirectory adds a new directory to the list.")
+ok(res == true, "MapDirectory reports success to add directory.")
 tree:MapDirectory(dir..sep)
 is(#ide.filetree.settings.mapped[p], 1, "MapDirectory skips adding the same directory.")
 tree:UnmapDirectory(dir..sep)

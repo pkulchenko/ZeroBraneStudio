@@ -282,7 +282,7 @@ local function treeSetConnectorsAndIcons(tree)
 
   function tree:UnmapDirectory(path)
     local project = ide:GetProject()
-    if not project then return end
+    if not project then return nil, "Project is not set" end
 
     local dir = wx.wxFileName.DirName(ide:MergePath(project, path))
     local mapped = filetree.settings.mapped[project] or {}
@@ -292,10 +292,11 @@ local function treeSetConnectorsAndIcons(tree)
     filetree.settings.mapped[project] = #mapped > 0 and mapped or nil
     saveSettings()
     refreshAncestors(self:GetRootItem())
+    return true
   end
   function tree:MapDirectory(path)
     local project = ide:GetProject()
-    if not project then return end
+    if not project then return nil, "Project is not set" end
 
     if not path then
       local dirPicker = wx.wxDirDialog(ide.frame, TR("Choose a directory to map"),
@@ -308,6 +309,8 @@ local function treeSetConnectorsAndIcons(tree)
     end
 
     local dir = wx.wxFileName.DirName(ide:MergePath(project, path))
+    if not dir:DirExists() then return nil, "Directory doesn't exist" end
+
     local mapped = filetree.settings.mapped[project] or {}
     for _, m in ipairs(mapped) do
       if dir:SameAs(wx.wxFileName.DirName(m)) then return end -- already on the list
@@ -317,6 +320,7 @@ local function treeSetConnectorsAndIcons(tree)
     filetree.settings.mapped[project] = mapped
     saveSettings()
     refreshAncestors(self:GetRootItem())
+    return true
   end
 
   local empty = ""
