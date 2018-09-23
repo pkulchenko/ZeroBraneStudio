@@ -210,6 +210,10 @@ local function treeSetConnectorsAndIcons(tree)
   function tree:IsFileStart(item_id) return isIt(item_id, image.FILEOTHERSTART) end
   function tree:IsRoot(item_id) return not tree:GetItemParent(item_id):IsOk() end
 
+  local function saveSettings()
+    ide:AddPackage('core.filetree', {}):SetSettings(filetree.settings)
+  end
+
   function tree:FindItem(match)
     return findItem(self, (wx.wxIsAbsolutePath(match) or match == '') and match
       or MergeFullPath(ide:GetProject(), match))
@@ -286,6 +290,7 @@ local function treeSetConnectorsAndIcons(tree)
       if dir:SameAs(wx.wxFileName.DirName(mapped[k])) then table.remove(mapped, k) end
     end
     filetree.settings.mapped[project] = #mapped > 0 and mapped or nil
+    saveSettings()
     refreshAncestors(self:GetRootItem())
   end
   function tree:MapDirectory(path)
@@ -310,6 +315,7 @@ local function treeSetConnectorsAndIcons(tree)
     -- add to the list; the path includes trailing separator used for directory detection
     table.insert(mapped, dir:GetFullPath())
     filetree.settings.mapped[project] = mapped
+    saveSettings()
     refreshAncestors(self:GetRootItem())
   end
 
@@ -475,10 +481,6 @@ local function treeSetConnectorsAndIcons(tree)
       tree:ActivateItem(event:GetItem())
     end)
 
-  local function saveSettings()
-    ide:AddPackage('core.filetree', {}):SetSettings(filetree.settings)
-  end
-
   -- refresh the tree
   local function refreshChildren()
     tree:RefreshChildren()
@@ -595,24 +597,19 @@ local function treeSetConnectorsAndIcons(tree)
     end)
   tree:Connect(ID.SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      unsetStartFile()
-      setStartFile(tree:GetFocusedItem())
-      saveSettings()
+      tree:SetStartFile(tree:GetItemFullName(tree:GetFocusedItem()))
     end)
   tree:Connect(ID.UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
-      unsetStartFile()
-      saveSettings()
+      tree:SetStartFile()
     end)
   tree:Connect(ID.MAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:MapDirectory()
-      saveSettings()
     end)
   tree:Connect(ID.UNMAPDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       tree:UnmapDirectory(tree:GetItemText(tree:GetFocusedItem()))
-      saveSettings()
     end)
   tree:Connect(ID.PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
