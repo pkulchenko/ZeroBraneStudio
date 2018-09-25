@@ -136,7 +136,8 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
         ide:PushStatus(TR("%s%% loaded..."):format(math.floor(100*editor:GetLength()/filesize)))
       end
     end)
-  if not ok then
+  -- only report errors on existing files
+  if not ok and filesize then
     ide:ReportError(TR("Can't open file '%s': %s"):format(filePath, err))
     return nil
   end
