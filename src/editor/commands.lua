@@ -42,8 +42,12 @@ end
 function LoadFile(filePath, editor, file_must_exist, skipselection)
   filePath = filePath:gsub("%s+$","")
 
-  -- if the file name is empty or is a directory, don't do anything
-  if filePath == '' or wx.wxDirExists(filePath) then return nil end
+  -- if the file name is empty or is a directory or looks like a directory, don't do anything
+  if filePath == ''
+  or wx.wxDirExists(filePath)
+  or filePath:find("[/\\]$") then
+    return nil, "Invalid filename"
+  end
 
   filePath = FileNormalizePath(filePath)
   -- on some Windows versions, normalization doesn't return "original" file name,
