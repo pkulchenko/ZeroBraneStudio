@@ -946,7 +946,7 @@ function ide:AddSpec(name, spec)
 end
 function ide:RemoveSpec(name) self.specs[name] = nil end
 
-function ide:FindSpec(ext)
+function ide:FindSpec(ext, firstline)
   if not ext then return end
   for _,curspec in pairs(self.specs) do
     for _,curext in ipairs(curspec.exts or {}) do
@@ -955,14 +955,21 @@ function ide:FindSpec(ext)
   end
   -- check for extension to spec mapping and create the spec on the fly if present
   local edcfg = self.config.editor
-  if type(edcfg.specmap) == "table" and edcfg.specmap[ext] then
-    local name = edcfg.specmap[ext]
-    -- check if there is already spec with this name, but doesn't have this extension registered
+  local name = type(edcfg.specmap) == "table" and edcfg.specmap[ext]
+  local shebang = false
+  if not name and firstline then
+    name = firstline:match("#!.-(%w+)%s*$")
+    shebang = true
+  end
+  if name then
+    -- check if there is already spec with this name, but doesn't have this extension registered;
+    -- don't register the extension if the format was set based on the shebang
     if self.specs[name] then
-      table.insert(self.specs[name].exts or {}, ext)
+      if not self.specs[name].exts then self.specs[name].exts = {} end
+      if not shebang then table.insert(self.specs[name].exts, ext) end
       return self.specs[name]
     end
-    local spec = { exts = {ext}, lexer = "lexlpeg."..name }
+    local spec = { exts = shebang and {} or {ext}, lexer = "lexlpeg."..name }
     self:AddSpec(name, spec)
     return spec
   end

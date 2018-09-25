@@ -134,6 +134,14 @@ is(ide:GetProject("t"):gsub("[/\\]$",""), MergeFullPath(cwd,"t"), "Project is se
 local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
 
+
+local spec = ide:FindSpec("py", "#!/bin/env ruby")
+is(spec.lexer, "lexlpeg.python", "Shebang detection is not triggered for known extensions.")
+
+spec = ide:FindSpec("", "#!/bin/env ruby")
+is(spec.lexer, "lexlpeg.ruby", "Shebang detection sets correct lexer.")
+is(#spec.exts, 0, "Shebang detection doesn't add extensions.")
+
 local p = ide:GetProject()
 ide.filetree.settings.mapped[p] = {}
 local res = tree:MapDirectory("foo")

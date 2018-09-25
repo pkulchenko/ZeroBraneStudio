@@ -78,7 +78,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local current = editor and editor:GetCurrentPos()
   editor = editor or findUnusedEditor() or CreateEditor()
   editor:Freeze()
-  editor:SetupKeywords(GetFileExt(filePath))
+  editor:SetLexer(wxstc.wxSTC_LEX_NULL)
   editor:MarkerDeleteAll(-1)
   if filesize then editor:Allocate(filesize) end
   editor:SetReadOnly(false) -- disable read-only status if set on the editor
@@ -145,6 +145,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   -- empty or non-existing files don't have bom
   if not file_text then editor.bom = false end
 
+  editor:SetupKeywords(GetFileExt(filePath))
   editor:Colourise(0, -1)
   editor:ResetTokenList() -- reset list of tokens if this is a reused editor
   editor:Thaw()
