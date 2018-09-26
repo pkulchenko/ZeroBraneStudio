@@ -82,7 +82,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   local current = editor and editor:GetCurrentPos()
   editor = editor or findUnusedEditor() or CreateEditor()
   editor:Freeze()
-  editor:SetLexer(wxstc.wxSTC_LEX_NULL)
+  editor:SetupKeywords(GetFileExt(filePath))
   editor:MarkerDeleteAll(-1)
   if filesize then editor:Allocate(filesize) end
   editor:SetReadOnly(false) -- disable read-only status if set on the editor
@@ -147,7 +147,8 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   if not file_text then editor.bom = false end
 
   editor:EndUndoAction()
-  editor:SetupKeywords(GetFileExt(filePath))
+  -- try one more time with shebang if the type is not known yet
+  if editor.spec == ide.specs.none then editor:SetupKeywords(GetFileExt(filePath)) end
   editor:Colourise(0, -1)
   editor:ResetTokenList() -- reset list of tokens if this is a reused editor
   editor:Thaw()
