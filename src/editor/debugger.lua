@@ -1770,7 +1770,10 @@ function debugger:ScratchpadRefresh()
     and scratchpadEditor.spec.apitype == "lua"
     and not ide.interpreter.skipcompile
     and not CompileProgram(scratchpadEditor, { jumponerror = false, reportstats = false })
-    then return end
+    then
+      debugger.scratchpad.updated = false
+      return
+    end
 
     local code = StripShebang(scratchpadEditor:GetTextDyn())
     if debugger.scratchpad.running then
