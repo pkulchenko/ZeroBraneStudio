@@ -1,16 +1,7 @@
 local fs = {}
 
+local lfs = require "lfs"
 local utils = require "luacheck.utils"
-
-fs.has_lfs = pcall(require, "lfs")
-
-local base_fs
-
-if fs.has_lfs then
-   base_fs = require "luacheck.lfs_fs"
-else
-   base_fs = require "luacheck.lua_fs"
-end
 
 local function ensure_dir_sep(path)
    if path:sub(-1) ~= utils.dir_sep then
@@ -41,11 +32,14 @@ function fs.split_base(path)
    end
 end
 
-local function is_absolute(path)
+function fs.is_absolute(path)
    return fs.split_base(path) ~= ""
 end
 
 function fs.normalize(path)
+   if utils.is_windows then
+      path = path:lower()
+   end
    local base, rest = fs.split_base(path)
    rest = rest:gsub("[/\\]", utils.dir_sep)
 
@@ -69,7 +63,7 @@ function fs.normalize(path)
 end
 
 local function join_two_paths(base, path)
-   if base == "" or is_absolute(path) then
+   if base == "" or fs.is_absolute(path) then
       return path
    else
       return ensure_dir_sep(base) .. path
@@ -102,11 +96,11 @@ function fs.is_subpath(path, subpath)
 end
 
 function fs.is_dir(path)
-   return base_fs.get_mode(path) == "directory"
+   return lfs.attributes(path, "mode") == "directory"
 end
 
 function fs.is_file(path)
-   return base_fs.get_mode(path) == "file"
+   return lfs.attributes(path, "mode") == "file"
 end
 
 -- Searches for file starting from path, going up until the file
@@ -114,7 +108,7 @@ end
 -- Path must be absolute.
 -- Returns absolute and relative paths to directory containing file or nil.
 function fs.find_file(path, file)
-   if is_absolute(file) then
+   if fs.is_absolute(file) then
       return fs.is_file(file) and path, ""
    end
 
@@ -126,7 +120,7 @@ function fs.find_file(path, file)
       if fs.is_file(fs.join(base..rest, file)) then
          return base..rest, rel_path
       elseif rest == "" then
-         break
+         return
       end
 
       rest = rest:match("^(.*)"..utils.dir_sep..".*$") or ""
@@ -134,18 +128,32 @@ function fs.find_file(path, file)
    end
 end
 
+-- Returns iterator over directory items or nil, error message.
+function fs.dir_iter(dir_path)
+   local ok, iter, state, var = pcall(lfs.dir, dir_path)
+
+   if not ok then
+      local err = utils.unprefix(iter, "cannot open " .. dir_path .. ": ")
+      return nil, "couldn't list directory: " .. err
+   end
+
+   return iter, state, var
+end
+
 -- Returns list of all files in directory matching pattern.
--- Returns nil, error message on error.
+-- Additionally returns a mapping from directory paths that couldn't be expanded
+-- to error messages.
 function fs.extract_files(dir_path, pattern)
-   assert(fs.has_lfs)
    local res = {}
+   local err_map = {}
 
    local function scan(dir)
-      local ok, iter, state, var = pcall(base_fs.dir_iter, dir)
+      local iter, state, var = fs.dir_iter(dir)
 
-      if not ok then
-         local err = utils.unprefix(iter, "cannot open " .. dir .. ": ")
-         return "couldn't recursively check " .. dir .. ": " .. err
+      if not iter then
+         err_map[dir] = state
+         table.insert(res, dir)
+         return
       end
 
       for path in iter, state, var do
@@ -153,11 +161,7 @@ function fs.extract_files(dir_path, pattern)
             local full_path = fs.join(dir, path)
 
             if fs.is_dir(full_path) then
-               local err = scan(full_path)
-
-               if err then
-                  return err
-               end
+               scan(full_path)
             elseif path:match(pattern) and fs.is_file(full_path) then
                table.insert(res, full_path)
             end
@@ -165,25 +169,19 @@ function fs.extract_files(dir_path, pattern)
       end
    end
 
-   local err = scan(dir_path)
-
-   if err then
-      return nil, err
-   end
-
+   scan(dir_path)
    table.sort(res)
-   return res
+   return res, err_map
 end
 
 -- Returns modification time for a file.
 function fs.get_mtime(path)
-   assert(fs.has_lfs)
-   return base_fs.get_mtime(path)
+   return lfs.attributes(path, "modification")
 end
 
 -- Returns absolute path to current working directory, with trailing directory separator.
 function fs.get_current_dir()
-   return ensure_dir_sep(base_fs.get_current_dir())
+   return ensure_dir_sep(assert(lfs.currentdir()))
 end
 
 return fs

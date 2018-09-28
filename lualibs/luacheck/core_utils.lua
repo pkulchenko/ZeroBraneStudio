@@ -1,90 +1,95 @@
+local decoder = require "luacheck.decoder"
+local utils = require "luacheck.utils"
+
 local core_utils = {}
 
--- Calls callback with line, stack_set, index, item, ... for each item reachable from starting item.
--- `stack_set` is a set of indices of items in current propogation path from root, excluding current item.
--- Callback can return true to stop walking from current item.
-function core_utils.walk_line(line, index, callback, ...)
-   local stack = {}
-   local stack_set = {}
-   local backlog = {}
-   local level = 0
+-- Attempts to evaluate a node as a Lua value, without resolving locals.
+-- Returns Lua value and its string representation on success, nothing on failure.
+function core_utils.eval_const_node(node)
+   if node.tag == "True" then
+      return true, "true"
+   elseif node.tag == "False" then
+      return false, "false"
+   elseif node.tag == "String" then
+      local chars = decoder.decode(node[1])
+      return node[1], chars:get_printable_substring(1, chars:get_length())
+   else
+      local is_negative
 
-   while index do
-      local item = line.items[index]
+      if node.tag == "Op" and node[1] == "unm" then
+         is_negative = true
+         node = node[2]
+      end
 
-      if not callback(line, stack_set, index, item, ...) and item then
-         level = level + 1
-         stack[level] = index
-         stack_set[index] = true
+      if node.tag ~= "Number" then
+         return
+      end
 
-         if item.tag == "Jump" then
-            index = item.to
-         elseif item.tag == "Cjump" then
-            backlog[level] = index + 1
-            index = item.to
-         else
-            index = index + 1
-         end
-      else
-         while level > 0 and not backlog[level] do
-            stack_set[stack[level]] = nil
-            level = level - 1
-         end
+      local str = node[1]
 
-         index = backlog[level]
-         backlog[level] = nil
+      if str:find("[iIuUlL]") then
+         -- Ignore LuaJIT cdata literals.
+         return
+      end
+
+      -- On Lua 5.3 convert to float to get same results as on Lua 5.1 and 5.2.
+      if _VERSION == "Lua 5.3" and not str:find("[%.eEpP]") then
+         str = str .. ".0"
+      end
+
+      local number = tonumber(str)
+
+      if not number then
+         return
+      end
+
+      if is_negative then
+         number = -number
+      end
+
+      if number == number and number < 1/0 and number > -1/0 then
+         return number, (is_negative and "-" or "") .. node[1]
       end
    end
 end
 
-local function once_per_item_callback_adapter(line, _, index, item, visited, callback, ...)
-   if visited[index] then
-      return true
+local statement_containing_tags = utils.array_to_set({"Do", "While", "Repeat", "Fornum", "Forin", "If"})
+
+-- `items` is an array of nodes or nested item arrays.
+local function scan_for_statements(chstate, items, tags, callback, ...)
+   for _, item in ipairs(items) do
+      if tags[item.tag] then
+         callback(chstate, item, ...)
+      end
+
+      if not item.tag or statement_containing_tags[item.tag] then
+         scan_for_statements(chstate, item, tags, callback, ...)
+      end
    end
-
-   visited[index] = true
-   return callback(line, index, item, ...)
 end
 
--- Calls callback with line, index, item, ... for each item reachable from starting item once.
--- `visited` is a set of already visited indexes.
--- Callback can return true to stop walking from current item.
-function core_utils.walk_line_once(line, visited, index, callback, ...)
-   return core_utils.walk_line(line, index, once_per_item_callback_adapter, visited, callback, ...)
+-- Calls `callback(chstate, node, ...)` for each statement node within AST with tag in given array.
+function core_utils.each_statement(chstate, tags_array, callback, ...)
+   local tags = utils.array_to_set(tags_array)
+
+   for _, line in ipairs(chstate.lines) do
+      scan_for_statements(chstate, line.node[2], tags, callback, ...)
+   end
 end
 
--- Given a "global set" warning, return whether it is an implicit definition.
-function core_utils.is_definition(opts, warning)
-   return opts.allow_defined or (opts.allow_defined_top and warning.top)
-end
-
-local function event_priority(event)
-   -- Inline option boundaries have priority over inline option declarations
-   -- so that `-- luacheck: push ignore foo` is interpreted correctly (push first).
-   if event.push or event.pop then
-      return -2
-   elseif event.options then
-      return -1
+local function location_comparator(warning1, warning2)
+   if warning1.line ~= warning2.line then
+      return warning1.line < warning2.line
+   elseif warning1.column ~= warning2.column then
+      return warning1.column < warning2.column
    else
-      return tonumber(event.code)
+      return warning1.code < warning2.code
    end
 end
 
-local function event_comparator(event1, event2)
-   if event1.line ~= event2.line then
-      return event1.line < event2.line
-   elseif event1.column ~= event2.column then
-      return event1.column < event2.column
-   else
-      return event_priority(event1) < event_priority(event2)
-   end
-end
-
--- Sorts an array of warnings, inline options (tables with `options` field)
--- or inline option boundaries (tables with `push` or `pop` field) by location
--- information as provided in `line` and `column` fields.
-function core_utils.sort_by_location(array)
-   table.sort(array, event_comparator)
+-- Sorts an array of warnings by location information as provided in `line` and `column` fields.
+function core_utils.sort_by_location(warnings)
+   table.sort(warnings, location_comparator)
 end
 
 return core_utils

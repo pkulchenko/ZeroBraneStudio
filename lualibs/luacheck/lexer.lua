@@ -4,7 +4,6 @@ local utils = require "luacheck.utils"
 local lexer = {}
 
 local sbyte = string.byte
-local ssub = string.sub
 local schar = string.char
 local sreverse = string.reverse
 local tconcat = table.concat
@@ -96,29 +95,34 @@ local simple_escapes = {
    [BYTE_DQUOTE] = BYTE_DQUOTE
 }
 
-local function next_byte(state, inc)
-   inc = inc or 1
-   state.offset = state.offset+inc
-   return sbyte(state.src, state.offset)
+local function next_byte(state)
+   local offset = state.offset + 1
+   state.offset = offset
+   return state.src:get_codepoint(offset)
 end
 
 -- Skipping helpers.
 -- Take the current character, skip something, return next character.
 
 local function skip_newline(state, newline)
+   local first_newline_offset = state.offset
    local b = next_byte(state)
 
    if b ~= newline and is_newline(b) then
       b = next_byte(state)
    end
 
-   state.line = state.line+1
-   state.line_offset = state.offset
+   local line = state.line
+   local line_offsets = state.line_offsets
+   state.line_lengths[line] = first_newline_offset - line_offsets[line]
+   line = line + 1
+   state.line = line
+   line_offsets[line] = state.offset
    return b
 end
 
-local function skip_till_newline(state, b)
-   while not is_newline(b) and b ~= nil do
+local function skip_to_newline(state, b)
+   while not is_newline(b) and b do
       b = next_byte(state)
    end
 
@@ -166,7 +170,7 @@ local function lex_long_string(state, opening_long_bracket, token)
    while true do
       if is_newline(b) then
          -- Add the finished line.
-         lines[#lines+1] = ssub(state.src, line_start, state.offset-1)
+         lines[#lines+1] = state.src:get_substring(line_start, state.offset-1)
 
          b = skip_newline(state, b)
          line_start = state.offset
@@ -185,8 +189,8 @@ local function lex_long_string(state, opening_long_bracket, token)
    end
 
    -- Add last line.
-   lines[#lines+1] = ssub(state.src, line_start, state.offset-opening_long_bracket-2)
-   next_byte(state)
+   lines[#lines+1] = state.src:get_substring(line_start, state.offset-opening_long_bracket-2)
+   state.offset = state.offset + 1
    return token, tconcat(lines, "\n")
 end
 
@@ -206,7 +210,7 @@ local function lex_short_string(state, quote)
 
          -- Put previous chunk into buffer.
          if chunk_start ~= state.offset then
-            chunks[#chunks+1] = ssub(state.src, chunk_start, state.offset-1)
+            chunks[#chunks+1] = state.src:get_substring(chunk_start, state.offset-1)
          end
 
          b = next_byte(state)
@@ -359,16 +363,17 @@ local function lex_short_string(state, quote)
    if chunks then
       -- Put last chunk into buffer.
       if chunk_start ~= state.offset then
-         chunks[#chunks+1] = ssub(state.src, chunk_start, state.offset-1)
+         chunks[#chunks+1] = state.src:get_substring(chunk_start, state.offset-1)
       end
 
       string_value = tconcat(chunks)
    else
       -- There were no escape sequences.
-      string_value = ssub(state.src, chunk_start, state.offset-1)
+      string_value = state.src:get_substring(chunk_start, state.offset-1)
    end
 
-   next_byte(state)  -- Skip the closing quote.
+   -- Skip the closing quote.
+   state.offset = state.offset + 1
    return "string", string_value
 end
 
@@ -439,36 +444,42 @@ local function lex_number(state, b)
    -- Is it cdata literal?
    if b == BYTE_i or b == BYTE_I then
       -- It is complex literal. Skip "i" or "I".
-      next_byte(state)
+      state.offset = state.offset + 1
    else
       -- uint64_t and int64_t literals can not be fractional.
       if not is_float then
          if b == BYTE_u or b == BYTE_U then
             -- It may be uint64_t literal.
-            local b1, b2 = sbyte(state.src, state.offset+1, state.offset+2)
+            local b1 = state.src:get_codepoint(state.offset+1)
 
-            if (b1 == BYTE_l or b1 == BYTE_L) and (b2 == BYTE_l or b2 == BYTE_L) then
-               -- It is uint64_t literal.
-               next_byte(state, 3)
+            if b1 == BYTE_l or b1 == BYTE_L then
+               local b2 = state.src:get_codepoint(state.offset+2)
+
+               if b2 == BYTE_l or b2 == BYTE_L then
+                  -- It is uint64_t literal.
+                  state.offset = state.offset + 3
+               end
             end
          elseif b == BYTE_l or b == BYTE_L then
             -- It may be uint64_t or int64_t literal.
-            local b1, b2 = sbyte(state.src, state.offset+1, state.offset+2)
+            local b1 = state.src:get_codepoint(state.offset+1)
 
             if b1 == BYTE_l or b1 == BYTE_L then
+               local b2 = state.src:get_codepoint(state.offset+2)
+
                if b2 == BYTE_u or b2 == BYTE_U then
                   -- It is uint64_t literal.
-                  next_byte(state, 3)
+                  state.offset = state.offset + 3
                else
                   -- It is int64_t literal.
-                  next_byte(state, 2)
+                  state.offset = state.offset + 2
                end
             end
          end
       end
    end
 
-   return "number", ssub(state.src, start, state.offset-1)
+   return "number", state.src:get_substring(start, state.offset-1)
 end
 
 local function lex_ident(state)
@@ -479,7 +490,7 @@ local function lex_ident(state)
       b = next_byte(state)
    end
 
-   local ident = ssub(state.src, start, state.offset-1)
+   local ident = state.src:get_substring(start, state.offset-1)
 
    if keywords[ident] then
       return ident
@@ -494,27 +505,26 @@ local function lex_dash(state)
    -- Is it "-" or comment?
    if b ~= BYTE_DASH then
       return "-"
-   else
-      -- It is a comment.
-      b = next_byte(state)
-      local start = state.offset
-
-      -- Is it a long comment?
-      if b == BYTE_OBRACK then
-         local long_bracket
-         b, long_bracket = skip_long_bracket(state)
-
-         if b == BYTE_OBRACK then
-            return lex_long_string(state, long_bracket, "comment")
-         end
-      end
-
-      -- Short comment.
-      b = skip_till_newline(state, b)
-      local comment_value = ssub(state.src, start, state.offset-1)
-      skip_newline(state, b)
-      return "comment", comment_value
    end
+
+   -- It is a comment.
+   b = next_byte(state)
+   local start = state.offset
+
+   -- Is it a long comment?
+   if b == BYTE_OBRACK then
+      local long_bracket
+      b, long_bracket = skip_long_bracket(state)
+
+      if b == BYTE_OBRACK then
+         return lex_long_string(state, long_bracket, "long_comment")
+      end
+   end
+
+   -- Short comment.
+   skip_to_newline(state, b)
+   local comment_value = state.src:get_substring(start, state.offset - 1)
+   return "short_comment", comment_value
 end
 
 local function lex_bracket(state)
@@ -534,7 +544,7 @@ local function lex_eq(state)
    local b = next_byte(state)
 
    if b == BYTE_EQ then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "=="
    else
       return "="
@@ -545,10 +555,10 @@ local function lex_lt(state)
    local b = next_byte(state)
 
    if b == BYTE_EQ then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "<="
    elseif b == BYTE_LT then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "<<"
    else
       return "<"
@@ -559,10 +569,10 @@ local function lex_gt(state)
    local b = next_byte(state)
 
    if b == BYTE_EQ then
-      next_byte(state)
+      state.offset = state.offset + 1
       return ">="
    elseif b == BYTE_GT then
-      next_byte(state)
+      state.offset = state.offset + 1
       return ">>"
    else
       return ">"
@@ -573,7 +583,7 @@ local function lex_div(state)
    local b = next_byte(state)
 
    if b == BYTE_SLASH then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "//"
    else
       return "/"
@@ -584,7 +594,7 @@ local function lex_ne(state)
    local b = next_byte(state)
 
    if b == BYTE_EQ then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "~="
    else
       return "~"
@@ -595,7 +605,7 @@ local function lex_colon(state)
    local b = next_byte(state)
 
    if b == BYTE_COLON then
-      next_byte(state)
+      state.offset = state.offset + 1
       return "::"
    else
       return ":"
@@ -609,21 +619,27 @@ local function lex_dot(state)
       b = next_byte(state)
 
       if b == BYTE_DOT then
-         next_byte(state)
+         state.offset = state.offset + 1
          return "...", "..."
       else
          return ".."
       end
    elseif b and to_dec(b) then
       -- Backtrack to dot.
-      return lex_number(state, next_byte(state, -1))
+      state.offset = state.offset - 2
+      return lex_number(state, next_byte(state))
    else
       return "."
    end
 end
 
 local function lex_any(state, b)
-   next_byte(state)
+   state.offset = state.offset + 1
+
+   if b > 255 then
+      b = 255
+   end
+
    return schar(b)
 end
 
@@ -659,62 +675,75 @@ for b=BYTE_A, BYTE_Z do
    byte_handlers[b] = lex_ident
 end
 
-local function decimal_escaper(char)
-   return "\\" .. tostring(sbyte(char))
-end
-
--- Returns quoted printable representation of s.
-function lexer.quote(s)
-   return "'" .. s:gsub("[^\32-\126]", decimal_escaper) .. "'"
-end
-
 -- Creates and returns lexer state for source.
-function lexer.new_state(src)
+function lexer.new_state(src, line_offsets, line_lengths)
    local state = {
       src = src,
       line = 1,
-      line_offset = 1,
+      line_offsets = line_offsets or {},
+      line_lengths = line_lengths or {},
       offset = 1
    }
 
-   if ssub(src, 1, 2) == "#!" then
-      -- Skip shebang.
-      skip_newline(state, skip_till_newline(state, next_byte(state, 2)))
+   state.line_offsets[1] = 1
+
+   if src:get_length() >= 2 and src:get_substring(1, 2) == "#!" then
+      -- Skip shebang line.
+      state.offset = 2
+      skip_to_newline(state, next_byte(state))
    end
 
    return state
 end
 
--- Looks for next token starting from state.line, state.line_offset, state.offset.
--- Returns next token, its value and its location (line, column, offset).
--- Sets state.line, state.line_offset, state.offset to token end location + 1.
--- On error returns nil, error message, error location (line, column, offset), error end column.
+function lexer.get_quoted_substring_or_line(state, line, offset, end_offset)
+   local line_length = state.line_lengths[line]
+
+   if line_length then
+      local line_end_offset = state.line_offsets[line] + line_length - 1
+
+      if line_end_offset < end_offset then
+         end_offset = line_end_offset
+      end
+   end
+
+   return "'" .. state.src:get_printable_substring(offset, end_offset) .. "'"
+end
+
+-- Looks for next token starting from state.line, state.offset.
+-- Returns next token, its value and its location (line, offset).
+-- Sets state.line, state.offset to token end location + 1.
+-- Fills state.line_offsets and state.line_lengths.
+-- On error returns nil, error message, error location (line, offset), error end offset.
 function lexer.next_token(state)
-   local b = skip_space(state, sbyte(state.src, state.offset))
+   local line_offsets = state.line_offsets
+   local b = skip_space(state, state.src:get_codepoint(state.offset))
 
    -- Save location of token start.
    local token_line = state.line
-   local token_column = state.offset - state.line_offset + 1
+   local line_offset = line_offsets[token_line]
    local token_offset = state.offset
 
-   local token, token_value, err_offset, err_end_column
-
-   if b == nil then
-      token = "eof"
-   else
-      token, token_value, err_offset = (byte_handlers[b] or lex_any)(state, b)
+   if not b then
+      -- EOF token has length 1.
+      state.offset = state.offset + 1
+      state.line_lengths[token_line] = token_offset - line_offset
+      return "eof", nil, token_line, token_offset
    end
 
-   if err_offset then
-      local token_body = ssub(state.src, state.offset + err_offset, state.offset)
-      token_value = token_value .. " " .. lexer.quote(token_body)
-      token_line = state.line
-      token_column = state.offset - state.line_offset + 1 + err_offset
-      token_offset = state.offset + err_offset
-      err_end_column = token_column + #token_body - 1
+   local token, token_value, relative_error_offset = (byte_handlers[b] or lex_any)(state, b)
+
+   if relative_error_offset then
+      -- Error relative to current offset.
+      local error_offset = state.offset + relative_error_offset
+      local error_end_offset = math.min(state.offset, state.src:get_length())
+      local error_message = token_value .. " " .. lexer.get_quoted_substring_or_line(state,
+         state.line, error_offset, error_end_offset)
+      return nil, error_message, state.line, error_offset, error_end_offset
    end
 
-   return token, token_value, token_line, token_column, token_offset, err_end_column or token_column
+   -- Single character errors fall through here.
+   return token, token_value, token_line, token_offset, not token and token_offset
 end
 
 return lexer

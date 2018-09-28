@@ -2,13 +2,13 @@ local utils = require "luacheck.utils"
 
 local multithreading = {}
 
-local ok, lanes = pcall(require, "lanes")
-ok = ok and pcall(lanes.configure)
-multithreading.has_lanes = ok
+local lanes_ok, lanes = pcall(require, "lanes")
+lanes_ok = lanes_ok and pcall(lanes.configure)
+multithreading.has_lanes = lanes_ok
 multithreading.lanes = lanes
 multithreading.default_jobs = 1
 
-if not ok then
+if not lanes_ok then
    return multithreading
 end
 
@@ -40,26 +40,32 @@ for _, command in ipairs(cpu_number_detection_commands) do
    end
 end
 
--- Worker thread reads pairs {outkey, arg} from inkey channel of linda,
--- applies func to arg and sends result to outkey channel of linda
--- until arg is nil.
-local function worker_task(linda, inkey, func)
+-- Reads pairs {key, arg} from given linda slot until it gets nil as arg.
+-- Returns table with pairs [key] = func(arg).
+local function worker_task(linda, input_slot, func)
+   local results = {}
+
    while true do
-      local _, pair = linda:receive(nil, inkey)
-      local outkey, arg = pair[1], pair[2]
+      local _, pair = linda:receive(nil, input_slot)
+      local key, arg = pair[1], pair[2]
 
       if arg == nil then
-         return true
+         return results
       end
 
-      linda:send(nil, outkey, func(arg))
+      results[key] = func(arg)
    end
 end
 
-local worker_gen = lanes.gen("*", worker_task)
+local function protected_worker_task(...)
+   return true, utils.try(worker_task, ...)
+end
+
+local worker_gen = lanes.gen("*", protected_worker_task)
 
 -- Maps func over array, performing at most jobs calls in parallel.
 function multithreading.pmap(func, array, jobs)
+   jobs = jobs or multithreading.default_jobs
    jobs = math.min(jobs, #array)
 
    if jobs < 2 then
@@ -83,13 +89,14 @@ function multithreading.pmap(func, array, jobs)
 
    local results = {}
 
-   for i in ipairs(array) do
-      local _, result = linda:receive(nil, i)
-      results[i] = result
-   end
-
    for _, worker in ipairs(workers) do
-      assert(worker:join())
+      local _, ok, worker_results = assert(worker:join())
+
+      if ok then
+         utils.update(results, worker_results)
+      else
+         error(worker_results, 0)
+      end
    end
 
    return results

@@ -15,6 +15,7 @@ lualibs/ltn12.lua
 lualibs/lua_lexer_loose.lua
 lualibs/lua_parser_loose.lua
 lualibs/luacheck/*.lua
+lualibs/luacheck/stages/*.lua
 lualibs/luadist.lua
 lualibs/luainspect/*.lua
 lualibs/metalua/*.lua

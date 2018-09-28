@@ -120,12 +120,6 @@ function utils.update(t1, t2)
    return t1
 end
 
-function utils.remove(t1, t2)
-   for k in pairs(t2) do
-      t1[k] = nil
-   end
-end
-
 local class_metatable = {}
 
 function class_metatable.__call(class, ...)
@@ -213,6 +207,30 @@ function utils.ripairs(array)
    return ripairs_iterator, array, #array + 1
 end
 
+function utils.sorted_pairs(t)
+   local keys = {}
+
+   for key in pairs(t) do
+      table.insert(keys, key)
+   end
+
+   table.sort(keys)
+
+   local index = 1
+
+   return function()
+      local key = keys[index]
+
+      if key == nil then
+         return
+      end
+
+      index = index + 1
+
+      return key, t[key]
+   end
+end
+
 function utils.unprefix(str, prefix)
    if str:sub(1, #prefix) == prefix then
       return str:sub(#prefix + 1)
@@ -254,39 +272,6 @@ function utils.split(str, sep)
    return parts
 end
 
--- Splits a string into an array of lines.
--- "\n", "\r", "\r\n", and "\n\r" are considered
--- line endings to be consistent with Lua lexer.
-function utils.split_lines(str)
-   local lines = {}
-   local pos = 1
-
-   while true do
-      local line_end_pos, _, line_end = str:find("([\n\r])", pos)
-
-      if not line_end_pos then
-         break
-      end
-
-      local line = str:sub(pos, line_end_pos - 1)
-      table.insert(lines, line)
-
-      pos = line_end_pos + 1
-      local next_char = str:sub(pos, pos)
-
-      if next_char:match("[\n\r]") and next_char ~= line_end then
-         pos = pos + 1
-      end
-   end
-
-   if pos <= #str then
-      local last_line = str:sub(pos)
-      table.insert(lines, last_line)
-   end
-
-   return lines
-end
-
 utils.InvalidPatternError = utils.class()
 
 function utils.InvalidPatternError:__init(err, pattern)
@@ -326,35 +311,59 @@ function utils.map(func, array)
    return res
 end
 
--- Returns predicate checking type.
+-- Returns validator checking type.
 function utils.has_type(type_)
    return function(x)
-      return type(x) == type_
+      if type(x) == type_ then
+         return true
+      else
+         return false, ("%s expected, got %s"):format(type_, type(x))
+      end
    end
 end
 
--- Returns predicate checking that value is an array with
--- elements of type.
+-- Returns validator checking type and allowing false.
+function utils.has_type_or_false(type_)
+   return function(x)
+      if type(x) == type_ then
+         return true
+      elseif type(x) == "boolean" then
+         if x then
+            return false, ("%s or false expected, got true"):format(type_)
+         else
+            return true
+         end
+      else
+         return false, ("%s or false expected, got %s"):format(type_, type(x))
+      end
+   end
+end
+
+-- Returns validator checking two type possibilities.
+function utils.has_either_type(type1, type2)
+   return function(x)
+      if type(x) == type1 or type(x) == type2 then
+         return true
+      else
+         return false, ("%s or %s expected, got %s"):format(type1, type2, type(x))
+      end
+   end
+end
+
+-- Returns validator checking that value is an array with elements of type.
 function utils.array_of(type_)
    return function(x)
       if type(x) ~= "table" then
-         return false
+         return false, ("array of %ss expected, got %s"):format(type_, type(x))
       end
 
-      for _, item in ipairs(x) do
+      for index, item in ipairs(x) do
          if type(item) ~= type_ then
-            return false
+            return false, ("array of %ss expected, got %s at index [%d]"):format(type_, type(item), index)
          end
       end
 
       return true
-   end
-end
-
--- Returns predicate chacking if value satisfies on of predicates.
-function utils.either(pred1, pred2)
-   return function(x)
-      return pred1(x) or pred2(x)
    end
 end
 

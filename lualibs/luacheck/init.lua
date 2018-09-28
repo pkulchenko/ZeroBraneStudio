@@ -5,35 +5,31 @@ local format = require "luacheck.format"
 local utils = require "luacheck.utils"
 
 local luacheck = {
-   _VERSION = "0.20.0"
+   _VERSION = "0.23.0"
 }
 
-local function raw_validate_options(fname, opts)
-   assert(opts == nil or type(opts) == "table",
-      ("bad argument #2 to '%s' (table or nil expected, got %s)"):format(fname, type(opts))
-   )
-
-   local ok, invalid_field = options.validate(options.all_options, opts)
+local function raw_validate_options(fname, opts, stds, context)
+   local ok, err = options.validate(options.all_options, opts, stds)
 
    if not ok then
-      if invalid_field then
-         error(("bad argument #2 to '%s' (invalid value of option '%s')"):format(fname, invalid_field))
+      if context then
+         error(("bad argument #2 to '%s' (%s: %s)"):format(fname, context, err))
       else
-         error(("bad argument #2 to '%s'"):format(fname))
+         error(("bad argument #2 to '%s' (%s)"):format(fname, err))
       end
    end
 end
 
-local function validate_options(fname, items, opts)
+local function validate_options(fname, items, opts, stds)
    raw_validate_options(fname, opts)
 
    if opts ~= nil then
       for i in ipairs(items) do
-         raw_validate_options(fname, opts[i])
+         raw_validate_options(fname, opts[i], stds, ("invalid options at index [%d]"):format(i))
 
          if opts[i] ~= nil then
-            for _, nested_opts in ipairs(opts[i]) do
-               raw_validate_options(fname, nested_opts)
+            for j, nested_opts in ipairs(opts[i]) do
+               raw_validate_options(fname, nested_opts, stds, ("invalid options at index [%d][%d]"):format(i, j))
             end
          end
       end
@@ -50,11 +46,11 @@ end
 -- Applies options to reports. Reports with .fatal field are unchanged.
 -- Options are applied to reports[i] in order: options, options[i], options[i][1], options[i][2], ...
 -- Returns new array of reports, adds .warnings, .errors and .fatals fields to this array.
-function luacheck.process_reports(reports, opts)
+function luacheck.process_reports(reports, opts, stds)
    local msg = ("bad argument #1 to 'luacheck.process_reports' (table expected, got %s)"):format(type(reports))
    assert(type(reports) == "table", msg)
-   validate_options("luacheck.process_reports", reports, opts)
-   local report = filter.filter(reports, opts)
+   validate_options("luacheck.process_reports", reports, opts, stds)
+   local report = filter.filter(reports, opts, stds)
    report.warnings = 0
    report.errors = 0
    report.fatals = 0

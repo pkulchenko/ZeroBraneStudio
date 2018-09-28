@@ -1,148 +1,32 @@
-local inline_options = require "luacheck.inline_options"
-local options = require "luacheck.options"
 local core_utils = require "luacheck.core_utils"
+local decoder = require "luacheck.decoder"
+local options = require "luacheck.options"
 local utils = require "luacheck.utils"
 
 local filter = {}
 
--- A global is implicitly defined in a file if opts.allow_defined == true and it is set anywhere in the file,
---    or opts.allow_defined_top == true and it is set in the top level function scope.
--- By default, accessing and setting globals in a file is allowed for explicitly defined globals (standard and custom)
---    for that file and implicitly defined globals from that file and
---    all other files except modules (files with opts.module == true).
--- Accessing other globals results in "accessing undefined variable" warning.
--- Setting other globals results in "setting non-standard global variable" warning.
--- Unused implicitly defined global results in "unused global variable" warning.
--- For modules, accessing globals uses same rules as normal files, however,
---    setting globals is only allowed for implicitly defined globals from the module.
--- Setting a global not defined in the module results in "setting non-module global variable" warning.
-
--- Extracts sets of defined, exported and used globals from a file report.
-local function get_defined_and_used_globals(file_report)
-   local defined, globally_defined, used = {}, {}, {}
-
-   for _, pair in ipairs(file_report) do
-      local warning, opts = pair[1], pair[2]
-
-      if warning.code:match("11.") then
-         if warning.code == "111" then
-            if core_utils.is_definition(opts, warning) then
-               if opts.module then
-                  defined[warning.name] = true
-               else
-                  globally_defined[warning.name] = true
-               end
-            end
-         else
-            used[warning.name] = true
-         end
-      end
-   end
-
-   return defined, globally_defined, used
-end
-
-
--- Returns {globally_defined = globally_defined, globally_used = globally_used, locally_defined = locally_defined},
---    where `globally_defined` is set of globals defined across all files except modules,
---    where `globally_used` is set of globals defined across all files except modules,
---    where `locally_defined` is an array of sets of globals defined per file.
-local function get_implicit_defs_info(report)
-   local info = {
-      globally_defined = {},
-      globally_used = {},
-      locally_defined = {}
-   }
-
-   for i, file_report in ipairs(report) do
-      local defined, globally_defined, used = get_defined_and_used_globals(file_report)
-      utils.update(info.globally_defined, globally_defined)
-      utils.update(info.globally_used, used)
-      info.locally_defined[i] = defined
-   end
-
-   return info
-end
-
--- Returns file report clear of implicit definitions.
-local function filter_implicit_defs_file(file_report, globally_defined, globally_used, locally_defined)
-   local res = {}
-
-   for _, pair in ipairs(file_report) do
-      local warning, opts = pair[1], pair[2]
-
-      if warning.code:match("11.") then
-         if warning.code == "111" then
-            if opts.module then
-               if not locally_defined[warning.name] then
-                  warning.module = true
-                  table.insert(res, {warning, opts})
-               end
-            else
-               if core_utils.is_definition(opts, warning) then
-                  if not globally_used[warning.name] then
-                     warning.code = "131"
-                     warning.top = nil
-                     table.insert(res, {warning, opts})
-                  end
-               else
-                  if not globally_defined[warning.name] then
-                     table.insert(res, {warning, opts})
-                  end
-               end
-            end
-         else
-            if not globally_defined[warning.name] and not locally_defined[warning.name] then
-               table.insert(res, {warning, opts})
-            end
-         end
-      else
-         table.insert(res, {warning, opts})
-      end
-   end
-
-   return res
-end
-
--- Returns report clear of implicit definitions.
-local function filter_implicit_defs(report)
-   local res = {}
-   local info = get_implicit_defs_info(report)
-
-   for i, file_report in ipairs(report) do
-      if not file_report.fatal then
-         res[i] = filter_implicit_defs_file(file_report, info.globally_defined,
-            info.globally_used, info.locally_defined[i])
-      else
-         res[i] = file_report
-      end
-   end
-
-   return res
-end
-
 -- Returns two optional booleans indicating if warning matches pattern by code and name.
-local function match(warning, pattern)
+local function match(pattern, code, name)
    local matches_code, matches_name
    local code_pattern, name_pattern = pattern[1], pattern[2]
 
    if code_pattern then
-      matches_code = utils.pmatch(warning.code, code_pattern)
+      matches_code = utils.pmatch(code, code_pattern)
    end
 
    if name_pattern then
-      if not warning.name then
+      if not name then
          -- Warnings without name field can't match by name.
          matches_name = false
       else
-         matches_name = utils.pmatch(warning.name, name_pattern)
+         matches_name = utils.pmatch(name, name_pattern)
       end
    end
 
    return matches_code, matches_name
 end
 
-local function is_enabled(rules, warning)
+local function passes_rules_filter(rules, code, name)
    -- A warning is enabled when its code and name are enabled.
    local enabled_code, enabled_name = false, false
 
@@ -150,7 +34,7 @@ local function is_enabled(rules, warning)
       local matches_one = false
 
       for _, pattern in ipairs(rule[1]) do
-         local matches_code, matches_name = match(warning, pattern)
+         local matches_code, matches_name = match(pattern, code, name)
 
          -- If a factor is enabled, warning can't be disabled by it.
          if enabled_code then
@@ -200,9 +84,19 @@ end
 local function get_field_string(warning)
    local parts = {}
 
-   for i = 2, #warning.indexing do
-      local index_string = warning.indexing[i]
-      table.insert(parts, type(index_string) == "string" and index_string or "?")
+   if warning.indexing then
+      for _, index in ipairs(warning.indexing) do
+         local part
+
+         if type(index) == "string" then
+            local chars = decoder.decode(index)
+            part = chars:get_printable_substring(1, chars:get_length())
+         else
+            part = "?"
+         end
+
+         table.insert(parts, part)
+      end
    end
 
    return table.concat(parts, ".")
@@ -213,8 +107,8 @@ local function get_field_status(opts, warning, depth)
    local defined = true
    local read_only = true
 
-   for i = 1, depth or #warning.indexing do
-      local index_string = warning.indexing[i]
+   for i = 1, depth or (warning.indexing and #warning.indexing or 0) + 1 do
+      local index_string = i == 1 and warning.name or warning.indexing[i - 1]
 
       if index_string == true then
          -- Indexing with something that may or may not be a string.
@@ -259,136 +153,201 @@ local function get_field_status(opts, warning, depth)
    return defined and (read_only and "read_only" or "global") or "undefined"
 end
 
-local function get_max_line_length(opts, warning)
-   return opts["max_" .. (warning.line_ending or "code") .. "_line_length"]
+-- Checks if a warning passes options filter. May add some fields required for formatting.
+local function passes_filter(normalized_options, warning)
+   if warning.code == "561" then
+      local max_complexity = normalized_options.max_cyclomatic_complexity
+
+      if not max_complexity or warning.complexity <= max_complexity then
+         return false
+      end
+
+      warning.max_complexity = max_complexity
+   elseif warning.code:find("^[234]") and warning.name == "_" and not warning.useless then
+      return false
+   elseif warning.code:find("^1[14]") then
+      if warning.indirect and
+            get_field_status(normalized_options, warning, warning.previous_indexing_len) == "undefined" then
+         return false
+      end
+
+      if not warning.module and get_field_status(normalized_options, warning) ~= "undefined" then
+         return false
+      end
+   end
+
+   if warning.code:find("^1[24][23]") then
+      warning.field = get_field_string(warning)
+   end
+
+   if warning.secondary and not normalized_options.unused_secondaries then
+      return false
+   end
+
+   if warning.self and not normalized_options.self then
+      return false
+   end
+
+   return passes_rules_filter(normalized_options.rules, warning.code, warning.name)
 end
 
-local function filters(opts, warning)
-   if warning.code == "631" then
-      local max_line_length = get_max_line_length(opts, warning)
+local empty_options = {}
 
-      if (not max_line_length or warning.end_column <= max_line_length) then
+-- Updates option_stack for given line with next_index pointing to the inline option past the previous line.
+-- Adds warnings for invalid inline options to check_result, filtered_warnings.
+-- Returns updated next_index.
+local function update_option_stack_for_new_line(check_result, stds, option_stack, line, next_index)
+   local inline_option = check_result.inline_options[next_index]
+
+   if not inline_option or inline_option.line > line then
+      -- No inline options on this line, option stack for the line is ready.
+      return next_index
+   end
+
+   next_index = next_index + 1
+
+   if inline_option.pop_count then
+      for _ = 1, inline_option.pop_count do
+         table.remove(option_stack)
+      end
+   end
+
+   if not inline_option.options then
+      -- No inline option push on this line, option stack for the line is ready.
+      return next_index
+   end
+
+   local options_ok, err_msg = options.validate(options.all_options, inline_option.options, stds)
+
+   if not options_ok then
+      -- Warn about invalid inline option, push a dummy empty table instead to keep pop counts correct.
+      inline_option.options = nil
+      inline_option.code = "021"
+      inline_option.msg = err_msg
+      table.insert(check_result.filtered_warnings, inline_option)
+
+      -- Reuse empty table identity so that normalized option caching works better.
+      table.insert(option_stack, empty_options)
+   else
+      table.insert(option_stack, inline_option.options)
+   end
+
+   return next_index
+end
+
+-- Warns (adds to check_result.filtered_warnings) about a line if it's too long
+-- and the warning is not filtered out by options.
+local function check_line_length(check_result, normalized_options, line)
+   local line_length = check_result.line_lengths[line]
+   local line_type = check_result.line_endings[line]
+   local max_length = normalized_options["max_" .. (line_type or "code") .. "_line_length"]
+
+   if max_length and line_length > max_length then
+      if passes_rules_filter(normalized_options.rules, "631") then
+         table.insert(check_result.filtered_warnings, {
+            code = "631",
+            line = line,
+            column = max_length + 1,
+            end_column = line_length,
+            max_length = max_length,
+            line_ending = line_type
+         })
+      end
+   end
+end
+
+-- Adds warnings passing filtering and not related to globals to check_result.filtered_warnings.
+-- If there is a global related warning on this line, sets check_results[line] to normalized_optuons.
+local function filter_warnings_on_new_line(check_result, normalized_options, line, next_index)
+   while true do
+      local warning = check_result.warnings[next_index]
+
+      if not warning or warning.line > line then
+         -- No more warnings on this line.
+         break
+      end
+
+      if warning.code:find("^1") then
+         check_result.normalized_options[line] = normalized_options
+      elseif passes_filter(normalized_options, warning) then
+         table.insert(check_result.filtered_warnings, warning)
+      end
+
+      next_index = next_index + 1
+   end
+
+   return next_index
+end
+
+-- Normalizing options is relatively expensive because full std definitions are quite large.
+-- `CachingOptionsNormalizer` implements a caching layer that reduces number of `options.normalize` calls.
+-- Caching is done based on identities of option tables.
+
+local CachingOptionsNormalizer = utils.class()
+
+function CachingOptionsNormalizer:__init()
+   self.result_trie = {}
+end
+
+function CachingOptionsNormalizer:normalize_options(stds, option_stack)
+   local result_node = self.result_trie
+
+   for _, option_table in ipairs(option_stack) do
+      if not result_node[option_table] then
+         result_node[option_table] = {}
+      end
+
+      result_node = result_node[option_table]
+   end
+
+   if result_node.result then
+      return result_node.result
+   end
+
+   local result = options.normalize(option_stack, stds)
+   result_node.result = result
+   return result
+end
+
+-- May mutate base_opts_stack.
+local function filter_not_global_related_in_file(check_result, options_normalizer, stds, option_stack)
+   check_result.filtered_warnings = {}
+   check_result.normalized_options = {}
+
+   -- Iterate over lines, warnings, and inline options at the same time, keeping opts_stack up to date.
+   local next_warning_index = 1
+   local next_inline_option_index = 1
+
+   for line in ipairs(check_result.line_lengths) do
+      next_inline_option_index = update_option_stack_for_new_line(
+         check_result, stds, option_stack, line, next_inline_option_index)
+      local normalized_options = options_normalizer:normalize_options(stds, option_stack)
+      check_line_length(check_result, normalized_options, line)
+      next_warning_index = filter_warnings_on_new_line(check_result, normalized_options, line, next_warning_index)
+   end
+end
+
+local function may_have_options(opts_table)
+   for key in pairs(opts_table) do
+      if type(key) == "string" then
          return true
       end
    end
 
-   if warning.code:match("[234]..") and warning.name == "_" and not warning.useless then
-      return true
-   end
-
-   if warning.code:match("1[14].") and warning.indirect and get_field_status(
-         opts, warning, warning.previous_indexing_len) == "undefined" then
-      return true
-   end
-
-   if warning.code:match("1[14].") and not warning.module and get_field_status(opts, warning) ~= "undefined" then
-      return true
-   end
-
-   if warning.secondary and not opts.unused_secondaries then
-      return true
-   end
-
-   if warning.self and not opts.self then
-      return true
-   end
-
-   return not is_enabled(opts.rules, warning)
+   return false
 end
 
-local function filter_file_report(report)
-   local res = {}
-
-   for _, pair in ipairs(report) do
-      local issue, opts = pair[1], pair[2]
-
-      if issue.code:match("11[12]") and not issue.module and get_field_status(opts, issue) == "read_only" then
-         issue.code = "12" .. issue.code:sub(3, 3)
-      end
-
-      if issue.code:match("11[23]") and get_field_status(opts, issue, 1) ~= "undefined" then
-         issue.code = "14" .. issue.code:sub(3, 3)
-      end
-
-      if issue.code:match("0..") then
-         if issue.code == "011" or opts.inline then
-            table.insert(res, issue)
-         end
-      else
-         if not filters(opts, issue) then
-            if issue.code == "631" then
-               issue.max_length = get_max_line_length(opts, issue)
-            end
-
-            if issue.code:match("1[24][23]") then
-               issue.field = get_field_string(issue)
-            end
-
-            table.insert(res, issue)
-         end
-      end
-   end
-
-   return res
-end
-
--- Assumes `opts` are normalized.
-local function filter_report(report)
-   local res = {}
-
-   for i, file_report in ipairs(report) do
-      if not file_report.fatal then
-         res[i] = filter_file_report(file_report)
-      else
-         res[i] = file_report
-      end
-   end
-
-   return res
-end
-
-
--- Transforms file report, returning an array of pairs {issue, normalized options for the issue}.
-local function annotate_file_report_with_affecting_options(file_report, option_stack)
-   local opts = options.normalize(option_stack)
-
-   if not opts.inline then
-      local res = {}
-      local issues = inline_options.get_issues(file_report.events)
-
-      for i, issue in ipairs(issues) do
-         res[i] = {issue, opts}
-      end
-
-      return res
-   end
-
-   local events, per_line_opts = inline_options.validate_options(file_report.events, file_report.per_line_options)
-   local issues_with_inline_opts = inline_options.get_issues_and_affecting_options(events, per_line_opts)
-
-   local normalized_options_cache = {}
-   local res = {}
-
-   for i, pair in ipairs(issues_with_inline_opts) do
-      local issue, inline_opts = pair[1], pair[2]
-
-      if not normalized_options_cache[inline_opts] then
-         normalized_options_cache[inline_opts] = options.normalize(utils.concat_arrays({option_stack, inline_opts}))
-      end
-
-      res[i] = {issue, normalized_options_cache[inline_opts]}
-   end
-
-   return res
-end
-
-local function get_option_stack(opts, report_index)
+local function get_option_stack(opts, file_index)
    local res = {opts}
 
-   if opts and opts[report_index] then
-      res[2] = opts[report_index]
+   if opts and opts[file_index] then
+      -- Don't add useless per-file option tables, that messes up normalized option caching
+      -- since it memorizes based on option table identities.
+      if may_have_options(opts[file_index]) then
+         table.insert(res, opts[file_index])
+      end
 
-      for _, nested_opts in ipairs(opts[report_index]) do
+      for _, nested_opts in ipairs(opts[file_index]) do
          table.insert(res, nested_opts)
       end
    end
@@ -396,58 +355,181 @@ local function get_option_stack(opts, report_index)
    return res
 end
 
-local function annotate_report_with_affecting_options(report, opts)
-   local res = {}
+-- For each file check result:
+-- * Stores invalid inline options, not filtered out not global-related warnings, and newly created line length warnings
+--   in .filtered_warnings.
+-- * Stores a map from line numbers to normalized options for lines of global-related warnings in .normalized_options.
+local function filter_not_global_related(check_results, opts, stds)
+   local caching_options_normalizer = CachingOptionsNormalizer()
 
-   for i, file_report in ipairs(report) do
-      if file_report.fatal then
-         res[i] = file_report
-      else
-         res[i] = annotate_file_report_with_affecting_options(file_report, get_option_stack(opts, i))
+   for file_index, check_result in ipairs(check_results) do
+      if not check_result.fatal then
+         if check_result.warnings[1] and check_result.warnings[1].code == "011" then
+            -- Special case syntax errors, they don't have line numbers so normal filtering does not work.
+            check_result.filtered_warnings = check_result.warnings
+            check_result.normalized_options = {}
+         else
+            local base_file_option_stack = get_option_stack(opts, file_index)
+            filter_not_global_related_in_file(check_result, caching_options_normalizer, stds, base_file_option_stack)
+         end
+      end
+   end
+end
+
+-- A global is implicitly defined in a file if opts.allow_defined == true and it is set anywhere in the file,
+--    or opts.allow_defined_top == true and it is set in the top level function scope.
+-- By default, accessing and setting globals in a file is allowed for explicitly defined globals (standard and custom)
+--    for that file and implicitly defined globals from that file and
+--    all other files except modules (files with opts.module == true).
+-- Accessing other globals results in "accessing undefined variable" warning.
+-- Setting other globals results in "setting non-standard global variable" warning.
+-- Unused implicitly defined global results in "unused global variable" warning.
+-- For modules, accessing globals uses same rules as normal files, however,
+--    setting globals is only allowed for implicitly defined globals from the module.
+-- Setting a global not defined in the module results in "setting non-module global variable" warning.
+
+local function is_definition(normalized_options, warning)
+   return normalized_options.allow_defined or (normalized_options.allow_defined_top and warning.top)
+end
+
+-- Extracts sets of defined, exported and used globals from a file check result.
+local function get_implicit_globals_in_file(check_result)
+   local defined = {}
+   local exported = {}
+   local used = {}
+
+   for _, warning in ipairs(check_result.warnings) do
+      if warning.code:find("^11") then
+         if warning.code == "111" then
+            local normalized_options = check_result.normalized_options[warning.line]
+
+            if is_definition(normalized_options, warning) then
+               if normalized_options.module then
+                  defined[warning.name] = true
+               else
+                  exported[warning.name] = true
+               end
+            end
+         else
+            used[warning.name] = true
+         end
       end
    end
 
-   return res
+   return defined, exported, used
 end
 
-local function add_long_line_warnings(report)
-   local res = {}
+-- Returns set of globals defines across all files except modules, a set of globals used across all files,
+-- and an array of sets of globals defined per file, parallel to the check results array.
+local function get_implicit_globals(check_results)
+   local globally_defined = {}
+   local globally_used = {}
+   local locally_defined = {}
 
-   for i, file_report in ipairs(report) do
-      if file_report.fatal then
-         res[i] = file_report
-      else
-         res[i] = {
-            events = utils.update({}, file_report.events),
-            per_line_options = file_report.per_line_options
-         }
+   for file_index, check_result in ipairs(check_results) do
+      if not check_result.fatal then
+         local defined, exported, used = get_implicit_globals_in_file(check_result)
+         utils.update(globally_defined, exported)
+         utils.update(globally_used, used)
+         locally_defined[file_index] = defined
+      end
+   end
 
-         for line_number, length in ipairs(file_report.line_lengths) do
-            -- `max_length` field will be added later.
-            table.insert(res[i].events, {
-               code = "631",
-               line = line_number,
-               column = 1,
-               line_ending = file_report.line_endings[line_number],
-               end_column = length
-            })
+   return globally_defined, globally_used, locally_defined
+end
+
+-- Mutates the warning and returns it or discards it by returning nothing if it's filtered out.
+local function apply_implicit_definitions(globally_defined, globally_used, locally_defined, normalized_options, warning)
+   if not warning.code:find("^11") then
+      return warning
+   end
+
+   if warning.code == "111" then
+      if normalized_options.module then
+         if locally_defined[warning.name] then
+            return
          end
 
-         core_utils.sort_by_location(res[i].events)
+         warning.module = true
+      else
+         if is_definition(normalized_options, warning) then
+            if globally_used[warning.name] then
+               return
+            end
+
+            warning.code = "131"
+            warning.top = nil
+         else
+            if globally_defined[warning.name] then
+               return
+            end
+         end
+      end
+   else
+      if globally_defined[warning.name] or locally_defined[warning.name] then
+         return
       end
    end
 
-   return res
+   return warning
 end
 
--- Removes warnings from report that do not match options.
--- `opts[i]`, if present, is used as options when processing `report[i]`
--- together with options in its array part.
-function filter.filter(report, opts)
-   report = add_long_line_warnings(report)
-   report = annotate_report_with_affecting_options(report, opts)
-   report = filter_implicit_defs(report)
-   return filter_report(report)
+local function filter_global_related_in_file(check_result, globally_defined, globally_used, locally_defined)
+   for _, warning in ipairs(check_result.warnings) do
+      if warning.code:find("^1") then
+         local normalized_options = check_result.normalized_options[warning.line]
+         warning = apply_implicit_definitions(
+            globally_defined, globally_used, locally_defined, normalized_options, warning)
+
+         if warning then
+            if warning.code:find("^11[12]") and not warning.module and
+                  get_field_status(normalized_options, warning) == "read_only" then
+               warning.code = "12" .. warning.code:sub(3, 3)
+            elseif warning.code:find("^11[23]") and get_field_status(normalized_options, warning, 1) ~= "undefined" then
+               warning.code = "14" .. warning.code:sub(3, 3)
+            end
+
+            if warning.code:match("11[23]") and get_field_status(normalized_options, warning, 1) ~= "undefined" then
+               warning.code = "14" .. warning.code:sub(3, 3)
+            end
+
+            if passes_filter(normalized_options, warning) then
+               table.insert(check_result.filtered_warnings, warning)
+            end
+         end
+      end
+   end
+end
+
+local function filter_global_related(check_results)
+   local globally_defined, globally_used, locally_defined = get_implicit_globals(check_results)
+
+   for file_index, check_result in ipairs(check_results) do
+      if not check_result.fatal then
+         filter_global_related_in_file(check_result, globally_defined, globally_used, locally_defined[file_index])
+      end
+   end
+end
+
+-- Processes an array of results of the check stage (or tables with .fatal field) into the final report.
+-- `opts[i]`, if present, is used as options when processing `report[i]` together with options in its array part.
+-- This function may mutate check results or reuse its parts in the return value.
+function filter.filter(check_results, opts, stds)
+   filter_not_global_related(check_results, opts, stds)
+   filter_global_related(check_results)
+
+   local report = {}
+
+   for file_index, check_result in ipairs(check_results) do
+      if check_result.fatal then
+         report[file_index] = check_result
+      else
+         core_utils.sort_by_location(check_result.filtered_warnings)
+         report[file_index] = check_result.filtered_warnings
+      end
+   end
+
+   return report
 end
 
 return filter
