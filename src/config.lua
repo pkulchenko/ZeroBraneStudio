@@ -205,8 +205,8 @@ return {
     fontsize = nil,
     lineactivate = { -- ["pattern"] = true/false for multiple/single
       ['.-%[string "([^"]+)"%]:(%d+)%s*:'] = false, --[string "<filename>"]:line:
-      ["%s*(.-):(%d+):(%d+):"] = false, -- <filename>:line:linepos -- this is used in some analyzers, like LuaCheck
-      ["%s*(.-):(%d+)%s*:"] = true, -- <filename>:line:
+      ["%s*(.-):(%d+):(%d+):"] = false, -- <filename>:line:linepos -- used in some analyzers, like LuaCheck
+      ["%s*(.-):(%d+)%s*:%D"] = true, -- <filename>:line:
       ["%((.-):(%d+)%s*:"] = false, -- error in __gc metamethod (<filename>:line:...
     },
     nomousezoom = false,
