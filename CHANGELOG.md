@@ -1,19 +1,28 @@
 # ZeroBrane Studio Changelog
 
-## Current master (May 30 2018)
+## Current master (Sep 30 2018)
 
 ### Highlights
+  - Added drag-n-drop into project tree to set project or map directories.
+  - Added lexer detection based on the shebang content for unknown extensions.
   - Tested debugger and luasocket support with Lua 5.4-work1 version.
   - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types
   - Updated Love2d API for 0.11.1 (#247).
+  - Upgraded LuaCheck to v0.23.0.
 
 ### Special thanks
   - To [Deyan Dobromirov](https://github.com/dvdvideo1234) for adding bulgarian language translation.
   - To [Alexey Melnichuk](https://github.com/moteus) for adding support for `fold.compact` flag to lpeg lexer.
   - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
   - To [Paul Reilly](https://github.com/paul-reilly) for adding config option for transparency of window.
+  - To [fnaith](https://github.com/fnaith) for updating translation to Traditional Chinese.
 
 ### Improvements
+  - Added restoring editor content when loading a file fails.
+  - Added lexer detection based on the shebang content for unknown extensions.
+  - Added drag-n-drop into project tree to map directories.
+  - Add editor `IndicateSymbols` method (#166, #929).
+  - Added per-editor configuration for collecting dynamic words (closes #922).
   - Added message in search toolbar after replacement in files (#910).
   - Added shortcuts to popup menus for edit operations.
   - Added keeping the clipboard content after exiting.
@@ -34,12 +43,22 @@
   - Added `ExpandPlaceholders` method (#166).
   - Added `GetModifiedTime` editor method (#166).
   - Added `ReportError` method (#166).
+  - Disabled opening non-existing directories from commandbar.
   - Enabled global shortcuts for clearing output and console (closes #844).
   - Renamed `ID.CLEAROUTPUT` to `ID.CLEAROUTPUTENABLE` to avoid conflict between actions (#844).
   - Renamed document method `Get/SetModTime` to `Get/SetFileModifiedTime` (#166).
   - Refactored document 'modified' status to match the editor modification status.
   - Reorganized setting accelerators to allow all of them to be set from `onRegister` events.
   - Upgraded Mobdebug (0.704) to fix serialization issue (fixes #900).
+  - Updated error navigation in output window to handle lines with `line:position` information.
+  - Upgraded luacheck to v0.23.0.
+  - Updated drag-n-drop mapping to limit to existing directories.
+  - update traditional chinese translation
+  - Updated Window build script to support building of 64bit luasec (using mingw64).
+  - Updated Windows launcher manifest description.
+  - Updated dates in the Windows launcher manifest.
+  - Upgraded Mobdebug (0.705) to fix explicit garbage collection during stepping (closes #919).
+  - Update comment markup styling to avoid hiding line comments.
   - Updated Love2d API for 0.11.1 (#247).
   - Updated Love2d script to include class inheritance where available.
   - Updated `GetHotKey` to return error message instead of printing it.
@@ -66,6 +85,17 @@
   - Updated loading files when starting second instance to speed up the process.
 
 ### Fixes
+  - Fixed disabling scratchpad updates after syntax errors (#944).
+  - Fixed shebang detection with enabled dynamic words (follow-up to 663be9a7).
+  - Fixed creating files from commandbar.
+  - Fixed 'deleting' mapped directory.
+  - Fixed mapping and unmapping directories with/out trailing separator.
+  - Fixed parsing invalid Lua code (#937, #492).
+  - Fixed parsing table fields in the left side of multiple assignment (fixes #937).
+  - Fixed proper delete of hidden markup (follow up to ce5879a7).
+  - Fixed using vararg in live coding code (closes #927).
+  - Fixed showing stack content when `codepage` is set (closes #923).
+  - Fixed running/debugging on Windows with unicode characters in username (closes #921).
   - Fixed activating file from the command line after project path is set (#829, #830).
   - Fixed indentation on functions with `_function` in the name (fixes #905, #324).
   - Fixed associating hotkey with editor menu items.
