@@ -11,6 +11,7 @@ ide.proto.Document = {__index = {
   GetFileModifiedTime = function(self) return self.modTime end,
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self) return self.index end,
+  SetTabIndex = function(self, index) self.index = index end,
   IsModified = function(self) return self.editor:GetModify() end,
   IsNew = function(self) return self.filePath == nil end,
   SetFilePath = function(self, path) self.filePath = path end,
