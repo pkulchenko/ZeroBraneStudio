@@ -244,7 +244,8 @@ local function createNotebook(frame)
       function (event)
         for page = 0, notebook:GetPageCount()-1 do
           local editor = ide:GetEditor(page)
-          if editor then ide.openDocuments[editor:GetId()].index = page end
+          local doc = editor and ide:GetDocument(editor)
+          if doc then doc:SetTabIndex(page) end
         end
 
         local selection = getTabWindow(event, notebook)
