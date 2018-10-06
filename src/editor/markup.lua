@@ -2,6 +2,7 @@
 -- styles for comment markup
 ---------------------------------------------------------
 
+local ide = ide
 local MD_MARK_ITAL = '_' -- italic
 local MD_MARK_BOLD = '**' -- bold
 local MD_MARK_LINK = '[' -- link description start
