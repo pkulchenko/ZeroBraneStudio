@@ -1,13 +1,13 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Sep 30 2018)
+## v1.80 (Oct 07 2018)
 
 ### Highlights
   - Added drag-n-drop into project tree to set project or map directories.
   - Added lexer detection based on the shebang content for unknown extensions.
   - Tested debugger and luasocket support with Lua 5.4-work1 version.
-  - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types
-  - Updated Love2d API for 0.11.1 (#247).
+  - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types.
+  - Updated Love2d API for 0.11.1.
   - Upgraded LuaCheck to v0.23.0.
 
 ### Special thanks
@@ -18,6 +18,7 @@
   - To [fnaith](https://github.com/fnaith) for updating translation to Traditional Chinese.
 
 ### Improvements
+  - Added document `SetTabIndex` method (#166).
   - Added restoring editor content when loading a file fails.
   - Added lexer detection based on the shebang content for unknown extensions.
   - Added drag-n-drop into project tree to map directories.
@@ -49,6 +50,7 @@
   - Renamed document method `Get/SetModTime` to `Get/SetFileModifiedTime` (#166).
   - Refactored document 'modified' status to match the editor modification status.
   - Reorganized setting accelerators to allow all of them to be set from `onRegister` events.
+  - Updated C/cpp spec to cover larger variety of functions.
   - Upgraded Mobdebug (0.704) to fix serialization issue (fixes #900).
   - Updated error navigation in output window to handle lines with `line:position` information.
   - Upgraded luacheck to v0.23.0.
