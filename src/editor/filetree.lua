@@ -79,7 +79,9 @@ local function treeAddDir(tree,parent_id,rootdir)
   local files = ide:GetFileList(rootdir)
   local dirmapped = {}
   local projpath = ide:GetProject()
-  if tree:IsRoot(parent_id) then
+  local ishoisted = not ide:IsSameDirectoryPath(projpath, tree:GetItemFullName(parent_id))
+  -- if this is a root, but not hoisted folder
+  if tree:IsRoot(parent_id) and not ishoisted then
     local mapped = filetree.settings.mapped[projpath] or {}
     table.sort(mapped)
     -- insert into files at the sorted order
@@ -151,12 +153,16 @@ end
 
 local function treeSetRoot(tree,rootdir)
   if not ide:IsValidCtrl(tree) then return end
-  tree:DeleteAllItems()
   if not wx.wxDirExists(rootdir) then return end
+  tree:DeleteAllItems()
 
   local root_id = tree:AddRoot(rootdir, image.DIRECTORY)
   tree:SetItemHasChildren(root_id, true) -- make sure that the item can expand
   tree:Expand(root_id) -- this will also populate the tree
+
+  -- sync with the current editor window and activate selected file
+  local editor = ide:GetEditor()
+  if editor then FileTreeMarkSelected(ide:GetDocument(editor):GetFilePath()) end
 end
 
 local function findItem(tree, match)
@@ -629,6 +635,14 @@ local function treeSetConnectorsAndIcons(tree)
     function()
       tree:UnmapDirectory(tree:GetItemText(tree:GetFocusedItem()))
     end)
+  tree:Connect(ID.HOISTDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function()
+      treeSetRoot(tree, tree:GetItemFullName(tree:GetFocusedItem()))
+    end)
+  tree:Connect(ID.UNHOISTDIRECTORY, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function()
+      treeSetRoot(tree, ide:GetProject())
+    end)
   tree:Connect(ID.PROJECTDIRFROMDIR, wx.wxEVT_COMMAND_MENU_SELECTED,
     function()
       ide:SetProject(tree:GetItemFullName(tree:GetFocusedItem()))
@@ -659,6 +673,8 @@ local function treeSetConnectorsAndIcons(tree)
         { ID.SETSTARTFILE, TR("Set As Start File") },
         { ID.UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
         { },
+        { ID.HOISTDIRECTORY, TR("Hoist Directory") },
+        { ID.UNHOISTDIRECTORY, TR("Unhoist Directory") },
         { ID.MAPDIRECTORY, TR("Map Directory...") },
         { ID.UNMAPDIRECTORY, TR("Unmap Directory") },
         { ID.OPENEXTENSION, TR("Open With Default Program") },
@@ -701,6 +717,15 @@ local function treeSetConnectorsAndIcons(tree)
       local isdir = tree:IsDirectory(item_id)
       local ismapped = tree:IsDirMapped(item_id)
       menu:Destroy(ismapped and ID.MAPDIRECTORY or ID.UNMAPDIRECTORY)
+
+      local isroot = tree:IsRoot(item_id)
+      local ishoisted = not ide:IsSameDirectoryPath(
+        ide:GetProject(), tree:GetItemFullName(tree:GetRootItem()))
+      menu:Enable(ID.UNHOISTDIRECTORY, ishoisted)
+      menu:Enable(ID.HOISTDIRECTORY, isdir and not isroot)
+      if not ishoisted then menu:Destroy(ID.UNHOISTDIRECTORY) end
+      if ishoisted and (not isdir or isroot) then menu:Destroy(ID.HOISTDIRECTORY) end
+
       if not startfile then menu:Destroy(ID.UNSETSTARTFILE) end
       if ismapped then menu:Enable(ID.RENAMEFILE, false) end
       if isdir then
@@ -890,10 +915,6 @@ function filetree:updateProjectDir(newdir)
 
   ide:SetProject(newdir,true)
   treeSetRoot(projtree,newdir)
-
-  -- sync with the current editor window and activate selected file
-  local editor = ide:GetEditor()
-  if editor then FileTreeMarkSelected(ide:GetDocument(editor):GetFilePath()) end
 
   -- refresh Recent Projects menu item
   ide.frame:AddPendingEvent(wx.wxUpdateUIEvent(ID.RECENTPROJECTS))

@@ -1350,6 +1350,10 @@ function ide:IsProjectSubDirectory(dir)
   return path:SameAs(wx.wxFileName(projdir))
 end
 
+function ide:IsSameDirectoryPath(s1, s2)
+  return wx.wxFileName.DirName(s1):SameAs(wx.wxFileName.DirName(s2))
+end
+
 function ide:SetCommandLineParameters(params)
   if not params then return end
   self:SetConfig("arg.any", #params > 0 and params or nil, self:GetProject())
