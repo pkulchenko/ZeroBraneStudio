@@ -26,6 +26,7 @@ return {
     nomousezoom = false,
     saveallonrun = false,
     showfncall = false,
+    showtabtooltip = true,
     smartindent = true,
     specmap = { -- extension-to-lexer mapping from TextAdept (modules/textadept/file_types.lua)
       --[[Actionscript]] as='actionscript',asc='actionscript',

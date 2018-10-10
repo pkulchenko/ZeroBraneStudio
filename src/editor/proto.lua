@@ -21,8 +21,12 @@ ide.proto.Document = {__index = {
   end,
   SetTabText = function(self, text)
     local modpref = ide.config.editor.modifiedprefix or modpref
-    ide:GetEditorNotebook():SetPageText(self.index,
+    local notebook = ide:GetEditorNotebook()
+    notebook:SetPageText(self.index,
       (self:IsModified() and modpref or '')..(text or self:GetTabText()))
+    if ide.config.editor.showtabtooltip and ide:IsValidProperty(notebook, "SetPageToolTip") then
+      notebook:SetPageToolTip(self.index, self:GetFilePath() or text or self:GetTabText())
+    end
   end,
   GetTabText = function(self)
     if self.index == nil then return self.fileName end
