@@ -624,6 +624,44 @@ HANDLE _get_osfhandle(int fd);
     return fs.wrap_fd(fd)
   end
 
+-- the following definitions are borrowed with few tweaks from
+-- https://github.com/malkia/luajit-winapi/blob/master/ffi/winapi/windows/shell32.lua
+
+  cdef[[
+typedef unsigned char BYTE;
+# pragma pack( push, 1 )
+  typedef struct SHITEMID {
+    USHORT cb;
+    BYTE abID[1];
+  } SHITEMID;
+# pragma pack( pop )
+# pragma pack( push, 1 )
+  typedef struct ITEMIDLIST {
+    SHITEMID mkid;
+  } ITEMIDLIST;
+# pragma pack( pop )
+typedef ITEMIDLIST *PIDLIST_ABSOLUTE; //Pointer
+typedef ITEMIDLIST *PCIDLIST_ABSOLUTE; //Pointer
+typedef ITEMIDLIST *PIDLIST_RELATIVE; //Pointer
+typedef ITEMIDLIST *PCUITEMID_CHILD; //Pointer
+typedef PCUITEMID_CHILD *PCUITEMID_CHILD_ARRAY; //Pointer
+typedef int32_t HRESULT; //Integer
+
+HRESULT SHOpenFolderAndSelectItems(
+  PCIDLIST_ABSOLUTE pidlFolder, UINT cidl, PCUITEMID_CHILD_ARRAY* apidl, DWORD dwFlags);
+PIDLIST_ABSOLUTE ILCreateFromPath(LPCWSTR pszPath);
+void ILFree(PIDLIST_RELATIVE pidl);
+]]
+
+  function fs.shell_open_and_select(path)
+    local shell = ffi.load('Shell32.dll')
+    local pidl = shell.ILCreateFromPath(wcs(path))
+    if pidl then
+      shell.SHOpenFolderAndSelectItems(pidl, 0, nil, 0)
+      shell.ILFree(pidl)
+    end
+  end
+
 --stdio streams --------------------------------------------------------------
 
   cdef[[

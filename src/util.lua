@@ -287,6 +287,19 @@ function FileWrite(file, content)
   return ok, not ok and wx.wxSysErrorMsg() or nil
 end
 
+function ShowLocation(fname)
+  local osxcmd = [[osascript -e 'tell application "Finder" to reveal POSIX file "%s"']]
+    .. [[ -e 'tell application "Finder" to activate']]
+  local wincmd = [[explorer /select,"%s"]]
+  local lnxcmd = [[xdg-open "%s"]] -- takes path, not a filename
+  local cmd =
+    ide.osname == "Windows" and wincmd:format(fname) or
+    ide.osname == "Macintosh" and osxcmd:format(fname) or
+    ide.osname == "Unix" and lnxcmd:format(wx.wxFileName(fname):GetPath())
+  if cmd then wx.wxExecute(cmd, wx.wxEXEC_ASYNC) end
+end
+
+-- check if fs library is available and provide better versions of available functions
 local ok, fs = pcall(require, "fs")
 if ok then
   function FileWrite(file, content)
@@ -310,6 +323,10 @@ if ok then
 
     f:close()
     return ok, not ok and errmsg or nil
+  end
+
+  function ShowLocation(fname)
+    fs.shell_open_and_select(fname)
   end
 end
 
@@ -436,18 +453,6 @@ function FixDir(path)
   local dirs = dir:GetDirs()
   if #dirs > 1 and dirs[#dirs] == dirs[#dirs-1] then dir:RemoveLastDir() end
   return dir:GetFullPath()
-end
-
-function ShowLocation(fname)
-  local osxcmd = [[osascript -e 'tell application "Finder" to reveal POSIX file "%s"']]
-    .. [[ -e 'tell application "Finder" to activate']]
-  local wincmd = [[explorer /select,"%s"]]
-  local lnxcmd = [[xdg-open "%s"]] -- takes path, not a filename
-  local cmd =
-    ide.osname == "Windows" and wincmd:format(fname) or
-    ide.osname == "Macintosh" and osxcmd:format(fname) or
-    ide.osname == "Unix" and lnxcmd:format(wx.wxFileName(fname):GetPath())
-  if cmd then wx.wxExecute(cmd, wx.wxEXEC_ASYNC) end
 end
 
 function LoadLuaFileExt(tab, file, proto)
