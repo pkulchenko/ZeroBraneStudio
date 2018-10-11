@@ -8,6 +8,7 @@ interpreters/*.lua
 lualibs/copas/copas.lua
 lualibs/coxpcall/coxpcall.lua
 lualibs/dist/*.lua
+lualibs/fs.lua
 lualibs/git.lua
 lualibs/git/*.lua
 lualibs/lexers/*

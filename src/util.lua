@@ -287,6 +287,32 @@ function FileWrite(file, content)
   return ok, not ok and wx.wxSysErrorMsg() or nil
 end
 
+local ok, fs = pcall(require, "fs")
+if ok then
+  function FileWrite(file, content)
+    local _ = wx.wxLogNull() -- disable error reporting; will report as needed
+
+    if not wx.wxFileExists(file)
+    and not wx.wxFileName(file):Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then
+      return nil, wx.wxSysErrorMsg()
+    end
+
+    -- use `fs` library to write a file, as this preserves its attributes
+    local f, errmsg, errcode = fs.open(file,
+      { access = 'write', creation = 'open_always', flags = 'rdwr backup_semantics'})
+    if not f then return nil, errmsg end
+
+    local ok, errmsg = f:truncate()
+    if ok then
+      local bytes, errmsg = f:write(content, #content)
+      ok = bytes == #content
+    end
+
+    f:close()
+    return ok, not ok and errmsg or nil
+  end
+end
+
 function FileSize(fname)
   if not wx.wxFileExists(fname) then return end
   local size = wx.wxFileSize(fname)

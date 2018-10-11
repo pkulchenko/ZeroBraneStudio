@@ -41,6 +41,10 @@ end
 
 is(jit and jit.version, "LuaJIT 2.0.4", "Using LuaJIT with the expected version.")
 
+if ide.osname == "Windows" then
+  ok(jit and pcall(require, 'fs'), "fs module is loaded.")
+end
+
 require "lpeg"
 local lexpath = package.searchpath("lexlpeg", ide.osclibs)
 ok(package.loadlib(lexpath, "GetLexerCount") ~= nil, "LexLPeg lexer is loaded.")
