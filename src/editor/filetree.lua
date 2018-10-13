@@ -679,7 +679,7 @@ local function treeSetConnectorsAndIcons(tree)
         { ID.UNMAPDIRECTORY, TR("Unmap Directory") },
         { ID.OPENEXTENSION, TR("Open With Default Program") },
         { ID.COPYFULLPATH, TR("Copy Full Path") },
-        { ID.SHOWLOCATION, TR("Show Location") },
+        { ID.SHOWLOCATION, TR("Open Containing Folder") },
       }
       local extlist = {
         {},

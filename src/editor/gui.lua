@@ -287,7 +287,7 @@ local function createNotebook(frame)
         { ID.UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
         { },
         { ID.COPYFULLPATH, TR("Copy Full Path") },
-        { ID.SHOWLOCATION, TR("Show Location") },
+        { ID.SHOWLOCATION, TR("Open Containing Folder") },
         { ID.REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
       }
 

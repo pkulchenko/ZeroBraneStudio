@@ -286,7 +286,7 @@ return {
   ["Show &Tooltip"] = "Показать &подсказку", -- src\editor\menu_edit.lua
   ["Show All Files"] = "Показать все файлы", -- src\editor\filetree.lua
   ["Show Hidden Files"] = "Показать спрятанные файлы", -- src\editor\filetree.lua
-  ["Show Location"] = "Показать файл в папке", -- src\editor\gui.lua, src\editor\filetree.lua
+  ["Open Containing Folder"] = "Показать файл в папке", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Show all files"] = "Показать все файлы", -- src\editor\filetree.lua
   ["Show context"] = "Показать контекст", -- src\editor\toolbar.lua
   ["Show files previously hidden"] = "Показать ранее спрятанные файлы", -- src\editor\filetree.lua
