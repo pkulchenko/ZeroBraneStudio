@@ -161,7 +161,7 @@ function PARSE.parse_scope(lx, f, level)
       elseif c[1] == 'end' or c[1] == 'elseif' then
         scope_end(c[1], c.lineinfo)
       elseif c[1] == 'else' then
-        scope_end(nil, c.lineinfo)
+        scope_end(c[1], c.lineinfo)
         scope_begin(c[1], c.lineinfo)
       elseif c[1] == 'until' then
         scopes[#scopes].inside_until = true
