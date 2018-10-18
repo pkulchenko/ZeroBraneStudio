@@ -439,8 +439,17 @@ local delayed = {}
 function IndicateIfNeeded()
   local editor = ide:GetEditor()
   -- do the current one first
-  if editor and delayed[editor] then return editor:IndicateSymbols() end
-  for ed in pairs(delayed) do return ed:IndicateSymbols() end
+  if editor and delayed[editor] then
+    return editor:IndicateSymbols() or next(delayed) ~= nil
+  end
+  local ed = next(delayed)
+  local needmore = false
+  if ide:IsValidCtrl(ed) then
+    needmore = ed:IndicateSymbols()
+  elseif ed then
+    delayed[ed] = nil
+  end
+  return needmore or next(delayed) ~= nil
 end
 
 -- find all instances of a symbol at pos
