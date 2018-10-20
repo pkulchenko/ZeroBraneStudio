@@ -6,7 +6,6 @@
 local ide = ide
 local frame = ide.frame
 local menuBar = frame.menuBar
-local openDocuments = ide.openDocuments
 
 ------------------------
 -- Interpreters and Menu
@@ -142,7 +141,7 @@ end
 local function projChoose(event)
   local editor = ide:GetEditor()
   local fn = wx.wxFileName(
-    editor and openDocuments[editor:GetId()].filePath or "")
+    editor and ide:GetDocument(editor):GetFilePath() or "")
   fn:Normalize() -- want absolute path for dialog
 
   local projectdir = ide:GetProject()
@@ -159,8 +158,7 @@ frame:Connect(ID_PROJECTDIRCHOOSE, wx.wxEVT_COMMAND_MENU_SELECTED, projChoose)
 local function projFromFile(event)
   local editor = ide:GetEditor()
   if not editor then return end
-  local id = editor:GetId()
-  local filepath = openDocuments[id].filePath
+  local filepath = ide:GetDocument(editor):GetFilePath()
   if not filepath then return end
   local fn = wx.wxFileName(filepath)
   fn:Normalize() -- want absolute path for dialog
