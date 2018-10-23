@@ -406,8 +406,7 @@ local function removePage(index)
   local selectIndex = notebook:GetSelection()
   selectIndex = selectIndex ~= index and selectIndex
 
-  local delid = nil
-  for id, document in pairsSorted(openDocuments,
+  for _, document in pairsSorted(openDocuments,
     function(a, b) -- sort by document index
       return openDocuments[a].index < openDocuments[b].index
     end) do
@@ -415,8 +414,7 @@ local function removePage(index)
     if document.index < index then
       prevIndex = document.index
     elseif document.index == index then
-      delid = id
-      document.editor:Destroy()
+      ide:RemoveDocument(document.editor)
     elseif document.index > index then
       document.index = document.index - 1
       if nextIndex == nil then
@@ -426,10 +424,6 @@ local function removePage(index)
     if (wasselected) then
       selectIndex = document.index
     end
-  end
-
-  if (delid) then
-    openDocuments[delid] = nil
   end
 
   notebook:RemovePage(index)

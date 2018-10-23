@@ -1616,7 +1616,7 @@ function AddEditor(editor, name)
   -- add page only after document is created as there may be handlers
   -- that expect the document (for example, onEditorFocusSet)
   if not notebook:AddPage(editor, name, true) then
-    openDocuments[id] = nil
+    ide:RemoveDocument(editor)
     return
   else
     document.index = notebook:GetPageIndex(editor)
