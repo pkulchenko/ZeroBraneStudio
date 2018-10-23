@@ -218,6 +218,12 @@ function ide:RemoveDocument(ed)
   return true
 end
 function ide:GetDocuments() return self.openDocuments end
+function ide:GetDocumentList()
+  local a = {}
+  for _, doc in pairs(self.openDocuments) do table.insert(a, doc) end
+  table.sort(a, function(a, b) return a.index < b.index end)
+  return a
+end
 function ide:GetKnownExtensions(ext)
   local knownexts, extmatch = {}, ext and ext:lower()
   for _, spec in pairs(self.specs) do

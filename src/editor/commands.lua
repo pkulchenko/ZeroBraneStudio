@@ -406,10 +406,7 @@ local function removePage(index)
   local selectIndex = notebook:GetSelection()
   selectIndex = selectIndex ~= index and selectIndex
 
-  for _, document in pairsSorted(openDocuments,
-    function(a, b) -- sort by document index
-      return openDocuments[a].index < openDocuments[b].index
-    end) do
+  for _, document in ipairs(ide:GetDocumentList()) do
     local wasselected = document.index == selectIndex
     if document.index < index then
       prevIndex = document.index
