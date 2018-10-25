@@ -22,7 +22,7 @@ local function shortenIfNeeded(filepath)
     local shortpath = winapi.short_path(filepath)
     if shortpath ~= filepath then return shortpath end
     ide:Print(
-      ("Can't get short path for a Unicode file name '%s' use the file.")
+      ("Can't get short path for a Unicode file name '%s' to use the file.")
       :format(filepath))
     ide:Print(
       ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
