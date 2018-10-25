@@ -26,7 +26,7 @@ local function shortenIfNeeded(filepath)
       :format(filepath))
     ide:Print(
       ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
-      :format(wfilename:GetVolume()))
+      :format(wx.wxFileName(filepath):GetVolume()))
   end
   return filepath
 end
