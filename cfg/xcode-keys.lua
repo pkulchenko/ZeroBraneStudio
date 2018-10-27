@@ -1,4 +1,4 @@
--- Add to your user / system configuration file: include "eclipse-keys"
+-- Add to your user / system configuration file: include "xcode-keys"
 -- see the [configuration](http://studio.zerobrane.com/doc-configuration.html) page for details.
 
 -- Alt-Shift-Cmd-X (Alt maps to Option, Ctrl maps to Command)
