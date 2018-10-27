@@ -729,23 +729,24 @@ function CreateEditor(bare)
 
   editor:SetMarginType(margin.LINENUMBER, wxstc.wxSTC_MARGIN_NUMBER)
   editor:SetMarginMask(margin.LINENUMBER, 0)
+  editor:SetMarginSensitive(margin.LINENUMBER, true)
   editor:SetMarginWidth(margin.LINENUMBER,
     edcfg.linenumber and math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")) or 0)
 
-  editor:SetMarginWidth(margin.MARKER, 18)
   editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
   editor:SetMarginMask(margin.MARKER, 0xffffffff - wxstc.wxSTC_MASK_FOLDERS)
   editor:SetMarginSensitive(margin.MARKER, true)
+  editor:SetMarginWidth(margin.MARKER, 18)
 
   editor:MarkerDefine(StylesGetMarker("currentline"))
   editor:MarkerDefine(StylesGetMarker("breakpoint"))
   editor:MarkerDefine(StylesGetMarker("bookmark"))
 
   if edcfg.fold then
-    editor:SetMarginWidth(margin.FOLD, 18)
     editor:SetMarginType(margin.FOLD, wxstc.wxSTC_MARGIN_SYMBOL)
     editor:SetMarginMask(margin.FOLD, wxstc.wxSTC_MASK_FOLDERS)
     editor:SetMarginSensitive(margin.FOLD, true)
+    editor:SetMarginWidth(margin.FOLD, 18)
   end
 
   editor:SetFoldFlags(tonumber(edcfg.foldflags) or wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
@@ -878,17 +879,26 @@ function CreateEditor(bare)
   editor:Connect(wxstc.wxEVT_STC_MARGINCLICK,
     function (event)
       local line = editor:LineFromPosition(event:GetPosition())
+      local header = bit.band(editor:GetFoldLevel(line),
+        wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
+      local from = header and line or editor:GetFoldParent(line)
       local marginno = event:GetMargin()
       if marginno == margin.MARKER then
         editor:BreakpointToggle(line)
+      elseif marginno == margin.LINENUMBER then
+        -- if the next line is visible, select only one line
+        if editor:GetLineVisible(line+1) then
+          editor:SetSelection(editor:PositionFromLine(line), editor:PositionFromLine(line+1))
+        else -- select the entire block to include folder lines
+          local to = editor:GetLastChild(from, -1)
+          editor:SetSelection(editor:PositionFromLine(from), editor:PositionFromLine(to+1))
+          editor:ToggleFold(line)
+        end
       elseif marginno == margin.FOLD then
-        local header = bit.band(editor:GetFoldLevel(line),
-          wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
         local shift, ctrl = wx.wxGetKeyState(wx.WXK_SHIFT), wx.wxGetKeyState(wx.WXK_CONTROL)
         if shift and ctrl then
           editor:FoldSome(line)
         elseif ctrl then -- select the scope that was clicked on
-          local from = header and line or editor:GetFoldParent(line)
           if from > -1 then -- only select if there is a block to select
             local to = editor:GetLastChild(from, -1)
             editor:SetSelection(editor:PositionFromLine(from), editor:PositionFromLine(to+1))
