@@ -6,7 +6,6 @@
 local ide = ide
 local frame = ide.frame
 local notebook = frame.notebook
-local openDocuments = ide.openDocuments
 local uimgr = frame.uimgr
 local unpack = table.unpack or unpack
 
@@ -27,16 +26,15 @@ end
 
 -- Find an editor page that hasn't been used at all, eg. an untouched NewFile()
 local function findUnusedEditor()
-  local editor
-  for _, document in pairs(openDocuments) do
-    if (document.editor:GetLength() == 0) and
+  for _, document in pairs(ide:GetDocuments()) do
+    local editor = document:GetEditor()
+    if (editor:GetLength() == 0) and
     (not document:IsModified()) and document:IsNew() and
-    not (document.editor:GetReadOnly() == true) then
-      editor = document.editor
-      break
+    not (editor:GetReadOnly() == true) then
+      return editor
     end
   end
-  return editor
+  return
 end
 
 function LoadFile(filePath, editor, file_must_exist, skipselection)
@@ -332,11 +330,10 @@ function ApproveFileOverwrite()
 end
 
 function SaveFileAs(editor)
-  local id = editor:GetId()
   local saved = false
-  local filePath = (openDocuments[id].filePath
-    or ((ide:GetProject() or "")
-        ..(openDocuments[id].fileName or ide.config.default.name)))
+  local document = ide:GetDocument(editor)
+  local filePath = (document and document:GetFilePath()
+    or ((ide:GetProject() or "")..(document and document:GetFileName() or ide.config.default.name)))
 
   local fn = wx.wxFileName(filePath)
   fn:Normalize() -- want absolute path for dialog
@@ -387,13 +384,11 @@ function SaveFileAs(editor)
 end
 
 function SaveAll(quiet)
-  for _, document in pairs(openDocuments) do
-    local editor = document.editor
-    local filePath = document.filePath
-
+  for _, document in pairs(ide:GetDocuments()) do
+    local filePath = document:GetFilePath()
     if (document:IsModified() or document:IsNew()) -- need to save
     and (filePath or not quiet) then -- have path or can ask user
-      SaveFile(editor, filePath) -- will call SaveFileAs if necessary
+      SaveFile(document:GetEditor(), filePath) -- will call SaveFileAs if necessary
     end
   end
 end
@@ -439,7 +434,6 @@ end
 
 function ClosePage(selection)
   local editor = ide:GetEditor(selection)
-  local id = editor:GetId()
 
   if PackageEventHandle("onEditorPreClose", editor) == false then
     return false
@@ -460,7 +454,7 @@ function ClosePage(selection)
       debugger:Stop()
     end
     PackageEventHandle("onEditorClose", editor)
-    removePage(ide.openDocuments[id].index)
+    removePage(ide:GetDocument(editor):GetTabIndex())
 
     -- disable full screen if the last tab is closed
     if not (notebook:GetSelection() >= 0) then ide:ShowFullScreen(false) end
@@ -471,8 +465,8 @@ end
 
 function CloseAllPagesExcept(selection)
   local toclose = {}
-  for _, document in pairs(ide.openDocuments) do
-    table.insert(toclose, document.index)
+  for _, document in pairs(ide:GetDocuments()) do
+    table.insert(toclose, document:GetTabIndex())
   end
 
   table.sort(toclose)
@@ -511,8 +505,8 @@ function SaveModifiedDialog(editor, allow_cancel)
 end
 
 function SaveOnExit(allow_cancel)
-  for _, document in pairs(openDocuments) do
-    if (SaveModifiedDialog(document.editor, allow_cancel) == wx.wxID_CANCEL) then
+  for _, document in pairs(ide:GetDocuments()) do
+    if (SaveModifiedDialog(document:GetEditor(), allow_cancel) == wx.wxID_CANCEL) then
       return false
     end
   end
@@ -520,7 +514,7 @@ function SaveOnExit(allow_cancel)
   -- if all documents have been saved or refused to save, then mark those that
   -- are still modified as not modified (they don't need to be saved)
   -- to keep their tab names correct
-  for _, document in pairs(openDocuments) do
+  for _, document in pairs(ide:GetDocuments()) do
     if document:IsModified() then document:SetModified(false) end
   end
 
@@ -528,8 +522,8 @@ function SaveOnExit(allow_cancel)
 end
 
 function SetAllEditorsReadOnly(enable)
-  for _, document in pairs(openDocuments) do
-    document.editor:SetReadOnly(enable)
+  for _, document in pairs(ide:GetDocuments()) do
+    document:GetEditor():SetReadOnly(enable)
   end
 end
 
@@ -537,9 +531,9 @@ end
 -- Debug related
 
 function ClearAllCurrentLineMarkers()
-  for _, document in pairs(openDocuments) do
-    document.editor:MarkerDeleteAll(CURRENT_LINE_MARKER)
-    document.editor:Refresh() -- needed for background markers that don't get refreshed (wx2.9.5)
+  for _, document in pairs(ide:GetDocuments()) do
+    document:GetEditor():MarkerDeleteAll(CURRENT_LINE_MARKER)
+    document:GetEditor():Refresh() -- needed for background markers that don't get refreshed (wx2.9.5)
   end
 end
 
@@ -620,22 +614,19 @@ end
 
 function GetOpenFiles()
   local opendocs = {}
-  for _, document in pairs(ide.openDocuments) do
-    if (document.filePath) then
-      local wxfname = wx.wxFileName(document.filePath)
+  for _, document in ipairs(ide:GetDocumentList()) do
+    if document:GetFilePath() then
+      local wxfname = wx.wxFileName(document:GetFilePath())
       wxfname:Normalize()
 
       table.insert(opendocs, {filename=wxfname:GetFullPath(),
-        id=document.index, cursorpos = document.editor:GetCurrentPos()})
+        id=document:GetTabIndex(), cursorpos = document:GetEditor():GetCurrentPos()})
     end
   end
 
-  -- to keep tab order
-  table.sort(opendocs,function(a,b) return (a.id < b.id) end)
-
-  local id = ide:GetEditor()
-  id = id and id:GetId()
-  return opendocs, {index = (id and openDocuments[id].index or 0)}
+  local ed = ide:GetEditor()
+  local doc = ed and ide:GetDocument(ed)
+  return opendocs, {index = (doc and doc:GetTabIndex() or 0)}
 end
 
 function SetOpenFiles(nametab,params)
@@ -685,7 +676,7 @@ end
 
 local function getOpenTabs()
   local opendocs = {}
-  for _, document in pairs(ide.openDocuments) do
+  for _, document in pairs(ide:GetDocumentList()) do
     local editor = document:GetEditor()
     table.insert(opendocs, {
       filename = document:GetFileName(),
@@ -697,9 +688,6 @@ local function getOpenTabs()
       id = document:GetTabIndex(),
       cursorpos = editor:GetCurrentPos()})
   end
-
-  -- to keep tab order
-  table.sort(opendocs, function(a,b) return (a.id < b.id) end)
 
   local ed = ide:GetEditor()
   local doc = ed and ide:GetDocument(ed)
