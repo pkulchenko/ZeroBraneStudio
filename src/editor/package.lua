@@ -475,7 +475,7 @@ function ide:CreateStyledTextCtrl(...)
     end
   end
 
-  if not editor.ReplaceTargetRaw then
+  if not self:IsValidProperty(editor, "ReplaceTargetRaw") then
     editor.ReplaceTargetRaw = function(self, ...)
       self:ReplaceTarget("")
       self:InsertTextDyn(self:GetTargetStart(), ...)

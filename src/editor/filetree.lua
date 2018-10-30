@@ -460,19 +460,21 @@ local function treeSetConnectorsAndIcons(tree)
     return true
   end
 
-  -- localizing FileDropTarget doesn't work in wxlua 2.8.13, so keep it in a field
-  ide.filetree.filedrop = wx.wxLuaFileDropTarget()
-  ide.filetree.filedrop.OnDropFiles = function(self, x, y, filenames)
-    local item_id = tree:HitTest(wx.wxPoint(x,y))
-    -- set project if one file moved over the project directory
-    if not tree:GetItemParent(item_id):IsOk() and #filenames == 1 then
-      ide:SetProject(filenames[1])
-    else
-      for i = 1, #filenames do tree:MapDirectory(filenames[i]) end
+  if wx.wxLuaFileDropTarget then
+    -- localizing FileDropTarget doesn't work in wxlua 2.8.13, so keep it in a field
+    ide.filetree.filedrop = wx.wxLuaFileDropTarget()
+    ide.filetree.filedrop.OnDropFiles = function(self, x, y, filenames)
+      local item_id = tree:HitTest(wx.wxPoint(x,y))
+      -- set project if one file moved over the project directory
+      if not tree:GetItemParent(item_id):IsOk() and #filenames == 1 then
+        ide:SetProject(filenames[1])
+      else
+        for i = 1, #filenames do tree:MapDirectory(filenames[i]) end
+      end
+      return true
     end
-    return true
+    tree:SetDropTarget(ide.filetree.filedrop)
   end
-  tree:SetDropTarget(ide.filetree.filedrop)
 
   tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_COLLAPSED,
     function (event)
