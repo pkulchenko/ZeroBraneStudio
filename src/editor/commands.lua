@@ -465,16 +465,16 @@ end
 
 function CloseAllPagesExcept(selection)
   local toclose = {}
-  for _, document in pairs(ide:GetDocuments()) do
+  for _, document in ipairs(ide:GetDocumentList()) do
     table.insert(toclose, document:GetTabIndex())
   end
-
-  table.sort(toclose)
 
   -- close pages for those files that match the project in the reverse order
   -- (as ids shift when pages are closed)
   for i = #toclose, 1, -1 do
-    if toclose[i] ~= selection then ClosePage(toclose[i]) end
+    if toclose[i] ~= selection then
+      if not ide:GetDocument(notebook:GetPage(toclose[i])):Close() then break end
+    end
   end
 end
 
