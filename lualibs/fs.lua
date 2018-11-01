@@ -662,6 +662,15 @@ void ILFree(PIDLIST_RELATIVE pidl);
     end
   end
 
+  cdef[[
+void OutputDebugStringW(LPCWSTR lpOutputString);
+]]
+
+  function fs.output_debug_string(str)
+    local kernel = ffi.load('Kernel32.dll')
+    kernel.OutputDebugStringW(wcs(str))
+  end
+
 --stdio streams --------------------------------------------------------------
 
   cdef[[
