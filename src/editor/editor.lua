@@ -1615,13 +1615,7 @@ function AddEditor(editor, name)
   assert(notebook:GetPageIndex(editor) == wx.wxNOT_FOUND, "Editor being added is not in the notebook: failed")
 
   -- set the document properties
-  local id = editor:GetId()
-  local document = setmetatable({}, ide.proto.Document)
-  document.editor = editor
-  document.fileName = name
-  document.filePath = nil
-  document.modTime = nil
-  openDocuments[id] = document
+  local document = ide:CreateDocument(editor, name)
 
   -- add page only after document is created as there may be handlers
   -- that expect the document (for example, onEditorFocusSet)

@@ -211,6 +211,12 @@ function ide:GetMainFrame()
 end
 function ide:GetUIManager() return self.frame.uimgr end
 function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
+function ide:CreateDocument(ed, name)
+  if not ide:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
+  local document = setmetatable({editor = ed, fileName = name}, ide.proto.Document)
+  self.openDocuments[ed:GetId()] = document
+  return document
+end
 function ide:RemoveDocument(ed)
   if not ide:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
   self.openDocuments[ed:GetId()] = nil
