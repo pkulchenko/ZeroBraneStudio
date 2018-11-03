@@ -724,7 +724,7 @@ local function treeSetConnectorsAndIcons(tree)
       local ishoisted = not ide:IsSameDirectoryPath(
         ide:GetProject(), tree:GetItemFullName(tree:GetRootItem()))
       menu:Enable(ID.UNHOISTDIRECTORY, ishoisted)
-      menu:Enable(ID.HOISTDIRECTORY, isdir and not isroot)
+      menu:Enable(ID.HOISTDIRECTORY, isdir and not isroot or ismapped)
       if not ishoisted then menu:Destroy(ID.UNHOISTDIRECTORY) end
       if ishoisted and (not isdir or isroot) then menu:Destroy(ID.HOISTDIRECTORY) end
 
