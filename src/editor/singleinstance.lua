@@ -40,7 +40,7 @@ if success then -- ok, server was started, we are solo
         if not msg then break end
 
         if msg == protocol.client.greeting then
-          svr:sendto(protocol.server.greeting:format(wx.wxGetUserName()),ip,port)
+          svr:sendto(protocol.server.greeting:format(wx.wxGetUserId()),ip,port)
         elseif msg == protocol.client.show then
           svr:sendto(protocol.server.answerok,ip,port)
           ide:RequestAttention()
@@ -64,7 +64,7 @@ else -- something different is running on our port
   local msg = cln:receive()
   if msg and msg:match(protocol.server.greeting:gsub("%%s",".+$")) then
     local username = msg:match(protocol.server.greeting:gsub("%%s","(.+)$"))
-    if username ~= wx.wxGetUserName() then
+    if username ~= wx.wxGetUserId() then
       ide:Print(("Another instance is running under user '%s' and can't be activated. This instance will continue running, which may cause interference with the debugger."):format(username))
     else
       local failed = false
