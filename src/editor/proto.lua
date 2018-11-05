@@ -21,7 +21,7 @@ ide.proto.Document = {__index = {
   end,
   SetTabText = function(self, text)
     local modpref = ide.config.editor.modifiedprefix or modpref
-    local notebook = ide:GetEditorNotebook()
+    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
     notebook:SetPageText(self.index,
       (self:IsModified() and modpref or '')..(text or self:GetTabText()))
     if ide.config.editor.showtabtooltip and ide:IsValidProperty(notebook, "SetPageToolTip") then
@@ -31,7 +31,8 @@ ide.proto.Document = {__index = {
   GetTabText = function(self)
     if self.index == nil then return self.fileName end
     local modpref = ide.config.editor.modifiedprefix or modpref
-    return ide:GetEditorNotebook():GetPageText(self.index):gsub("^"..q(modpref), "")
+    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
+    return notebook:GetPageText(self.index):gsub("^"..q(modpref), "")
   end,
   SetActive = function(self) SetEditorSelection(self.index) end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
