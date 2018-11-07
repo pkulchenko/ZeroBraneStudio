@@ -449,7 +449,7 @@ local function treeSetConnectorsAndIcons(tree)
       end
     else
       local doc = ide:FindDocument(source)
-      if doc then ClosePage(doc.index) end
+      if doc then doc:Close() end
       if not wx.wxRemoveFile(source) then
         ide:ReportError(TR("Unable to delete file '%s': %s")
           :format(source, wx.wxSysErrorMsg()))
