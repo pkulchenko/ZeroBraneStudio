@@ -341,21 +341,19 @@ local function treeSetConnectorsAndIcons(tree)
     -- on case insensitive systems, but need to be allowed in renaming.
     if source == target then return end
 
-    if PackageEventHandle("onFiletreeFilePreRename", tree, itemsrc, source, target) == false then
-      return false
+    -- if target is a file, is already loaded and modified, then reject renaming
+    local targetdocs = isnew and {} or (isdir
+      and ide:FindDocumentsByPartialPath(target)
+      or {ide:FindDocument(target)})
+    for _, doc in ipairs(targetdocs) do
+      if doc and doc:IsModified() then
+        ide:ReportError(TR("Can't overwrite unsaved file '%s'."):format(doc:GetFilePath()))
+        return false
+      end
     end
 
-    local docs = {}
-    if not isnew then -- find if source is already opened in the editor
-      docs = (isdir
-        and ide:FindDocumentsByPartialPath(source)
-        or {ide:FindDocument(source)})
-      for _, doc in ipairs(docs) do
-        if not isdir and PackageEventHandle("onEditorPreSave", doc.editor, source) == false then
-          return false
-        end
-        if SaveModifiedDialog(doc.editor, true) == wx.wxID_CANCEL then return end
-      end
+    if PackageEventHandle("onFiletreeFilePreRename", tree, itemsrc, source, target) == false then
+      return false
     end
 
     -- check if existing file/dir is going to be overwritten
@@ -383,40 +381,47 @@ local function treeSetConnectorsAndIcons(tree)
       end
     end
 
+    local expanded = tree:IsExpanded(itemsrc)
+    local pos = tree:GetScrollPos(wx.wxVERTICAL)
+
+    tree:Freeze()
+
     refreshAncestors(tree:GetItemParent(itemsrc))
-    -- load file(s) into the same editor (if any); will also refresh the tree
-    if #docs > 0 then
-      for _, doc in ipairs(docs) do
-        local fullpath = doc.filePath
-        doc.filePath = nil -- remove path to avoid "file no longer exists" message
-        -- when moving folders, /foo/bar/file.lua can be replaced with
-        -- /foo/baz/bar/file.lua, so change /foo/bar to /foo/baz/bar
-        local path = (not iscaseinsensitive and fullpath:gsub(q(source), target)
-          or fullpath:lower():gsub(q(source:lower()), target))
-        local editor = LoadFile(path)
-        -- check if the file was loaded into another editor;
-        -- this is possible if "foo" is renamed to "bar" and both are opened;
-        -- if this happens, then "bar" is refreshed and "foo" can be closed.
-        if doc.editor:GetId() ~= editor:GetId() then ClosePage(doc.index) end
-        if not isdir and editor then PackageEventHandle("onEditorSave", editor) end
-      end
-    else -- refresh the tree and select the new item
-      local itemdst = tree:FindItem(target)
-      if itemdst then
-        tree:UnselectAll()
-        refreshAncestors(tree:GetItemParent(itemdst))
-        tree:SetFocusedItem(itemdst)
-        tree:SelectItem(itemdst)
-        tree:EnsureVisible(itemdst)
-        tree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
-      end
+
+    -- if not new, check if source is already opened in the editor
+    local sourcedocs = isnew and {} or (isdir
+      and ide:FindDocumentsByPartialPath(source)
+      or {ide:FindDocument(source)})
+    local targetdoc = ide:FindDocument(target)
+
+    for _, doc in ipairs(sourcedocs) do
+      local fullpath = doc:GetFilePath()
+      -- when moving folders, /foo/bar/file.lua can be replaced with
+      -- /foo/baz/bar/file.lua, so change /foo/bar to /foo/baz/bar
+      local path = (not iscaseinsensitive and fullpath:gsub(q(source), target)
+        or fullpath:lower():gsub(q(source:lower()), target))
+
+      doc:SetFilePath(path)
+      doc:SetFileName(wx.wxFileName(path):GetFullName())
+      doc:SetFileModifiedTime(GetFileModTime(path))
+      doc:SetTabText(doc:GetFileName())
+      if doc:IsActive() then doc:SetActive() end
     end
 
-    -- refresh the target if it's open and has been overwritten
-    if overwrite and not isdir then
-      local doc = ide:FindDocument(target)
-      if doc then LoadFile(doc:GetFilePath(), doc:GetEditor()) end
+    -- close the target document, since the source has already been updated for it
+    if targetdoc and #sourcedocs > 0 then targetdoc:Close() end
+
+    local itemdst = tree:FindItem(target)
+    if itemdst then
+      tree:UnselectAll()
+      tree:RefreshChildren(tree:GetItemParent(itemdst))
+      tree:SetFocusedItem(itemdst)
+      tree:SelectItem(itemdst)
+      if expanded then tree:Expand(itemdst) end
+      tree:SetScrollPos(wx.wxVERTICAL, pos)
     end
+
+    tree:Thaw()
 
     PackageEventHandle("onFiletreeFileRename", tree, itemsrc, source, target)
 
@@ -524,9 +529,11 @@ local function treeSetConnectorsAndIcons(tree)
     local item = tree:PrependItem(parent, name, img)
     tree:SetItemHasChildren(parent, true)
     -- temporarily disable expand as we don't need this node populated
-    tree:SetEvtHandlerEnabled(false)
-    tree:EnsureVisible(item)
-    tree:SetEvtHandlerEnabled(true)
+    if not tree:IsVisible(item) then
+      tree:SetEvtHandlerEnabled(false)
+      tree:EnsureVisible(item)
+      tree:SetEvtHandlerEnabled(true)
+    end
     return item
   end
 
@@ -1003,8 +1010,10 @@ function FileTreeMarkSelected(file)
       end
     end
     if item_id then
-      projtree:EnsureVisible(item_id)
-      projtree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+      if not projtree:IsVisible(item_id) then
+        projtree:EnsureVisible(item_id)
+        projtree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+      end
       projtree:SetItemBold(item_id, true)
     end
     curr_file = file
