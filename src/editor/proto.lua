@@ -16,6 +16,16 @@ ide.proto.Document = {__index = {
   IsNew = function(self) return self.filePath == nil end,
   IsActive = function(self) return ide:GetEditorNotebook():GetSelection() == self.index end,
   SetFilePath = function(self, path) self.filePath = path end,
+  SetFileName = function(self, name)
+    self.fileName = name
+    -- reset the editor based on the set name
+    local editor = self.editor
+    if editor then
+      editor:SetupKeywords(GetFileExt(name))
+      editor:Colourise(0, -1)
+      editor:ResetTokenList() -- reset list of tokens if this is a reused editor
+    end
+  end,
   SetFileModifiedTime = function(self, modtime) self.modTime = modtime end,
   SetModified = function(self, modified)
     if modified == false then self.editor:SetSavePoint() end
