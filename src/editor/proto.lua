@@ -14,7 +14,11 @@ ide.proto.Document = {__index = {
   SetTabIndex = function(self, index) self.index = index end,
   IsModified = function(self) return self.editor:GetModify() end,
   IsNew = function(self) return self.filePath == nil end,
-  IsActive = function(self) return ide:GetEditorNotebook():GetSelection() == self.index end,
+  IsActive = function(self)
+    if not self.editor then return false end
+    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
+    return notebook:GetSelection() == self.index
+  end,
   SetFilePath = function(self, path) self.filePath = path end,
   SetFileName = function(self, name)
     self.fileName = name
@@ -45,7 +49,19 @@ ide.proto.Document = {__index = {
     local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
     return notebook:GetPageText(self.index):gsub("^"..q(modpref), "")
   end,
-  SetActive = function(self) SetEditorSelection(self.index) end,
+  SetActive = function(self)
+    if not self.editor then return false end
+
+    self.editor:SetFocus()
+    self.editor:SetSTCFocus(true)
+    -- when the active editor is changed while the focus is away from the application
+    -- (as happens on OSX when the editor is selected from the command bar)
+    -- the focus stays on wxAuiToolBar component, so need to explicitly switch it.
+    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = self.editor end
+
+    FileTreeMarkSelected(self.filePath or '')
+    AddToFileHistory(self.filePath)
+  end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
   Close = function(self) return ClosePage(self.index) end,
   CloseAll = function(self) return CloseAllPagesExcept(-1) end,
