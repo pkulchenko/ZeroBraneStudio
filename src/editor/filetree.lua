@@ -281,7 +281,9 @@ local function treeSetConnectorsAndIcons(tree)
         tree:Toggle(item_id)
       else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
     else -- open file
-      if wx.wxFileExists(name) then LoadFile(name,nil,true)
+      -- delay activation to keep the focus on the editor,
+      -- as doubleclick sends it back to the tree on Windows.
+      if wx.wxFileExists(name) then ide:DoWhenIdle(function() LoadFile(name,nil,true) end)
       else refreshAncestors(tree:GetItemParent(item_id)) end -- stale content
     end
   end
