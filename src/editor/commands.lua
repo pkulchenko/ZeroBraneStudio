@@ -334,6 +334,7 @@ function SaveFileAs(editor)
   local document = ide:GetDocument(editor)
   local filePath = (document and document:GetFilePath()
     or ((ide:GetProject() or "")..(document and document:GetFileName() or ide.config.default.name)))
+  if document then document:SetActive() end
 
   local fn = wx.wxFileName(filePath)
   fn:Normalize() -- want absolute path for dialog
@@ -484,7 +485,7 @@ function SaveModifiedDialog(editor, allow_cancel)
   local result = wx.wxID_NO
   local document = ide:GetDocument(editor)
   if document:IsModified() then
-    document:GetEditor():SetFocus()
+    document:SetActive()
     local message = TR("Do you want to save the changes to '%s'?")
       :format(document:GetFileName() or ide.config.default.name)
     local dlg_styles = wx.wxYES_NO + wx.wxCENTRE + wx.wxICON_QUESTION
