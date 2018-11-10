@@ -221,7 +221,6 @@ end
 function ide:RemoveDocument(ed)
   if not ide:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
   self.openDocuments[ed:GetId()] = nil
-  ed:Destroy()
   return true
 end
 function ide:GetDocuments() return self.openDocuments end

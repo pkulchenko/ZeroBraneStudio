@@ -16,10 +16,12 @@ function NewFile(filename)
   filename = filename or ide:GetDefaultFileName()
   local editor = CreateEditor()
   local doc = AddEditor(editor, filename)
-  if doc then
-    SetEditorSelection(doc.index)
-    PackageEventHandle("onEditorNew", editor)
+  if not doc then
+    editor:Destroy()
+    return
   end
+  doc:SetActive()
+  PackageEventHandle("onEditorNew", editor)
   return editor
 end
 
@@ -453,8 +455,10 @@ function ClosePage(selection)
       (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
       debugger:Stop()
     end
-    PackageEventHandle("onEditorClose", editor)
     removePage(ide:GetDocument(editor):GetTabIndex())
+    -- trigger event after the document is already removed, but the editor is still there
+    PackageEventHandle("onEditorClose", editor)
+    editor:Destroy()
 
     -- disable full screen if the last tab is closed
     if not (notebook:GetSelection() >= 0) then ide:ShowFullScreen(false) end
