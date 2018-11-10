@@ -15,7 +15,6 @@ local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
 function NewFile(filename)
   filename = filename or ide:GetDefaultFileName()
   local editor = CreateEditor()
-  editor:SetupKeywords(GetFileExt(filename))
   local doc = AddEditor(editor, filename)
   if doc then
     SetEditorSelection(doc.index)

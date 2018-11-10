@@ -213,7 +213,8 @@ function ide:GetUIManager() return self.frame.uimgr end
 function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
 function ide:CreateDocument(ed, name)
   if not ide:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
-  local document = setmetatable({editor = ed, fileName = name}, ide.proto.Document)
+  local document = setmetatable({editor = ed}, ide.proto.Document)
+  document:SetFileName(name)
   self.openDocuments[ed:GetId()] = document
   return document
 end
