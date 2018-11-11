@@ -21,10 +21,11 @@ ide.proto.Document = {__index = {
   end,
   SetFilePath = function(self, path) self.filePath = path end,
   SetFileName = function(self, name)
+    local newext = not self.fileName or not name or GetFileExt(name) ~= GetFileExt(self.fileName)
     self.fileName = name
     -- reset the editor based on the set name
     local editor = self.editor
-    if editor then
+    if editor and newext then
       editor:SetupKeywords(GetFileExt(name))
       editor:Colourise(0, -1)
       editor:ResetTokenList() -- reset list of tokens if this is a reused editor
@@ -52,15 +53,17 @@ ide.proto.Document = {__index = {
   SetActive = function(self)
     if not self.editor then return false end
 
+    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
+    local index = notebook:GetPageIndex(self.editor)
+    if index and notebook:GetSelection() ~= index then notebook:SetSelection(index) end
+
     self.editor:SetFocus()
     self.editor:SetSTCFocus(true)
     -- when the active editor is changed while the focus is away from the application
     -- (as happens on OSX when the editor is selected from the command bar)
     -- the focus stays on wxAuiToolBar component, so need to explicitly switch it.
-    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = self.editor end
-
-    FileTreeMarkSelected(self.filePath or '')
-    AddToFileHistory(self.filePath)
+    -- this is needed because SetFocus doesn't reset the focus if it's already on the target.
+    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = notebook:GetCurrentPage() end
   end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
   Close = function(self) return ClosePage(self.index) end,

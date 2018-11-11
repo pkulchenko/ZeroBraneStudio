@@ -1064,6 +1064,15 @@ local function unWatchDir(path)
   if watcher and watchers[path] then watcher:Remove(wx.wxFileName.DirName(path)) end
   watchers[path] = nil
 end
+
+local function syncTree(editor)
+    local doc = ide:GetDocument(editor)
+    AddToFileHistory(doc and doc:GetFilePath())
+    FileTreeMarkSelected(doc and doc:GetFilePath() or '')
+    SetAutoRecoveryMark()
+    ide:SetTitle()
+end
+
 local package = ide:AddPackage('core.filetree', {
     onProjectClose = function(plugin, project)
       if watcher then watcher:RemoveAll() end
@@ -1109,6 +1118,16 @@ local package = ide:AddPackage('core.filetree', {
       -- only unwatch if the directory is not empty;
       -- otherwise it's collapsed without ability to expand
       if tree:GetChildrenCount(item_id, false) > 0 then unWatchDir(tree:GetItemFullName(item_id)) end
+    end,
+
+    onEditorFocusSet = function(plugin, editor)
+      -- need to delay the sync, as the document may not yet exist for the editor
+      ide:DoWhenIdle(function() if ide:IsValidCtrl(editor) then syncTree(editor) end end)
+    end,
+
+    onEditorClose = function(plugin, editor)
+      -- check if the last document is being closed
+      if #ide:GetDocuments() == 0 then syncTree(editor) end
     end,
   })
 MergeSettings(filetree.settings, package:GetSettings())

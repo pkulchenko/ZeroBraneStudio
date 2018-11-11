@@ -389,10 +389,8 @@ function debugger:ActivateDocument(file, line, activatehow)
         end
       end
 
-      local selection = document:GetTabIndex()
+      document:SetActive()
       ide:RequestAttention()
-      notebook:SetSelection(selection)
-      SetEditorSelection(selection)
 
       if content then
         -- it's possible that the current editor tab already has

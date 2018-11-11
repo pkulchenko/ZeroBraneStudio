@@ -324,6 +324,11 @@ function ide:MakeMenu(t)
   return menu
 end
 
+function ide:SetTitle(title)
+  if not self:IsValidCtrl(self.frame) then return end
+  self.frame:SetTitle(title or self:ExpandPlaceholders(self.config.format.apptitle))
+end
+
 function ide:FindDocument(path)
   local fileName = wx.wxFileName(path)
   for _, doc in pairs(self:GetDocuments()) do
@@ -1483,7 +1488,8 @@ do
         if name ~= "notebook" then uimgr:GetPane(name):Hide() end
       end
       uimgr:Update()
-      SetEditorSelection() -- make sure the focus is on the editor
+      local ed = ide:GetEditor()
+      if ed then ide:GetDocument(ed):SetActive() end
     end
 
     -- On OSX, status bar is not hidden when switched to

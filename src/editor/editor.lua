@@ -37,8 +37,11 @@ local foldtypes = {
 local statusTextTable = { "OVR?", "R/O?", "Cursor Pos" }
 
 local function updateStatusText(editor)
+  local frame = ide:GetMainFrame()
+  if not ide:IsValidCtrl(frame) then return end
+
   local texts = { "", "", "" }
-  if ide.frame and editor then
+  if frame and editor then
     local pos = editor:GetCurrentPos()
     local selected = #editor:GetSelectedText()
     local selections = ide.wxver >= "2.9.5" and editor:GetSelections() or 1
@@ -53,7 +56,7 @@ local function updateStatusText(editor)
       }, ' ')}
   end
 
-  if ide.frame then
+  if frame then
     for n in ipairs(texts) do
       if (texts[n] ~= statusTextTable[n]) then
         ide:SetStatus(texts[n], n)
@@ -147,21 +150,6 @@ local function navigateBack(editor)
   local pos = table.remove(editor.jumpstack)
   editor:GotoPosEnforcePolicy(pos)
   return true
-end
-
--- init new notebook page selection, use nil for current page
-function SetEditorSelection(selection)
-  local editor = ide:GetEditor(selection)
-  updateStatusText(editor) -- update even if nil
-  ide.frame:SetTitle(ide:ExpandPlaceholders(ide.config.format.apptitle))
-
-  if editor then
-    ide:GetDocument(editor):SetActive()
-  else
-    FileTreeMarkSelected('')
-  end
-
-  SetAutoRecoveryMark()
 end
 
 function EditorAutoComplete(editor)
@@ -1093,6 +1081,7 @@ function CreateEditor(bare)
       -- which causes canceling of auto-complete, which later cause crash because
       -- the window is destroyed in wxwidgets after already being closed. Skip on OSX.
       if ide.osname ~= 'Macintosh' and editor:AutoCompActive() then editor:AutoCompCancel() end
+
       PackageEventHandle("onEditorFocusLost", editor)
       event:Skip()
     end)
@@ -1174,12 +1163,19 @@ function CreateEditor(bare)
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED, updateModified)
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTLEFT, updateModified)
 
+  editor:Connect(wx.wxEVT_DESTROY,
+    function (event)
+      -- the count may still include the editor that is being destroyed
+      if not ide:IsValidCtrl(editor) then return end
+      local notebook = editor:GetParent():DynamicCast("wxAuiNotebook")
+      if notebook:GetPageCount() <= 1 then updateStatusText() end
+    end)
+
   -- "updateStatusText" should be called in UPDATEUI event, but it creates
   -- several performance problems on Windows (using wx2.9.5+) when
   -- brackets or backspace is used (very slow screen repaint with 0.5s delay).
   -- Moving it to PAINTED event creates problems on OSX (using wx2.9.5+),
   -- where refresh of R/W and R/O status in the status bar is delayed.
-
   editor:Connect(wxstc.wxEVT_STC_PAINTED,
     function (event)
       PackageEventHandle("onEditorPainted", editor, event)

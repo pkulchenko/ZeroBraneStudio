@@ -204,7 +204,7 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
 
   -- activate the editor; this is needed for those cases when the editor is
   -- created from some other element, for example, from a project tree.
-  if not skipselection then SetEditorSelection() end
+  if not skipselection then doc:SetActive() end
 
   PackageEventHandle("onEditorLoad", editor)
 
@@ -305,10 +305,11 @@ function SaveFile(editor, filePath)
     if ok then
       editor:SetSavePoint()
       local doc = ide:GetDocument(editor)
-      doc.filePath = filePath
-      doc.fileName = wx.wxFileName(filePath):GetFullName()
-      doc.modTime = GetFileModTime(filePath)
+      doc:SetFilePath(filePath)
+      doc:SetFileName(wx.wxFileName(filePath):GetFullName())
+      doc:SetFileModifiedTime(GetFileModTime(filePath))
       doc:SetTabText(doc:GetFileName())
+      ide:SetTitle() -- update title of the main window
       SetAutoRecoveryMark()
       FileTreeMarkSelected(filePath)
 
@@ -364,9 +365,6 @@ function SaveFileAs(editor)
        or ApproveFileOverwrite()
 
     if cansave and SaveFile(editor, filePath) then
-      SetEditorSelection() -- update title of the editor
-      -- new extension, this will reset keywords and indicators
-      if ext ~= GetFileExt(filePath) then LoadFile(filePath, editor) end
       saved = true
 
       if existing then
@@ -429,9 +427,6 @@ local function removePage(index)
   elseif prevIndex then
     notebook:SetSelection(prevIndex)
   end
-
-  -- need to set editor selection as it's called *after* PAGE_CHANGED event
-  SetEditorSelection()
 end
 
 function ClosePage(selection)
@@ -460,8 +455,13 @@ function ClosePage(selection)
     PackageEventHandle("onEditorClose", editor)
     editor:Destroy()
 
-    -- disable full screen if the last tab is closed
-    if not (notebook:GetSelection() >= 0) then ide:ShowFullScreen(false) end
+    local selection = notebook:GetSelection()
+    if selection >= 0 then
+      ide:GetDocument(notebook:GetPage(selection)):SetActive()
+    else
+      -- disable full screen if the last tab is closed
+      ide:ShowFullScreen(false)
+    end
     return true
   end
   return false
@@ -638,8 +638,8 @@ function SetOpenFiles(nametab,params)
     local editor = LoadFile(doc.filename,nil,true,true) -- skip selection
     if editor then editor:GotoPosDelayed(doc.cursorpos or 0) end
   end
-  notebook:SetSelection(params and params.index or 0)
-  SetEditorSelection()
+  local doc = ide:GetDocument(notebook:GetPage(params and params.index or 0))
+  if doc then doc:SetActive() end
 end
 
 function ProjectConfig(dir, config)
@@ -675,7 +675,6 @@ function SetOpenTabs(params)
     end
   end
   notebook:SetSelection(params and params.index or 0)
-  SetEditorSelection()
 end
 
 local function getOpenTabs()
@@ -734,15 +733,6 @@ local function saveAutoRecovery(force)
   ide:SetStatus(TR("Saved auto-recover at %s."):format(os.date("%H:%M:%S")))
 end
 
-local function fastWrap(func, ...)
-  -- ignore SetEditorSelection that is not needed as `func` may work on
-  -- multipe files, but editor needs to be selected once.
-  local SES = SetEditorSelection
-  SetEditorSelection = function() end
-  func(...)
-  SetEditorSelection = SES
-end
-
 function StoreRestoreProjectTabs(curdir, newdir, intfname)
   local win = ide.osname == 'Windows'
   local interpreter = intfname or ide.interpreter.fname
@@ -778,14 +768,14 @@ function StoreRestoreProjectTabs(curdir, newdir, intfname)
 
     -- close pages for those files that match the project in the reverse order
     -- (as ids shift when pages are closed)
-    for i = #closdocs, 1, -1 do fastWrap(ClosePage, closdocs[i].id) end
+    for i = #closdocs, 1, -1 do ClosePage(closdocs[i].id) end
   end
 
   local files, params = ProjectConfig(newdir)
   if files then
     -- provide fake index so that it doesn't activate it as the index may be not
     -- quite correct if some of the existing files are already open in the IDE.
-    fastWrap(SetOpenFiles, files, {index = #files + notebook:GetPageCount()})
+    SetOpenFiles(files, {index = #files + notebook:GetPageCount()})
   end
 
   -- either interpreter is chosen for the project or the default value is set
@@ -801,7 +791,6 @@ function StoreRestoreProjectTabs(curdir, newdir, intfname)
   elseif index and index >= 0 and files[index+1] then
     -- move the editor tab to the front with the file from the config
     LoadFile(files[index+1].filename, nil, true)
-    SetEditorSelection() -- activate the editor in the active tab
   end
 
   -- remove current config as it may change; the current configuration is

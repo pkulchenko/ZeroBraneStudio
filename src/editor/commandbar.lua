@@ -519,7 +519,7 @@ function ShowCommandBar(default, selected)
             ed:SetFocus() -- in case the focus is on some other panel
           end
         elseif tabindex then -- switch to existing tab
-          SetEditorSelection(tabindex)
+          ide:GetDocument(nb:GetPage(tabindex)):SetActive()
           if pindex and pindex ~= tabindex then ClosePage(pindex) end
         -- load a new file (into preview if set)
         elseif sline or text then
@@ -537,7 +537,9 @@ function ShowCommandBar(default, selected)
           end
         end
       elseif enter == nil then -- changed focus
-        -- do nothing; keep everything as is
+        -- re-activate the current document to ensure it has focus (needed on macOS)
+        local ed = nb:GetCurrentPage()
+        if ed then ide:GetDocument(ed):SetActive() end
       else
         -- close preview
         if pindex then ClosePage(pindex) end

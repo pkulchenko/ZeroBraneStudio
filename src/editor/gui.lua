@@ -205,8 +205,8 @@ local function createNotebook(frame)
         and event:GetOldSelection() == notebook:GetPageCount()
         and debug:traceback():find("'AddPage'"))
 
-      if doc and event:GetOldSelection() ~= wx.wxNOT_FOUND and not double then
-        SetEditorSelection(notebook:GetSelection())
+      if doc and doc:GetTabIndex() and event:GetOldSelection() ~= wx.wxNOT_FOUND and not double then
+        doc:SetActive()
       end
     end)
 
@@ -254,7 +254,8 @@ local function createNotebook(frame)
         -- workaround for wxwidgets issue http://trac.wxwidgets.org/ticket/15071
         notebook:SetSelection(selection)
         -- select the content of the tab after drag is done
-        SetEditorSelection(selection)
+        local doc = ide:GetDocument(notebook:GetPage(selection))
+        if doc then doc:SetActive() end
         event:Skip()
       end)
   end
