@@ -536,10 +536,6 @@ function ShowCommandBar(default, selected)
             if pindex then ClosePage(pindex) end
           end
         end
-      elseif enter == nil then -- changed focus
-        -- re-activate the current document to ensure it has focus (needed on macOS)
-        local ed = nb:GetCurrentPage()
-        if ed then ide:GetDocument(ed):SetActive() end
       else
         -- close preview
         if pindex then ClosePage(pindex) end
