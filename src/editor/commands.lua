@@ -406,7 +406,7 @@ local function removePage(index)
     if document.index < index then
       prevIndex = document.index
     elseif document.index == index then
-      ide:RemoveDocument(document.editor)
+      -- do nothing with the index
     elseif document.index > index then
       document.index = document.index - 1
       if nextIndex == nil then
@@ -418,8 +418,8 @@ local function removePage(index)
     end
   end
 
-  notebook:RemovePage(index)
-  
+  local deleted = notebook:RemovePage(index)
+
   if selectIndex then
     notebook:SetSelection(selectIndex)
   elseif nextIndex then
@@ -427,6 +427,8 @@ local function removePage(index)
   elseif prevIndex then
     notebook:SetSelection(prevIndex)
   end
+
+  return deleted
 end
 
 function ClosePage(selection)
@@ -450,10 +452,12 @@ function ClosePage(selection)
       (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
       debugger:Stop()
     end
-    removePage(ide:GetDocument(editor):GetTabIndex())
-    -- trigger event after the document is already removed, but the editor is still there
-    PackageEventHandle("onEditorClose", editor)
-    editor:Destroy()
+    if removePage(ide:GetDocument(editor):GetTabIndex()) then
+      ide:RemoveDocument(editor)
+      -- trigger event after the document is already removed, but the editor is still there
+      PackageEventHandle("onEditorClose", editor)
+      editor:Destroy()
+    end
 
     local selection = notebook:GetSelection()
     if selection >= 0 then
