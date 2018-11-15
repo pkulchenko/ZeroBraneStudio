@@ -212,15 +212,32 @@ end
 function ide:GetUIManager() return self.frame.uimgr end
 function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
 function ide:CreateDocument(ed, name)
-  if not ide:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
-  local document = setmetatable({editor = ed}, ide.proto.Document)
+  if not self:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
+  local document = setmetatable({editor = ed}, self.proto.Document)
   document:SetFileName(name)
   self.openDocuments[ed:GetId()] = document
   return document
 end
 function ide:RemoveDocument(ed)
-  if not ide:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
+  if not self:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
+
+  local index = self:GetDocument(ed):GetTabIndex()
+  local notebook = ed:GetParent():DynamicCast("wxAuiNotebook")
+  if not notebook:RemovePage(index) then return false end
+
   self.openDocuments[ed:GetId()] = nil
+
+  for _, document in ipairs(ide:GetDocumentList()) do
+    -- update document index, but only if the document is in the same notebook
+    if notebook == document:GetEditor():GetParent():DynamicCast("wxAuiNotebook")
+    and document:GetTabIndex() > index then
+      document:SetTabIndex(document:GetTabIndex() - 1)
+    end
+  end
+
+  local editor = notebook:GetCurrentPage()
+  if editor then ide:GetDocument(editor):SetActive() end
+
   return true
 end
 function ide:GetDocuments() return self.openDocuments end

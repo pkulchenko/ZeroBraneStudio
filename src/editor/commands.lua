@@ -393,46 +393,9 @@ function SaveAll(quiet)
   end
 end
 
-local function removePage(index)
-  local prevIndex = nil
-  local nextIndex = nil
-  
-  -- try to preserve old selection
-  local selectIndex = notebook:GetSelection()
-  selectIndex = selectIndex ~= index and selectIndex
-
-  for _, document in ipairs(ide:GetDocumentList()) do
-    local wasselected = document.index == selectIndex
-    if document.index < index then
-      prevIndex = document.index
-    elseif document.index == index then
-      -- do nothing with the index
-    elseif document.index > index then
-      document.index = document.index - 1
-      if nextIndex == nil then
-        nextIndex = document.index
-      end
-    end
-    if (wasselected) then
-      selectIndex = document.index
-    end
-  end
-
-  local deleted = notebook:RemovePage(index)
-
-  if selectIndex then
-    notebook:SetSelection(selectIndex)
-  elseif nextIndex then
-    notebook:SetSelection(nextIndex)
-  elseif prevIndex then
-    notebook:SetSelection(prevIndex)
-  end
-
-  return deleted
-end
-
 function ClosePage(selection)
   local editor = ide:GetEditor(selection)
+  if not editor then return false end
 
   if PackageEventHandle("onEditorPreClose", editor) == false then
     return false
@@ -452,20 +415,14 @@ function ClosePage(selection)
       (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
       debugger:Stop()
     end
-    if removePage(ide:GetDocument(editor):GetTabIndex()) then
-      ide:RemoveDocument(editor)
-      -- trigger event after the document is already removed, but the editor is still there
-      PackageEventHandle("onEditorClose", editor)
-      editor:Destroy()
-    end
+    if not ide:RemoveDocument(editor) then return false end
 
-    local selection = notebook:GetSelection()
-    if selection >= 0 then
-      ide:GetDocument(notebook:GetPage(selection)):SetActive()
-    else
-      -- disable full screen if the last tab is closed
-      ide:ShowFullScreen(false)
-    end
+    -- trigger event after the document is already removed, but the editor is still there
+    PackageEventHandle("onEditorClose", editor)
+    editor:Destroy()
+
+    -- disable full screen if the last tab is closed
+    if ide:GetEditorNotebook():GetPageCount() == 0 then ide:ShowFullScreen(false) end
     return true
   end
   return false
