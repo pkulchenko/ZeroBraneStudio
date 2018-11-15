@@ -446,7 +446,7 @@ end
 function SaveModifiedDialog(editor, allow_cancel)
   local result = wx.wxID_NO
   local document = ide:GetDocument(editor)
-  if document:IsModified() then
+  if document and document:IsModified() then
     document:SetActive()
     local message = TR("Do you want to save the changes to '%s'?")
       :format(document:GetFileName() or ide.config.default.name)
@@ -557,7 +557,7 @@ end
 
 function SaveIfModified(editor)
   local doc = ide:GetDocument(editor)
-  if doc:IsModified() or doc:IsNew() then
+  if doc and doc:IsModified() or doc:IsNew() then
     local saved = false
     if doc:IsNew() then
       local ret = wx.wxMessageBox(
