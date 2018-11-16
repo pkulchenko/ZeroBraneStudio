@@ -5,7 +5,6 @@
 
 local editorID = 100 -- window id to create editor pages with, incremented for new editors
 
-local openDocuments = ide.openDocuments
 local notebook = ide.frame.notebook
 local edcfg = ide.config.editor
 local styles = ide.config.styles
@@ -107,22 +106,22 @@ end
 local function isFileAlteredOnDisk(editor)
   if not editor then return end
 
-  local id = editor:GetId()
-  if openDocuments[id] then
-    local filePath = openDocuments[id].filePath
-    local fileName = openDocuments[id].fileName
-    local oldModTime = openDocuments[id].modTime
+  local doc = ide:GetDocument(editor)
+  if doc then
+    local filePath = doc:GetFilePath()
+    local fileName = doc:GetFileName()
+    local oldModTime = doc:GetFileModifiedTime()
 
     if filePath and (string.len(filePath) > 0) and oldModTime and oldModTime:IsValid() then
       local modTime = GetFileModTime(filePath)
       if modTime == nil then
-        openDocuments[id].modTime = nil
+        doc:SetFileModifiedTime(nil)
         wx.wxMessageBox(
           TR("File '%s' no longer exists."):format(fileName),
           ide:GetProperty("editormessage"),
           wx.wxOK + wx.wxCENTRE, ide.frame)
       elseif not editor:GetReadOnly() and modTime:IsValid() and oldModTime:IsEarlierThan(modTime) then
-        local ret = (edcfg.autoreload and (not ide:GetDocument(editor):IsModified()) and wx.wxYES)
+        local ret = edcfg.autoreload and (not doc:IsModified()) and wx.wxYES
           or wx.wxMessageBox(
             TR("File '%s' has been modified on disk."):format(fileName)
             .."\n"..TR("Do you want to reload it?"),
@@ -130,7 +129,7 @@ local function isFileAlteredOnDisk(editor)
             wx.wxYES_NO + wx.wxCENTRE, ide.frame)
 
         if ret ~= wx.wxYES or ReLoadFile(filePath, editor, true) then
-          openDocuments[id].modTime = GetFileModTime(filePath)
+          doc:SetFileModifiedTime(GetFileModTime(filePath))
         end
       end
     end
@@ -1412,9 +1411,9 @@ function CreateEditor(bare)
       -- if Shift+Zoom is used, then zoom all editors, not just the current one
       if wx.wxGetKeyState(wx.WXK_SHIFT) then
         local zoom = editor:GetZoom()
-        for _, doc in pairs(openDocuments) do
+        for _, doc in pairs(ide:GetDocuments()) do
           -- check the editor zoom level to avoid recursion
-          if doc.editor:GetZoom() ~= zoom then doc.editor:SetZoom(zoom) end
+          if doc:GetEditor():GetZoom() ~= zoom then doc:GetEditor():SetZoom(zoom) end
         end
       end
       event:Skip()
