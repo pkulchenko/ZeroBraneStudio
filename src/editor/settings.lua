@@ -492,6 +492,7 @@ function SettingsRestoreView()
     local cnt = nb:GetPageCount()
     for i=0,cnt-1 do
       ide:GetDocument(nb:GetPage(i)):SetTabIndex(i)
+      ide:GetDocument(nb:GetPage(i)):SetTabText(nb:GetPageText(i))
     end
   end
 

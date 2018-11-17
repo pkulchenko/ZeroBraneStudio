@@ -190,6 +190,8 @@ local function treeSetConnectorsAndIcons(tree)
   function tree:IsFileStart(item_id) return isIt(item_id, image.FILEOTHERSTART) end
   function tree:IsRoot(item_id) return not tree:GetItemParent(item_id):IsOk() end
 
+  function tree:GetFileImage(name) return getIcon(name, false) end
+
   local function saveSettings()
     ide:AddPackage('core.filetree', {}):SetSettings(filetree.settings)
   end

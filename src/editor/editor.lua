@@ -1610,6 +1610,7 @@ function AddEditor(editor, name)
     return
   else
     document.index = notebook:GetPageIndex(editor)
+    document:SetTabText(name)
     return document
   end
 end
