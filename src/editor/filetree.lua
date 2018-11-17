@@ -48,6 +48,7 @@ local function createImg(ext)
   mdc:SetTextForeground(wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext))))
   mdc:DrawText(ext:sub(1,3), 2, 5) -- take first three letters only
   mdc:SelectObject(wx.wxNullBitmap)
+  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
   return bitmap
 end
 
