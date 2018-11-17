@@ -961,10 +961,12 @@ function ide:CreateFileIcon(ext)
   mdc:DrawBitmap(clearbmp, 0, 0, true)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
   mdc:DrawText(ext:sub(1,3), 2, 6) -- take first three letters only
-  local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
-  mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
-  mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-  mdc:DrawRectangle(1, 2, 14, 3)
+  if #ext > 0 then
+    local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
+    mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
+    mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
+    mdc:DrawRectangle(1, 2, 14, 3)
+  end
   mdc:SelectObject(wx.wxNullBitmap)
   bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
   return bitmap
