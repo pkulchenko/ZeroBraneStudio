@@ -840,6 +840,7 @@ function ide:CreateImageList(group, ...)
   local _ = wx.wxLogNull() -- disable error reporting in popup
   local size = wx.wxSize(16,16)
   local imglist = wx.wxImageList(16,16)
+
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
     if imglist:Add(icon) == -1 then
@@ -931,6 +932,42 @@ function ide:GetBitmap(id, client, size)
   local icon = icons[file] or iconFilter(wx.wxBitmap(file), self.config.imagetint)
   icons[file] = icon
   return icon, file
+end
+
+local function str2rgb(str)
+  local a = ('a'):byte()
+  -- `red`/`blue` are more prominent colors; use them for the first two letters; suppress `green`
+  local r = (((str:sub(1,1):lower():byte() or a)-a) % 27)/27
+  local b = (((str:sub(2,2):lower():byte() or a)-a) % 27)/27
+  local g = (((str:sub(3,3):lower():byte() or a)-a) % 27)/27/3
+  local ratio = 256/(r + g + b + 1e-6)
+  return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
+end
+local clearbmps = {}
+function ide:CreateFileIcon(ext)
+  local iconmap = ide.config.filetree.iconmap
+  local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
+  local size = 16
+  local bitmap = wx.wxBitmap(size, size)
+  if not clearbmps[size] then
+    clearbmps[size] = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size,size))
+  end
+  local clearbmp = clearbmps[size]
+  local font = wx.wxFont(ide.font.editor)
+  font:SetPointSize(ide.osname == "Macintosh" and 6 or 5)
+  local mdc = wx.wxMemoryDC()
+  mdc:SelectObject(bitmap)
+  mdc:SetFont(font)
+  mdc:DrawBitmap(clearbmp, 0, 0, true)
+  mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
+  mdc:DrawText(ext:sub(1,3), 2, 6) -- take first three letters only
+  local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
+  mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
+  mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
+  mdc:DrawRectangle(1, 2, 14, 3)
+  mdc:SelectObject(wx.wxNullBitmap)
+  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
+  return bitmap
 end
 
 function ide:AddPackage(name, package)

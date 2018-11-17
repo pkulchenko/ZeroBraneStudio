@@ -25,37 +25,6 @@ local image = { -- the order of ids has to match the order in the ImageList
   FILEKNOWN = 4,
 }
 
-local clearbmp = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(16,16))
-local function str2rgb(str)
-  local a = ('a'):byte()
-  -- `red`/`blue` are more prominent colors; use them for the first two letters; suppress `green`
-  local r = (((str:sub(1,1):lower():byte() or a)-a) % 27)/27
-  local b = (((str:sub(2,2):lower():byte() or a)-a) % 27)/27
-  local g = (((str:sub(3,3):lower():byte() or a)-a) % 27)/27/3
-  local ratio = 256/(r + g + b + 1e-6)
-  return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
-end
-local function createImg(ext)
-  local iconmap = ide.config.filetree.iconmap
-  local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
-  local bitmap = wx.wxBitmap(16, 16)
-  local font = wx.wxFont(ide.font.editor)
-  font:SetPointSize(ide.osname == "Macintosh" and 6 or 5)
-  local mdc = wx.wxMemoryDC()
-  mdc:SelectObject(bitmap)
-  mdc:SetFont(font)
-  mdc:DrawBitmap(clearbmp, 0, 0, true)
-  mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
-  mdc:DrawText(ext:sub(1,3), 2, 6) -- take first three letters only
-  local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
-  mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
-  mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-  mdc:DrawRectangle(1, 2, 14, 3)
-  mdc:SelectObject(wx.wxNullBitmap)
-  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
-  return bitmap
-end
-
 local function getIcon(name, isdir)
   local project = ide:GetProject()
   local startfile = GetFullPathIfExists(project, filetree.settings.startfile[project])
@@ -64,7 +33,7 @@ local function getIcon(name, isdir)
   local known = extmap[ext] or ide:FindSpec(ext)
   if known and not extmap[ext] then
     local iconmap = ide.config.filetree.iconmap
-    extmap[ext] = iconmap and ide.filetree.imglist:Add(createImg(ext)) or image.FILEKNOWN
+    extmap[ext] = iconmap and ide.filetree.imglist:Add(ide:CreateFileIcon(ext)) or image.FILEKNOWN
   end
   local icon = isdir and image.DIRECTORY or known and extmap[ext] or image.FILEOTHER
   if startfile and startfile == name then icon = image.FILEOTHERSTART end
