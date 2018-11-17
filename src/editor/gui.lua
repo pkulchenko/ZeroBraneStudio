@@ -693,7 +693,7 @@ do
     CenterPane():PaneBorder(false))
   mgr:AddPane(frame.projnotebook, wxaui.wxAuiPaneInfo():
     Name("projpanel"):CaptionVisible(false):
-    MinSize(200,200):FloatingSize(200,400):
+    MinSize(200,200):BestSize(300,300):FloatingSize(200,400):
     Left():Layer(1):Position(1):PaneBorder(false):
     CloseButton(true):MaximizeButton(false):PinButton(true))
   mgr:AddPane(frame.bottomnotebook, wxaui.wxAuiPaneInfo():
