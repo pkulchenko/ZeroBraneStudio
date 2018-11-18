@@ -53,7 +53,7 @@ local function treeAddDir(tree,parent_id,rootdir)
   local files = ide:GetFileList(rootdir)
   local dirmapped = {}
   local projpath = ide:GetProject()
-  local ishoisted = not ide:IsSameDirectoryPath(projpath, tree:GetItemFullName(parent_id))
+  local ishoisted = tree:IsDirHoisted(parent_id)
   -- if this is a root, but not hoisted folder
   if tree:IsRoot(parent_id) and not ishoisted then
     local mapped = filetree.settings.mapped[projpath] or {}
@@ -184,6 +184,9 @@ local function treeSetConnectorsAndIcons(tree)
 
   function tree:IsDirectory(item_id) return isIt(item_id, image.DIRECTORY) end
   function tree:IsDirMapped(item_id) return isIt(item_id, image.DIRECTORYMAPPED) end
+  function tree:IsDirHoisted(item_id)
+    return not ide:IsSameDirectoryPath(ide:GetProject(), tree:GetItemFullName(item_id))
+  end
   -- "file known" is a special case as it includes file types registered dynamically
   function tree:IsFileKnown(item_id) return tree:GetItemImage(item_id) >= image.FILEKNOWN end
   function tree:IsFileOther(item_id) return isIt(item_id, image.FILEOTHER) end
@@ -706,8 +709,7 @@ local function treeSetConnectorsAndIcons(tree)
       menu:Destroy(ismapped and ID.MAPDIRECTORY or ID.UNMAPDIRECTORY)
 
       local isroot = tree:IsRoot(item_id)
-      local ishoisted = not ide:IsSameDirectoryPath(
-        ide:GetProject(), tree:GetItemFullName(tree:GetRootItem()))
+      local ishoisted = tree:IsDirHoisted(tree:GetRootItem())
       menu:Enable(ID.UNHOISTDIRECTORY, ishoisted)
       menu:Enable(ID.HOISTDIRECTORY, isdir and not isroot or ismapped)
       if not ishoisted then menu:Destroy(ID.UNHOISTDIRECTORY) end
