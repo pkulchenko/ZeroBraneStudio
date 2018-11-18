@@ -449,7 +449,7 @@ local function treeSetConnectorsAndIcons(tree)
     ide.filetree.filedrop.OnDropFiles = function(self, x, y, filenames)
       local item_id = tree:HitTest(wx.wxPoint(x,y))
       -- set project if one file moved over the project directory
-      if not tree:GetItemParent(item_id):IsOk() and #filenames == 1 then
+      if item_id:IsOk() and not tree:GetItemParent(item_id):IsOk() and #filenames == 1 then
         ide:SetProject(filenames[1])
       else
         for i = 1, #filenames do tree:MapDirectory(filenames[i]) end
