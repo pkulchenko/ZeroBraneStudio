@@ -504,7 +504,9 @@ local function treeSetConnectorsAndIcons(tree)
   -- handle context menu
   local function addItem(item_id, name, img)
     local isdir = tree:IsDirectory(item_id)
-    local parent = isdir and item_id or tree:GetItemParent(item_id)
+    local ismapped = tree:IsDirMapped(item_id)
+    local ishoisted = tree:IsDirHoisted(item_id)
+    local parent = (isdir or ismapped or ishoisted) and item_id or tree:GetItemParent(item_id)
     if isdir then tree:Expand(item_id) end -- expand to populate if needed
 
     local item = tree:PrependItem(parent, name, img)
