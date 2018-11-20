@@ -958,6 +958,8 @@ function ide:CreateFileIcon(ext)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
   mdc:SetFont(font)
+  mdc:SetBackground(wx.wxTRANSPARENT_BRUSH)
+  mdc:Clear()
   mdc:DrawBitmap(clearbmp, 0, 0, true)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
   mdc:DrawText(ext:sub(1,3), 2, 6) -- take first three letters only
