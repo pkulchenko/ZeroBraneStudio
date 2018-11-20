@@ -196,7 +196,7 @@ local function treeSetConnectorsAndIcons(tree)
   function tree:GetFileImage(name) return getIcon(name, false) end
 
   local function saveSettings()
-    ide:AddPackage('core.filetree', {}):SetSettings(filetree.settings)
+    ide:GetPackage('core.filetree'):SetSettings(filetree.settings)
   end
 
   function tree:FindItem(match)
