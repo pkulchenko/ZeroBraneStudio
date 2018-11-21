@@ -559,6 +559,16 @@ function ide:CreateStyledTextCtrl(...)
     self:EnsureVisibleEnforcePolicy(self:LineFromPosition(pos))
   end
 
+  function editor:MarginFromPoint(x)
+    if x < 0 then return nil end
+    local pos = 0
+    for m = 0, ide.MAXMARGIN do
+      pos = pos + self:GetMarginWidth(m)
+      if x < pos then return m end
+    end
+    return nil -- position outside of margins
+  end
+
   function editor:CanFold()
     for m = 0, ide.MAXMARGIN do
       if self:GetMarginWidth(m) > 0
