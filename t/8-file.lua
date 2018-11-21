@@ -19,9 +19,11 @@ is(ide:GetDocument(ed3):IsActive(), true, "Closing other document preserves acti
 is(ide:GetDocument(ed3):GetTabIndex(), 1, "Closing other document updates tab index.")
 is(#ide:GetDocumentList(), 2, "Closing a document maintains document list.")
 ide:GetDocument(ed3):Close()
-is(ide:GetDocument(ed1):IsActive(), true, "Closing active document moves active statue.")
+is(ide:GetDocument(ed1):IsActive(), true, "Closing active document moves active status.")
+like(ide:GetMainFrame():GetTitle(), "test%.lua", "Activating document after closing sets the application title.")
 ide:GetDocument(ed1):Close()
 is(#ide:GetDocumentList(), 0, "Closing all documents results in empty document list.")
+like(ide:GetMainFrame():GetTitle(), " %- $", "Closing all documents sets the application title without file name.")
 
 local fullpath = MergeFullPath(wx.wxFileName.GetCwd(), 't/test.lua')
 ok(ide:ActivateFile('t/test.lua:10'), "Load file:line.")

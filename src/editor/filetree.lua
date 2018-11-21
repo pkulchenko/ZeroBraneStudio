@@ -1052,7 +1052,7 @@ local function unWatchDir(path)
 end
 
 local function syncTree(editor)
-    local doc = ide:GetDocument(editor)
+    local doc = editor and ide:GetDocument(editor)
     AddToFileHistory(doc and doc:GetFilePath())
     FileTreeMarkSelected(doc and doc:GetFilePath() or '')
     SetAutoRecoveryMark()
@@ -1113,7 +1113,7 @@ local package = ide:AddPackage('core.filetree', {
 
     onEditorClose = function(plugin, editor)
       -- check if the last document is being closed
-      if #ide:GetDocuments() == 0 then syncTree(editor) end
+      if #ide:GetDocumentList() <= 1 then syncTree() end
     end,
   })
 MergeSettings(filetree.settings, package:GetSettings())

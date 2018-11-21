@@ -415,11 +415,15 @@ function ClosePage(selection)
       (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
       debugger:Stop()
     end
-    if not ide:RemoveDocument(editor) then return false end
 
-    -- trigger event after the document is already removed, but the editor is still there
+    -- the event needs to be triggered before the document/editor is removed,
+    -- so there is a small chance that the notebook page will not be removed,
+    -- despite the event already triggered
     PackageEventHandle("onEditorClose", editor)
+    if not ide:RemoveDocument(editor) then return false end
     editor:Destroy()
+
+    ide:SetTitle()
 
     -- disable full screen if the last tab is closed
     if ide:GetEditorNotebook():GetPageCount() == 0 then ide:ShowFullScreen(false) end
