@@ -707,7 +707,6 @@ function CreateEditor(bare)
 
   editor:SetMarginType(margin.LINENUMBER, wxstc.wxSTC_MARGIN_NUMBER)
   editor:SetMarginMask(margin.LINENUMBER, 0)
-  editor:SetMarginSensitive(margin.LINENUMBER, true)
   editor:SetMarginWidth(margin.LINENUMBER,
     edcfg.linenumber and math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")) or 0)
 
@@ -853,6 +852,38 @@ function CreateEditor(bare)
 
   if bare then return editor end -- bare editor doesn't have any event handlers
 
+  local mclickpos
+  editor:Connect(wx.wxEVT_LEFT_DOWN, function(event)
+      event:Skip()
+      mclickpos = event:GetPosition()
+    end)
+  editor:Connect(wx.wxEVT_LEFT_UP, function(event)
+      event:Skip()
+      if not mclickpos
+      or wx.wxGetKeyState(wx.WXK_SHIFT)
+      or wx.wxGetKeyState(wx.WXK_CONTROL)
+      or wx.wxGetKeyState(wx.WXK_ALT) then return end
+
+      local point = event:GetPosition()
+      if mclickpos:GetX() ~= point:GetX() or mclickpos:GetY() ~= point:GetY() then return end
+
+      local pos = editor:PositionFromPoint(point)
+      local line = editor:LineFromPosition(pos)
+      local header = bit.band(editor:GetFoldLevel(line),
+        wxstc.wxSTC_FOLDLEVELHEADERFLAG) == wxstc.wxSTC_FOLDLEVELHEADERFLAG
+      local from = header and line or editor:GetFoldParent(line)
+
+      -- check if the click over the LINENUMBER margin
+      if editor:MarginFromPoint(point:GetX()) == margin.LINENUMBER then
+        -- if the next line is not visible, select the entire block to include folder lines
+        if not editor:GetLineVisible(line+1) then
+          local to = editor:GetLastChild(from, -1)
+          editor:SetSelection(editor:PositionFromLine(from), editor:PositionFromLine(to+1))
+          editor:ToggleFold(line)
+        end
+      end
+    end)
+
   editor.ev = {}
   editor:Connect(wxstc.wxEVT_STC_MARGINCLICK,
     function (event)
@@ -863,15 +894,6 @@ function CreateEditor(bare)
       local marginno = event:GetMargin()
       if marginno == margin.MARKER then
         editor:BreakpointToggle(line)
-      elseif marginno == margin.LINENUMBER then
-        -- if the next line is visible, select only one line
-        if editor:GetLineVisible(line+1) then
-          editor:SetSelection(editor:PositionFromLine(line), editor:PositionFromLine(line+1))
-        else -- select the entire block to include folder lines
-          local to = editor:GetLastChild(from, -1)
-          editor:SetSelection(editor:PositionFromLine(from), editor:PositionFromLine(to+1))
-          editor:ToggleFold(line)
-        end
       elseif marginno == margin.FOLD then
         local shift, ctrl = wx.wxGetKeyState(wx.WXK_SHIFT), wx.wxGetKeyState(wx.WXK_CONTROL)
         if shift and ctrl then
