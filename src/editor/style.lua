@@ -413,7 +413,8 @@ function ReApplySpecAndStyles()
   StylesApplyToEditor(ide.config.stylesoutshell,errorlog)
 
   for _, doc in pairs(ide:GetDocuments()) do
-    if doc.editor.spec then doc.editor:SetupKeywords(nil, doc.editor.spec) end
+    local editor = doc:GetEditor()
+    if editor.spec then editor:SetupKeywords(nil, editor.spec) end
   end
 end
 
