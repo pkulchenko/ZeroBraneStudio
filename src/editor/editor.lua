@@ -11,6 +11,9 @@ local styles = ide.config.styles
 local unpack = table.unpack or unpack
 local q = EscapeMagic
 
+local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
+local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
+
 local margin = { LINENUMBER = 0, MARKER = 1, FOLD = 2 }
 local linenumlen = 4 + 0.5
 local foldtypes = {
@@ -360,6 +363,49 @@ function EditorCallTip(editor, pos, x, y)
     end
     if oncalltip ~= false then callTipFitAndShow(editor, pos, tip) end
   end
+end
+
+function ClosePage(selection)
+  local editor = ide:GetEditor(selection)
+  if not editor then return false end
+
+  if PackageEventHandle("onEditorPreClose", editor) == false then
+    return false
+  end
+
+  if SaveModifiedDialog(editor, true) ~= wx.wxID_CANCEL then
+    DynamicWordsRemoveAll(editor)
+    local debugger = ide:GetDebugger()
+    -- check if the window with the scratchpad running is being closed
+    if debugger and debugger.scratchpad and debugger.scratchpad.editors
+    and debugger.scratchpad.editors[editor] then
+      debugger:ScratchpadOff()
+    end
+    -- check if the debugger is running and is using the current window;
+    -- abort the debugger if the current marker is in the window being closed
+    if debugger and debugger:IsConnected() and
+      (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
+      debugger:Stop()
+    end
+
+    -- update the editor status if the active document is being closed
+    -- if another editor/document gets focus, it will update the status
+    if ide:GetDocument(editor):IsActive() then updateStatusText() end
+
+    -- the event needs to be triggered before the document/editor is removed,
+    -- so there is a small chance that the notebook page will not be removed,
+    -- despite the event already triggered
+    PackageEventHandle("onEditorClose", editor)
+    if not ide:RemoveDocument(editor) then return false end
+    editor:Destroy()
+
+    ide:SetTitle()
+
+    -- disable full screen if the last tab in the main notebook is closed
+    if ide:GetEditorNotebook():GetPageCount() == 0 then ide:ShowFullScreen(false) end
+    return true
+  end
+  return false
 end
 
 -- Indicator handling for functions and local/global variables
@@ -1183,14 +1229,6 @@ function CreateEditor(bare)
   end
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTREACHED, updateModified)
   editor:Connect(wxstc.wxEVT_STC_SAVEPOINTLEFT, updateModified)
-
-  editor:Connect(wx.wxEVT_DESTROY,
-    function (event)
-      -- the count may still include the editor that is being destroyed
-      if not ide:IsValidCtrl(editor) then return end
-      local notebook = editor:GetParent():DynamicCast("wxAuiNotebook")
-      if notebook:GetPageCount() <= 1 then updateStatusText() end
-    end)
 
   -- "updateStatusText" should be called in UPDATEUI event, but it creates
   -- several performance problems on Windows (using wx2.9.5+) when

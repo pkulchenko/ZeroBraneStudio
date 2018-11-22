@@ -10,7 +10,6 @@ local uimgr = frame.uimgr
 local unpack = table.unpack or unpack
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
-local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER
 
 function NewFile(filename)
   filename = filename or ide:GetDefaultFileName()
@@ -388,45 +387,6 @@ function SaveAll(quiet)
       SaveFile(document:GetEditor(), filePath) -- will call SaveFileAs if necessary
     end
   end
-end
-
-function ClosePage(selection)
-  local editor = ide:GetEditor(selection)
-  if not editor then return false end
-
-  if PackageEventHandle("onEditorPreClose", editor) == false then
-    return false
-  end
-
-  if SaveModifiedDialog(editor, true) ~= wx.wxID_CANCEL then
-    DynamicWordsRemoveAll(editor)
-    local debugger = ide:GetDebugger()
-    -- check if the window with the scratchpad running is being closed
-    if debugger and debugger.scratchpad and debugger.scratchpad.editors
-    and debugger.scratchpad.editors[editor] then
-      debugger:ScratchpadOff()
-    end
-    -- check if the debugger is running and is using the current window;
-    -- abort the debugger if the current marker is in the window being closed
-    if debugger and debugger:IsConnected() and
-      (editor:MarkerNext(0, CURRENT_LINE_MARKER_VALUE) >= 0) then
-      debugger:Stop()
-    end
-
-    -- the event needs to be triggered before the document/editor is removed,
-    -- so there is a small chance that the notebook page will not be removed,
-    -- despite the event already triggered
-    PackageEventHandle("onEditorClose", editor)
-    if not ide:RemoveDocument(editor) then return false end
-    editor:Destroy()
-
-    ide:SetTitle()
-
-    -- disable full screen if the last tab is closed
-    if ide:GetEditorNotebook():GetPageCount() == 0 then ide:ShowFullScreen(false) end
-    return true
-  end
-  return false
 end
 
 function CloseAllPagesExcept(selection)
