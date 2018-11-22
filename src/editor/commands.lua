@@ -57,15 +57,11 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
   end
 
   -- prevent files from being reopened again
-  if (not editor) then
+  if not editor then
     local doc = ide:FindDocument(filePath)
     if doc then
-      if not skipselection and doc.index ~= notebook:GetSelection() then
-        -- selecting the same tab doesn't trigger PAGE_CHANGE event,
-        -- but moves the focus to the tab bar, which needs to be avoided.
-        notebook:SetSelection(doc.index)
-      end
-      return doc.editor
+      if not skipselection then doc:SetActive() end
+      return doc:GetEditor()
     end
   end
 
@@ -359,7 +355,8 @@ function SaveFileAs(editor)
     local filePath = fileDialog:GetPath()
 
     -- check if there is another tab with the same name and prepare to close it
-    local existing = (ide:FindDocument(filePath) or {}).index
+    local doc = ide:FindDocument(filePath)
+    local existing = doc and doc:GetTabIndex() or nil
     local cansave = fn:GetFullName() == filePath -- saving into the same file
        or not wx.wxFileName(filePath):FileExists() -- or a new file
        or ApproveFileOverwrite()

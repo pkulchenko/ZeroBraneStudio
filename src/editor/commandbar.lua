@@ -531,7 +531,7 @@ function ShowCommandBar(default, selected)
           local doc = ide:FindDocument(fullPath)
           -- if the document is already opened (not in the preview)
           -- or can't be opened as a file or folder, then close the preview
-          if doc and doc.index ~= pindex
+          if doc and doc:GetTabIndex() ~= pindex
           or not LoadFile(fullPath, preview or nil) and not ide:SetProject(fullPath) then
             if pindex then ClosePage(pindex) end
           end

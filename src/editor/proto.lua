@@ -10,14 +10,16 @@ ide.proto.Document = {__index = {
   GetFileExt = function(self) return GetFileExt(self.fileName) end,
   GetFileModifiedTime = function(self) return self.modTime end,
   GetEditor = function(self) return self.editor end,
-  GetTabIndex = function(self) return self.index end,
-  SetTabIndex = function(self, index) self.index = index end,
+  GetTabIndex = function(self)
+    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
+    return notebook:GetPageIndex(self.editor), notebook
+  end,
   IsModified = function(self) return self.editor:GetModify() end,
   IsNew = function(self) return self.filePath == nil end,
   IsActive = function(self)
     if not self.editor then return false end
-    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
-    return notebook:GetSelection() == self.index
+    local index, notebook = self:GetTabIndex()
+    return notebook:GetSelection() == index
   end,
   SetFilePath = function(self, path) self.filePath = path end,
   SetFileName = function(self, name)
@@ -37,31 +39,30 @@ ide.proto.Document = {__index = {
   end,
   SetTabText = function(self, text)
     local modpref = ide.config.editor.modifiedprefix or modpref
-    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
-    notebook:SetPageText(self.index,
+    local index, notebook = self:GetTabIndex()
+    notebook:SetPageText(index,
       (self:IsModified() and modpref or '')..(text or self:GetTabText()))
     if ide.config.editor.showtabtooltip and ide:IsValidProperty(notebook, "SetPageToolTip") then
-      notebook:SetPageToolTip(self.index, self:GetFilePath() or text or self:GetTabText())
+      notebook:SetPageToolTip(index, self:GetFilePath() or text or self:GetTabText())
     end
     if ide.config.editor.showtabicon then
       if not notebook:GetImageList() then
         notebook:SetImageList(ide:GetProjectTree():GetImageList())
       end
-      notebook:SetPageImage(self.index,
+      notebook:SetPageImage(index,
         ide:GetProjectTree():GetFileImage(self:GetFilePath() or text or self:GetTabText()))
     end
   end,
   GetTabText = function(self)
-    if self.index == nil then return self.fileName end
     local modpref = ide.config.editor.modifiedprefix or modpref
-    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
-    return notebook:GetPageText(self.index):gsub("^"..q(modpref), "")
+    local index, notebook = self:GetTabIndex()
+    if index == nil then return self.fileName end
+    return notebook:GetPageText(index):gsub("^"..q(modpref), "")
   end,
   SetActive = function(self)
     if not self.editor then return false end
 
-    local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
-    local index = notebook:GetPageIndex(self.editor)
+    local index, notebook = self:GetTabIndex()
     if index and notebook:GetSelection() ~= index then notebook:SetSelection(index) end
 
     self.editor:SetFocus()
@@ -73,9 +74,9 @@ ide.proto.Document = {__index = {
     if ide.osname == "Macintosh" and ide.infocus then ide.infocus = notebook:GetCurrentPage() end
   end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
-  Close = function(self) return ClosePage(self.index) end,
+  Close = function(self) return ClosePage((self:GetTabIndex())) end,
   CloseAll = function(self) return CloseAllPagesExcept(-1) end,
-  CloseAllExcept = function(self) return CloseAllPagesExcept(self.index) end,
+  CloseAllExcept = function(self) return CloseAllPagesExcept((self:GetTabIndex())) end,
 }}
 
 ide.proto.Plugin = {__index = {

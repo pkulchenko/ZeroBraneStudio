@@ -242,12 +242,6 @@ local function createNotebook(frame)
   if ide.wxver >= "2.9.5" then
     notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_END_DRAG,
       function (event)
-        for page = 0, notebook:GetPageCount()-1 do
-          local editor = ide:GetEditor(page)
-          local doc = editor and ide:GetDocument(editor)
-          if doc then doc:SetTabIndex(page) end
-        end
-
         local selection = getTabWindow(event, notebook)
         if selection == wx.wxNOT_FOUND then return end
         -- set the selection on the dragged tab to reset its state

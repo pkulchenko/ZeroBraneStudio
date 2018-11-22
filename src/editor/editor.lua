@@ -1631,7 +1631,6 @@ function AddEditor(editor, name)
     ide:RemoveDocument(editor)
     return
   else
-    document.index = notebook:GetPageIndex(editor)
     document:SetTabText(name)
     return document
   end
