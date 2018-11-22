@@ -985,7 +985,6 @@ function FileTreeMarkSelected(file)
   -- the project is changed to one that includes the current item)
   if curr_file ~= file
   or item_id and not projtree:IsBold(item_id) then
-    projtree:Freeze()
     if curr_file then
       local curr_id = wx.wxIsAbsolutePath(curr_file) and projtree:FindItem(curr_file)
       if curr_id and projtree:IsBold(curr_id) then
@@ -994,12 +993,14 @@ function FileTreeMarkSelected(file)
     end
     if item_id then
       if not projtree:IsVisible(item_id) then
+        if ide.osname ~= "Unix" then projtree:Freeze() end
         projtree:EnsureVisible(item_id)
         -- it's supposed to be enough to do EnsureVisible,
         -- but occasionally it's positioned one item too high (wxwidgets 3.1.1 on Win),
         -- so scroll to make sure the item really is visible
         projtree:ScrollTo(item_id)
         projtree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+        if ide.osname ~= "Unix" then projtree:Thaw() end
       end
       projtree:SetItemBold(item_id, true)
     end
@@ -1007,7 +1008,6 @@ function FileTreeMarkSelected(file)
     if ide.wxver < "2.9.5" and ide.osname == 'Macintosh' then
       projtree:Refresh()
     end
-    projtree:Thaw()
   end
 end
 
