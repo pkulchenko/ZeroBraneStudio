@@ -34,18 +34,28 @@ local function showCommandBar(params)
   local lines = {}
   local linenow = 0
 
+  local sash = ide:GetUIManager():GetArtProvider():GetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE)
+  local border = sash + 2
+
   local nb = ide:GetEditorNotebook()
   local pos = nb:GetScreenPosition()
   if pos then
-    local miny
+    local minx, miny
     for p = 0, nb:GetPageCount()-1 do
-      local y = nb:GetPage(p):GetScreenPosition():GetY()
+      local sp = nb:GetPage(p):GetScreenPosition()
+      local x, y = sp:GetX(), sp:GetY()
       -- just in case, compare with the position of the notebook itself;
       -- this is needed because the tabs that haven't been refreshed yet
       -- may report 0 as their screen position on Linux, which is incorrect.
       if y > pos:GetY() and (not miny or y < miny) then miny = y end
+      if x > pos:GetX() and (not minx or x < minx) then minx = x end
     end
-    pos:SetX(pos:GetX()+nb:GetClientSize():GetWidth()-row_width-16)
+    local anchorx = pos:GetX()+nb:GetClientSize():GetWidth()-row_width-16
+    local cp = nb:GetCurrentPage()
+    if cp and cp:GetScreenPosition():GetX() ~= minx then
+      anchorx = pos:GetX()+border
+    end
+    pos:SetX(anchorx)
     pos:SetY((miny or pos:GetY())+2)
   else
     pos = wx.wxDefaultPosition
@@ -58,8 +68,6 @@ local function showCommandBar(params)
   local sfont = wx.wxFont(tfont)
   tfont:SetPointSize(tfont:GetPointSize()+2)
 
-  local sash = ide:GetUIManager():GetArtProvider():GetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE)
-  local border = sash + 2
   local hoffset = 4
   local voffset = 2
 
