@@ -12,7 +12,10 @@ ide.proto.Document = {__index = {
   GetEditor = function(self) return self.editor end,
   GetTabIndex = function(self)
     local notebook = self.editor:GetParent():DynamicCast("wxAuiNotebook")
-    return notebook:GetPageIndex(self.editor), notebook
+    local index = notebook:GetPageIndex(self.editor)
+    -- index may be -1 when `GetPageIndex` is called when the editor is already
+    -- removed from the notebook; return non-existing index to continue
+    return index >= 0 and index or notebook:GetPageCount(), notebook
   end,
   IsModified = function(self) return self.editor:GetModify() end,
   IsNew = function(self) return self.filePath == nil end,
