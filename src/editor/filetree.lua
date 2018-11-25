@@ -989,6 +989,7 @@ function FileTreeMarkSelected(file)
       local curr_id = wx.wxIsAbsolutePath(curr_file) and projtree:FindItem(curr_file)
       if curr_id and projtree:IsBold(curr_id) then
         projtree:SetItemBold(curr_id, false)
+        PackageEventHandle("onFiletreeFileMarkSelected", projtree, curr_id, curr_file, false)
       end
     end
     if item_id then
@@ -1003,6 +1004,7 @@ function FileTreeMarkSelected(file)
         if ide.osname ~= "Unix" then projtree:Thaw() end
       end
       projtree:SetItemBold(item_id, true)
+      PackageEventHandle("onFiletreeFileMarkSelected", projtree, item_id, file, true)
     end
     curr_file = file
     if ide.wxver < "2.9.5" and ide.osname == 'Macintosh' then
