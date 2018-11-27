@@ -187,6 +187,17 @@ local function createNotebook(frame)
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
 
+  -- there is a protected method in wxwidgets, but it's not available in wxlua,
+  -- so use a workaround to find the tab control that the page belongs to.
+  function notebook:GetTabCtrl(win)
+    local pg = win or self:GetCurrentPage()
+    if not pg then return nil end
+    local px,py = pg:GetScreenPosition():GetXY()
+    local point = wx.wxPoint(px,py-10) -- right above the page in the notebook
+    local ctrl = wx.wxFindWindowAtPoint(point)
+    return ctrl and ctrl:DynamicCast("wxAuiTabCtrl") or nil
+  end
+
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
