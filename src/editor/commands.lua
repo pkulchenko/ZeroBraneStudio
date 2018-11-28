@@ -389,19 +389,6 @@ function SaveAll(quiet)
   end
 end
 
-function CloseAllPagesExcept(selection)
-  local toclose = {}
-  for _, document in ipairs(ide:GetDocumentList()) do
-    if document:GetTabIndex() ~= selection then table.insert(toclose, document:GetEditor()) end
-  end
-
-  -- close pages for those files that match the project in the reverse order
-  -- (as ids shift when pages are closed)
-  for i = #toclose, 1, -1 do
-    if not ide:GetDocument(toclose[i]):Close() then break end
-  end
-end
-
 -- Show a dialog to save a file before closing editor.
 -- returns wxID_YES, wxID_NO, or wxID_CANCEL if allow_cancel
 function SaveModifiedDialog(editor, allow_cancel)

@@ -78,8 +78,31 @@ ide.proto.Document = {__index = {
   end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
   Close = function(self) return ClosePage((self:GetTabIndex())) end,
-  CloseAll = function(self) return CloseAllPagesExcept(-1) end,
-  CloseAllExcept = function(self) return CloseAllPagesExcept((self:GetTabIndex())) end,
+  CloseAll = function(self, opts)
+    -- opts.keep=true/false -- keep the current document (false)
+    -- opts.scope="section"/"notebook"/"all" -- ("all")
+    local index, nb = self:GetTabIndex()
+    local tabctrl = nb:GetTabCtrl(self.editor)
+    if not opts then opts = {} end
+    -- if the tab control is not available and `section` is requested as the scope,
+    -- change the scope to the `notebook`. This shouldn't normally happen,
+    -- but may if the tab control is checked before the frame is fully set up.
+    if not tabctrl and opts.scope == "section" then opts.scope = "notebook" end
+    local toclose = {}
+    for _, document in ipairs(ide:GetDocumentList()) do
+      local dindex, dnb = document:GetTabIndex()
+      if (not opts.keep or dnb ~= nb or dindex ~= index)
+      and (opts.scope ~= "notebook" or nb:GetPageIndex(document:GetEditor()) >= 0)
+      -- if the document is in the same tab control (for split notebooks)
+      and (opts.scope ~= "section" or tabctrl and tabctrl:GetIdxFromWindow(document:GetEditor()) >= 0) then
+        table.insert(toclose, document)
+      end
+    end
+    -- close pages in the reverse order (as ids shift when pages are closed)
+    for i = #toclose, 1, -1 do
+      if not toclose[i]:Close() then break end
+    end
+  end,
 }}
 
 ide.proto.Plugin = {__index = {
