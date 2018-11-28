@@ -1,43 +1,36 @@
 -- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
--- Ruby LPeg lexer.
+-- Copyright 2017 Michel Martens.
+-- Crystal LPeg lexer (based on Ruby).
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local lex = lexer.new('ruby')
+local lex = lexer.new('crystal')
 
 -- Whitespace.
 lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
-  BEGIN END alias and begin break case class def defined? do else elsif end
-  ensure false for if in module next nil not or redo rescue retry return self
-  super then true undef unless until when while yield __FILE__ __LINE__
+  alias begin break case class def defined? do else elsif end ensure false for
+  if in module next nil not redo rescue retry return self super then true undef
+  unless until when while yield __FILE__ __LINE__
 ]]))
 
 -- Functions.
 lex:add_rule('function', token(lexer.FUNCTION, word_match[[
-  at_exit autoload binding caller catch chop chop! chomp chomp! eval exec exit
-  exit! fail fork format gets global_variables gsub gsub! iterator? lambda load
-  local_variables loop open p print printf proc putc puts raise rand readline
-  readlines require select sleep split sprintf srand sub sub! syscall system
-  test trace_var trap untrace_var
+  abort at_exit caller delay exit fork future get_stack_top gets lazy loop main
+  p print printf puts raise rand read_line require sleep spawn sprintf system
+  with_color
+  -- Macros.
+  assert_responds_to debugger parallel pp record redefine_main
 ]]) * -S('.:|'))
 
-local word_char = lexer.alnum + S('_!?')
-
 -- Identifiers.
+local word_char = lexer.alnum + S('_!?')
 local word = (lexer.alpha + '_') * word_char^0
-lex:add_rule('identifier', token(lexer.IDENTIFIER, word))
-
--- Comments.
-local line_comment = '#' * lexer.nonnewline_esc^0
-local block_comment = lexer.starts_line('=begin') *
-                      (lexer.any - lexer.newline * '=end')^0 *
-                      (lexer.newline * '=end')^-1
-lex:add_rule('comment', token(lexer.COMMENT, block_comment + line_comment))
+local identifier = token(lexer.IDENTIFIER, word)
 
 local delimiter_matches = {['('] = ')', ['['] = ']', ['{'] = '}'}
 local literal_delimitted = P(function(input, index)
@@ -56,13 +49,13 @@ local literal_delimitted = P(function(input, index)
   end
 end)
 
+-- Comments.
+lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline_esc^0))
+
 -- Strings.
 local cmd_str = lexer.delimited_range('`')
-local lit_cmd = '%x' * literal_delimitted
-local lit_array = '%w' * literal_delimitted
 local sq_str = lexer.delimited_range("'")
 local dq_str = lexer.delimited_range('"')
-local lit_str = '%' * S('qQ')^-1 * literal_delimitted
 local heredoc = '<<' * P(function(input, index)
   local s, e, indented, _, delimiter =
     input:find('(%-?)(["`]?)([%a_][%w_]*)%2[\n\r\f;]+', index)
@@ -75,11 +68,9 @@ end)
 -- TODO: regex_str fails with `obj.method /patt/` syntax.
 local regex_str = #P('/') * lexer.last_char_includes('!%^&*([{-=+|:;,?<>~') *
                   lexer.delimited_range('/', true, false) * S('iomx')^0
-local lit_regex = '%r' * literal_delimitted * S('iomx')^0
-lex:add_rule('string', token(lexer.STRING, (sq_str + dq_str + lit_str +
-                                            heredoc + cmd_str + lit_cmd +
-                                            lit_array) * S('f')^-1) +
-                       token(lexer.REGEX, regex_str + lit_regex))
+lex:add_rule('string', token(lexer.STRING, (sq_str + dq_str + heredoc +
+                                            cmd_str) * S('f')^-1) +
+                       token(lexer.REGEX, regex_str))
 
 -- Numbers.
 local dec = lexer.digit^1 * ('_' * lexer.digit^1)^0 * S('ri')^-1
@@ -113,12 +104,12 @@ local function disambiguate(text, pos, line, s)
          not text:sub(1, pos - 1):match('\\[ \t]*\r?\n$') and 1 or 0
 end
 lex:add_fold_point(lexer.KEYWORD, 'begin', 'end')
+lex:add_fold_point(lexer.KEYWORD, 'case', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'class', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'def', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'do', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'for', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'module', 'end')
-lex:add_fold_point(lexer.KEYWORD, 'case', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'if', disambiguate)
 lex:add_fold_point(lexer.KEYWORD, 'while', disambiguate)
 lex:add_fold_point(lexer.KEYWORD, 'unless', disambiguate)
@@ -126,7 +117,6 @@ lex:add_fold_point(lexer.KEYWORD, 'until', disambiguate)
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '[', ']')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '=begin', '=end')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.OPERATOR, '#', lexer.fold_line_comments('#'))
 
 return lex

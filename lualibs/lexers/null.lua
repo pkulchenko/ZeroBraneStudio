@@ -1,6 +1,4 @@
--- Copyright 2006-2016 Mitchell mitchell.att.foicica.com. See LICENSE.
+-- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
 -- Null LPeg lexer.
 
-local M = {_NAME = 'null'}
-
-return M
+return require('lexer').new('null')

@@ -1,22 +1,22 @@
--- Copyright 2006-2013 gwash. See LICENSE.
+-- Copyright 2006-2018 gwash. See License.txt.
 -- Archlinux PKGBUILD LPeg lexer.
 
-local l = require('lexer')
-local token, word_match = l.token, l.word_match
+local lexer = require('lexer')
+local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local M = {_NAME = 'pkgbuild'}
+local lex = lexer.new('pkgbuild')
 
 -- Whitespace.
-local ws = token(l.WHITESPACE, l.space^1)
+lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Comments.
-local comment = token(l.COMMENT, '#' * l.nonnewline^0)
+lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
 
 -- Strings.
-local sq_str = l.delimited_range("'", false, true)
-local dq_str = l.delimited_range('"')
-local ex_str = l.delimited_range('`')
+local sq_str = lexer.delimited_range("'", false, true)
+local dq_str = lexer.delimited_range('"')
+local ex_str = lexer.delimited_range('`')
 local heredoc = '<<' * P(function(input, index)
   local s, e, _, delimiter =
     input:find('(["\']?)([%a_][%w_]*)%1[\n\r\f;]+', index)
@@ -25,65 +25,55 @@ local heredoc = '<<' * P(function(input, index)
     return e and e + 1 or #input + 1
   end
 end)
-local string = token(l.STRING, sq_str + dq_str + ex_str + heredoc)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + ex_str + heredoc))
 
 -- Numbers.
-local number = token(l.NUMBER, l.float + l.integer)
+lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
 
 -- Keywords.
-local keyword = token(l.KEYWORD, word_match({
-  'patch', 'cd', 'make', 'patch', 'mkdir', 'cp', 'sed', 'install', 'rm',
-  'if', 'then', 'elif', 'else', 'fi', 'case', 'in', 'esac', 'while', 'for',
-  'do', 'done', 'continue', 'local', 'return', 'git', 'svn', 'co', 'clone',
-  'gconf-merge-schema', 'msg', 'echo', 'ln',
+lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
+  patch cd make patch mkdir cp sed install rm if then elif else fi case in esac
+  while for do done continue local return git svn co clone gconf-merge-schema
+  msg echo ln
   -- Operators.
-  '-a', '-b', '-c', '-d', '-e', '-f', '-g', '-h', '-k', '-p', '-r', '-s', '-t',
-  '-u', '-w', '-x', '-O', '-G', '-L', '-S', '-N', '-nt', '-ot', '-ef', '-o',
-  '-z', '-n', '-eq', '-ne', '-lt', '-le', '-gt', '-ge', '-Np', '-i'
-}, '-'))
+  -a -b -c -d -e -f -g -h -k -p -r -s -t -u -w -x -O -G -L -S -N -nt -ot -ef -o
+  -z -n -eq -ne -lt -le -gt -ge -Np -i
+]]))
 
 -- Functions.
-local func = token(l.FUNCTION, word_match{'build'})
+lex:add_rule('function', token(lexer.FUNCTION, word_match[[
+  build check package pkgver prepare
+]] * '()'))
 
-local constant = token(l.CONSTANT, word_match{
-  'pkgname', 'pkgver', 'pkgrel', 'pkgdesc', 'arch', 'url',
-  'license', 'optdepends', 'depends', 'makedepends', 'provides',
-  'conflicts', 'replaces', 'install', 'source', 'md5sums',
-  'pkgdir', 'srcdir'
-})
+-- Constants.
+lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
+  -- We do *not* list pkgver srcdir and startdir here.
+  -- These are defined by makepkg but user should not alter them.
+  arch backup changelog checkdepends conflicts depends epoch groups install
+  license makedepends md5sums noextract optdepends options pkgbase pkgdesc
+  pkgname pkgrel pkgver provides replaces sha1sums sha256sums sha384sums
+  sha512sums source url validpgpkeys
+]]))
 
 -- Identifiers.
-local identifier = token(l.IDENTIFIER, l.word)
+lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Variables.
-local variable = token(l.VARIABLE,
-                       '$' * (S('!#?*@$') +
-                       l.delimited_range('()', true, true) +
-                       l.delimited_range('[]', true, true) +
-                       l.delimited_range('{}', true, true) +
-                       l.delimited_range('`', true, true) +
-                       l.digit^1 + l.word))
+lex:add_rule('variable', token(lexer.VARIABLE,
+                               '$' * (S('!#?*@$') +
+                               lexer.delimited_range('()', true, true) +
+                               lexer.delimited_range('[]', true, true) +
+                               lexer.delimited_range('{}', true, true) +
+                               lexer.delimited_range('`', true, true) +
+                               lexer.digit^1 +
+                               lexer.word)))
 
 -- Operators.
-local operator = token(l.OPERATOR, S('=!<>+-/*^~.,:;?()[]{}'))
+lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*^~.,:;?()[]{}')))
 
-M._rules = {
-  {'whitespace', ws},
-  {'comment', comment},
-  {'string', string},
-  {'number', number},
-  {'keyword', keyword},
-  {'function', func},
-  {'constant', constant},
-  {'identifier', identifier},
-  {'variable', variable},
-  {'operator', operator},
-}
+-- Fold points.
+lex:add_fold_point(lexer.OPERATOR, '(', ')')
+lex:add_fold_point(lexer.OPERATOR, '{', '}')
+lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
 
-M._foldsymbols = {
-  _patterns = {'[%(%){}]', '#'},
-  [l.OPERATOR] = {['('] = 1, [')'] = -1, ['{'] = 1, ['}'] = -1},
-  [l.COMMENT] = {['#'] = l.fold_line_comments('#')}
-}
-
-return M
+return lex

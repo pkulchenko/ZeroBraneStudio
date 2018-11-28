@@ -1,72 +1,90 @@
--- Copyright 2006-2016 Mitchell mitchell.att.foicica.com. See LICENSE.
+-- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
 -- C LPeg lexer.
 
-local l = require('lexer')
-local token, word_match = l.token, l.word_match
+local lexer = require('lexer')
+local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local M = {_NAME = 'ansi_c'}
+local lex = lexer.new('ansi_c')
 
 -- Whitespace.
-local ws = token(l.WHITESPACE, l.space^1)
-
--- Comments.
-local line_comment = '//' * l.nonnewline_esc^0
-local block_comment = '/*' * (l.any - '*/')^0 * P('*/')^-1
-local comment = token(l.COMMENT, line_comment + block_comment)
-
--- Strings.
-local sq_str = P('L')^-1 * l.delimited_range("'", true)
-local dq_str = P('L')^-1 * l.delimited_range('"', true)
-local string = token(l.STRING, sq_str + dq_str)
-
--- Numbers.
-local number = token(l.NUMBER, l.float + l.integer)
-
--- Preprocessor.
-local preproc_word = word_match{
-  'define', 'elif', 'else', 'endif', 'if', 'ifdef', 'ifndef', 'include', 'line',
-  'pragma', 'undef'
-}
-local preproc = token(l.PREPROCESSOR,
-                      l.starts_line('#') * S('\t ')^0 * preproc_word)
+lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Keywords.
-local keyword = token(l.KEYWORD, word_match{
-  'auto', 'break', 'case', 'const', 'continue', 'default', 'do', 'else',
-  'extern', 'for', 'goto', 'if', 'inline', 'register', 'restrict', 'return',
-  'sizeof', 'static', 'switch', 'typedef', 'volatile', 'while'
-})
+lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
+  auto break case const continue default do else extern for goto if inline
+  register restrict return sizeof static switch typedef volatile while
+  -- C11.
+  _Alignas _Alignof _Atomic _Generic _Noreturn _Static_assert _Thread_local
+]]))
 
 -- Types.
-local type = token(l.TYPE, word_match{
-  'char', 'double', 'enum', 'float', 'int', 'long', 'short', 'signed', 'struct',
-  'union', 'unsigned', 'void', '_Bool', '_Complex', '_Imaginary'
-})
+lex:add_rule('type', token(lexer.TYPE, word_match[[
+  char double enum float int long short signed struct union unsigned void
+  _Bool _Complex _Imaginary
+  -- Stdlib types.
+  ptrdiff_t size_t max_align_t wchar_t intptr_t uintptr_t intmax_t uintmax_t
+]] + P('u')^-1 * 'int' * (P('_least') + '_fast')^-1 * R('09')^1 * '_t'))
+
+-- Constants.
+lex:add_rule('constants', token(lexer.CONSTANT, word_match[[
+  NULL
+  -- Preprocessor.
+  __DATE__ __FILE__ __LINE__ __TIME__ __func__
+  -- errno.h.
+  E2BIG EACCES EADDRINUSE EADDRNOTAVAIL EAFNOSUPPORT EAGAIN EALREADY EBADF
+  EBADMSG EBUSY ECANCELED ECHILD ECONNABORTED ECONNREFUSED ECONNRESET EDEADLK
+  EDESTADDRREQ EDOM EDQUOT EEXIST EFAULT EFBIG EHOSTUNREACH EIDRM EILSEQ
+  EINPROGRESS EINTR EINVAL EIO EISCONN EISDIR ELOOP EMFILE EMLINK EMSGSIZE
+  EMULTIHOP ENAMETOOLONG ENETDOWN ENETRESET ENETUNREACH ENFILE ENOBUFS ENODATA
+  ENODEV ENOENT ENOEXEC ENOLCK ENOLINK ENOMEM ENOMSG ENOPROTOOPT ENOSPC ENOSR
+  ENOSTR ENOSYS ENOTCONN ENOTDIR ENOTEMPTY ENOTRECOVERABLE ENOTSOCK ENOTSUP
+  ENOTTY ENXIO EOPNOTSUPP EOVERFLOW EOWNERDEAD EPERM EPIPE EPROTO
+  EPROTONOSUPPORT EPROTOTYPE ERANGE EROFS ESPIPE ESRCH ESTALE ETIME ETIMEDOUT
+  ETXTBSY EWOULDBLOCK EXDEV
+]]))
 
 -- Identifiers.
-local identifier = token(l.IDENTIFIER, l.word)
+lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
+
+-- Strings.
+local sq_str = P('L')^-1 * lexer.delimited_range("'", true)
+local dq_str = P('L')^-1 * lexer.delimited_range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
+
+-- Comments.
+local line_comment = '//' * lexer.nonnewline_esc^0
+local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1 +
+                      lexer.starts_line('#if') * S(' \t')^0 * '0' *
+                      lexer.space *
+                      (lexer.any - lexer.starts_line('#endif'))^0 *
+                      (lexer.starts_line('#endif'))^-1
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
+
+-- Numbers.
+lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+
+-- Preprocessor.
+local preproc_word = word_match[[
+  define elif else endif if ifdef ifndef line pragma undef
+]]
+lex:add_rule('preprocessor',
+             #lexer.starts_line('#') *
+             (token(lexer.PREPROCESSOR, '#' * S('\t ')^0 * preproc_word) +
+              token(lexer.PREPROCESSOR, '#' * S('\t ')^0 * 'include') *
+              (token(lexer.WHITESPACE, S('\t ')^1) *
+               token(lexer.STRING,
+                     lexer.delimited_range('<>', true, true)))^-1))
 
 -- Operators.
-local operator = token(l.OPERATOR, S('+-/*%<>~!=^&|?~:;,.()[]{}'))
+lex:add_rule('operator', token(lexer.OPERATOR, S('+-/*%<>~!=^&|?~:;,.()[]{}')))
 
-M._rules = {
-  {'whitespace', ws},
-  {'keyword', keyword},
-  {'type', type},
-  {'identifier', identifier},
-  {'string', string},
-  {'comment', comment},
-  {'number', number},
-  {'preproc', preproc},
-  {'operator', operator},
-}
+-- Fold points.
+lex:add_fold_point(lexer.PREPROCESSOR, '#if', '#endif')
+lex:add_fold_point(lexer.PREPROCESSOR, '#ifdef', '#endif')
+lex:add_fold_point(lexer.PREPROCESSOR, '#ifndef', '#endif')
+lex:add_fold_point(lexer.OPERATOR, '{', '}')
+lex:add_fold_point(lexer.COMMENT, '/*', '*/')
+lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
 
-M._foldsymbols = {
-  _patterns = {'%l+', '[{}]', '/%*', '%*/', '//'},
-  [l.PREPROCESSOR] = {['if'] = 1, ifdef = 1, ifndef = 1, endif = -1},
-  [l.OPERATOR] = {['{'] = 1, ['}'] = -1},
-  [l.COMMENT] = {['/*'] = 1, ['*/'] = -1, ['//'] = l.fold_line_comments('//')}
-}
-
-return M
+return lex

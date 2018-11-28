@@ -29,7 +29,7 @@ and others).
 
 * Small, portable, and **cross-platform** (Windows, macOS, and Linux).
 * Written in Lua and is extensible with Lua packages.
-* **Syntax highlighting** and folding for 110+ languages and file formats.
+* **Syntax highlighting** and folding for 125+ languages and file formats.
 * **Project view** with auto-refresh and ability to hide files and directories from the list.
 * Bundled with several of **the most popular Lua modules**
 ([luasocket](https://github.com/diegonehab/luasocket),
