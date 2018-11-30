@@ -210,7 +210,7 @@ function ide:GetMainFrame()
   return self.frame
 end
 function ide:GetUIManager() return self.frame.uimgr end
-function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
+function ide:GetDocument(ed) return self:IsValidCtrl(ed) and self.openDocuments[ed:GetId()] end
 function ide:CreateDocument(ed, name)
   if not self:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
   local document = setmetatable({editor = ed}, self.proto.Document)
