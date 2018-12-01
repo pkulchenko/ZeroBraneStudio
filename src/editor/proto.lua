@@ -77,7 +77,7 @@ ide.proto.Document = {__index = {
     if ide.osname == "Macintosh" and ide.infocus then ide.infocus = notebook:GetCurrentPage() end
   end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
-  Close = function(self) return ClosePage((self:GetTabIndex())) end,
+  Close = function(self) return ClosePage(self:GetTabIndex()) end,
   CloseAll = function(self, opts)
     -- opts.keep=true/false -- keep the current document (false)
     -- opts.scope="section"/"notebook"/"all" -- ("all")
