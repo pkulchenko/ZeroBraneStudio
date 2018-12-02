@@ -225,10 +225,6 @@ function ide:RemoveDocument(ed)
   if not notebook:RemovePage(index) then return false end
 
   self.openDocuments[ed:GetId()] = nil
-
-  local editor = notebook:GetCurrentPage()
-  if editor then ide:GetDocument(editor):SetActive() end
-
   return true
 end
 function ide:GetDocuments() return self.openDocuments end

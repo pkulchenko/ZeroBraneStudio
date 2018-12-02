@@ -201,14 +201,12 @@ local function createNotebook(frame)
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
-      local ed = ide:GetEditor(notebook:GetSelection())
-      local doc = ed and ide:GetDocument(ed)
+      local doc = ide:GetDocument(notebook:GetCurrentPage())
 
       -- skip activation when any of the following is true:
       -- (1) there is no document yet, the editor tab was just added,
       -- so no changes needed as there will be a proper later call;
-      -- (2) the page change event was triggered after a tab is closed;
-      -- (3) on OSX from AddPage event when changing from the last tab
+      -- (2) on OSX from AddPage event when changing from the last tab
       -- (this is to work around a duplicate event generated in this case
       -- that first activates the added tab and then some other tab (2.9.5)).
 
@@ -216,7 +214,7 @@ local function createNotebook(frame)
         and event:GetOldSelection() == notebook:GetPageCount()
         and debug:traceback():find("'AddPage'"))
 
-      if doc and doc:GetTabIndex() and event:GetOldSelection() ~= wx.wxNOT_FOUND and not double then
+      if doc and doc:GetTabIndex() and not double then
         doc:SetActive()
       end
     end)
