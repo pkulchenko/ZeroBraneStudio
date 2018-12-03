@@ -355,23 +355,13 @@ function SaveFileAs(editor)
 
     -- check if there is another tab with the same name and prepare to close it
     local doc = ide:FindDocument(filePath)
-    local existing = doc and doc:GetTabIndex() or nil
     local cansave = fn:GetFullName() == filePath -- saving into the same file
        or not wx.wxFileName(filePath):FileExists() -- or a new file
        or ApproveFileOverwrite()
 
     if cansave and SaveFile(editor, filePath) then
       saved = true
-
-      if existing then
-        -- save the current selection as it may change after closing
-        local current = notebook:GetSelection()
-        ClosePage(existing)
-        -- restore the selection if it changed
-        if current ~= notebook:GetSelection() then
-          notebook:SetSelection(current)
-        end
-      end
+      if doc then doc:Close() end
     end
   end
 
