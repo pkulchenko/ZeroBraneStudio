@@ -222,7 +222,7 @@ local function createNotebook(frame)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
     function (event)
       local idx = event:GetSelection()
-      if idx ~= wx.wxNOT_FOUND then ClosePage(idx) end
+      if idx ~= wx.wxNOT_FOUND then ide:GetDocument(notebook:GetPage(idx)):Close() end
       event:Veto() -- don't propagate the event as the page is already closed
     end)
 
@@ -361,7 +361,8 @@ local function createNotebook(frame)
   notebook:Connect(ID.CLOSESEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function()
           for p = notebook:GetPageCount()-1, 0, -1 do
-            if isPreview(notebook:GetPage(p)) then ClosePage(p) end
+            local editor = notebook:GetPage(p)
+            if isPreview(editor) then ide:GetDocument(editor):Close() end
           end
         end)
     end)

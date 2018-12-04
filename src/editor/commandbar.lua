@@ -725,7 +725,7 @@ function ShowCommandBar(default, selected)
           if not win then preview:Update() preview:Refresh() end
           preview:SetEvtHandlerEnabled(true)
         elseif preview then
-          ClosePage(nb:GetPageIndex(preview))
+          ide:GetDocument(preview):Close()
           preview = nil
         end
       end
