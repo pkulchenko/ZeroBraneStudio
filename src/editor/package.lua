@@ -336,9 +336,8 @@ end
 function ide:FindDocument(path)
   local fileName = wx.wxFileName(path)
   for _, doc in pairs(self:GetDocuments()) do
-    if doc.filePath and fileName:SameAs(wx.wxFileName(doc.filePath)) then
-      return doc
-    end
+    local path = doc:GetFilePath()
+    if path and fileName:SameAs(wx.wxFileName(path)) then return doc end
   end
   return
 end
@@ -351,9 +350,8 @@ function ide:FindDocumentsByPartialPath(path)
 
   local docs = {}
   for _, doc in pairs(self:GetDocuments()) do
-    if doc.filePath
-    and (doc.filePath:find(pattern)
-         or iscaseinsensitive and doc.filePath:lower():find(lpattern)) then
+    local path = doc:GetFilePath()
+    if path and (path:find(pattern) or iscaseinsensitive and path:lower():find(lpattern)) then
       table.insert(docs, doc)
     end
   end
