@@ -190,7 +190,7 @@ local function createNotebook(frame)
   -- there is a protected method in wxwidgets, but it's not available in wxlua,
   -- so use a workaround to find the tab control that the page belongs to.
   function notebook:GetTabCtrl(win)
-    local pg = win or self:GetCurrentPage()
+    local pg = win and self:GetPageIndex(win) >= 0 and win or self:GetCurrentPage()
     if not pg then return nil end
     local px,py = pg:GetScreenPosition():GetXY()
     local point = wx.wxPoint(px,py-10) -- right above the page in the notebook
