@@ -81,9 +81,9 @@ ide.proto.Document = {__index = {
   CloseAll = function(self, opts)
     -- opts.keep=true/false -- keep the current document (false)
     -- opts.scope="section"/"notebook"/"all" -- ("all")
-    local index, nb = self:GetTabIndex()
-    local tabctrl = nb:GetTabCtrl(self.editor)
     if not opts then opts = {} end
+    local index, nb = self:GetTabIndex()
+    local tabctrl = opts.scope == "section" and nb:GetTabCtrl(self.editor) or nil
     -- if the tab control is not available and `section` is requested as the scope,
     -- change the scope to the `notebook`. This shouldn't normally happen,
     -- but may if the tab control is checked before the frame is fully set up.
