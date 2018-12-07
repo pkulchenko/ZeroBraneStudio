@@ -640,7 +640,7 @@ function StoreRestoreProjectTabs(curdir, newdir, intfname)
   if curdir and #curdir > 0 then
     local lowcurdir = win and string.lower(curdir) or curdir
     local lownewdir = win and string.lower(newdir) or newdir
-    local projdocs, closdocs = {}, {}
+    local projdocs = {}
     for _, document in ipairs(GetOpenFiles()) do
       local dpath = win and string.lower(document.filename) or document.filename
       -- check if the filename is in the same folder
@@ -648,11 +648,6 @@ function StoreRestoreProjectTabs(curdir, newdir, intfname)
       and dpath:find("^[\\/]", #lowcurdir+1) then
         table.insert(projdocs, document)
         closing = closing + (document.id < current and 1 or 0)
-        -- only close if the file is not in new project as it would be reopened
-        if not dpath:find(lownewdir, 1, true)
-        or not dpath:find("^[\\/]", #lownewdir+1) then
-          table.insert(closdocs, document)
-        end
       elseif document.id == current then restore = true end
     end
 
@@ -663,9 +658,9 @@ function StoreRestoreProjectTabs(curdir, newdir, intfname)
     ProjectConfig(curdir, {projdocs,
       {index = notebook:GetSelection() - current, interpreter = interpreter}})
 
-    -- close pages for those files that match the project in the reverse order
-    -- (as ids shift when pages are closed)
-    for i = #closdocs, 1, -1 do ClosePage(closdocs[i].id) end
+    local editor = ide:GetEditor()
+    local doc = editor and ide:GetDocument(editor)
+    if doc then doc:CloseAll({scope = "project"}) end
   end
 
   local files, params = ProjectConfig(newdir)

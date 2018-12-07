@@ -80,7 +80,7 @@ ide.proto.Document = {__index = {
   Close = function(self) return ClosePage(self:GetTabIndex()) end,
   CloseAll = function(self, opts)
     -- opts.keep=true/false -- keep the current document (false)
-    -- opts.scope="section"/"notebook"/"all" -- ("all")
+    -- opts.scope="section"/"notebook"/"project"/"all" -- ("all")
     -- opts.dryrun=true/false -- return the list of documents and not close (false)
     if not opts then opts = {} end
     local index, nb = self:GetTabIndex()
@@ -92,8 +92,10 @@ ide.proto.Document = {__index = {
     local toclose = {}
     for _, document in ipairs(ide:GetDocumentList()) do
       local dindex, dnb = document:GetTabIndex()
+      local path = document:GetFilePath()
       if (not opts.keep or dnb ~= nb or dindex ~= index)
       and (opts.scope ~= "notebook" or nb:GetPageIndex(document:GetEditor()) >= 0)
+      and (opts.scope ~= "project" or path and ide:IsProjectSubDirectory(path))
       -- if the document is in the same tab control (for split notebooks)
       and (opts.scope ~= "section" or tabctrl and tabctrl:GetIdxFromWindow(document:GetEditor()) >= 0) then
         table.insert(toclose, document)
