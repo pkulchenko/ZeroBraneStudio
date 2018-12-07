@@ -81,6 +81,7 @@ ide.proto.Document = {__index = {
   CloseAll = function(self, opts)
     -- opts.keep=true/false -- keep the current document (false)
     -- opts.scope="section"/"notebook"/"all" -- ("all")
+    -- opts.dryrun=true/false -- return the list of documents and not close (false)
     if not opts then opts = {} end
     local index, nb = self:GetTabIndex()
     local tabctrl = opts.scope == "section" and nb:GetTabCtrl(self.editor) or nil
@@ -98,6 +99,7 @@ ide.proto.Document = {__index = {
         table.insert(toclose, document)
       end
     end
+    if opts.dryrun then return toclose end
     -- close pages in the reverse order (as ids shift when pages are closed)
     for i = #toclose, 1, -1 do
       if not toclose[i]:Close() then break end
