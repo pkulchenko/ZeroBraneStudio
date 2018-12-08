@@ -495,7 +495,9 @@ function ShowCommandBar(default, selected)
               editor = LoadFile(sline, (not doc or doc:GetTabIndex() == pindex) and preview or nil)
             end
             if editor then
-              if pindex and pindex ~= ide:GetDocument(editor):GetTabIndex() then ClosePage(pindex) end
+              if pindex and pindex ~= ide:GetDocument(editor):GetTabIndex() then
+                ide:GetDocument(preview):Close()
+              end
               editor:SetFocus() -- in case the focus is on some other panel
               editor:GotoPos(tabindex-1)
               editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(tabindex-1))
@@ -528,7 +530,7 @@ function ShowCommandBar(default, selected)
           end
         elseif tabindex then -- switch to existing tab
           ide:GetDocument(nb:GetPage(tabindex)):SetActive()
-          if pindex and pindex ~= tabindex then ClosePage(pindex) end
+          if pindex and pindex ~= tabindex then ide:GetDocument(preview):Close() end
         -- load a new file (into preview if set)
         elseif sline or text then
           -- 1. use "text" if Ctrl/Cmd-Enter is used
@@ -541,12 +543,12 @@ function ShowCommandBar(default, selected)
           -- or can't be opened as a file or folder, then close the preview
           if doc and doc:GetTabIndex() ~= pindex
           or not LoadFile(fullPath, preview or nil) and not ide:SetProject(fullPath) then
-            if pindex then ClosePage(pindex) end
+            if pindex then ide:GetDocument(preview):Close() end
           end
         end
       else
         -- close preview
-        if pindex then ClosePage(pindex) end
+        if pindex then ide:GetDocument(preview):Close() end
         -- restore original selection if canceled
         if nb:GetSelection() ~= selection then nb:SetSelection(selection) end
       end
