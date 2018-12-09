@@ -94,10 +94,12 @@ ide.proto.Document = {__index = {
       local dindex, dnb = document:GetTabIndex()
       local path = document:GetFilePath()
       if (not opts.keep or dnb ~= nb or dindex ~= index)
-      and (opts.scope ~= "notebook" or nb:GetPageIndex(document:GetEditor()) >= 0)
-      and (opts.scope ~= "project" or path and ide:IsProjectSubDirectory(path))
-      -- if the document is in the same tab control (for split notebooks)
-      and (opts.scope ~= "section" or tabctrl and tabctrl:GetIdxFromWindow(document:GetEditor()) >= 0) then
+      and (not opts.scope or opts.scope == "all" -- close all if the scope is not set
+        or (opts.scope == "notebook" and nb:GetPageIndex(document:GetEditor()) >= 0)
+        or (opts.scope == "project" and path and ide:IsProjectSubDirectory(path))
+        -- if the document is in the same tab control (for split notebooks)
+        or (opts.scope == "section" and tabctrl and tabctrl:GetIdxFromWindow(document:GetEditor()) >= 0)
+      ) then
         table.insert(toclose, document)
       end
     end
