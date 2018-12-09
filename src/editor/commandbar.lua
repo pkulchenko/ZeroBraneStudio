@@ -480,7 +480,6 @@ function ShowCommandBar(default, selected)
         if enter == false then ed:EnsureVisibleEnforcePolicy(origline-1) end
       end
 
-      local pindex = preview and nb:GetPageIndex(preview)
       if enter then
         local fline, sline, tabindex = unpack(t or {})
 
@@ -492,12 +491,10 @@ function ShowCommandBar(default, selected)
             if not editor then
               local doc = ide:FindDocument(sline)
               -- reload the file (including the preview to refresh its symbols in the outline)
-              editor = LoadFile(sline, (not doc or doc:GetTabIndex() == pindex) and preview or nil)
+              editor = LoadFile(sline, (not doc or doc:GetEditor() == preview) and preview or nil)
             end
             if editor then
-              if pindex and pindex ~= ide:GetDocument(editor):GetTabIndex() then
-                ide:GetDocument(preview):Close()
-              end
+              if preview and preview ~= editor then ide:GetDocument(preview):Close() end
               editor:SetFocus() -- in case the focus is on some other panel
               editor:GotoPos(tabindex-1)
               editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(tabindex-1))
@@ -529,8 +526,9 @@ function ShowCommandBar(default, selected)
             ed:SetFocus() -- in case the focus is on some other panel
           end
         elseif tabindex then -- switch to existing tab
-          ide:GetDocument(nb:GetPage(tabindex)):SetActive()
-          if pindex and pindex ~= tabindex then ide:GetDocument(preview):Close() end
+          local doc = ide:GetDocument(nb:GetPage(tabindex))
+          doc:SetActive()
+          if preview and preview ~= doc:GetEditor() then ide:GetDocument(preview):Close() end
         -- load a new file (into preview if set)
         elseif sline or text then
           -- 1. use "text" if Ctrl/Cmd-Enter is used
@@ -541,14 +539,14 @@ function ShowCommandBar(default, selected)
           local doc = ide:FindDocument(fullPath)
           -- if the document is already opened (not in the preview)
           -- or can't be opened as a file or folder, then close the preview
-          if doc and doc:GetTabIndex() ~= pindex
+          if doc and doc:GetEditor() ~= preview
           or not LoadFile(fullPath, preview or nil) and not ide:SetProject(fullPath) then
-            if pindex then ide:GetDocument(preview):Close() end
+            if preview then ide:GetDocument(preview):Close() end
           end
         end
       else
         -- close preview
-        if pindex then ide:GetDocument(preview):Close() end
+        if preview then ide:GetDocument(preview):Close() end
         -- restore original selection if canceled
         if nb:GetSelection() ~= selection then nb:SetSelection(selection) end
       end
