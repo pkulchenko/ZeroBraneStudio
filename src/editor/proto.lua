@@ -68,6 +68,8 @@ ide.proto.Document = {__index = {
     local index, notebook = self:GetTabIndex()
     if index and notebook:GetSelection() ~= index then notebook:SetSelection(index) end
 
+    AddToFileHistory(self:GetFilePath())
+
     self.editor:SetFocus()
     self.editor:SetSTCFocus(true)
     -- when the active editor is changed while the focus is away from the application

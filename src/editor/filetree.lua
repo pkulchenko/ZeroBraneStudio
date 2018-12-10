@@ -1055,7 +1055,6 @@ end
 
 local function syncTree(editor)
     local doc = editor and ide:GetDocument(editor)
-    AddToFileHistory(doc and doc:GetFilePath())
     FileTreeMarkSelected(doc and doc:GetFilePath() or '')
     SetAutoRecoveryMark()
     ide:SetTitle()
