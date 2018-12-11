@@ -76,7 +76,7 @@ ide.proto.Document = {__index = {
     -- (as happens on OSX when the editor is selected from the command bar)
     -- the focus stays on wxAuiToolBar component, so need to explicitly switch it.
     -- this is needed because SetFocus doesn't reset the focus if it's already on the target.
-    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = notebook:GetCurrentPage() end
+    if ide.osname == "Macintosh" and ide.infocus then ide.infocus = self.editor end
   end,
   Save = function(self) return SaveFile(self.editor, self.filePath) end,
   Close = function(self) return ClosePage(self:GetTabIndex()) end,
