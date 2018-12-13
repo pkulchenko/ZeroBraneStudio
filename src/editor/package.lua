@@ -1525,6 +1525,28 @@ do
   end
 end
 
+function ide:GetShortFilePath(filepath)
+  -- if running on Windows and can't open the file, this may mean that
+  -- the file path includes unicode characters that need special handling
+  -- when passing to applications not set up to handle them
+  if ide.osname == 'Windows' and pcall(require, "winapi") then
+    local fh = io.open(filepath, "r")
+    if fh then fh:close() end
+    if not fh and wx.wxFileExists(filepath) then
+      winapi.set_encoding(winapi.CP_UTF8)
+      local shortpath = winapi.short_path(filepath)
+      if shortpath ~= filepath then return shortpath end
+      ide:Print(
+        ("Can't get short path for a Unicode file name '%s' to use the file.")
+        :format(filepath))
+      ide:Print(
+        ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
+        :format(wx.wxFileName(filepath):GetVolume()))
+    end
+  end
+  return filepath
+end
+
 do
   local beforeFullScreenPerspective
   local statusbarShown
