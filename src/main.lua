@@ -253,7 +253,7 @@ function ide:LoadAPI(path)
       else
         ide.apis[ftype] = ide.apis[ftype] or {}
         -- make sure the path is absolute to access it if the current directory changes
-        ide.apis[ftype][fname] = MergeFullPath("", file)
+        ide.apis[ftype][fname] = ide:GetRootPath(file)
       end
     end
   end
@@ -360,7 +360,7 @@ do
     fullPath = MergeFullPath(wx.wxGetCwd(), fullPath)
   end
 
-  ide.editorFilename = fullPath
+  ide.editorFilename = ide:GetShortFilePath(fullPath)
   ide.appname = fullPath:match("([%w_-%.]+)$"):gsub("%.[^%.]*$","")
   assert(ide.appname, "no application path defined")
 
