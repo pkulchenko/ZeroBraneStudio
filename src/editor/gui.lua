@@ -222,7 +222,14 @@ local function createNotebook(frame)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
     function (event)
       local idx = event:GetSelection()
-      if idx ~= wx.wxNOT_FOUND then ide:GetDocument(notebook:GetPage(idx)):Close() end
+      if idx ~= wx.wxNOT_FOUND then
+        local doc = ide:GetDocument(notebook:GetPage(idx))
+        if doc then
+          -- make sure that the doc is in the same notebook and is not moved somewhere
+          local i, nb = doc:GetTabIndex()
+          if i == idx and nb == notebook then doc:Close() end
+        end
+      end
       event:Veto() -- don't propagate the event as the page is already closed
     end)
 
