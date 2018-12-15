@@ -108,8 +108,9 @@ ide.proto.Document = {__index = {
     if opts.dryrun then return toclose end
     -- close pages in the reverse order (as ids shift when pages are closed)
     for i = #toclose, 1, -1 do
-      if not toclose[i]:Close() then break end
+      if not toclose[i]:Close() then return false end
     end
+    return true
   end,
 }}
 
