@@ -1170,6 +1170,7 @@ end
 
 local panels = {}
 function ide:AddPanel(ctrl, panel, name, conf)
+  if not self:IsValidCtrl(ctrl) then return end
   local width, height = 360, 200
   local notebook = wxaui.wxAuiNotebook(self.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
