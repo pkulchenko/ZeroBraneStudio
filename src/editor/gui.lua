@@ -280,8 +280,8 @@ local function createNotebook(frame)
       if idx == wx.wxNOT_FOUND then return end
       local tabctrl = event:GetEventObject():DynamicCast("wxAuiTabCtrl")
 
-      -- save tab index the event is for
-      selection = notebook:GetPageIndex(tabctrl:GetPage(idx).window)
+      -- save the editor from the tab initiating the event
+      selection = tabctrl:GetPage(idx).window
       local tree = ide:GetProjectTree()
       local startfile = tree:GetStartFile()
 
@@ -302,11 +302,11 @@ local function createNotebook(frame)
         { ID.REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
       }
 
-      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
+      local fpath = ide:GetDocument(selection):GetFilePath()
       if not fpath or not tree:FindItem(fpath) then menu:Enable(ID.SETSTARTFILE, false) end
       if not startfile then menu:Destroy(ID.UNSETSTARTFILE) end
 
-      PackageEventHandle("onMenuEditorTab", menu, notebook, event, selection)
+      PackageEventHandle("onMenuEditorTab", menu, notebook, event, notebook:GetPageIndex(selection))
 
       -- popup statuses are not refreshed on Linux, so do it manually
       if ide.osname == "Unix" then UpdateMenuUI(menu, notebook) end
@@ -316,21 +316,21 @@ local function createNotebook(frame)
   local function IfAtLeastOneTab(event) event:Enable(notebook:GetPageCount() > 0) end
 
   notebook:Connect(ID.SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
+      local fpath = ide:GetDocument(selection):GetFilePath()
       if fpath then ide:GetProjectTree():SetStartFile(fpath) end
     end)
   notebook:Connect(ID.UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:GetProjectTree():SetStartFile()
     end)
   notebook:Connect(ID.SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:GetDocument(ide:GetEditor(selection)):Save()
+      ide:GetDocument(selection):Save()
     end)
   notebook:Connect(ID.SAVE, wx.wxEVT_UPDATE_UI, function(event)
-      local doc = ide:GetDocument(ide:GetEditor(selection))
+      local doc = ide:GetDocument(selection)
       event:Enable(doc:IsModified() or doc:IsNew())
     end)
   notebook:Connect(ID.SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      SaveFileAs(ide:GetEditor(selection))
+      SaveFileAs(selection)
     end)
   notebook:Connect(ID.SAVEAS, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
@@ -339,13 +339,13 @@ local function createNotebook(frame)
   -- (http://trac.wxwidgets.org/ticket/15417)
   notebook:Connect(ID.CLOSE, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
   notebook:Connect(ID.CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:DoWhenIdle(function() ide:GetDocument(notebook:GetPage(selection)):Close() end)
+      ide:DoWhenIdle(function() ide:GetDocument(selection):Close() end)
     end)
 
   notebook:Connect(ID.CLOSEALL, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
   notebook:Connect(ID.CLOSEALL, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function()
-          ide:GetDocument(notebook:GetPage(selection)):CloseAll({scope = "section"})
+          ide:GetDocument(selection):CloseAll({scope = "section"})
         end)
     end)
 
@@ -354,7 +354,7 @@ local function createNotebook(frame)
     end)
   notebook:Connect(ID.CLOSEOTHER, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function()
-          ide:GetDocument(notebook:GetPage(selection)):CloseAll({keep = true, scope = "section"})
+          ide:GetDocument(selection):CloseAll({keep = true, scope = "section"})
         end)
     end)
 
@@ -375,19 +375,19 @@ local function createNotebook(frame)
     end)
 
   notebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
-      event:Enable(isPreview(notebook:GetPage(selection)))
+      event:Enable(isPreview(selection))
     end)
   notebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide.findReplace:RefreshResults(notebook:GetPage(selection))
+      ide.findReplace:RefreshResults(selection)
     end)
 
   notebook:Connect(ID.SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ShowLocation(ide:GetDocument(notebook:GetPage(selection)):GetFilePath())
+      ShowLocation(ide:GetDocument(selection):GetFilePath())
     end)
   notebook:Connect(ID.SHOWLOCATION, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
   notebook:Connect(ID.COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:CopyToClipboard(ide:GetDocument(notebook:GetPage(selection)):GetFilePath())
+      ide:CopyToClipboard(ide:GetDocument(selection):GetFilePath())
     end)
 
   frame.notebook = notebook

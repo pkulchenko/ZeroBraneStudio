@@ -366,9 +366,9 @@ function EditorCallTip(editor, pos, x, y)
 end
 
 function ClosePage(selection, notebook)
-  local editor = (notebook
+  local editor = (notebook and selection
     and notebook:GetPage(selection):DynamicCast("wxStyledTextCtrl")
-    or ide:GetEditor(selection)
+    or ide:GetEditor()
   )
   if not editor then return false end
 
