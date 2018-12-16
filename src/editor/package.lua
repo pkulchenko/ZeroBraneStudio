@@ -1494,7 +1494,8 @@ function ide:ExpandPlaceholders(msg, ph)
   local proj = self:GetProject() or ""
   local dirs = wx.wxFileName(proj):GetDirs()
   local doc = editor and self:GetDocument(editor)
-  local nb = self:GetEditorNotebook()
+  local index, nb
+  if doc then index, nb = doc:GetTabIndex() end
   local def = {
     f = proj,
     s = dirs[#dirs] or "",
@@ -1505,7 +1506,7 @@ function ide:ExpandPlaceholders(msg, ph)
     c = editor and editor:GetLineDyn(editor:GetCurrentLine()) or "",
     T = self:GetProperty("editor") or "",
     v = self.VERSION,
-    t = editor and nb:GetPageText(nb:GetPageIndex(editor)) or "",
+    t = index and nb:GetPageText(index) or "",
   }
   return(msg:gsub('%%(%w)', function(p) return ph[p] or def[p] or '?' end))
 end
