@@ -232,6 +232,13 @@ function ide:RemoveDocument(ed)
   local index, notebook = self:GetDocument(ed):GetTabIndex()
   if not notebook:RemovePage(index) then return false end
 
+  -- if the notebook is in a floating pane and has no pages close the pane
+  if notebook ~= ide:GetEditorNotebook() and notebook:GetPageCount() == 0 then
+    local mgr = self:GetUIManager()
+    local pane = mgr:GetPane(notebook)
+    if pane:IsOk() then mgr:DetachPane(notebook) end
+  end
+
   self.openDocuments[ed:GetId()] = nil
   return true
 end
