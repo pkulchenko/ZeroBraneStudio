@@ -496,9 +496,9 @@ function ShowCommandBar(default, selected)
             end
             if editor then
               if preview and preview ~= editor then ide:GetDocument(preview):Close() end
-              editor:SetFocus() -- in case the focus is on some other panel
               editor:GotoPos(docindex-1)
               editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(docindex-1))
+              ide:DoWhenIdle(function() ide:GetDocument(editor):SetActive() end)
             end
           end
         -- insert selected method
@@ -524,7 +524,7 @@ function ShowCommandBar(default, selected)
           if toline and ed then
             ed:GotoLine(toline-1)
             ed:EnsureVisibleEnforcePolicy(toline-1)
-            ed:SetFocus() -- in case the focus is on some other panel
+            ide:DoWhenIdle(function() ide:GetDocument(ed):SetActive() end)
           end
         elseif docindex then -- switch to existing document
           local doc = ide:GetDocumentList()[docindex]
