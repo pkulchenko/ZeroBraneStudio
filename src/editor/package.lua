@@ -141,25 +141,33 @@ function ide:GetDefaultFileName()
   if ed and default.usecurrentextension then ext = self:GetDocument(ed):GetFileExt() end
   return default.name..(ext and ext > "" and "."..ext or "")
 end
-function ide:GetEditor(index)
-  local notebook = self:GetEditorNotebook()
-  if index == nil then index = notebook:GetSelection() end
 
+local function isCtrlFocused(e)
+  local ctrl = e and e:FindFocus()
+  return ctrl and
+    (ctrl:GetId() == e:GetId()
+     or ide.osname == 'Macintosh' and
+       ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
+end
+function ide:GetEditor()
+  local notebook = self:GetEditorNotebook()
+  local win = notebook:GetCurrentPage()
   local editor
-  if (index >= 0) and (index < notebook:GetPageCount())
-  and notebook:GetPage(index):GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
-    editor = notebook:GetPage(index):DynamicCast("wxStyledTextCtrl")
+  if win and win:GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
+    editor = win:DynamicCast("wxStyledTextCtrl")
   end
+  -- return the editor if it has focus
+  if isCtrlFocused(editor) then return editor end
+
+  -- check the rest of the documents (those not in the EditorNotebook)
+  for _, doc in pairs(ide:GetDocuments()) do
+    local _, nb = doc:GetTabIndex()
+    if nb ~= notebook and isCtrlFocused(doc:GetEditor()) then return doc:GetEditor() end
+  end
+  -- return the current editor in the notebook, even if it's not focused
   return editor
 end
 function ide:GetEditorWithFocus(...)
-  local function isCtrlFocused(e)
-    local ctrl = e and e:FindFocus()
-    return ctrl and
-      (ctrl:GetId() == e:GetId()
-       or ide.osname == 'Macintosh' and
-         ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
-  end
   -- need to distinguish GetEditorWithFocus() and GetEditorWithFocus(nil)
   -- as the latter may happen when GetEditor() is passed and returns `nil`
   if select('#', ...) > 0 then
