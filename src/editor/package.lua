@@ -189,7 +189,7 @@ function ide:GetEditorWithFocus(...)
   return nil
 end
 function ide:GetEditorWithLastFocus()
-  -- make sure ide.infocus is still a valid component and not "some" userdata
+  -- make sure ide.infocus is still a valid component
   return (self:IsValidCtrl(self.infocus)
     and self.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
     and self.infocus:DynamicCast("wxStyledTextCtrl") or nil)
