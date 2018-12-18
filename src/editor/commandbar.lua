@@ -676,8 +676,8 @@ function ShowCommandBar(default, selected)
           end
         end
       else
-        for _, doc in pairs(ide:GetDocuments()) do
-          lines[doc:GetTabIndex()+1] = {doc:GetFileName(), doc:GetFilePath(), doc:GetTabIndex()}
+        for _, doc in pairs(ide:GetDocumentList()) do
+          lines[doc:GetTabIndex()+1] = {doc:GetFileName(), doc:GetFilePath(), (doc:GetTabIndex())}
         end
       end
       return lines
