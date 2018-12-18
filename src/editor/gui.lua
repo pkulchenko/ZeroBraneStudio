@@ -173,7 +173,8 @@ end
 local function getTabWindow(event, nb)
   local tabctrl = event:GetEventObject():DynamicCast("wxAuiTabCtrl")
   local idx = event:GetSelection() -- index within the current tab ctrl
-  return idx ~= wx.wxNOT_FOUND and nb:GetPageIndex(tabctrl:GetPage(idx).window) or wx.wxNOT_FOUND, tabctrl
+  local win = tabctrl:GetPage(idx).window
+  return win and idx ~= wx.wxNOT_FOUND and nb:GetPageIndex(win) or wx.wxNOT_FOUND, tabctrl
 end
 
 local function isPreview(win)
