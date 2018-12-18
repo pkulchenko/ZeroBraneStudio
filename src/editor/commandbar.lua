@@ -118,10 +118,11 @@ local function showCommandBar(params)
   -- make a one-time callback;
   -- needed because KILL_FOCUS handler can be called after closing window
   local function onExit(index)
-    onExit = function() end
-    onDone(index and lines[index], index, search:GetValue())
     -- delay destroying the frame until all the related processing is done
     ide:DoWhenIdle(function() if ide:IsValidCtrl(frame) then frame:Destroy() end end)
+
+    onExit = function() end
+    onDone(index and lines[index], index, search:GetValue())
   end
 
   local linesnow
@@ -481,11 +482,11 @@ function ShowCommandBar(default, selected)
       end
 
       if enter then
-        local fline, sline, tabindex = unpack(t or {})
+        local fline, sline, docindex = unpack(t or {})
 
-        -- jump to symbol; tabindex has the position of the symbol
+        -- jump to symbol; docindex has the position of the symbol
         if text and text:find(special.SYMBOL) then
-          if sline and tabindex then
+          if sline and docindex then
             local index = name2index(sline)
             local editor = index and nb:GetPage(index):DynamicCast("wxStyledTextCtrl")
             if not editor then
@@ -496,8 +497,8 @@ function ShowCommandBar(default, selected)
             if editor then
               if preview and preview ~= editor then ide:GetDocument(preview):Close() end
               editor:SetFocus() -- in case the focus is on some other panel
-              editor:GotoPos(tabindex-1)
-              editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(tabindex-1))
+              editor:GotoPos(docindex-1)
+              editor:EnsureVisibleEnforcePolicy(editor:LineFromPosition(docindex-1))
             end
           end
         -- insert selected method
@@ -525,10 +526,11 @@ function ShowCommandBar(default, selected)
             ed:EnsureVisibleEnforcePolicy(toline-1)
             ed:SetFocus() -- in case the focus is on some other panel
           end
-        elseif tabindex then -- switch to existing tab
-          local doc = ide:GetDocument(nb:GetPage(tabindex))
-          doc:SetActive()
+        elseif docindex then -- switch to existing document
+          local doc = ide:GetDocumentList()[docindex]
           if preview and preview ~= doc:GetEditor() then ide:GetDocument(preview):Close() end
+          -- delay switching to allow the panel to be destroyed, as it may pull the focus away
+          ide:DoWhenIdle(function() doc:SetActive() end)
         -- load a new file (into preview if set)
         elseif sline or text then
           -- 1. use "text" if Ctrl/Cmd-Enter is used
@@ -594,7 +596,8 @@ function ShowCommandBar(default, selected)
           for _, doc in pairs(currentonly and {ide:GetDocument(ed)} or ide:GetDocuments()) do
             local path, editor = doc:GetFilePath(), doc:GetEditor()
             if path then paths[path] = true end
-            populateSymbols(path or doc:GetFileName()..tabsep..doc:GetTabIndex(), outline:GetEditorSymbols(editor))
+            local index = doc:GetTabIndex()
+            populateSymbols(path or doc:GetFileName()..tabsep..index, outline:GetEditorSymbols(editor))
           end
 
           -- now add all other files in the project
@@ -676,8 +679,8 @@ function ShowCommandBar(default, selected)
           end
         end
       else
-        for _, doc in pairs(ide:GetDocumentList()) do
-          lines[doc:GetTabIndex()+1] = {doc:GetFileName(), doc:GetFilePath(), (doc:GetTabIndex())}
+        for index, doc in pairs(ide:GetDocumentList()) do
+          lines[index] = {doc:GetFileName(), doc:GetFilePath(), index}
         end
       end
       return lines
@@ -691,10 +694,10 @@ function ShowCommandBar(default, selected)
       end
     end,
     onSelection = function(t, text)
-      local _, file, tabindex = unpack(t)
+      local _, file, docindex = unpack(t)
       local pos
       if text and text:find(special.SYMBOL) then
-        pos, tabindex = tabindex, name2index(file)
+        pos, docindex = docindex, name2index(file)
       elseif text and text:find(special.METHOD) then
         return
       end
@@ -705,11 +708,12 @@ function ShowCommandBar(default, selected)
       -- or files in the preview are updated.
       nb:SetEvtHandlerEnabled(false)
       local doc = file and ide:FindDocument(file)
-      if doc and not tabindex then tabindex = doc:GetTabIndex() end
-      if tabindex then
-        local ed = nb:GetPage(tabindex)
+      if docindex or doc then
+        local doc = docindex and ide:GetDocumentList()[docindex] or doc
+        local index, nb = doc:GetTabIndex()
+        local ed = nb:GetPage(index)
         ed:SetEvtHandlerEnabled(false)
-        if nb:GetSelection() ~= tabindex then nb:SetSelection(tabindex) end
+        if nb:GetSelection() ~= index then nb:SetSelection(index) end
         ed:SetEvtHandlerEnabled(true)
       elseif file then
         -- skip binary files with unknown extensions
