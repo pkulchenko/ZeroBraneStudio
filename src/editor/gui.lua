@@ -183,7 +183,7 @@ end
 
 local function createNotebook(frame)
   -- notebook for editors
-  local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local notebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
@@ -511,7 +511,7 @@ end
 
 local function createBottomNotebook(frame)
   -- bottomnotebook (errorlog,shellbox)
-  local bottomnotebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local bottomnotebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
@@ -673,7 +673,7 @@ local function createBottomNotebook(frame)
 end
 
 local function createProjNotebook(frame)
-  local projnotebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local projnotebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)

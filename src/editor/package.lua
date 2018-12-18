@@ -744,6 +744,20 @@ function ide:CreateStyledTextCtrl(...)
   return editor
 end
 
+function ide:CreateNotebook(...)
+  local ctrl = wxaui.wxAuiNotebook(...)
+  if not ctrl then return end
+
+  if not self:IsValidProperty(ctrl, "GetCurrentPage") then
+    -- versions of wxlua prior to 3.1 may not have GetCurrentPage
+    function ctrl:GetCurrentPage()
+      local index = self:GetSelection()
+      return index >= 0 and self:GetPage(index) or nil
+    end
+  end
+  return ctrl
+end
+
 function ide:CreateTreeCtrl(...)
   local ctrl = wx.wxTreeCtrl(...)
   if not ctrl then return end
@@ -1180,7 +1194,7 @@ local panels = {}
 function ide:AddPanel(ctrl, panel, name, conf)
   if not self:IsValidCtrl(ctrl) then return end
   local width, height = 360, 200
-  local notebook = wxaui.wxAuiNotebook(self.frame, wx.wxID_ANY,
+  local notebook = ide:CreateNotebook(self.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
