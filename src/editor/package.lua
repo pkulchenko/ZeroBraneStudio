@@ -444,7 +444,21 @@ function ide:ShowCommandBar(...) return ShowCommandBar(...) end
 
 function ide:RequestAttention()
   local ide = self
-  local frame = ide.frame
+  -- first check if the active editor has focus (it may be in a floating panel)
+  local ed = ide:GetEditor()
+  local frame = ide:GetMainFrame()
+  if ed and isCtrlFocused(ed) then
+    local frameci = frame:GetClassInfo()
+    local parent = ed:GetParent()
+    while parent do
+      if parent:GetClassInfo():IsKindOf(frameci) and parent:DynamicCast("wxFrame"):IsActive() then
+        parent:Raise()
+        return true
+      end
+      parent = parent:GetParent()
+    end
+  end
+  -- then check if the main frame should have the focus
   if not frame:IsActive() then
     frame:RequestUserAttention()
     if ide.osname == "Macintosh" then
