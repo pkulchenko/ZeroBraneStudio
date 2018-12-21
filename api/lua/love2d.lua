@@ -1,7 +1,7 @@
 -- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 
 -- Converted from love_api.lua in https://github.com/love2d-community/love-api
--- (API for LÖVE 0.11.1 as of May 29, 2018)
+-- (API for LÖVE 11.2 as of Dec 20, 2018)
 -- The conversion script is at the bottom of this file
 
 -- To process:
@@ -84,13 +84,147 @@ local love = {
      description = "class constants",
      type = "class"
     },
+    EffectType = {
+     childs = {
+      chorus = {
+       description = "Plays multiple copies of the sound with slight pitch and time variation. Used to make sounds sound \"fuller\" or \"thicker\".",
+       type = "value"
+      },
+      compressor = {
+       description = "Decreases the dynamic range of the sound, making the loud and quiet parts closer in volume, producing a more uniform amplitude throughout time.",
+       type = "value"
+      },
+      distortion = {
+       description = "Alters the sound by amplifying it until it clips, shearing off parts of the signal, leading to a compressed and distorted sound.",
+       type = "value"
+      },
+      echo = {
+       description = "Decaying feedback based effect, on the order of seconds. Also known as delay; causes the sound to repeat at regular intervals at a decreasing volume.",
+       type = "value"
+      },
+      equalizer = {
+       description = "Adjust the frequency components of the sound using a 4-band (low-shelf, two band-pass and a high-shelf) equalizer.",
+       type = "value"
+      },
+      flanger = {
+       description = "Plays two copies of the sound; while varying the phase, or equivalently delaying one of them, by amounts on the order of milliseconds, resulting in phasing sounds.",
+       type = "value"
+      },
+      reverb = {
+       description = "Decaying feedback based effect, on the order of milliseconds. Used to simulate the reflection off of the surroundings.",
+       type = "value"
+      },
+      ringmodulator = {
+       description = "An implementation of amplitude modulation; multiplies the source signal with a simple waveform, to produce either volume changes, or inharmonic overtones.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
+    EffectWaveform = {
+     childs = {
+      sawtooth = {
+       description = "A sawtooth wave, also known as a ramp wave. Named for its linear rise, and (near-)instantaneous fall along time.",
+       type = "value"
+      },
+      sine = {
+       description = "A sine wave. Follows a trigonometric sine function.",
+       type = "value"
+      },
+      square = {
+       description = "A square wave. Switches between high and low states (near-)instantaneously.",
+       type = "value"
+      },
+      triangle = {
+       description = "A triangle wave. Follows a linear rise and fall that repeats periodically.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
+    FilterType = {
+     childs = {
+      bandpass = {
+       description = "Band-pass filter. Both high and low frequency sounds are attenuated based on the given parameters.",
+       type = "value"
+      },
+      highpass = {
+       description = "High-pass filter. Low frequency sounds are attenuated.",
+       type = "value"
+      },
+      lowpass = {
+       description = "Low-pass filter. High frequency sounds are attenuated.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
     RecordingDevice = {
+     childs = {
+      getChannelCount = {
+       args = "()",
+       description = "Gets the number of channels currently being recorded (mono or stereo).",
+       returns = "(channels: number)",
+       type = "function"
+      },
+      getData = {
+       args = "()",
+       description = "Gets all recorded audio SoundData stored in the device's internal ring buffer.",
+       returns = "(data: SoundData)",
+       type = "function"
+      },
+      getName = {
+       args = "()",
+       description = "Gets the name of the recording device.",
+       returns = "(name: string)",
+       type = "function"
+      },
+      getSampleCount = {
+       args = "()",
+       description = "Gets the number of currently recorded samples.",
+       returns = "(samples: number)",
+       type = "function"
+      },
+      getSampleRate = {
+       args = "()",
+       description = "Gets the number of samples per second currently being recorded.",
+       returns = "(rate: number)",
+       type = "function"
+      },
+      isRecording = {
+       args = "()",
+       description = "Gets whether the device is currently recording.",
+       returns = "(recording: boolean)",
+       type = "function"
+      },
+      start = {
+       args = "(samplecount: number, samplerate: number, bitdepth: number, channels: number)",
+       description = "Begins recording audio using this device.",
+       returns = "(success: boolean)",
+       type = "function"
+      },
+      stop = {
+       args = "()",
+       description = "Stops recording audio from this device.",
+       returns = "(data: SoundData)",
+       type = "function"
+      }
+     },
      description = "Represents an audio input device capable of recording sounds.",
      inherits = "Object",
      type = "class"
     },
     Source = {
      childs = {
+      getActiveEffects = {
+       args = "()",
+       description = "Returns a list of all the active effects currently applied to the Source",
+       returns = "(effects: table)",
+       type = "function"
+      },
       getAttenuationDistances = {
        args = "()",
        description = "Returns the reference and maximum distance of the source.",
@@ -106,7 +240,7 @@ local love = {
       getCone = {
        args = "()",
        description = "Gets the Source's directional volume cones. Together with Source:setDirection, the cone angles allow for the Source's volume to vary depending on its direction.",
-       returns = "(innerAngle: number, outerAngle: number, outerVolume: number)",
+       returns = "(innerAngle: number, outerAngle: number, outerVolume: number, outerHighGain: number)",
        type = "function"
       },
       getDirection = {
@@ -119,6 +253,24 @@ local love = {
        args = "(unit: TimeUnit)",
        description = "Gets the duration of the Source. For streaming Sources it may not always be sample-accurate, and may return -1 if the duration cannot be determined at all.",
        returns = "(duration: number)",
+       type = "function"
+      },
+      getEffect = {
+       args = "(name: string, filtersettings: table)",
+       description = "Gets the filter settings associated to a specific Effect.\n\nThis function returns nil if the Effect was applied with no filter settings associated to it.",
+       returns = "(filtersettings: table)",
+       type = "function"
+      },
+      getFilter = {
+       args = "(settings: table)",
+       description = "Gets the filter settings currently applied to the Source.",
+       returns = "(settings: table)",
+       type = "function"
+      },
+      getFreeBufferCount = {
+       args = "()",
+       description = "Gets the number of free buffer slots of a queueable Source.",
+       returns = "(buffers: number)",
        type = "function"
       },
       getPitch = {
@@ -169,22 +321,16 @@ local love = {
        returns = "(loop: boolean)",
        type = "function"
       },
-      isPaused = {
-       args = "()",
-       description = "Returns whether the Source is paused.",
-       returns = "(paused: boolean)",
-       type = "function"
-      },
       isPlaying = {
        args = "()",
        description = "Returns whether the Source is playing.",
        returns = "(playing: boolean)",
        type = "function"
       },
-      isStopped = {
+      isRelative = {
        args = "()",
-       description = "Returns whether the Source is stopped.",
-       returns = "(stopped: boolean)",
+       description = "Gets whether the Source's position and direction are relative to the listener.",
+       returns = "(relative: boolean)",
        type = "function"
       },
       pause = {
@@ -199,16 +345,10 @@ local love = {
        returns = "(success: boolean)",
        type = "function"
       },
-      resume = {
-       args = "()",
-       description = "Resumes a paused Source.",
-       returns = "()",
-       type = "function"
-      },
-      rewind = {
-       args = "()",
-       description = "Rewinds a Source.",
-       returns = "()",
+      queue = {
+       args = "(sounddata: SoundData)",
+       description = "Queues SoundData for playback in a queueable Source.\n\nThis method requires the Source to be created via love.audio.newQueueableSource.",
+       returns = "(success: boolean)",
        type = "function"
       },
       seek = {
@@ -224,7 +364,7 @@ local love = {
        type = "function"
       },
       setCone = {
-       args = "(innerAngle: number, outerAngle: number, outerVolume: number)",
+       args = "(innerAngle: number, outerAngle: number, outerVolume: number, outerHighGain: number)",
        description = "Sets the Source's directional volume cones. Together with Source:setDirection, the cone angles allow for the Source's volume to vary depending on its direction.",
        returns = "()",
        type = "function"
@@ -233,6 +373,18 @@ local love = {
        args = "(x: number, y: number, z: number)",
        description = "Sets the direction vector of the Source. A zero vector makes the source non-directional.",
        returns = "()",
+       type = "function"
+      },
+      setEffect = {
+       args = "(name: string, enable: boolean)",
+       description = "Applies an audio effect to the Source.\n\nThe effect must have been previously defined using love.audio.setEffect.",
+       returns = "(success: boolean)",
+       type = "function"
+      },
+      setFilter = {
+       args = "(settings: table)",
+       description = "Sets a low-pass, high-pass, or band-pass filter to apply when playing the Source.",
+       returns = "(success: boolean)",
        type = "function"
       },
       setLooping = {
@@ -250,6 +402,12 @@ local love = {
       setPosition = {
        args = "(x: number, y: number, z: number)",
        description = "Sets the position of the Source.",
+       returns = "()",
+       type = "function"
+      },
+      setRelative = {
+       args = "(enable: boolean)",
+       description = "Sets whether the Source's position and direction are relative to the listener. Relative Sources move with the listener so they aren't affected by it's position",
        returns = "()",
        type = "function"
       },
@@ -296,12 +454,16 @@ local love = {
     },
     SourceType = {
      childs = {
+      queue = {
+       description = "The audio must be manually queued by the user with Source:queue.",
+       type = "value"
+      },
       static = {
-       description = "Decode the entire sound at once.",
+       description = "The whole audio is decoded.",
        type = "value"
       },
       stream = {
-       description = "Stream the sound; decode it gradually.",
+       description = "The audio is decoded in chunks when needed.",
        type = "value"
       }
      },
@@ -322,6 +484,12 @@ local love = {
      description = "class constants",
      type = "class"
     },
+    getActiveSourceCount = {
+     args = "()",
+     description = "Gets the current number of simultaneously playing sources.",
+     returns = "(count: number)",
+     type = "function"
+    },
     getDistanceModel = {
      args = "()",
      description = "Returns the distance attenuation model.",
@@ -334,6 +502,24 @@ local love = {
      returns = "(scale: number)",
      type = "function"
     },
+    getEffect = {
+     args = "(name: string)",
+     description = "Gets the settings associated with an effect.",
+     returns = "(settings: table)",
+     type = "function"
+    },
+    getMaxSceneEffects = {
+     args = "()",
+     description = "Gets the maximum number of active Effects, supported by the system.",
+     returns = "(maximum: number)",
+     type = "function"
+    },
+    getMaxSourceEffects = {
+     args = "()",
+     description = "Gets the maximum number of active Effects in a single Source object, that the system can support.",
+     returns = "(maximum: number)",
+     type = "function"
+    },
     getOrientation = {
      args = "()",
      description = "Returns the orientation of the listener.",
@@ -344,6 +530,12 @@ local love = {
      args = "()",
      description = "Returns the position of the listener.",
      returns = "(x: number, y: number, z: number)",
+     type = "function"
+    },
+    getRecordingDevices = {
+     args = "()",
+     description = "Gets a list of RecordingDevices on the system. The first device in the list is the user's default recording device.\n\nIf no device is available, it will return an empty list.\nRecording is not supported on iOS",
+     returns = "(devices: table)",
      type = "function"
     },
     getSourceCount = {
@@ -364,9 +556,21 @@ local love = {
      returns = "(volume: number)",
      type = "function"
     },
+    isEffectsSupported = {
+     args = "()",
+     description = "Gets whether Effects are supported in the system.",
+     returns = "(supported: boolean)",
+     type = "function"
+    },
+    newQueueableSource = {
+     args = "(samplerate: number, bitdepth: number, channels: number, buffercount: number)",
+     description = "Creates a new Source usable for real-time generated sound playback with Source:queue.",
+     returns = "(source: Source)",
+     type = "function"
+    },
     newSource = {
      args = "(filename: string, type: SourceType)",
-     description = "Creates a new Source from a file or SoundData. Sources created from SoundData are always static.",
+     description = "Creates a new Source from a filepath, File, Decoder or SoundData. Sources created from SoundData are always static.",
      returns = "(source: Source)",
      type = "function"
     },
@@ -382,18 +586,6 @@ local love = {
      returns = "()",
      type = "function"
     },
-    resume = {
-     args = "(source: Source)",
-     description = "Resumes all audio",
-     returns = "()",
-     type = "function"
-    },
-    rewind = {
-     args = "(source: Source)",
-     description = "Rewinds all playing audio.",
-     returns = "()",
-     type = "function"
-    },
     setDistanceModel = {
      args = "(model: DistanceModel)",
      description = "Sets the distance attenuation model.",
@@ -404,6 +596,18 @@ local love = {
      args = "(scale: number)",
      description = "Sets a global scale factor for velocity-based doppler effects. The default scale value is 1.",
      returns = "()",
+     type = "function"
+    },
+    setEffect = {
+     args = "(name: string, settings: table)",
+     description = "Defines an effect that can be applied to a Source.",
+     returns = "(success: boolean)",
+     type = "function"
+    },
+    setMixWithSystem = {
+     args = "(mix: boolean)",
+     description = "Sets whether the system should mix the audio with the system's audio.",
+     returns = "(success: boolean)",
      type = "function"
     },
     setOrientation = {
@@ -445,6 +649,80 @@ local love = {
    description = "If a file called conf.lua is present in your game folder (or .love file), it is run before the LÖVE modules are loaded. You can use this file to overwrite the love.conf function, which is later called by the LÖVE 'boot' script. Using the love.conf function, you can set some configuration options, and change things like the default size of the window, which modules are loaded, and other stuff.",
    returns = "()",
    type = "function"
+  },
+  data = {
+   childs = {
+    ContainerType = {
+     childs = {
+      data = {
+       description = "Return type is Data.",
+       type = "value"
+      },
+      string = {
+       description = "Return type is string.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
+    HashFunction = {
+     childs = {
+      md5 = {
+       description = "MD5 hash algorithm (16 bytes).",
+       type = "value"
+      },
+      sha1 = {
+       description = "SHA1 hash algorithm (20 bytes).",
+       type = "value"
+      },
+      sha224 = {
+       description = "SHA2 hash algorithm with message digest size of 224 bits (28 bytes).",
+       type = "value"
+      },
+      sha256 = {
+       description = "SHA2 hash algorithm with message digest size of 256 bits (32 bytes).",
+       type = "value"
+      },
+      sha384 = {
+       description = "SHA2 hash algorithm with message digest size of 384 bits (48 bytes).",
+       type = "value"
+      },
+      sha512 = {
+       description = "SHA2 hash algorithm with message digest size of 512 bits (64 bytes).",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
+    decode = {
+     args = "(containerType: ContainerType, format: EncodeFormat, sourceString: string)",
+     description = "Decode Data or a string from any of the EncodeFormats to Data or string.",
+     returns = "(decoded: Variant)",
+     type = "function"
+    },
+    decompress = {
+     args = "(container: ContainerType, compressedData: CompressedData)",
+     description = "Decompresses a CompressedData or previously compressed string or Data object.",
+     returns = "(rawstring: string)",
+     type = "function"
+    },
+    encode = {
+     args = "(containerType: ContainerType, format: EncodeFormat, sourceString: string, lineLength: number)",
+     description = "Encode Data or a string to a Data or string in one of the EncodeFormats.",
+     returns = "(encoded: Variant)",
+     type = "function"
+    },
+    hash = {
+     args = "(hashFunction: HashFunction, string: string)",
+     description = "Compute the message digest of a string using a specified hash algorithm.",
+     returns = "(rawdigest: string)",
+     type = "function"
+    }
+   },
+   description = "Provides functionality for creating and transforming data.",
+   type = "lib"
   },
   directorydropped = {
    args = "(path: string)",
@@ -871,7 +1149,7 @@ local love = {
      type = "function"
     },
     newFileData = {
-     args = "(contents: string, name: string, decoder: FileDecoder)",
+     args = "(contents: string, name: string)",
      description = "Creates a new FileData object.",
      returns = "(data: FileData)",
      type = "function"
@@ -1088,12 +1366,6 @@ local love = {
        returns = "(min: FilterMode, mag: FilterMode, anisotropy: number)",
        type = "function"
       },
-      getFormat = {
-       args = "()",
-       description = "Gets the texture format of the Canvas.",
-       returns = "(format: CanvasFormat)",
-       type = "function"
-      },
       getHeight = {
        args = "()",
        description = "Gets the height of the Canvas.",
@@ -1147,80 +1419,6 @@ local love = {
      inherits = "Texture",
      type = "class"
     },
-    CanvasFormat = {
-     childs = {
-      hdr = {
-       description = "A format suitable for high dynamic range content - an alias for the rgba16f format, normally.",
-       type = "value"
-      },
-      normal = {
-       description = "The default Canvas format - usually an alias for the rgba8 format, or the srgb format if gamma-correct rendering is enabled in LÖVE 0.10.0 and newer.",
-       type = "value"
-      },
-      r8 = {
-       description = "Single-channel (red component) format (8 bpp).",
-       type = "value"
-      },
-      r16f = {
-       description = "Floating point single-channel format (16 bpp). Color values can range from [-65504, +65504].",
-       type = "value"
-      },
-      r32f = {
-       description = "Floating point single-channel format (32 bpp).",
-       type = "value"
-      },
-      rg8 = {
-       description = "Two channels (red and green components) with 8 bits per channel (16 bpp).",
-       type = "value"
-      },
-      rg11b10f = {
-       description = "Floating point RGB with 11 bits in the red and green channels, and 10 bits in the blue channel (32 bpp). There is no alpha channel. Color values can range from [0, +65024].",
-       type = "value"
-      },
-      rg16f = {
-       description = "Floating point two-channel format with 16 bits per channel (32 bpp). Color values can range from [-65504, +65504].",
-       type = "value"
-      },
-      rg32f = {
-       description = "Floating point two-channel format with 32 bits per channel (64 bpp).",
-       type = "value"
-      },
-      rgb5a1 = {
-       description = "RGB with 5 bits each, and a 1-bit alpha channel (16 bpp).",
-       type = "value"
-      },
-      rgb10a2 = {
-       description = "RGB with 10 bits per channel, and a 2-bit alpha channel (32 bpp).",
-       type = "value"
-      },
-      rgb565 = {
-       description = "RGB with 5, 6, and 5 bits each, respectively (16 bpp). There is no alpha channel in this format.",
-       type = "value"
-      },
-      rgba4 = {
-       description = "4 bits per channel (16 bpp) RGBA.",
-       type = "value"
-      },
-      rgba8 = {
-       description = "8 bits per channel (32 bpp) RGBA. Color channel values range from 0-255 (0-1 in shaders).",
-       type = "value"
-      },
-      rgba16f = {
-       description = "Floating point RGBA with 16 bits per channel (64 bpp). Color values can range from [-65504, +65504].",
-       type = "value"
-      },
-      rgba32f = {
-       description = "Floating point RGBA with 32 bits per channel (128 bpp).",
-       type = "value"
-      },
-      srgb = {
-       description = "The same as rgba8, but the Canvas is interpreted as being in the sRGB color space. Everything drawn to the Canvas will be converted from linear RGB to sRGB. When the Canvas is drawn (or used in a shader), it will be decoded from sRGB to linear RGB. This reduces color banding when doing gamma-correct rendering, since sRGB encoding has more precision than linear RGB for darker colors.",
-       type = "value"
-      }
-     },
-     description = "class constants",
-     type = "class"
-    },
     CompareMode = {
      childs = {
       equal = {
@@ -1245,6 +1443,24 @@ local love = {
       },
       notequal = {
        description = "The stencil value of the pixel must not be equal to the supplied value.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
+    CullMode = {
+     childs = {
+      back = {
+       description = "Back-facing triangles in Meshes are culled (not rendered). The vertex order of a triangle determines whether it is back- or front-facing.",
+       type = "value"
+      },
+      front = {
+       description = "Front-facing triangles in Meshes are culled.",
+       type = "value"
+      },
+      none = {
+       description = "Both back- and front-facing triangles in Meshes are rendered.",
        type = "value"
       }
      },
@@ -1394,12 +1610,6 @@ local love = {
     },
     Image = {
      childs = {
-      getDimensions = {
-       args = "()",
-       description = "Gets the width and height of the Image.",
-       returns = "(width: number, height: number)",
-       type = "function"
-      },
       getFilter = {
        args = "()",
        description = "Gets the filter mode for an image.",
@@ -1434,12 +1644,6 @@ local love = {
        args = "()",
        description = "Gets the wrapping properties of an Image.\n\nThis function returns the currently set horizontal and vertical wrapping modes for the image.",
        returns = "(horizontal: WrapMode, vertical: WrapMode)",
-       type = "function"
-      },
-      refresh = {
-       args = "(x: number, y: number, width: number, height: number)",
-       description = "Reloads the Image's contents from the ImageData or CompressedImageData used to create the image.",
-       returns = "()",
        type = "function"
       },
       replacePixels = {
@@ -2040,12 +2244,6 @@ local love = {
     },
     Shader = {
      childs = {
-      getWarnings = {
-       args = "()",
-       description = "Returns any warning and error messages from compiling the shader code. This can be used for debugging your shaders if there's anything the graphics hardware doesn't like.",
-       returns = "(warnings: string)",
-       type = "function"
-      },
       hasUniform = {
        args = "(name: string)",
        description = "Gets whether a uniform / extern variable exists in the Shader.\n\nIf a graphics driver's shader compiler determines that a uniform / extern variable doesn't affect the final output of the shader, it may optimize the variable out. This function will return false in that case.",
@@ -2116,12 +2314,6 @@ local love = {
       set = {
        args = "(id: number, x: number, y: number, r: number, sx: number, sy: number, ox: number, oy: number, kx: number, ky: number)",
        description = "Changes a sprite in the batch. This requires the identifier returned by add and addq.",
-       returns = "()",
-       type = "function"
-      },
-      setBufferSize = {
-       args = "(size: number)",
-       description = "Sets the maximum number of sprites the SpriteBatch can hold. Existing sprites in the batch (up to the new maximum) will not be cleared when this function is called.",
        returns = "()",
        type = "function"
       },
@@ -2308,6 +2500,20 @@ local love = {
      inherits = "Drawable",
      type = "class"
     },
+    VertexWinding = {
+     childs = {
+      ccw = {
+       description = "Counter-clockwise.",
+       type = "value"
+      },
+      cw = {
+       description = "Clockwise.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
     Video = {
      childs = {
       getFilter = {
@@ -2470,8 +2676,10 @@ local love = {
      type = "function"
     },
     flushBatch = {
+     args = "()",
      description = "Immediately renders any pending automatically batched draws.\n\nLÖVE will call this function internally as needed when most state is changed, so it is not necessary to manually call it.\n\nThe current batch will be automatically flushed by love.graphics state changes (except for the transform stack and the current color), as well as Shader:send and methods on Textures which change their state. Using a different Image in consecutive love.graphics.draw calls will also flush the current batch.\n\nSpriteBatches, ParticleSystems, Meshes, and Text objects do their own batching and do not affect automatic batching of other draws.",
-     type = "value"
+     returns = "()",
+     type = "function"
     },
     getBackgroundColor = {
      args = "()",
@@ -2492,7 +2700,7 @@ local love = {
      type = "function"
     },
     getCanvasFormats = {
-     args = "()",
+     args = "(readable: boolean)",
      description = "Gets the available Canvas formats, and whether each is supported.",
      returns = "(formats: table)",
      type = "function"
@@ -2507,12 +2715,6 @@ local love = {
      args = "()",
      description = "Gets the active color components used when drawing. Normally all 4 components are active unless love.graphics.setColorMask has been used.\n\nThe color mask determines whether individual components of the colors of drawn objects will affect the color of the screen. They affect love.graphics.clear and Canvas:clear as well.",
      returns = "(r: boolean, g: boolean, b: boolean, a: boolean)",
-     type = "function"
-    },
-    getCompressedImageFormats = {
-     args = "()",
-     description = "Gets the available compressed image formats, and whether each is supported.",
-     returns = "(formats: table)",
      type = "function"
     },
     getDefaultFilter = {
@@ -2549,6 +2751,12 @@ local love = {
      args = "()",
      description = "Gets the height of the window.",
      returns = "(height: number)",
+     type = "function"
+    },
+    getImageFormats = {
+     args = "()",
+     description = "Gets the raw and compressed pixel formats usable for Images, and whether each is supported.",
+     returns = "(formats: table)",
      type = "function"
     },
     getLineJoin = {
@@ -2769,7 +2977,7 @@ local love = {
     },
     print = {
      args = "(text: string, x: number, y: number, r: number, sx: number, sy: number, ox: number, oy: number, kx: number, ky: number)",
-     description = "Draws text on screen. If no Font is set, one will be created and set (once) if needed.\n\nAs of LOVE 0.7.1, when using translation and scaling functions while drawing text, this function assumes the scale occurs first. If you don't script with this in mind, the text won't be in the right position, or possibly even on screen.\n\nlove.graphics.print and love.graphics.printf both support UTF-8 encoding. You'll also need a proper Font for special characters.",
+     description = "Draws text on screen. If no Font is set, one will be created and set (once) if needed.\n\nAs of LOVE 0.7.1, when using translation and scaling functions while drawing text, this function assumes the scale occurs first. If you don't script with this in mind, the text won't be in the right position, or possibly even on screen.\n\nlove.graphics.print and love.graphics.printf both support UTF-8 encoding. You'll also need a proper Font for special characters.\n\nIn versions prior to 11.0, color and byte component values were within the range of 0 to 255 instead of 0 to 1.",
      returns = "()",
      type = "function"
     },
@@ -5120,6 +5328,20 @@ local love = {
      description = "class constants",
      type = "class"
     },
+    MatrixLayout = {
+     childs = {
+      column = {
+       description = "The matrix is column-major.",
+       type = "value"
+      },
+      row = {
+       description = "The matrix is row-major.",
+       type = "value"
+      }
+     },
+     description = "class constants",
+     type = "class"
+    },
     RandomGenerator = {
      childs = {
       getState = {
@@ -5155,6 +5377,86 @@ local love = {
      },
      description = "A random number generation object which has its own random state.",
      inherits = "Object",
+     type = "class"
+    },
+    Transform = {
+     childs = {
+      clone = {
+       args = "()",
+       description = "Creates a new copy of this Transform.",
+       returns = "(clone: Transform)",
+       type = "function"
+      },
+      getMatrix = {
+       args = "()",
+       description = "Gets the internal 4x4 transformation matrix stored by this Transform. The matrix is returned in row-major order.",
+       returns = "(e1_1: number, e1_2: number, ...: number, e4_4: number)",
+       type = "function"
+      },
+      inverse = {
+       args = "()",
+       description = "Creates a new Transform containing the inverse of this Transform.",
+       returns = "(inverse: Transform)",
+       type = "function"
+      },
+      inverseTransformPoint = {
+       args = "(localX: number, localY: number)",
+       description = "Applies the reverse of the Transform object's transformation to the given 2D position.\n\nThis effectively converts the given position from the local coordinate space of the Transform into global coordinates.\n\nOne use of this method can be to convert a screen-space mouse position into global world coordinates, if the given Transform has transformations applied that are used for a camera system in-game.",
+       returns = "(globalX: number, globalY: number)",
+       type = "function"
+      },
+      reset = {
+       args = "()",
+       description = "Resets the Transform to an identity state. All previously applied transformations are erased.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      rotate = {
+       args = "(angle: number)",
+       description = "Applies a rotation to the Transform's coordinate system. This method does not reset any previously applied transformations.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      scale = {
+       args = "(sx: number, sy: number)",
+       description = "Scales the Transform's coordinate system. This method does not reset any previously applied transformations.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      setMatrix = {
+       args = "(e1_1: number, e1_2: number, ...: number, e4_4: number)",
+       description = "Directly sets the Transform's internal 4x4 transformation matrix.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      setTransformation = {
+       args = "(x: number, y: number, angle: number, sx: number, sy: number, ox: number, oy: number, kx: number, ky: number)",
+       description = "Resets the Transform to the specified transformation parameters.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      shear = {
+       args = "(kx: number, ky: number)",
+       description = "Applies a shear factor (skew) to the Transform's coordinate system. This method does not reset any previously applied transformations.",
+       returns = "(transform: Transform)",
+       type = "function"
+      },
+      transformPoint = {
+       args = "(globalX: number, globalY: number)",
+       description = "Applies the Transform object's transformation to the given 2D position.\n\nThis effectively converts the given position from global coordinates into the local coordinate space of the Transform.",
+       returns = "(localX: number, localY: number)",
+       type = "function"
+      },
+      translate = {
+       args = "(dx: number, dy: number)",
+       description = "Applies a translation to the Transform's coordinate system. This method does not reset any previously applied transformations.",
+       returns = "(transform: Transform)",
+       type = "function"
+      }
+     },
+     description = "Object containing a coordinate system transformation.\n\nThe love.graphics module has several functions and function variants which accept Transform objects.",
+     inherits = "Object",
+     notes = "Transform objects have a custom * (multiplication) operator. result = tA * tB is equivalent to result = tA:clone():apply(tB). It maps to the matrix multiplication operation that Transform:apply performs.\n\nThe * operator creates a new Transform object, so it is not recommended to use it heavily in per-frame code.",
      type = "class"
     },
     decompress = {
@@ -5449,13 +5751,13 @@ local love = {
    type = "function"
   },
   mousepressed = {
-   args = "(x: number, y: number, button: number, isTouch: boolean)",
+   args = "(x: number, y: number, button: number, isTouch: boolean, presses: number)",
    description = "Callback function triggered when a mouse button is pressed.",
    returns = "()",
    type = "function"
   },
   mousereleased = {
-   args = "(x: number, y: number, button: number, isTouch: boolean)",
+   args = "(x: number, y: number, button: number, isTouch: boolean, presses: number)",
    description = "Callback function triggered when a mouse button is released.",
    returns = "()",
    type = "function"
@@ -6131,7 +6433,7 @@ local love = {
        type = "function"
       },
       rayCast = {
-       args = "(x1: number, y1: number, x2: number, y1: number, maxFraction: number, childIndex: number)",
+       args = "(x1: number, y1: number, x2: number, y2: number, maxFraction: number, childIndex: number)",
        description = "Casts a ray against the shape of the fixture and returns the surface normal vector and the line position where the ray hit. If the ray missed the shape, nil will be returned.\n\nThe ray starts on the first point of the input line and goes towards the second point of the line. The fourth argument is the maximum distance the ray is going to travel as a scale factor of the input line length.\n\nThe childIndex parameter is used to specify which child of a parent shape, such as a ChainShape, will be ray casted. For ChainShapes, the index of 1 is the first edge on the chain. Ray casting a parent shape will only test the child specified so if you want to test every shape of the parent, you must loop through all of its children.\n\nThe world position of the impact can be calculated by multiplying the line vector with the third return value and adding it to the line starting point.\n\nhitx, hity = x1 + (x2 - x1) * fraction, y1 + (y2 - y1) * fraction",
        returns = "(x: number, y: number, fraction: number)",
        type = "function"
@@ -7287,8 +7589,8 @@ local love = {
     },
     getProcessorCount = {
      args = "()",
-     description = "Gets the number of CPU cores in the system.\n\nThe number includes the threads reported if technologies such as Intel's Hyper-threading are enabled. For example, on a 4-core CPU with Hyper-threading, this function will return 8.",
-     returns = "(cores: number)",
+     description = "Gets the amount of logical processor in the system.",
+     returns = "(processorCount: number)",
      type = "function"
     },
     openURL = {
@@ -7691,8 +7993,10 @@ local love = {
      type = "function"
     },
     restore = {
+     args = "()",
      description = "Restores the size and position of the window if it was minimized or maximized.",
-     type = "value"
+     returns = "()",
+     type = "function"
     },
     setDisplaySleepEnabled = {
      args = "(enable: boolean)",
