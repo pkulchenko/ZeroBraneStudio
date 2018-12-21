@@ -252,25 +252,6 @@ local function createNotebook(frame)
       NewFile()
     end)
 
-  -- tabs can be dragged around which may change their indexes;
-  -- when this happens stored indexes need to be updated to reflect the change.
-  -- there is DRAG_DONE event that I'd prefer to use, but it
-  -- doesn't fire for some reason using wxwidgets 2.9.5 (tested on Windows).
-  if ide.wxver >= "2.9.5" then
-    notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_END_DRAG,
-      function (event)
-        local selection = getTabWindow(event, notebook)
-        if selection == wx.wxNOT_FOUND then return end
-        -- set the selection on the dragged tab to reset its state
-        -- workaround for wxwidgets issue http://trac.wxwidgets.org/ticket/15071
-        notebook:SetSelection(selection)
-        -- select the content of the tab after drag is done
-        local doc = ide:GetDocument(notebook:GetPage(selection))
-        if doc then doc:SetActive() end
-        event:Skip()
-      end)
-  end
-
   local selection
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_TAB_RIGHT_UP,
     function (event)
@@ -418,6 +399,8 @@ local function addDND(notebook)
         or (ide:IsValidCtrl(ide:GetConsole()) and winid == ide:GetConsole():GetId())
         or (ide:IsValidCtrl(ide:GetProjectTree()) and winid == ide:GetProjectTree():GetId())
         or isPreview(win) -- search results preview
+        -- allow documents to be dragged into editor notebook, but nothing else
+        or (ide:GetEditorNotebook() == notebook and not ide:GetDocument(win))
         then return end
 
         local mgr = ide.frame.uimgr
@@ -467,6 +450,10 @@ local function addDND(notebook)
     function (event)
       event:Skip()
 
+      -- workaround for wxwidgets issue before it was fixed
+      -- http://trac.wxwidgets.org/ticket/15071
+      notebook:SetSelection(event:GetSelection())
+
       local mgr = ide.frame.uimgr
       local win = mgr:GetPane(notebook).window
       local x = win:GetScreenPosition():GetX()
@@ -491,19 +478,29 @@ local function addDND(notebook)
           if tabctrl:GetPageCount() == 1 then return end
         end
 
-        -- don't allow last pages to be dragged out from Project and Output notebooks
-        if (notebook == ide:GetProjectNotebook() or notebook == ide:GetOutputNotebook())
+        -- don't allow last pages to be dragged out from Project/Output/Editor notebooks
+        if (notebook == ide:GetProjectNotebook()
+          or notebook == ide:GetOutputNotebook()
+          or notebook == ide:GetEditorNotebook())
         and notebook:GetPageCount() == 1 then
           return
         end
 
         local label = notebook:GetPageText(selection)
         local pane = ide:RestorePanelByLabel(label)
+        -- if editor and not pane, then create pane for that editor
+        if not pane
+        and not (notebook == ide:GetProjectNotebook() or notebook == ide:GetOutputNotebook())
+        and notebook:GetPage(selection):GetClassInfo():GetClassName() == "wxStyledTextCtrl" then
+          local editor = notebook:GetPage(selection):DynamicCast("wxStyledTextCtrl")
+          pane = ide:AddPanel(editor, "editor."..editor:GetId(), label)
+        end
         if pane then
           pane:FloatingPosition(mx-10, my-10)
           pane:Show()
           notebook:RemovePage(selection)
           mgr:Update()
+          pane.window:SetFocus() -- set focus on extracted window
           return
         end
       end
@@ -704,6 +701,8 @@ createNotebook(frame)
 createProjNotebook(frame)
 createBottomNotebook(frame)
 
+addDND(frame.notebook)
+
 do
   local mgr = frame.uimgr
 
@@ -732,6 +731,20 @@ do
         ide.config.bordersize)
     end
   end
+
+  mgr:Connect(wxaui.wxEVT_AUI_PANE_CLOSE, function(event)
+      local win = event:GetPane().window
+      local name = event:GetPane().name
+      if name:find("^editor%.") and win:GetClassInfo():GetClassName() == "wxAuiNotebook" then
+        local nb = win:DynamicCast("wxAuiNotebook")
+        local editor = nb:GetCurrentPage()
+        local doc = editor and ide:GetDocument(editor)
+        if doc and not ide:GetDocument(editor):CloseAll({scope = "notebook"}) then
+          event:Veto()
+          win:SetFocus() -- set focus back on the pane
+        end
+      end
+    end)
 
   for _, nb in pairs {frame.bottomnotebook, frame.projnotebook} do
     nb:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
