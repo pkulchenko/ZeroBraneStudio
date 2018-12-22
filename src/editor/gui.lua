@@ -283,6 +283,11 @@ local function createNotebook(frame)
 
       -- save the editor from the tab initiating the event
       selection = tabctrl:GetPage(idx).window
+      -- save tab index the event is for
+      local curindex = notebook:GetSelection()
+      local selindex = notebook:GetPageIndex(selection)
+      if curindex ~= selindex then notebook:SetSelection(selindex) end
+
       local tree = ide:GetProjectTree()
       local startfile = tree:GetStartFile()
 
@@ -312,6 +317,8 @@ local function createNotebook(frame)
       -- popup statuses are not refreshed on Linux, so do it manually
       if ide.osname == "Unix" then UpdateMenuUI(menu, notebook) end
       notebook:PopupMenu(menu)
+      -- restore selection if it has changed
+      if curindex ~= selindex then notebook:SetSelection(curindex) end
     end)
 
   local function IfAtLeastOneTab(event) event:Enable(notebook:GetPageCount() > 0) end
