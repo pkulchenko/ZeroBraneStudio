@@ -34,6 +34,7 @@ ide.findReplace = {
       Context = true, -- include context in search results
       SubDirs = true, -- search in subdirectories
       FollowSymlink = false, -- search symlink sub-directories
+      MapDirs = false, -- search in mapped directories
       MultiResults = false, -- show multiple result tabs
     },
     flist = {},
@@ -469,6 +470,18 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
           yield = true, folder = false, skipbinary = true, ondirectory = yield,
           followsymlink = self:GetFlags().FollowSymlink,
         })
+      -- also search mapped dirs if configured
+      if self:GetFlags().MapDirs then
+        local tree = ide:GetProjectTree()
+        local item = tree:GetFirstChild(tree:GetRootItem())
+        while item:IsOk() and tree:IsDirMapped(item) do
+          ide:GetFileList(tree:GetItemFullName(item), subdirs, mask, {
+              yield = true, folder = false, skipbinary = true, ondirectory = yield,
+              followsymlink = self:GetFlags().FollowSymlink,
+            })
+          item = tree:GetNextSibling(item)
+        end
+      end
     end)
   while true do
     local file = files()
@@ -709,7 +722,8 @@ local icons = {
     infiles = {
       ID.FIND, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK, ID.FINDOPTMAPPED,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -724,7 +738,8 @@ local icons = {
     infiles = {
       ID.FIND, ID.FINDREPLACEALL, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK, ID.FINDOPTMAPPED,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -765,6 +780,7 @@ function findReplace:createToolbar()
     [ID.FINDOPTREGEX] = 'RegularExpr',
     [ID.FINDOPTSUBDIR] = 'SubDirs',
     [ID.FINDOPTSYMLINK] = 'FollowSymlink',
+    [ID.FINDOPTMAPPED] = 'MapDirs',
     [ID.FINDOPTCONTEXT] = 'Context',
     [ID.FINDOPTMULTIRESULTS] = 'MultiResults',
   }

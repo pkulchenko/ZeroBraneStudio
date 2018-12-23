@@ -56,5 +56,6 @@ ide.config.toolbar.iconmap = {
   [ID.FINDOPTCONTEXT] = {"FIND-OPT-CONTEXT", TR("Show context")},
   [ID.FINDOPTSUBDIR] = {"FIND-OPT-SUBDIR", TR("Search in subdirectories")},
   [ID.FINDOPTSYMLINK] = {"FIND-OPT-SYMLINK", TR("Follow symlink subdirectories")},
+  [ID.FINDOPTMAPPED] = {"FIND-OPT-MAPPED", TR("Search in mapped directories")},
   [ID.FINDOPTMULTIRESULTS] = {"FIND-OPT-MULTI-RESULTS", TR("Show multiple result windows")},
 }
