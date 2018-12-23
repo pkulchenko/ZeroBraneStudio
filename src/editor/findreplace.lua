@@ -465,7 +465,8 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
 
   local files = coroutine.wrap(function()
       ide:GetFileList(startdir, subdirs, mask, {
-          yield = true, folder = false, skipbinary = true, ondirectory = yield
+          yield = true, folder = false, skipbinary = true, ondirectory = yield,
+          followsymlink = false,
         })
     end)
   while true do

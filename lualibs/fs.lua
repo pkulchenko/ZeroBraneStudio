@@ -866,6 +866,22 @@ BOOL DeviceIoControl(
         nil) ~= 0)
   end
 
+  cdef[[
+DWORD GetFileAttributesW (
+    LPCWSTR lpFileName
+);
+]]
+
+  local INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF
+  local FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+
+  function fs.is_symlink(path)
+    if not path then return nil end
+    local flags = C.GetFileAttributesW(wcs(path))
+    if flags == INVALID_FILE_ATTRIBUTES then return false end
+    return bit.band(flags, FILE_ATTRIBUTE_REPARSE_POINT) == FILE_ATTRIBUTE_REPARSE_POINT
+  end
+
   ffi.metatype(file_ct, {__index = file})
   ffi.metatype(stream_ct, {__index = stream})
 

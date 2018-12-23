@@ -63,11 +63,18 @@ function FileDirHasContent(dir)
   return #f>0
 end
 
+-- `fs` library provides Windows-specific functions and requires LuaJIT
+local ok, fs = pcall(require, "fs")
+if not ok then fs = nil end
+
+local function isSymlink(path) return require("lfs").attributes(path).mode == "link" end
+if fs then isSymlink = fs.is_symlink end
+
 function FileSysGetRecursive(path, recursive, spec, opts)
   local content = {}
   local showhidden = ide.config and ide.config.showhiddenfiles
   local sep = GetPathSeparator()
-  -- trip trailing separator and adjust the separator in the path
+  -- trim trailing separator and adjust the separator in the path
   path = path:gsub("[\\/]$",""):gsub("[\\/]", sep)
   local queue = {path}
   local pathpatt = "^"..EscapeMagic(path)..sep.."?"
@@ -75,6 +82,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
   local optfolder = (opts or {}).folder ~= false
   local optsort = (opts or {}).sort ~= false
   local optpath = (opts or {}).path ~= false
+  local optfollowsymlink = (opts or {}).followsymlink ~= false
   local optskipbinary = (opts or {}).skipbinary
   local optondirectory = (opts or {}).ondirectory
   local optmaxnum = tonumber((opts or {}).maxnum)
@@ -169,6 +177,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       if optondirectory and ondirectory == nil then return false end
 
       if recursive and ismatch(fname..sep, nil, exmasks) and (ondirectory ~= false)
+      and (optfollowsymlink or not isSymlink(fname))
       -- check if this name already appears in the path earlier;
       -- Skip the processing if it does as it could lead to infinite
       -- recursion with circular references created by symlinks.
@@ -300,8 +309,7 @@ function ShowLocation(fname)
 end
 
 -- check if fs library is available and provide better versions of available functions
-local ok, fs = pcall(require, "fs")
-if ok then
+if fs then
   function FileWrite(file, content)
     local _ = wx.wxLogNull() -- disable error reporting; will report as needed
 
