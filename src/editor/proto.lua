@@ -60,7 +60,7 @@ ide.proto.Document = {__index = {
     local modpref = ide.config.editor.modifiedprefix or modpref
     local index, notebook = self:GetTabIndex()
     if index == nil then return self.fileName end
-    return notebook:GetPageText(index):gsub("^"..q(modpref), "")
+    return (notebook:GetPageText(index):gsub("^"..q(modpref), ""))
   end,
   SetActive = function(self)
     if not self.editor then return false end
