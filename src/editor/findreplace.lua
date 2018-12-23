@@ -33,6 +33,7 @@ ide.findReplace = {
       Down = true, -- search downwards in doc
       Context = true, -- include context in search results
       SubDirs = true, -- search in subdirectories
+      FollowSymlink = false, -- search symlink sub-directories
       MultiResults = false, -- show multiple result tabs
     },
     flist = {},
@@ -466,7 +467,7 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
   local files = coroutine.wrap(function()
       ide:GetFileList(startdir, subdirs, mask, {
           yield = true, folder = false, skipbinary = true, ondirectory = yield,
-          followsymlink = false,
+          followsymlink = self:GetFlags().FollowSymlink,
         })
     end)
   while true do
@@ -708,7 +709,7 @@ local icons = {
     infiles = {
       ID.FIND, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -723,7 +724,7 @@ local icons = {
     infiles = {
       ID.FIND, ID.FINDREPLACEALL, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -763,6 +764,7 @@ function findReplace:createToolbar()
     [ID.FINDOPTCASE] = 'MatchCase',
     [ID.FINDOPTREGEX] = 'RegularExpr',
     [ID.FINDOPTSUBDIR] = 'SubDirs',
+    [ID.FINDOPTSYMLINK] = 'FollowSymlink',
     [ID.FINDOPTCONTEXT] = 'Context',
     [ID.FINDOPTMULTIRESULTS] = 'MultiResults',
   }
