@@ -489,14 +489,36 @@ local function addDND(notebook)
         local label = notebook:GetPageText(selection)
         local pane = ide:RestorePanelByLabel(label)
         -- if editor and not pane, then create pane for that editor
-        if not pane
-        and not (notebook == ide:GetProjectNotebook() or notebook == ide:GetOutputNotebook())
-        and notebook:GetPage(selection):GetClassInfo():GetClassName() == "wxStyledTextCtrl" then
-          local editor = notebook:GetPage(selection):DynamicCast("wxStyledTextCtrl")
-          pane = ide:AddPanel(editor, "editor."..editor:GetId(), label)
+        if notebook == ide:GetEditorNotebook() then
+          if not pane then
+            local editor = notebook:GetPage(selection):DynamicCast("wxStyledTextCtrl")
+            pane = ide:AddPanel(editor, "editor."..editor:GetId(), label)
+          end
+
+          -- calculate the appropriate quadrant and the size for the dragged out window
+          local currentdisplay = wx.wxDisplay.GetFromWindow(pane.window)
+          local area = wx.wxDisplay(currentdisplay):GetClientArea()
+          local width, height = area:GetWidth(), area:GetHeight()
+          local x, y, w, h
+          if my > mx * height / width then
+            if my > (width - mx) * height / width then
+              x, y, w, h = 0, height/2, width, height/2
+            else
+              x, y, w, h = 0, 0, width/2, height
+            end
+          else
+            if my > (width - mx) * height / width then
+              x, y, w, h = width/2, 0, width/2, height
+            else
+              x, y, w, h = 0, 0, width, height/2
+            end
+          end
+          pane:FloatingPosition(x, y)
+          pane:FloatingSize(w, h)
+        elseif pane then
+          pane:FloatingPosition(mx-10, my-10)
         end
         if pane then
-          pane:FloatingPosition(mx-10, my-10)
           pane:Show()
           notebook:RemovePage(selection)
           mgr:Update()
