@@ -653,8 +653,13 @@ function findReplace:RunInFiles(replace)
   reseditor:SetReadOnly(false)
   reseditor:SetTextDyn('')
   do -- update the preview name
-    local nb = showaseditor and ide:GetEditorNotebook() or nb
-    nb:SetPageText(nb:GetPageIndex(reseditor), previewText .. findText)
+    local nb, index = nb
+    if showaseditor and ide:GetDocument(reseditor) then
+      index, nb = ide:GetDocument(reseditor):GetTabIndex()
+    else
+      index, nb = nb:GetPageIndex(reseditor), nb
+    end
+    nb:SetPageText(index, previewText .. findText)
   end
   if not showaseditor and nb then -- show the bottom notebook if hidden
     local uimgr = ide:GetUIManager()
