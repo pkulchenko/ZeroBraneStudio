@@ -1,5 +1,95 @@
 # ZeroBrane Studio Changelog
 
+## Current master (Dec 25 2018)
+
+### Highlights
+  - Added support for hoisted directories in the project tree.
+  - Added search option to search mapped directories when present (off by default).
+  - Added search option to follow symlinks to the searchbar (off by default).
+  - Improved file renaming from the project tree.
+  - Updated Love2d API for 11.2 (#247).
+
+### Improvements
+  - Added search option to search mapped directories when present (off by default).
+  - Added search option to follow symlinks to the searchbar (off by default).
+  - Added option for skipping symlinks during search.
+  - Added activating the editor tab after right click.
+  - Added `CreateNotebook` method to provide `GetCurrentPage` if not available (#166).
+  - Added `GetShortFilePath` method (#166).
+  - Added `project` scope to `CloseAll` and switched to using it in project switching.
+  - Added `dryrun` option for `CloseAll` method to retrieve documents to be closed.
+  - Added seven lexers from Scintila 3.10.1.
+  - Added `GetTabCtrl` method for the notebook.
+  - Added `onFiletreeFileMarkSelected` event (#166).
+  - Added `MarginFromPoint` editor method (#166).
+  - Added `IsDirHoisted` method for project tree.
+  - Added showing file icons on editor tabs.
+  - Added `CreateFileIcon` method (#166).
+  - Added switching to window being saved during `Save As` and `Save All` operations.
+  - Added `SetFileName` document method (#166).
+  - Added `IsActive` document method (#166).
+  - Added `CreateDocument` method (#166).
+  - Added `OutputDebugStringW` method for `fs` module.
+  - Added `GetDocumentList` method (#166).
+  - Added `RemoveDocument` method (#166).
+  - Added end scope name for `else` statement (#946).
+  - Added writing using `fs` library on Windows, as this preserves file attributes.
+  - Added editor tooltip showing full path (when available).
+  - Added support for hoisted directories.
+  - Moved updating file history to happen on document activation.
+  - Refactored file renaming from the file tree to avoid creating editor tabs.
+  - Removed `CloseAllExcept` method as it's not longer needed.
+  - Removed `SetTabIndex` and direct tab index usage.
+  - Updated Love2d API for 11.2 (#247).
+  - Updated `RequestAttention` method to check documents in floating panels.
+  - Updated commandbar to activate (floating) editor in symbol selection.
+  - Updated commandbar processing to work with multiple notebooks.
+  - Updated `GetEditor` to check for all notebooks that may have documents.
+  - Updated placeholder expansion to show labels for editor in any notebook.
+  - Updated `CloseAll` to report closing results.
+  - Updated to not close the document when the editor is moved to a different notebook.
+  - Updated root path generation to make it work from Windows paths with unicode names.
+  - Updated document activation to reduce dependence on tab being in a specific notebook.
+  - Updated `CloseAll` method to only retrieve tab control when needed.
+  - Updated commandbar to find better position over split notebook.
+  - Updated to improve file activation in project tree.
+  - Updated file icon generation to keep header on files with no extension.
+  - Updated dynamic icons to show the custom color in the header instead of the text (#470).
+  - Updated page closing to simplify selection of the page to activate.
+  - Updated commandbar to cancel selection on switching focus from the editor for consistency.
+  - Updated to use `wxGetUserId` to get user login for singleinstance checks (fixes #951).
+  - Updated to allow hoisting for mapped directories.
+  - Updated closing multiple tabs to stop closing on canceling save.
+  - Updated to preserve compatibility with older versions of wxlua/wxwidgets.
+  - Updated indicator handling to work when tabs are quickly closed.
+  - Updated find/replace result message to get proper translation.
+  - Updated `Show Location` label to more informative `Open Containing Folder`.
+  - Updated `Show Location` to use the default explorer as configured (Windows).
+  - Upgraded LexLPeg lexers to support new lexer syntax.
+
+### Fixes
+  - Fixed storing name of unsaved tabs in recovery records.
+  - Fixed error shown when focus is set on the editor while it's removed from the notebook.
+  - Fixed expanding mapped directories when adding new items under it.
+  - Fixed allowing to add new file/directory only under directories.
+  - Fixed project tree refresh and sync after un/mapping directory or setting start file.
+  - Fixed black background shown for generated file icons on Linux.
+  - Fixed showing current file in the project tree.
+  - Fixed adding files/directories under mapped and hoisted directories.
+  - Fixed adding mapped directory after drop on project tree over no item.
+  - Fixed transparent background for dynamic icons in the project tree (#470).
+  - Fixed activation of editor tab from the filetree on Windows.
+  - Fixed output truncation after launched process terminates (fixes #949).
+  - Fix margin click selection to select folded block.
+  - Fixed typo in the usage instructions.
+  - Fixed message on how to configure short path conversion on Windows (fixes #948).
+  - Fix symbol indicators when no editor windows are open.
+  - Fixed incorrect outline with `repeat until` before `else` (fixes #946).
+
+### Incompatibilities
+  - Removed `CloseAllExcept` method as it's not longer needed.
+  - Removed `SetTabIndex` and direct tab index usage.
+
 ## v1.80 (Oct 07 2018)
 
 ### Highlights
