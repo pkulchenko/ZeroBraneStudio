@@ -253,7 +253,7 @@ function ide:LoadAPI(path)
       else
         ide.apis[ftype] = ide.apis[ftype] or {}
         -- make sure the path is absolute to access it if the current directory changes
-        ide.apis[ftype][fname] = ide:GetRootPath(file)
+        ide.apis[ftype][fname] = ide:GetShortFilePath(MergeFullPath("", file))
       end
     end
   end
@@ -350,6 +350,7 @@ do
   -- on Windows use GetExecutablePath, which is Unicode friendly,
   -- whereas wxGetCwd() is not (at least in wxlua 2.8.12.2).
   -- some wxlua version on windows report wx.dll instead of *.exe.
+  -- (although wxGetCwd() is Unicode friendly in wxwidgets 3.x)
   local exepath = wx.wxStandardPaths.Get():GetExecutablePath()
   if ide.osname == "Windows" and exepath:find("%.exe$") then
     fullPath = exepath
