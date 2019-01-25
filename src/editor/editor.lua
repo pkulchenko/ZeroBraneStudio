@@ -1786,6 +1786,7 @@ function SetupKeywords(editor, ext, forcespec, styles, font, fontitalic)
   local lexerstyleconvert = nil
   local spec = forcespec or ide:FindSpec(ext, editor:GetLine(0))
   -- found a spec setup lexers and keywords
+  if spec and editor.spec == spec then return end
   if spec then
     if type(spec.lexer) == "string" then
       local ok, err = setLexLPegLexer(editor, spec)
