@@ -1722,9 +1722,10 @@ local function setLexLPegLexer(editor, spec)
     ok, err = FileWrite(dynfile, dynlexer)
     if not ok then cleanup({tmppath}); return nil, err end
   end
-  local lexmod, err = lex.load(lexer)
+  local ok, err = pcall(lex.load, lexer)
   if dynlexer then cleanup({dynfile, tmppath}) end
-  if not lexmod then return nil, err end
+  if not ok then return nil, (err:gsub(".+lexer%.lua:%d+:%s*","")) end
+  local lexmod = err
 
   local lexpath = package.searchpath("lexlpeg", ide.osclibs)
   if not lexpath then return nil, "Can't find LexLPeg lexer." end
