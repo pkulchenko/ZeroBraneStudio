@@ -46,7 +46,7 @@ return {
   ["&Start Debugger Server"] = "Iniciar &servidor de depuração", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Barra de &status", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Barra de ferramen&tas", -- src\editor\menu_view.lua
-  ["&Tools"] = nil, -- src\editor\package.lua
+  ["&Tools"] = "Ferramen&tas", -- src\editor\package.lua
   ["&Tutorials"] = "&Tutoriais", -- src\editor\menu_help.lua
   ["&Undo"] = "Desfazer", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "Exibir", -- src\editor\menu_view.lua
@@ -105,12 +105,12 @@ return {
   ["Complete the current identifier"] = "Completar o identificador atual", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "Considere a remoção da contrabarra da sequência de escape '%s'.", -- src\editor\commands.lua
   ["Copy Full Path"] = "Copiar o caminho completo", -- src\editor\gui.lua, src\editor\filetree.lua
-  ["Copy selected text to clipboard"] = "Copiar texto selecionado para a área de transfêrencia", -- src\editor\menu_edit.lua
+  ["Copy selected text to clipboard"] = "Copiar texto selecionado para a área de transferência", -- src\editor\menu_edit.lua
   ["Correct &Indentation"] = "Corr&igir recuo", -- src\editor\menu_edit.lua
   ["Couldn't activate file '%s' for debugging; continuing without it."] = "Impossível ativar o arquivo '%s' para a depuração; continuando sem ele.", -- src\editor\debugger.lua
   ["Create an empty document"] = "Criar um documento em branco", -- src\editor\toolbar.lua, src\editor\menu_file.lua
   ["Cu&t"] = "Recor&tar", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
-  ["Cut selected text to clipboard"] = "Recortar texto selecionado para a área de transfêrencia", -- src\editor\menu_edit.lua
+  ["Cut selected text to clipboard"] = "Recortar texto selecionado para a área de transferência", -- src\editor\menu_edit.lua
   ["Debugger server started at %s:%d."] = "Servidor de depuração iniciado em %s:%d.", -- src\editor\debugger.lua
   ["Debugger server stopped at %s:%d."] = "Servidor de depuração interrompido em %s:%d.", -- src\editor\debugger.lua
   ["Debugging session completed (%s)."] = "Sessão de depuração completada (%s).", -- src\editor\debugger.lua
@@ -204,7 +204,7 @@ return {
   ["Output (suspended)"] = "Saída (suspendido)", -- src\editor\debugger.lua
   ["Output"] = "Saída", -- src\editor\debugger.lua, src\editor\output.lua, src\editor\gui.lua, src\editor\settings.lua
   ["Page Setup..."] = "Configurar página...", -- src\editor\print.lua
-  ["Paste text from the clipboard"] = "Colar texto da área de transfêrencia", -- src\editor\menu_edit.lua
+  ["Paste text from the clipboard"] = "Colar texto da área de transferência", -- src\editor\menu_edit.lua
   ["Preferences"] = "Preferências", -- src\editor\menu_edit.lua
   ["Prepend '!' to force local execution."] = "Prefixe com '!' para forçar a execução local.", -- src\editor\shellbox.lua
   ["Prepend '=' to show complex values on multiple lines."] = "Prefixe com '=' para exibir valores complexos em múltiplas linhas.", -- src\editor\shellbox.lua
@@ -226,8 +226,8 @@ return {
   ["R/W"] = "L/E", -- src\editor\editor.lua
   ["Re&place In Files"] = "Substituir em arquivos", -- src\editor\menu_search.lua
   ["Re-indent selected lines"] = "Inserir recuos nas linhas selecionadas", -- src\editor\menu_edit.lua
-  ["Reached end of selection and wrapped around."] = "Alcançado o final da seleção e volta a começar.", -- src\editor\findreplace.lua
-  ["Reached end of text and wrapped around."] = "Alcançado o final do texto e volta a começar.", -- src\editor\findreplace.lua
+  ["Reached end of selection and wrapped around."] = "Alcançado o final da seleção após a volta completa.", -- src\editor\findreplace.lua
+  ["Reached end of text and wrapped around."] = "Alcançado o final do texto após a volta completa.", -- src\editor\findreplace.lua
   ["Recent Files"] = "Arquivos recentes", -- src\editor\menu_file.lua
   ["Recent Projects"] = "Projetos recentes", -- src\editor\menu_file.lua
   ["Redo last edit undone"] = "Refazer última edição desfeita", -- src\editor\menu_edit.lua
