@@ -52,6 +52,17 @@ As an alternative, you can **move those system settings to user settings** (`Edi
 If you are using **Windows or Linux**, made any modifications to the files in the distribution,
 and plan to install the upgrade into the same location, make sure to **save your changes** before proceeding.
 
+## Security settings.
+
+If you are using
+Vera3, VeraLite, & VeraLite G (v1.7.1030+),
+VeraEdge (v1.7.3830+),
+VeraPlus (v1.7.3831+), or
+VeraSecure (v1.7.3832+), you may need to adjust the security settings to allow unsafe Lua execution
+for the debugging to work. You'll find these settings at `Users & Account Settings > Security`.
+If this setting is not enabled, you are likely to see the following message in the luup logs: `RunLua failed with 401/No unsafe lua allowed`.
+See [this Vera Software Update article](https://support.getvera.com/customer/en/portal/articles/2934426) for detals.
+
 ## What do I do if I have questions or want to receive product updates?
 
 Several ways to stay in touch are listed [here](community). If you have any problems, please [contact us](email:support@zerobrane.com) and we will get it sorted out.

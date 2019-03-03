@@ -85,6 +85,16 @@ You may want to disable the VPN (and run `ipconfig /renew`) or configure `debugg
 Port 3480 on the device has to be open to allow the computer running the IDE to connect to it.
 To open the port, log into the vera controller from the home.getvera.com web site and select that device.
 
+* **Debugging doesn't start because security settings disable potentially unsafe Lua code.**
+If you are using
+Vera3, VeraLite, & VeraLite G (v1.7.1030+),
+VeraEdge (v1.7.3830+),
+VeraPlus (v1.7.3831+), or
+VeraSecure (v1.7.3832+), you may need to adjust the security settings to allow unsafe Lua execution
+for the debugging to work. You'll find these settings at `Users & Account Settings > Security`.
+If this setting is not enabled, you are likely to see the following message in the luup logs: `RunLua failed with 401/No unsafe lua allowed`.
+See [this Vera Software Update article](https://support.getvera.com/customer/en/portal/articles/2934426) for detals.
+
 * **Debugging doesn't start because of a conflict with existing Lua installation (macOS).**
 In some rare cases the debugging doesn't start as the system fails to load a dynamic library that has incorrect architecture.
 You may see a message `dyld: Library not loaded: liblua.dylib`
