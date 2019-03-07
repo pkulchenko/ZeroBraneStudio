@@ -41,7 +41,7 @@ if ide.config.staticanalyzer.luacheck then
 
     if config.options then
       -- add user config globals to api table
-      for k, v in pairs(config.options.globals) do
+      for k, v in pairs(config.options.globals or {}) do
         api_globals[k] = v
       end
       config.options.globals = api_globals
