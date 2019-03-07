@@ -37,17 +37,26 @@ if ide.config.staticanalyzer.luacheck then
   end
 
   warnings_from_string = function(src, file)
-    local data = luacheck.check_strings({src}, config.options or {
+    local api_globals = build_env()
+
+    if config.options then
+      -- add user config globals to api table
+      for k, v in pairs(config.options.globals) do
+        api_globals[k] = v
+      end
+      config.options.globals = api_globals
+    end
+
+    local default_options = {
       max_line_length = false,
-      std = {
-        globals = build_env(),
-      },
+      globals = api_globals,
       -- http://luacheck.readthedocs.io/en/stable/warnings.html
       ignore = config.ignore or {
         "11.", -- setting, accessing and mutating globals
         "6..", -- whitespace and style warnings
       },
-    })
+    }
+    local data = luacheck.check_strings({src}, config.options or default_options)
 
     -- I think luacheck can support showing multiple errors
     -- but warnings_from_string is meant to only show one
