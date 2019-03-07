@@ -25,7 +25,7 @@ if ide.config.staticanalyzer.luacheck then
   local function build_env()
     local globals = {}
 
-    for _, api in pairs(ide:GetInterpreter():GetAPI()) do
+    for _, api in pairs(ide:GetInterpreter():GetAPI() or {}) do
       -- not sure if this is how you're supposed to get an api
       local ok, tbl = pcall(require, "api/lua/" .. api)
       if ok then
