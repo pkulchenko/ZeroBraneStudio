@@ -149,24 +149,38 @@ local function isCtrlFocused(e)
      or ide.osname == 'Macintosh' and
        ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
 end
-function ide:GetEditor()
-  local notebook = self:GetEditorNotebook()
-  local win = notebook:GetCurrentPage()
+-- index parameter is optional
+function ide:GetEditor(index)
   local editor
-  if win and win:GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
-    editor = win:DynamicCast("wxStyledTextCtrl")
-  end
-  -- return the editor if it has focus
-  if isCtrlFocused(editor) then return editor end
+  local notebook = self:GetEditorNotebook()
 
-  -- check the rest of the documents (those not in the EditorNotebook)
-  for _, doc in pairs(ide:GetDocuments()) do
-    local _, nb = doc:GetTabIndex()
-    if nb ~= notebook and isCtrlFocused(doc:GetEditor()) then return doc:GetEditor() end
+  if index == nil then
+    local win = notebook:GetCurrentPage()
+    if win and win:GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
+      editor = win:DynamicCast("wxStyledTextCtrl")
+    end
+    -- return the editor if it has focus
+    if isCtrlFocused(editor) then return editor end
+
+    -- check the rest of the documents (those not in the EditorNotebook)
+    for _, doc in pairs(ide:GetDocuments()) do
+      local _, nb = doc:GetTabIndex()
+      if nb ~= notebook and isCtrlFocused(doc:GetEditor()) then return doc:GetEditor() end
+    end
+    -- return the current editor in the notebook, even if it's not focused
+    return editor
+  else
+    if index == nil then index = notebook:GetSelection() end
+
+    if (index >= 0) and (index < notebook:GetPageCount())
+    and notebook:GetPage(index):GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
+      editor = notebook:GetPage(index):DynamicCast("wxStyledTextCtrl")
+    end
+    -- return editor or nil if none at index
+    return editor
   end
-  -- return the current editor in the notebook, even if it's not focused
-  return editor
 end
+
 function ide:GetEditorWithFocus(...)
   -- need to distinguish GetEditorWithFocus() and GetEditorWithFocus(nil)
   -- as the latter may happen when GetEditor() is passed and returns `nil`
