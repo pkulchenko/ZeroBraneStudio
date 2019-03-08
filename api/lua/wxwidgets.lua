@@ -1,12 +1,25 @@
 local function populateAPI(t)
   local api = {}
-  for k,v in pairs(t) do
-    api[k] = {
-      type = (type(v) == "function" and "function" or "value"),
-      description = "",
-      returns = "",
-    }
+  local function processFields(fields)
+    for k,v in pairs(fields) do
+      if type(v) == "table" then
+        api[k] = {
+          type = "function",
+          description = "",
+          returns = "",
+          childs = populateAPI(v)
+        }
+      else
+        api[k] = {
+          type = (type(v) == "function" and "function" or "value"),
+          description = "",
+          returns = "",
+        }
+      end
+    end
   end
+  processFields(t)
+
   return api
 end
 
@@ -21,4 +34,9 @@ return {
     description = "wxSTC lib",
     childs = populateAPI(wxstc),
   },
+  wxaui = {
+    type = "lib",
+    description = "wxAUI lib",
+    childs = populateAPI(wxaui),
+  }
 }
