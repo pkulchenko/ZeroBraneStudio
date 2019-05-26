@@ -295,7 +295,7 @@ return {
   ["Show/Hide the toolbar"] = "显示/隐藏工具栏", -- src\editor\menu_view.lua
   ["Sort By Name"] = "按名称排序", -- src\editor\outline.lua
   ["Sort selected lines"] = "排序所选行", -- src\editor\menu_edit.lua
-  ["Source"] = "来源", -- src\editor\menu_edit.lua
+  ["Source"] = "源文件", -- src\editor\menu_edit.lua
   ["Stack"] = "堆栈", -- src\editor\debugger.lua
   ["Start &Debugging"] = "启动调试", -- src\editor\menu_project.lua
   ["Start or continue debugging"] = "启动或继续调试", -- src\editor\toolbar.lua, src\editor\menu_project.lua
