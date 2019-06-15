@@ -738,5 +738,11 @@ do
       function() PaneFloatToggle(nb) end)
   end
 
+  if wxaui.wxAuiGenericTabArt then
+    for _, nb in pairs {frame.notebook, frame.bottomnotebook, frame.projnotebook} do
+      nb:SetArtProvider(wxaui.wxAuiGenericTabArt())
+    end
+  end
+
   mgr.defaultPerspective = mgr:SavePerspective()
 end
