@@ -8,6 +8,7 @@ local function waitToComplete(bid)
     wx.wxWakeUpIdle()
     wx.wxMilliSleep(100)
   end
+  wx.wxSafeYield()
   wx.wxWakeUpIdle() -- wake up one more time to process messages (if any)
 end
 
