@@ -46,8 +46,11 @@ menuBar:Append(debugMenu, TR("&Project"))
 menuBar:Check(ID_CLEAROUTPUTENABLE, true)
 
 -- older (<3.x) versions of wxwidgets may not have `GetLabelText`, so provide alternative
-if not pcall(function() return debugMenu.GetLabelText end) then
-  debugMenu.GetLabelText = function(self, ...) return wx.wxMenuItem.GetLabelText(self.GetLabel(self, ...)) end
+do
+  local ok, glt = pcall(function() return debugMenu.GetLabelText end)
+  if not ok or not glt then
+    debugMenu.GetLabelText = function(self, ...) return wx.wxMenuItem.GetLabelText(self.GetLabel(self, ...)) end
+  end
 end
 local debugMenuRunLabel = { [false]=debugMenu:GetLabelText(ID_STARTDEBUG), [true]=TR("Co&ntinue") }
 local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Debugging") }
