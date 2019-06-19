@@ -36,6 +36,7 @@ local function displayAbout(event)
   local logo = ide:GetAppName().."/"..ide:GetProperty("logo")
   local logoimg = wx.wxFileName(logo):FileExists() and
     ([[<tr><td><img src="%s"></td></tr>]]):format(logo) or ""
+  local ed = ide:GetEditor() or ide:CreateBareEditor()
   local page = ([[
     <html>
       <body text="#777777">
@@ -49,6 +50,11 @@ local function displayAbout(event)
 		<b>Copyright &copy; 2011-2017 ZeroBrane LLC</b><br>
 		Paul Kulchenko<br>
 		Licensed under the MIT License.
+		</td>
+	  </tr>
+	  <tr>
+		<td>
+                <b>Built with %s</b>
 		</td>
 	  </tr>
 	  <tr>
@@ -68,17 +74,15 @@ local function displayAbout(event)
 		Licensed under wxWindows Library License, v3.
 		</td>
 	  </tr>
-	  <tr>
-		<td>
-                <b>Built with %s, %s</b>
-		</td>
-	  </tr>
 	</table>
 	</td></tr></table>
       </body>
     </html>]])
-  :format(logoimg, ide.VERSION, mobdebug._VERSION, ide:GetAppName(),
-    wx.wxVERSION_STRING, wxlua.wxLUA_VERSION_STRING)
+  :format(logoimg, ide.VERSION, mobdebug._VERSION, table.concat({
+      wx.wxVERSION_STRING,
+      wxlua.wxLUA_VERSION_STRING,
+      ed.GetLibraryVersionInfo and ed:GetLibraryVersionInfo():GetVersionString() or nil,
+    }, ", "), ide:GetAppName())
 
   local dlg = wx.wxDialog(frame, wx.wxID_ANY, TR("About %s"):format(ide:GetProperty("editor")))
 
