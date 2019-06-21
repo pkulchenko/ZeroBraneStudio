@@ -1426,7 +1426,7 @@ function ide:SetHotKey(id, ksc)
         keymap[gid] = ""
         -- try to find a menu item with this ID (if any) to remove the hotkey
         local item = self:FindMenuItem(gid)
-        if item then item:SetText(item:GetText():gsub("\t.+","").."") end
+        if item then item:SetItemLabel(item:GetItemLabel():gsub("\t.+","").."") end
       end
       -- continue with the loop as there may be multiple associations with the same hotkey
     end
@@ -1450,9 +1450,8 @@ function ide:SetHotKey(id, ksc)
 
   local item = self:FindMenuItem(id)
   if item then
-    -- get the item text and replace the shortcut
-    -- since it also needs to keep the accelerator (if any), so can't use `GetLabel`
-    item:SetText(item:GetText():gsub("\t.+","")..KSC(nil, ksc))
+    -- get the item text and replace the shortcut; make sure to the accelerator (if any)
+    item:SetItemLabel(item:GetItemLabel():gsub("\t.+","")..KSC(nil, ksc))
   end
 
   -- if there is no keymap or menu item, then use the accelerator

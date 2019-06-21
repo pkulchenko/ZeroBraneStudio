@@ -105,7 +105,7 @@ do -- recent file history
   local function loadRecent(event)
     local id = event:GetId()
     local item = filehistorymenu:FindItem(id)
-    local filename = item:GetLabel()
+    local filename = item:GetItemLabelText()
     local index = filehistory[0]
     filehistory[0] = (
       (index > 1 and id == ID("file.recentfiles."..(index-1)) and index-1) or
