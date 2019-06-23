@@ -1078,6 +1078,7 @@ function ide:FindSpec(ext, firstline)
   local shebang = false
   if not name and firstline then
     name = firstline:match("#!.-(%w+)%s*$")
+    name = type(edcfg.specmap) == "table" and edcfg.specmap[name] or name
     shebang = true
   end
   if name then
