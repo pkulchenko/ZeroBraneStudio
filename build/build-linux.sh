@@ -35,7 +35,7 @@ INSTALL_DIR="$PWD/deps"
 MAKEFLAGS="-j4"
 
 # flags for manual building with gcc
-BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib $FPIC"
+BUILD_FLAGS="-Os -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib $FPIC"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
@@ -259,15 +259,15 @@ if [ $BUILD_WXWIDGETS ]; then
   cd "$WXWIDGETS_BASENAME"
 
   # checkout the version that was used in wxwidgets upgrade to 3.1.x
-  git checkout WX_3_1_0-7d9d59
+  git checkout master
 
   # refresh wxwidgets submodules
   git submodule update --init --recursive
 
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
-    --enable-compat28 \
+    --enable-compat30 \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
-    --with-zlib=builtin --disable-richtext --with-gtk=2 \
+    --with-zlib=builtin --disable-richtext --with-gtk=3 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
@@ -281,15 +281,7 @@ if [ $BUILD_WXLUA ]; then
   cd "$WXLUA_BASENAME/wxLua"
 
   # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
-  git checkout WX_3_1_0-7d9d59
-
-  # the following patches wxlua source to fix live coding support in wxlua apps
-  # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
-  sed -i 's/\(m_wxlState = wxLuaState(wxlState.GetLuaState(), wxLUASTATE_GETSTATE|wxLUASTATE_ROOTSTATE);\)/\/\/ removed by ZBS build process \/\/ \1/' modules/wxlua/wxlcallb.cpp
-
-  # remove "Unable to call an unknown method..." error as it leads to a leak
-  # see http://sourceforge.net/p/wxlua/mailman/message/34629522/ for details
-  sed -i '/Unable to call an unknown method/{N;s/.*/    \/\/ removed by ZBS build process/}' modules/wxlua/wxlbind.cpp
+  git checkout wxwidgets312
 
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
     -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \

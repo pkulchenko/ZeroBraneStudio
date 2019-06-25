@@ -16,7 +16,7 @@ INSTALL_DIR="$PWD/deps"
 MAKEFLAGS="-j1" # some make may hang on Windows with j4 or j7
 
 # flags for manual building with gcc
-BUILD_FLAGS="-O2 -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
+BUILD_FLAGS="-Os -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
@@ -268,13 +268,13 @@ if [ $BUILD_WXWIDGETS ]; then
   cd "$WXWIDGETS_BASENAME"
 
   # checkout the version that was used in wxwidgets upgrade to 3.1.x
-  git checkout WX_3_1_0-7d9d59
+  git checkout master
 
   # refresh wxwidgets submodules
   git submodule update --init --recursive
 
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
-    --enable-compat28 \
+    --enable-compat30 \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
     --with-zlib=builtin --disable-richtext \
     CFLAGS="-Os -fno-keep-inline-dllexport" CXXFLAGS="-Os -fno-keep-inline-dllexport -DNO_CXX11_REGEX"
@@ -290,24 +290,13 @@ if [ $BUILD_WXLUA ]; then
   cd "$WXLUA_BASENAME/wxLua"
 
   # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
-  git checkout WX_3_1_0-7d9d59
+  git checkout wxwidgets312
 
   sed -i 's|:-/\(.\)/|:-\1:/|' "$INSTALL_DIR/bin/wx-config"
   sed -i 's/execute_process(COMMAND/& sh/' build/CMakewxAppLib.cmake
 
-  # the following patches wxlua source to fix live coding support in wxlua apps
-  # http://www.mail-archive.com/wxlua-users@lists.sourceforge.net/msg03225.html
-  sed -i 's/\(m_wxlState = wxLuaState(wxlState.GetLuaState(), wxLUASTATE_GETSTATE|wxLUASTATE_ROOTSTATE);\)/\/\/ removed by ZBS build process \/\/ \1/' modules/wxlua/wxlcallb.cpp
-
   # remove check for Lua 5.2 as it doesn't work with Twoface ABI mapper
   sed -i 's/LUA_VERSION_NUM < 502/0/' modules/wxlua/wxlcallb.cpp
-
-  # (temporary) fix for compilation issue in wxlua in Windows using mingw (r184)
-  sed -i 's/defined(__MINGW32__) || defined(__GNUWIN32__)/0/' modules/wxbind/src/wxcore_bind.cpp
-
-  # remove "Unable to call an unknown method..." error as it leads to a leak
-  # see http://sourceforge.net/p/wxlua/mailman/message/34629522/ for details
-  sed -i '/Unable to call an unknown method/{N;s/.*/    \/\/ removed by ZBS build process/}' modules/wxlua/wxlbind.cpp
 
   [ -f "$INSTALL_DIR/lib/libwxscintilla-3.0.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.0.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.0.a"
   [ -f "$INSTALL_DIR/lib/libwxscintilla-3.1.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.1.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.1.a"
