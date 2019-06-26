@@ -873,5 +873,6 @@ wx.wxGetApp():MainLoop()
 -- (1) to fix a crash on OSX when closing with debugging in progress.
 -- (2) to fix a crash on Linux 32/64bit during GC cleanup in wxlua
 -- after an external process has been started from the IDE.
--- (3) to fix exit on Windows when started as "bin\lua src\main.lua".
+-- (3) to fix exit on Windows when started as "bin\lua src\main.lua"
+-- and debugging started and stopped.
 os.exit()
