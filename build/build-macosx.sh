@@ -263,6 +263,7 @@ if [ $BUILD_WXWIDGETS ]; then
   fi
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
+    --with-cxx=11 \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
     --with-zlib=builtin --disable-richtext \
     --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
@@ -300,6 +301,7 @@ if [ $BUILD_WXLUA ]; then
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
     -DCMAKE_OSX_ARCHITECTURES=$MACOSX_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_VERSION $MINSDK \
     -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
+    -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" \
     -DwxWidgets_COMPONENTS="stc;gl;html;aui;adv;core;net;base" \
     -DwxLuaBind_COMPONENTS="stc;gl;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
     -DwxLua_LUA_INCLUDE_DIR="$INSTALL_DIR/include" -DwxLua_LUA_LIBRARY="$INSTALL_DIR/lib/liblua.dylib" .
