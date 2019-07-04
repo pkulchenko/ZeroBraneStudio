@@ -289,8 +289,7 @@ if [ $BUILD_WXLUA ]; then
   git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
 
-  # checkout the version that matches what was used in wxwidgets upgrade to 3.1.x
-  git checkout wxwidgets312
+  git checkout master
 
   MINSDK=""
   if [ -d $MACOSX_SDK_PATH ]; then
