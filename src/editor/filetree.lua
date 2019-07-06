@@ -837,6 +837,14 @@ local function treeSetConnectorsAndIcons(tree)
       end
     end)
 
+  if ide.wxver >= "3.1.3" then
+    -- provide workaround for white background in a focused item in the tree
+    -- on Linux when the tree itself is unfocused (may be gtk3-only issue);
+    -- enable on all platforms, as the brackground is low contrast on MacOS
+    -- and blue-colored on Windows
+    tree:Connect(wx.wxEVT_KILL_FOCUS, function(event) tree:ClearFocusedItem() end)
+  end
+
   local itemsrc
   tree:Connect(wx.wxEVT_COMMAND_TREE_BEGIN_DRAG,
     function (event)
