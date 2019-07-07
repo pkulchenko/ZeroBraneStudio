@@ -536,7 +536,8 @@ function SetOpenFiles(nametab,params)
     local editor = LoadFile(doc.filename,nil,true,true) -- skip selection
     if editor then editor:GotoPosDelayed(doc.cursorpos or 0) end
   end
-  local doc = ide:GetDocument(notebook:GetPage(params and params.index or 0))
+  local idx = params and params.index or 0
+  local doc = idx < notebook:GetPageCount() and ide:GetDocument(notebook:GetPage(idx))
   if doc then doc:SetActive() end
 end
 
