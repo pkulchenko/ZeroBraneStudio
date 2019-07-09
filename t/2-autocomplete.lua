@@ -265,4 +265,11 @@ ok(status and res and not res:match('value'),
 ide.config.acandtip.strategy = strategy
 ide.config.acandtip.symbols = symbols
 ide:GetDocument(editor):SetModified(false)
+
+-- this provides a workaround for the macOS crash (https://trac.wxwidgets.org/ticket/18434)
+if ide.wxver >= "3.1.3" then
+  editor:AutoCompCancel()
+  wx.wxSafeYield()
+end
+
 ClosePage()
