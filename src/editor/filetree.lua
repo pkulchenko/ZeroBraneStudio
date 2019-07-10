@@ -1014,14 +1014,12 @@ function FileTreeMarkSelected(file)
     end
     if item_id then
       if not projtree:IsVisible(item_id) then
-        if ide.osname ~= "Unix" then projtree:Freeze() end
         projtree:EnsureVisible(item_id)
         -- it's supposed to be enough to do EnsureVisible,
         -- but occasionally it's positioned one item too high (wxwidgets 3.1.1 on Win),
         -- so scroll to make sure the item really is visible
         projtree:ScrollTo(item_id)
         projtree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
-        if ide.osname ~= "Unix" then projtree:Thaw() end
       end
       projtree:SetItemBold(item_id, true)
       PackageEventHandle("onFiletreeFileMarkSelected", projtree, item_id, file, true)
