@@ -264,7 +264,7 @@ if [ $BUILD_WXWIDGETS ]; then
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
     --with-cxx=11 \
-    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=no --with-expat=no \
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=no \
     --with-zlib=builtin --disable-richtext \
     --enable-macosx_arch=$MACOSX_ARCH --with-macosx-version-min=$MACOSX_VERSION $MINSDK \
     --with-osx_cocoa CFLAGS="-Os" CXXFLAGS="-Os"
