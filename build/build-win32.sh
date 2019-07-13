@@ -275,6 +275,7 @@ if [ $BUILD_WXWIDGETS ]; then
 
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
+    --enable-privatefonts \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=no \
     --with-zlib=builtin --disable-richtext \
     CFLAGS="-Os -fno-keep-inline-dllexport" CXXFLAGS="-Os -fno-keep-inline-dllexport -DNO_CXX11_REGEX"

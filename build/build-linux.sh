@@ -266,6 +266,7 @@ if [ $BUILD_WXWIDGETS ]; then
 
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
+    --enable-privatefonts \
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=no \
     --with-zlib=builtin --disable-richtext --with-gtk=3 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
