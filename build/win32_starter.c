@@ -13,6 +13,7 @@
 #include <winbase.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <shlwapi.h>
 
 /* some typedef functions - these are not matching exactly the
 original definitions, but their signature is supposed to be
@@ -145,18 +146,9 @@ int WINAPI WinMain(HINSTANCE hInstance,  HINSTANCE hPrevInstance,  LPSTR lpCmdLi
   char ** argv = CommandLineToArgv(WideCharToUTF8(GetCommandLineW()),&argc);
   HINSTANCE hinstLib;
 
-  char buffer[MAX_PATH],*file;
+  WCHAR buffer[MAX_PATH];
 
-  if (!GetFullPathName(argv[0],MAX_PATH,buffer,&file)) {
-    MessageBox(NULL,
-      TEXT("Couldn't find the executable path"),
-      TEXT("Failed to start editor"),
-      MB_OK|MB_ICONERROR);
-    return 0;
-  }
-  if (file!=NULL) *file = 0; // finish the string, don't need the appname
-
-  LPWSTR path = (LPWSTR)GlobalAlloc(GMEM_FIXED, MAX_PATH+1);
+  LPWSTR path = (LPWSTR)GlobalAlloc(GMEM_FIXED, (MAX_PATH+1)*sizeof(WCHAR));
   if (GetCurrentDirectoryW(MAX_PATH, path) == 0) {
     MessageBox(NULL,
       TEXT("Couldn't find the current working directory"),
@@ -165,7 +157,15 @@ int WINAPI WinMain(HINSTANCE hInstance,  HINSTANCE hPrevInstance,  LPSTR lpCmdLi
     return 0;
   }
 
-  SetCurrentDirectory(buffer);
+  if (!GetModuleFileNameW(NULL, buffer, MAX_PATH)) {
+    MessageBox(NULL,
+      TEXT("Couldn't find the executable path"),
+      TEXT("Failed to start editor"),
+      MB_OK|MB_ICONERROR);
+    return 0;
+  }
+  PathRemoveFileSpecW(buffer);
+  SetCurrentDirectoryW(buffer);
 
   hinstLib = LoadLibrary(".\\bin\\lua51.dll");
   if (hinstLib != NULL) {

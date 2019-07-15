@@ -417,7 +417,7 @@ fi
 # build ZBS launcher
 if [ $BUILD_ZBSTUDIO ]; then
   windres ../zbstudio/res/zbstudio.rc zbstudio.rc.o
-  gcc -O2 -s -mwindows -o ../zbstudio.exe win32_starter.c zbstudio.rc.o
+  gcc -O2 -s -mwindows -o ../zbstudio.exe win32_starter.c zbstudio.rc.o -lshlwapi
   rm zbstudio.rc.o
   [ -f ../zbstudio.exe ] || { echo "Error: zbstudio.exe isn't found"; exit 1; }
 fi
