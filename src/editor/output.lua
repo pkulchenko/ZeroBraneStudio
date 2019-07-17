@@ -382,6 +382,9 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
           :format(ide:GetTime() - customprocs[pid].started, pid))
       end
+      -- this protects against the object referenced in wxProcess being collected
+      -- before the wxProcess itself is collected, which may cause a crash on exit
+      if customprocs[pid].proc then customprocs[pid].proc:Detach() end
       customprocs[pid] = nil
     end
   end)

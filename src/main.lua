@@ -155,7 +155,8 @@ if not wx.wxEXEC_NOEVENTS then wx.wxEXEC_NOEVENTS = 16 end
 if not wx.wxEXEC_HIDE_CONSOLE then wx.wxEXEC_HIDE_CONSOLE = 32 end
 if not wx.wxEXEC_BLOCK then wx.wxEXEC_BLOCK = wx.wxEXEC_SYNC + wx.wxEXEC_NOEVENTS end
 
--- use wxLuaProcess if available
+-- use wxLuaProcess if available; this protects against double delete of wxProcess:
+-- in the default OnTerminate and in wxlua GC, which may cause a crash on exit
 if wx.wxLuaProcess then wx.wxProcess = wx.wxLuaProcess end
 
 for k,v in pairs({
