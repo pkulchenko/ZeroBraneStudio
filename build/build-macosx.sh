@@ -287,7 +287,7 @@ fi
 
 # build wxLua
 if [ $BUILD_WXLUA ]; then
-  git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
+  git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxlua"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
 
   git checkout master
