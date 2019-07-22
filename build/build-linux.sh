@@ -270,6 +270,16 @@ if [ $BUILD_WXWIDGETS ]; then
     --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=no \
     --with-zlib=builtin --disable-richtext --with-gtk=3 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
+
+  PATTERN="defined( __WXGTK__)"
+  if [ ! "$(sed -n "/$PATTERN/{N;/$PATTERN\n static/p;}" src/aui/tabart.cpp)" ]; then
+    echo "Incorrect pattern for a fix in tabart.cpp."
+    exit 1
+  fi
+  REPLACEMENT='0\
+ static'
+  sed -i "/$PATTERN/{N;s/$PATTERN\n static/$REPLACEMENT/;}" src/aui/tabart.cpp
+
   make $MAKEFLAGS || { echo "Error: failed to build wxWidgets"; exit 1; }
   make install
   cd ..
