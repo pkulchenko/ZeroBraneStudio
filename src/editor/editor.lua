@@ -1776,9 +1776,17 @@ local function setLexLPegLexer(editor, spec)
   end
   spec.lexerstyleconvert = styleconvert
   -- assign line comment value based on the values in the lexer comment table
-  for k, v in pairs(lexmod._foldsymbols and lexmod._foldsymbols.comment or {}) do
-    if type(v) == 'function' then spec.linecomment = k end
+  if spec.linecomment == nil then
+    local comments = (lexmod._FOLDPOINTS and lexmod._FOLDPOINTS.comment) or
+        (lexmod._foldsymbols and lexmod._foldsymbols.comment) or {}
+    for k, v in pairs(comments) do
+      if type(v) == 'function' then
+          spec.linecomment = k
+          break
+        end
+    end
   end
+
   return true
 end
 
