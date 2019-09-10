@@ -325,7 +325,7 @@ function markers:SaveMarkers(editor, force)
   -- if the file has the name and has not been modified, save the breakpoints
   -- this also works when the file is saved as the modified flag is already set to `false`
   local doc = ide:GetDocument(editor)
-  local filepath = doc:GetFilePath()
+  local filepath = doc and doc:GetFilePath()
   if filepath and (force or not doc:IsModified()) then
     -- remove it from the list if it has no breakpoints
     local edmarkers = getMarkers(editor)

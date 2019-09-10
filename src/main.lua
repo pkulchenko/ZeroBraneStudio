@@ -17,14 +17,23 @@ local unpack = table.unpack or unpack
 if islinux then
   local file = io.popen("uname -m")
   if file then
-    local machine=file:read("*l")
-    local archtype= {
+    local machine = file:read("*l")
+    local archtype = {
       x86_64  = "x64",
       armv7l  = "armhf",
       aarch64 = "aarch64",
     }
     arch = archtype[machine] or arch
     file:close()
+  end
+  -- check if 64bit kernel is used with 32bit userspace
+  if arch == "x64" then
+    local file = io.popen("file -L /sbin/init")
+    if file then
+      local init = file:read("*l")
+      if init and init:find("ELF 32-bit") then arch = "x86" end
+      file:close()
+    end
   end
 end
 
