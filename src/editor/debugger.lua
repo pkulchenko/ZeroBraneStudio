@@ -203,8 +203,8 @@ function debugger:updateStackSync()
       stackCtrl:Expand(callitem)
     end
     stackCtrl:EnsureVisible(stackCtrl:GetFirstChild(root))
-    stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     stackCtrl:Thaw()
+    stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     debugger.needrefresh.stack = false
   elseif not shown and canupdate then
     debugger.needrefresh.stack = true
