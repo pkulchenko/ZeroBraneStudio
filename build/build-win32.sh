@@ -293,13 +293,9 @@ if [ $BUILD_WXLUA ]; then
   git checkout master
 
   sed -i 's|:-/\(.\)/|:-\1:/|' "$INSTALL_DIR/bin/wx-config"
-  sed -i 's/execute_process(COMMAND/& sh/' build/CMakewxAppLib.cmake
 
   # remove check for Lua 5.2 as it doesn't work with Twoface ABI mapper
   sed -i 's/LUA_VERSION_NUM < 502/0/' modules/wxlua/wxlcallb.cpp
-
-  [ -f "$INSTALL_DIR/lib/libwxscintilla-3.0.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.0.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.0.a"
-  [ -f "$INSTALL_DIR/lib/libwxscintilla-3.1.a" ] && cp "$INSTALL_DIR/lib/libwxscintilla-3.1.a" "$INSTALL_DIR/lib/libwx_mswu_scintilla-3.1.a"
 
   echo "set_target_properties(wxLuaModule PROPERTIES LINK_FLAGS -static)" >> modules/luamodule/CMakeLists.txt
   cmake -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
