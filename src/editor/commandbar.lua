@@ -322,7 +322,6 @@ local function showCommandBar(params)
   results:Connect(wx.wxEVT_LEFT_DOWN, onMouseLeftDown)
   results:Connect(wx.wxEVT_ERASE_BACKGROUND, function() end)
 
-  search:SetFocus()
   search:Connect(wx.wxEVT_KEY_DOWN, onKeyDown)
   search:Connect(wx.wxEVT_COMMAND_TEXT_UPDATED, onTextUpdated)
   search:Connect(wx.wxEVT_COMMAND_TEXT_ENTER, function() onExit(linenow) end)
@@ -337,6 +336,7 @@ local function showCommandBar(params)
 
   search:SetValue((defaultText or "")..(selectedText or ""))
   search:SetSelection(#(defaultText or ""), -1)
+  search:SetFocus()
 end
 
 local sep = "[/\\%-_ ]+"
