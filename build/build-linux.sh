@@ -267,7 +267,7 @@ if [ $BUILD_WXWIDGETS ]; then
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
     --enable-privatefonts \
-    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=no \
+    --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-expat=builtin \
     --with-zlib=builtin --disable-richtext --with-gtk=3 \
     CFLAGS="-Os -fPIC" CXXFLAGS="-Os -fPIC"
 
@@ -295,8 +295,9 @@ if [ $BUILD_WXLUA ]; then
 
   cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
     -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
-    -DwxWidgets_COMPONENTS="stc;gl;html;aui;adv;core;net;base" \
-    -DwxLuaBind_COMPONENTS="stc;gl;html;aui;adv;core;net;base" -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
+    -DwxWidgets_COMPONENTS="xrc;xml;stc;gl;html;aui;adv;core;net;base" \
+    -DwxLuaBind_COMPONENTS="xrc;xml;stc;gl;html;aui;adv;core;net;base" \
+    -DwxLua_LUA_LIBRARY_USE_BUILTIN=FALSE \
     -DwxLua_LUA_INCLUDE_DIR="$INSTALL_DIR/include" -DwxLua_LUA_LIBRARY="$INSTALL_DIR/lib/liblua.a" .
   (cd modules/luamodule; make $MAKEFLAGS) || { echo "Error: failed to build wxLua"; exit 1; }
   (cd modules/luamodule; make install)
