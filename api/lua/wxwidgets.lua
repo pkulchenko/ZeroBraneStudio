@@ -4,7 +4,7 @@ local function populateAPI(t)
     for k,v in pairs(fields) do
       if type(v) == "table" then
         api[k] = {
-          type = "function",
+          type = "class",
           description = "",
           returns = "",
           childs = populateAPI(v)
