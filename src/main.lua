@@ -881,3 +881,6 @@ if type(ide.config.outputshell) == type({}) and next(ide.config.outputshell) the
 end
 
 wx.wxGetApp():MainLoop()
+
+-- protect from occasional crash on macOS and Linux from `wxluaO_deletegcobject`
+os.exit()
