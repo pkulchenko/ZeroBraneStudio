@@ -121,6 +121,11 @@ function ide:GetLaunchPath(addparams)
   end
   return path
 end
+function ide:IsExiting(newval)
+  if newval == nil then return self.exitingProgram end
+  self.exitingProgram = newval
+  return
+end
 function ide:Exit(hotexit)
   if hotexit then self.config.hotexit = true end
   self:GetMainFrame():Close()

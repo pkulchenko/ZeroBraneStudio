@@ -697,13 +697,13 @@ local function closeWindow(event)
   -- false, but it doesn't happen. We simply leverage the fact that
   -- CloseWindow is called several times in this case and exit. Similar
   -- behavior has been also seen on Linux, so this logic applies everywhere.
-  if ide.exitingProgram then os.exit() end
+  if ide:IsExiting() then os.exit() end
 
-  ide.exitingProgram = true -- don't handle focus events
+  ide:IsExiting(true) -- don't handle focus events
 
   if not ide.config.hotexit and not SaveOnExit(event:CanVeto()) then
     event:Veto()
-    ide.exitingProgram = false
+    ide:IsExiting(false)
     return
   end
 
@@ -769,7 +769,7 @@ end
 -- and http://trac.wxwidgets.org/ticket/14269)
 
 ide.editorApp:Connect(wx.wxEVT_SET_FOCUS, function(event)
-  if ide.exitingProgram then return end
+  if ide:IsExiting() then return end
 
   local win = ide.frame:FindFocus()
   if win then
@@ -816,7 +816,7 @@ wx.wxUpdateUIEvent.SetUpdateInterval(updateInterval)
 
 ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
   function(event)
-    if not ide.exitingProgram then
+    if not ide:IsExiting() then
       local active = event:GetActive()
       -- restore focus to the last element that received it;
       -- wrap into pcall in case the element has disappeared

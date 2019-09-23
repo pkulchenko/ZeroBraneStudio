@@ -1353,7 +1353,7 @@ function CreateEditor(bare)
   editor:Connect(wx.wxEVT_SET_FOCUS,
     function (event)
       event:Skip()
-      if inhandler or ide.exitingProgram then return end
+      if inhandler or ide:IsExiting() then return end
       inhandler = true
       PackageEventHandle("onEditorFocusSet", editor)
       isFileAlteredOnDisk(editor)
