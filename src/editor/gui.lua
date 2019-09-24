@@ -202,6 +202,9 @@ local function createNotebook(frame)
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
+      -- skip setting focus when exiting, as it may cause looping on macOS
+      if ide:IsExiting() then return end
+
       local doc = ide:GetDocument(notebook:GetCurrentPage())
 
       -- skip activation when any of the following is true:
@@ -527,6 +530,9 @@ local function createBottomNotebook(frame)
 
   bottomnotebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
+      -- skip setting focus when exiting, as it may cause looping on macOS
+      if ide:IsExiting() then return end
+
       local nb = event:GetEventObject():DynamicCast("wxAuiNotebook")
       -- set focus on the new page
       local idx = event:GetSelection()
