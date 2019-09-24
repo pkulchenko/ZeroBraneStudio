@@ -163,7 +163,8 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
       or edcfg.usetabs and (file_text:find("%f[^\r\n] ") or file_text:find("^ ")) == nil)
   end
   
-  if (file_text and edcfg.checkeol) then
+  local isbinary = editor.spec == ide.specs.none and IsBinary(file_text)
+  if (file_text and edcfg.checkeol and not isbinary) then
     -- Auto-detect CRLF/LF line-endings
     local foundcrlf = string.find(file_text,"\r\n") ~= nil
     local foundlf = (string.find(file_text,"[^\r]\n") ~= nil)

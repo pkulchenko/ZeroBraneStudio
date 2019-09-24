@@ -404,7 +404,7 @@ function FileCopy(file1, file2)
   return wx.wxCopyFile(file1, file2), wx.wxSysErrorMsg()
 end
 
-function IsBinary(text) return text:find("[^\7\8\9\10\12\13\27\32-\255]") and true or false end
+function IsBinary(text) return text and text:find("[^\7\8\9\10\12\13\27\32-\255]") and true or false end
 
 function pairsSorted(t, f)
   local a = {}
