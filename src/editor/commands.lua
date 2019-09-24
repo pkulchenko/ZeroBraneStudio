@@ -182,6 +182,8 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
     end
   end
 
+  if isbinary then editor:SetCaretStyle(wxstc.wxSTC_CARETSTYLE_BLOCK) end
+
   editor:EmptyUndoBuffer()
   local doc = ide:GetDocument(editor)
   if doc then -- existing editor; switch to the tab
