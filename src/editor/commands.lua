@@ -105,12 +105,10 @@ function LoadFile(filePath, editor, file_must_exist, skipselection)
       if editor:GetLength() ~= expected then
         -- skip binary files with unknown extensions as they may have any sequences
         -- when using Raw methods, this can only happen for binary files (that include \0 chars)
-        if editor.useraw or editor.spec == ide.specs.none and IsBinary(s) then
-          ide:Print(("%s: %s"):format(filePath,
-              TR("Binary file is shown as read-only as it is only partially loaded.")))
+        if editor.spec == ide.specs.none and IsBinary(s) then
           file_text = ''
           editor:SetReadOnly(true)
-          return false
+          return false, "Failed to load binary file."
         end
 
         -- handle invalid UTF8 characters
