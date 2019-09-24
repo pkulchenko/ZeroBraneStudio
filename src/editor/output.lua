@@ -333,10 +333,12 @@ local function getStreams(all)
     str = str .. "\n"
     for _,v in pairs(tab) do
       local pfn
-      if (v.callback) then
+      if v.callback then
         str,pfn = v.callback(str)
       end
-      v.stream:Write(str, #str)
+      if str then
+        v.stream:Write(str, #str)
+      end
       updateInputMarker()
       pfn = pfn and pfn()
     end
