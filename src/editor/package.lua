@@ -550,6 +550,14 @@ function ide:CreateStyledTextCtrl(...)
     end
   end
 
+  -- `AppendTextRaw` and `AddTextRaw` methods may accept the length of text,
+  -- which is important for appending binary strings that may include zeros.
+  -- Add text length when it's not provided.
+  for _, m in ipairs(useraw and {"AppendTextRaw", "AddTextRaw"} or {}) do
+    local orig = editor[m]
+    editor[m] = function(self, text, length) return orig(self, text, length or #text) end
+  end
+
   -- map all `GetTextDyn` to `GetText` or `GetTextRaw` if `*Raw` methods are present
   editor.useraw = useraw
   for _, m in ipairs(rawMethods) do
