@@ -222,7 +222,7 @@ frame:Connect(ID_CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED,
     if index and ide.findReplace:IsPreview(editor) and index >= 0 then
       nb:DeletePage(index) -- close preview tab
     else
-      local doc = ide:GetDocument(editor)
+      local doc = ide:GetDocument(ide:GetEditor())
       if doc then doc:Close() end
     end
   end)
