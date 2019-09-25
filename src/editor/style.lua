@@ -414,7 +414,7 @@ function ReApplySpecAndStyles()
 
   for _, doc in pairs(ide:GetDocuments()) do
     local editor = doc:GetEditor()
-    if editor.spec then editor:SetupKeywords(nil, editor.spec) end
+    if editor.spec then StylesApplyToEditor(ide.config.styles, editor, nil, nil, editor.spec.lexerstyleconvert) end
   end
 end
 
