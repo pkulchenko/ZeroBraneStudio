@@ -407,10 +407,9 @@ function ReApplySpecAndStyles()
   MarkupAddStyles(ide.config.styles)
   OutputAddStyles(ide.config.stylesoutshell)
 
-  local errorlog = ide.frame.bottomnotebook.errorlog
-  local shellbox = ide.frame.bottomnotebook.shellbox
-  shellbox:SetupKeywords("lua",nil,ide.config.stylesoutshell)
-  StylesApplyToEditor(ide.config.stylesoutshell,errorlog)
+  local console = ide:GetConsole()
+  console:SetupKeywords("lua", console.spec, ide.config.stylesoutshell)
+  StylesApplyToEditor(ide.config.stylesoutshell, ide:GetOutput())
 
   for _, doc in pairs(ide:GetDocuments()) do
     local editor = doc:GetEditor()
