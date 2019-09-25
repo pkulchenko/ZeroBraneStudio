@@ -51,7 +51,6 @@ local function create_checker()
         globals = api_globals,
         -- http://luacheck.readthedocs.io/en/stable/warnings.html
         ignore = config.ignore or {
-          "11.", -- setting, accessing and mutating globals
           "6..", -- whitespace and style warnings
         },
       }
