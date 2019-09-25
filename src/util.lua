@@ -319,13 +319,14 @@ if fs then
     end
 
     -- use `fs` library to write a file, as this preserves its attributes
-    local f, errmsg, errcode = fs.open(file,
+    local f, errmsg = fs.open(file,
       { access = 'write', creation = 'open_always', flags = 'rdwr backup_semantics'})
     if not f then return nil, errmsg end
 
+    local bytes
     local ok, errmsg = f:truncate()
     if ok then
-      local bytes, errmsg = f:write(content, #content)
+      bytes, errmsg = f:write(content, #content)
       ok = bytes == #content
     end
 
@@ -342,8 +343,8 @@ function FileSize(fname)
   if not wx.wxFileExists(fname) then return end
   local size = wx.wxFileSize(fname)
   -- size can be returned as 0 for symlinks, so check with wxFile:Length();
-  -- can't use wxFile:Length() as it's reported incorrectly for some non-seekable files
-  -- (see https://github.com/pkulchenko/ZeroBraneStudio/issues/458);
+  -- can't only use wxFile:Length(), as it's reported incorrectly for some non-seekable
+  -- files (see https://github.com/pkulchenko/ZeroBraneStudio/issues/458);
   -- the combination of wxFileSize and wxFile:Length() should do the right thing.
   if size == 0 then size = wx.wxFile(fname, wx.wxFile.read):Length() end
   return size
