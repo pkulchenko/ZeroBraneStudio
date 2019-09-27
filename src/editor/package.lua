@@ -529,7 +529,7 @@ local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn"
 local useraw = nil
 
 local invalidUTF8, invalidLength
-local suffix = "\1\0"
+local suffix = "\0"
 local DF_TEXT = wx.wxDataFormat(wx.wxDF_TEXT)
 
 function ide:CreateStyledTextCtrl(...)
@@ -574,7 +574,7 @@ function ide:CreateStyledTextCtrl(...)
     local text = self:GetSelectedTextRaw()
     if text == "" or wx.wxString.FromUTF8(text) ~= "" then return self:Copy() end
     local tdo = wx.wxTextDataObject()
-    -- append suffix as wxwidgets (3.1+ on Windows) truncate last char for odd-length strings
+    -- append suffix as wxwidgets (3.1+ on Windows) truncates last char for odd-length strings
     local workaround = ide.osname == "Windows" and (#text % 2 > 0) and suffix or ""
     tdo:SetData(DF_TEXT, text..workaround)
     invalidUTF8, invalidLength = text, tdo:GetDataSize()
@@ -594,7 +594,7 @@ function ide:CreateStyledTextCtrl(...)
     clip:Close()
     local ok, text = tdo:GetDataHere(DF_TEXT)
     -- check if the fragment being pasted is a valid UTF-8 sequence
-    if ide.osname == "Windows" then text = text and text:gsub(suffix.."+$","") end
+    if ide.osname == "Windows" then text = text and text:gsub("%z+$", "") end
     if not ok or wx.wxString.FromUTF8(text) ~= ""
     or not invalidUTF8 or invalidLength ~= tdo:GetDataSize() then return self:Paste() end
 
