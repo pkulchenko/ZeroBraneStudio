@@ -273,6 +273,9 @@ if [ $BUILD_WXWIDGETS ]; then
   # refresh wxwidgets submodules
   git submodule update --init --recursive
 
+  # remove rand_s, which doesn't link with mingw/gcc 4.8.x; will use fallback
+  sed -i 's/rand_s(&random32)/1/' src/expat/expat/lib/xmlparse.c
+
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
     --enable-privatefonts \
