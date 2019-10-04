@@ -1246,17 +1246,22 @@ function CreateEditor(bare)
   -- brackets or backspace is used (very slow screen repaint with 0.5s delay).
   -- Moving it to PAINTED event creates problems on OSX (using wx2.9.5+),
   -- where refresh of R/W and R/O status in the status bar is delayed.
+  -- To avoid this macOS issue and a observed crash on Linux (wx3.1.2+) the
+  -- execution of the update is delayed till after the event is completed.
+  -- See https://github.com/pkulchenko/wxlua/issues/5 for the related discussion.
+  -- PAINTED is better than UPDATEUI, as it handles INS vs OVR and R/O vs R/W status.
   editor:Connect(wxstc.wxEVT_STC_PAINTED,
     function (event)
       PackageEventHandle("onEditorPainted", editor, event)
 
-      if ide.osname == 'Windows' then
-        -- STC_PAINTED is called on multiple editors when they point to
-        -- the same document; only update status for the active one
-        if notebook:GetSelection() == notebook:GetPageIndex(editor) then
-          updateStatusText(editor)
-        end
+      -- STC_PAINTED is called on multiple editors when they point to
+      -- the same document; only update status for the active one
+      local doc = ide:GetDocument(editor)
+      if doc and doc:IsActive() then
+        editor:DoWhenIdle(function() updateStatusText(editor) end)
+      end
 
+      if ide.osname == 'Windows' then
         if edcfg.usewrap ~= true and editor:AutoCompActive() then
           -- showing auto-complete list leaves artifacts on the screen,
           -- which can only be fixed by a forced refresh.
@@ -1295,8 +1300,6 @@ function CreateEditor(bare)
       editor.processedUpdateContent = editor.processedUpdateContent + 1
 
       PackageEventHandle("onEditorUpdateUI", editor, event)
-
-      if ide.osname ~= 'Windows' then updateStatusText(editor) end
 
       editor:GotoPosDelayed()
       updateBraceMatch(editor)
