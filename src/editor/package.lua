@@ -781,6 +781,19 @@ function ide:CreateStyledTextCtrl(...)
 
   function editor:SetupKeywords(...) return SetupKeywords(self, ...) end
 
+  -- this is a workaround for the auto-complete popup showing large font
+  -- when Settechnology(1) is used to enable DirectWrite support.
+  -- See https://trac.wxwidgets.org/ticket/17804#comment:32
+  for _, method in ipairs({"AutoCompShow", "UserListShow"}) do
+    local orig = editor[method]
+    editor[method] = function (editor, ...)
+      local tech = editor:GetTechnology()
+      if tech ~= 0 then editor:SetTechnology(0) end
+      orig(editor, ...)
+      if tech ~= 0 then editor:SetTechnology(tech) end
+    end
+  end
+
   editor:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
       local keycode = event:GetKeyCode()
