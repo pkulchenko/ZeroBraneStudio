@@ -276,6 +276,9 @@ if [ $BUILD_WXWIDGETS ]; then
   # remove rand_s, which doesn't link with mingw/gcc 4.8.x; will use fallback
   sed -i 's/rand_s(&random32)/1/' src/expat/expat/lib/xmlparse.c
 
+  # enable direct2d support
+  sed -i 's/#define wxUSE_GRAPHICS_DIRECT2D 0/#define wxUSE_GRAPHICS_DIRECT2D wxUSE_GRAPHICS_CONTEXT/' setup.h.in
+
   ./configure --prefix="$INSTALL_DIR" $WXWIDGETSDEBUG --disable-shared --enable-unicode \
     --enable-compat30 \
     --enable-privatefonts \
