@@ -22,6 +22,7 @@ return {
     indentguide = true,
     linecopy = true,
     linenumber = true,
+    ligatures = false,
     modifiedprefix = "✱ ", -- U+2731 \xe2\x9c\xb1 HEAVY ASTERISK
     nomousezoom = false,
     saveallonrun = false,
