@@ -81,7 +81,7 @@ local function displayAbout(event)
   :format(logoimg, ide.VERSION, mobdebug._VERSION, table.concat({
       wx.wxVERSION_STRING,
       wxlua.wxLUA_VERSION_STRING,
-      ed.GetLibraryVersionInfo and ed:GetLibraryVersionInfo():GetVersionString() or nil,
+      ide:IsValidProperty(ed, "GetLibraryVersionInfo") and ed:GetLibraryVersionInfo():GetVersionString() or nil,
     }, ", "), ide:GetAppName())
 
   local dlg = wx.wxDialog(frame, wx.wxID_ANY, TR("About %s"):format(ide:GetProperty("editor")))
