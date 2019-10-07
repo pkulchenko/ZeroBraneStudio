@@ -1225,7 +1225,9 @@ function ide:AddPanel(ctrl, panel, name, conf)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  notebook:SetArtProvider(wxaui.wxAuiGenericTabArt())
+  if wxaui.wxAuiGenericTabArt then
+    notebook:SetArtProvider(wxaui.wxAuiGenericTabArt())
+  end
   notebook:AddPage(ctrl, name, true)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
     function() PaneFloatToggle(notebook) end)
