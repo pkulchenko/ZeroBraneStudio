@@ -1,6 +1,13 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Dec 25 2018)
+## Current master (Oct 07 2019)
+
+### Special thanks
+  - To [Paul Reilly](https://github.com/paul-reilly) for improving luacheck configuration.
+  - To [Alexey Melnichuk](https://github.com/moteus) for adding support for `linecomment` to lpeg lexer.
+  - To numzero for fixing re-applying of editor styles.
+  - To [Alexander Misel](https://github.com/AlexanderMisel) for improvements to Simplified Chinese translation.
+  - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
 
 ### Highlights
   - Added support for hoisted directories in the project tree.
@@ -10,6 +17,9 @@
   - Updated Love2d API for 11.2 (#247).
 
 ### Improvements
+  - Allowed warnings about globals from luacheck by default (#1013).
+  - Added `IsExiting` method (#166).
+  - Added check to improve compatibility with 'system' versions of wxlua 2.8.
   - Added search option to search mapped directories when present (off by default).
   - Added search option to follow symlinks to the searchbar (off by default).
   - Added option for skipping symlinks during search.
@@ -36,10 +46,20 @@
   - Added writing using `fs` library on Windows, as this preserves file attributes.
   - Added editor tooltip showing full path (when available).
   - Added support for hoisted directories.
+  - Improved wxwidget API/autocomplete (closes #979).
+  - Minor update to zh-cn translation (closes #990).
   - Moved updating file history to happen on document activation.
+  - Renamed the Simplified Chinese locale and improve translation
   - Refactored file renaming from the file tree to avoid creating editor tabs.
   - Removed `CloseAllExcept` method as it's not longer needed.
   - Removed `SetTabIndex` and direct tab index usage.
+  - Updated to explicitly set art provider in pop out panels (#999).
+  - Updated handling of static analyzer/luacheck options to allow dynamic switching (closes #1013).
+  - Updated Linux arch check to handle 32bit userspace with 64bit kernel (closes #947).
+  - Updated shebang processing to also accept extensions.
+  - Updated the About screen to include Scintilla version when available (#994).
+  - Updated to allow `StartStyling` to work with deprecated parameters (closes #994).
+  - Updated Brazilian Portuguese translation.
   - Updated Love2d API for 11.2 (#247).
   - Updated `RequestAttention` method to check documents in floating panels.
   - Updated commandbar to activate (floating) editor in symbol selection.
@@ -68,6 +88,17 @@
   - Upgraded LexLPeg lexers to support new lexer syntax.
 
 ### Fixes
+  - Fixed `SetupKeywords` to re-apply styles when requested (closes #1014).
+  - Fixed reported error message for some file writing errors.
+  - Fixed closing the current editor tab from menu with some other panel being active.
+  - Fixed checking output from external commands before interpreter is set (#973).
+  - Fixed handling of output callbacks not returning expected strings (closes #973).
+  - Fixed error when no APIs loaded (in eg experimental interpreter) (closes #976).
+  - Fixed Luacheck not receiving API globals by default or with custom globals (#976).
+  - Fixed recognition of `linecomment` option in lexlpeg lexers (close #1007).
+  - Fixed error reported on shebang with executable not matching any lexer (fixes #969).
+  - Fixed loading of api files relative to package directory (fixes #965).
+  - Fixed `arg` to have the 'original' (instead of shortened) name during debugging.
   - Fixed storing name of unsaved tabs in recovery records.
   - Fixed error shown when focus is set on the editor while it's removed from the notebook.
   - Fixed expanding mapped directories when adding new items under it.
