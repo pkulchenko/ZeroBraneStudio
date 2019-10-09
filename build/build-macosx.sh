@@ -212,6 +212,11 @@ if [ $BUILD_LUA ]; then
     mv "$INSTALL_DIR/bin/lua" "$INSTALL_DIR/bin/lua$LUAS"
     cp src/liblua$LUAS.dylib "$INSTALL_DIR/lib"
   fi
+
+  install_name_tool -change liblua$LUAS.dylib @rpath/liblua$LUAS.dylib "$INSTALL_DIR/bin/lua$LUAS"
+  install_name_tool -add_rpath @executable_path/../../.. "$INSTALL_DIR/bin/lua$LUAS"
+  install_name_tool -add_rpath @executable_path/. "$INSTALL_DIR/bin/lua$LUAS"
+
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/bin/lua$LUAS"
   [ -f "$INSTALL_DIR/lib/liblua$LUAS.dylib" ] || { echo "Error: liblua$LUAS.dylib isn't found"; exit 1; }
   cd ..
