@@ -1000,6 +1000,7 @@ local function str2rgb(str)
   return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
 end
 local clearbmps = {}
+local iconfont
 function ide:CreateFileIcon(ext)
   local iconmap = ide.config.filetree.iconmap
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
@@ -1009,11 +1010,13 @@ function ide:CreateFileIcon(ext)
     clearbmps[size] = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size,size))
   end
   local clearbmp = clearbmps[size]
-  local font = wx.wxFont(ide.font.editor)
-  font:SetPointSize(ide.osname == "Macintosh" and 6 or 5)
+  local edcfg = ide.config.editor
+  iconfont = iconfont or ide:CreateFont(ide.osname == "Macintosh" and 6 or 5,
+    wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
+    edcfg.fontname or "", edcfg.fontencoding or wx.wxFONTENCODING_DEFAULT)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
-  mdc:SetFont(font)
+  mdc:SetFont(iconfont)
   mdc:SetBackground(wx.wxTRANSPARENT_BRUSH)
   mdc:Clear()
   mdc:DrawBitmap(clearbmp, 0, 0, true)
@@ -1025,6 +1028,7 @@ function ide:CreateFileIcon(ext)
     mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
     mdc:DrawRectangle(1, 2, 14, 3)
   end
+  mdc:SetFont(wx.wxNullFont)
   mdc:SelectObject(wx.wxNullBitmap)
   bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
   return bitmap

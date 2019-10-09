@@ -669,6 +669,7 @@ end
 
 -- ----------------------------------------------------------------------------
 -- Create an editor
+local editorfont
 function CreateEditor(bare)
   local editor = ide:CreateStyledTextCtrl(notebook, editorID,
     wx.wxDefaultPosition, wx.wxSize(0, 0), wx.wxBORDER_NONE)
@@ -712,7 +713,10 @@ function CreateEditor(bare)
   editor:SetBufferedDraw(not ide.config.hidpi and true or false)
   editor:StyleClearAll()
 
-  editor:SetFont(ide.font.editor)
+  editorfont = editorfont or ide:CreateFont(edcfg.fontsize or 10, wx.wxFONTFAMILY_MODERN,
+    wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, edcfg.fontname or "",
+    edcfg.fontencoding or wx.wxFONTENCODING_DEFAULT)
+  editor:SetFont(editorfont)
   editor:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, editor:GetFont())
 
   editor:SetTabWidth(tonumber(edcfg.tabwidth) or 2)
