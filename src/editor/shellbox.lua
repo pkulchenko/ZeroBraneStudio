@@ -17,7 +17,7 @@ local MESSAGE_MARKER = StylesGetMarker("message")
 
 local config = ide.config.console
 
-console:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+console:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )

@@ -15,7 +15,7 @@ local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 
 local config = ide.config.output
 
-out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+out:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )

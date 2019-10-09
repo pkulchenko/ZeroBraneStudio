@@ -7,7 +7,7 @@ local ide = ide
 local unpack = table.unpack or unpack
 
 do local config = ide.config.editor
-  ide.font.editor = wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN,
+  ide.font.editor = ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN,
     wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
     config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 end

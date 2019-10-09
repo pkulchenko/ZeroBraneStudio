@@ -818,6 +818,19 @@ function ide:CreateTreeCtrl(...)
   return ctrl
 end
 
+function ide:CreateFont(size, family, style, weight, underline, name, encoding)
+  local font = wx.wxFont(size, family, style, weight, underline, "", encoding)
+  if name > "" then
+    -- assign the face name separately to detect when it fails to load the font
+    font:SetFaceName(name)
+    if not font:IsOk() then
+      -- assign default font from the same family if the exact font is not loaded
+      font = wx.wxFont(size, family, style, weight, underline, "", encoding)
+    end
+  end
+  return font
+end
+
 function ide:LoadFile(...) return LoadFile(...) end
 
 function ide:CopyToClipboard(text)
