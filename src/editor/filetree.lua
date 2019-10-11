@@ -388,6 +388,9 @@ local function treeSetConnectorsAndIcons(tree)
       doc:SetFileModifiedTime(GetFileModTime(path))
       doc:SetTabText(doc:GetFileName())
       if doc:IsActive() then doc:SetActive() end
+      -- reset target document if it matches one of the source docs
+      -- this may happen if one of the opened documents is renamed
+      if doc == targetdoc then targetdoc = nil end
     end
 
     -- close the target document, since the source has already been updated for it
