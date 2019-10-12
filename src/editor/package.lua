@@ -830,6 +830,14 @@ function ide:CreateTreeCtrl(...)
   local ctrl = wx.wxTreeCtrl(...)
   if not ctrl then return end
 
+  -- explicitly disable lines on macOS and Linux (wxwidgets v3.1.3+)
+  if ide.osname == "Unix" or ide.osname == "Macintosh" then
+    local flags = ctrl:GetWindowStyleFlag()
+    if bit.band(flags, wx.wxTR_NO_LINES) == 0 then
+      ctrl:SetWindowStyleFlag(flags + wx.wxTR_NO_LINES)
+    end
+  end
+
   if not self:IsValidProperty(ctrl, "SetFocusedItem") then
     -- versions of wxlua prior to 3.1 may not have SetFocuseditem
     function ctrl:SetFocusedItem(item)
