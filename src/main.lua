@@ -11,7 +11,7 @@ local function isproc()
 end
 local iswindows = os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')
 local islinux = not iswindows and isproc()
-local arch = "x86" -- use 32bit by default
+local arch = iswindows and "x86" or "x64" -- linux architecture will be set separately
 local unpack = table.unpack or unpack
 
 if islinux then
