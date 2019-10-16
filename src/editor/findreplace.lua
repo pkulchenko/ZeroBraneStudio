@@ -757,7 +757,8 @@ function findReplace:createToolbar()
     self.panel, self.toolbar, self.scope, self.status
   local icons = icons[self.replace and "replace" or "find"][self.infiles and "infiles" or "internal"]
 
-  local toolBmpSize = wx.wxSize(16, 16)
+  local scale = ide:GetContentScaleFactor()
+  local toolBmpSize = wx.wxSize(16*scale, 16*scale)
   tb:Freeze()
   tb:Clear()
   for _, id in ipairs(icons) do

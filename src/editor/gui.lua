@@ -101,8 +101,10 @@ end
 local function tbIconSize()
   -- use large icons by default on OSX and on large screens
   local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
+  local scale = ide:GetContentScaleFactor()
   return (iconsize and (iconsize % 8) == 0 and iconsize
-    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500) and 24 or 16))
+    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500)
+      and scale*24 or (scale>3 and 48 or scale*16)))
 end
 
 local function createToolBar(frame)
@@ -728,7 +730,7 @@ do
     for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
       frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do
       uimgr:GetArtProvider():SetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE,
-        ide.config.bordersize)
+        ide.config.bordersize*ide:GetContentScaleFactor())
     end
   end
 

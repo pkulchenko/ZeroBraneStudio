@@ -211,6 +211,14 @@ function ide:SetDebugger(deb)
   if self:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
   return deb
 end
+function ide:GetContentScaleFactor()
+  if ide.osname == "Macintosh" -- macOS does its own scaling
+  or not self:IsValidProperty(self.frame, "GetContentScaleFactor") then return 1 end
+  local scale = self.frame:GetContentScaleFactor()
+  if scale == -1 then return 1 end -- special value indicating "no information"
+  -- convert `y` such that `x+0.75 <= y < x+1.75` to `x+1`
+  return math.floor(0.25+scale)
+end
 function ide:GetMainFrame()
   if not self.frame then
     local screen = wx.wxDisplay():GetClientArea()
@@ -358,7 +366,8 @@ function ide:MakeMenu(t)
           -- only add icons to "normal" items (OSX can take them on checkbox items too),
           -- otherwise this causes asert on Linux (http://trac.wxwidgets.org/ticket/17123)
           and (ide.osname == "Macintosh" or item:GetKind() == wx.wxITEM_NORMAL) then
-            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR", wx.wxSize(16,16))
+            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR",
+              wx.wxSize(16*ide:GetContentScaleFactor(), 16*ide:GetContentScaleFactor()))
             item:SetBitmap(bitmap)
           end
           menu:Append(item)
@@ -944,8 +953,9 @@ end
 
 function ide:CreateImageList(group, ...)
   local _ = wx.wxLogNull() -- disable error reporting in popup
-  local size = wx.wxSize(16,16)
-  local imglist = wx.wxImageList(16,16)
+  local scaledsize = 16*ide:GetContentScaleFactor()
+  local size = wx.wxSize(scaledsize, scaledsize)
+  local imglist = wx.wxImageList(scaledsize, scaledsize)
 
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
@@ -1026,8 +1036,9 @@ function ide:GetBitmap(id, client, size)
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else
-    if width > 16 and width % 2 == 0 then
-      local _, f = self:GetBitmap(id, client, wx.wxSize(width/2, width/2))
+    local scale = self:GetContentScaleFactor()
+    if width > 16 and scale > 1 and width % scale == 0 then
+      local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
       if f then
         local img = wx.wxBitmap(f):ConvertToImage()
         file = img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST)
@@ -1054,7 +1065,8 @@ local iconfont
 function ide:CreateFileIcon(ext)
   local iconmap = ide.config.filetree.iconmap
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
-  local size = 16
+  local scale = ide:GetContentScaleFactor()
+  local size = 16*scale
   local bitmap = wx.wxBitmap(size, size)
   if not clearbmps[size] then
     clearbmps[size] = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size,size))
@@ -1071,12 +1083,13 @@ function ide:CreateFileIcon(ext)
   mdc:Clear()
   mdc:DrawBitmap(clearbmp, 0, 0, true)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
-  mdc:DrawText(ext:sub(1,3), 2, 6) -- take first three letters only
+  -- take first three letters of the extension
+  mdc:DrawText(ext:sub(1,3), 2+1*(scale-1)*(scale-1), 6+3*(scale-1)*(scale-1))
   if #ext > 0 then
     local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
     mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
     mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-    mdc:DrawRectangle(1, 2, 14, 3)
+    mdc:DrawRectangle(1*scale, 2*scale, (16-2)*scale, 3*scale)
   end
   mdc:SetFont(wx.wxNullFont)
   mdc:SelectObject(wx.wxNullBitmap)
