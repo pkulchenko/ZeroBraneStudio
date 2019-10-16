@@ -848,7 +848,7 @@ function ide:CreateTreeCtrl(...)
 
   local hasGetFocused = self:IsValidProperty(ctrl, "GetFocusedItem")
   if not hasGetFocused then
-    -- versions of wxlua prior to 3.1 may not have SetFocuseditem
+    -- versions of wxlua prior to 3.1 may not have GetFocusedItem
     function ctrl:GetFocusedItem() return self:GetSelections()[1] end
   end
 
