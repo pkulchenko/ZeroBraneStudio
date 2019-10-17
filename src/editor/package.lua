@@ -1031,7 +1031,7 @@ function ide:GetBitmap(id, client, size)
   local fileClient = self:GetAppName() .. "/res/" .. keyclient .. ".png"
   local fileKey = self:GetAppName() .. "/res/" .. key .. ".png"
   local isImage = type(mapped) == 'userdata' and mapped:GetClassInfo():GetClassName() == 'wxImage'
-  local file
+  local file, bmp
   if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
@@ -1041,12 +1041,16 @@ function ide:GetBitmap(id, client, size)
       local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
       if f then
         local img = wx.wxBitmap(f):ConvertToImage()
-        file = img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST)
+        bmp = wx.wxBitmap(img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST))
+        file = fileClient
       end
     end
-    if not file then return wx.wxArtProvider.GetBitmap(id, client, size) end
+    if not file then
+      bmp = wx.wxArtProvider.GetBitmap(id, client, size)
+      file = fileClient
+    end
   end
-  local icon = icons[file] or iconFilter(wx.wxBitmap(file), self.config.imagetint)
+  local icon = icons[file] or iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
   icons[file] = icon
   return icon, file
 end
