@@ -212,8 +212,7 @@ function ide:SetDebugger(deb)
   return deb
 end
 function ide:GetContentScaleFactor()
-  if ide.osname == "Macintosh" -- macOS does its own scaling
-  or not self:IsValidProperty(self.frame, "GetContentScaleFactor") then return 1 end
+  if not self:IsValidProperty(self.frame, "GetContentScaleFactor") then return 1 end
   local scale = self.frame:GetContentScaleFactor()
   if scale == -1 then return 1 end -- special value indicating "no information"
   -- convert `y` such that `x+0.75 <= y < x+1.75` to `x+1`
@@ -1031,12 +1030,12 @@ function ide:GetBitmap(id, client, size)
   local fileClient = self:GetAppName() .. "/res/" .. keyclient .. ".png"
   local fileKey = self:GetAppName() .. "/res/" .. key .. ".png"
   local isImage = type(mapped) == 'userdata' and mapped:GetClassInfo():GetClassName() == 'wxImage'
+  local scale = self:GetContentScaleFactor()
   local file, bmp
   if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else
-    local scale = self:GetContentScaleFactor()
     if width > 16 and scale > 1 and width % scale == 0 then
       local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
       if f then
@@ -1051,6 +1050,10 @@ function ide:GetBitmap(id, client, size)
     end
   end
   local icon = icons[file] or iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
+  -- convert bitmap to set proper scaling on it, but only if scaling is supported
+  if ide:IsValidProperty(icon, "GetScaleFactor") and scale > 1 then
+    icon = wx.wxBitmap(icon:ConvertToImage(), icon:GetDepth(), scale)
+  end
   icons[file] = icon
   return icon, file
 end
@@ -1064,18 +1067,17 @@ local function str2rgb(str)
   local ratio = 256/(r + g + b + 1e-6)
   return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
 end
-local clearbmps = {}
 local iconfont
 function ide:CreateFileIcon(ext)
   local iconmap = ide.config.filetree.iconmap
+  local mac = ide.osname == "Macintosh"
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
   local scale = ide:GetContentScaleFactor()
-  local size = 16*scale
-  local bitmap = wx.wxBitmap(size, size)
-  if not clearbmps[size] then
-    clearbmps[size] = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size,size))
-  end
-  local clearbmp = clearbmps[size]
+  local size = 16
+  local bitmap = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size*scale,size*scale))
+  -- macOS does its own scaling for drawing on DC surface, so set to no scaling
+  if mac then scale = 1 end
+  bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
   local edcfg = ide.config.editor
   iconfont = iconfont or ide:CreateFont(ide.osname == "Macintosh" and 6 or 5,
     wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
@@ -1083,17 +1085,14 @@ function ide:CreateFileIcon(ext)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
   mdc:SetFont(iconfont)
-  mdc:SetBackground(wx.wxTRANSPARENT_BRUSH)
-  mdc:Clear()
-  mdc:DrawBitmap(clearbmp, 0, 0, true)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
   -- take first three letters of the extension
-  mdc:DrawText(ext:sub(1,3), 2+1*(scale-1)*(scale-1), 6+3*(scale-1)*(scale-1))
+  mdc:DrawText(ext:sub(1,3), 2+1*(scale-1)^2, 6+3*(scale-1)^2)
   if #ext > 0 then
     local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
     mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
     mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-    mdc:DrawRectangle(1*scale, 2*scale, (16-2)*scale, 3*scale)
+    mdc:DrawRectangle(1*scale, 2*scale, (size-(mac and 1 or 2))*scale, 3*scale)
   end
   mdc:SetFont(wx.wxNullFont)
   mdc:SelectObject(wx.wxNullBitmap)
