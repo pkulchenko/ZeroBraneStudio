@@ -823,7 +823,7 @@ function ide:CreateFont(size, family, style, weight, underline, name, encoding)
   if name > "" then
     -- assign the face name separately to detect when it fails to load the font
     font:SetFaceName(name)
-    if not font:IsOk() then
+    if ide:IsValidProperty(font, "IsOk") and not font:IsOk() then
       -- assign default font from the same family if the exact font is not loaded
       font = wx.wxFont(size, family, style, weight, underline, "", encoding)
     end
