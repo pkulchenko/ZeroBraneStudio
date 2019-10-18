@@ -145,6 +145,11 @@ local function showCommandBar(params)
     local size = results:GetVirtualSize()
     local w,h = size:GetWidth(),size:GetHeight()
     local bitmap = wx.wxBitmap(w,h)
+    local scale = ide:GetContentScaleFactor()
+    -- scale the bitmap before drawing
+    if ide:IsValidProperty(bitmap, "CreateScaled") and scale > 1 then
+      bitmap:CreateScaled(w, h, bitmap:GetDepth(), scale)
+    end
     dc:SelectObject(bitmap)
 
     -- clear the background
