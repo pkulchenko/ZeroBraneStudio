@@ -454,6 +454,20 @@ function ide:GetTextFromUser(message, caption, value)
   return res == wx.wxID_OK and dlg:GetValue() or nil, res
 end
 
+function ide:GetTabArt()
+  local tabart = wxaui.wxAuiGenericTabArt and wxaui.wxAuiGenericTabArt() or wxaui.wxAuiDefaultTabArt()
+  -- editor tab height is off by 1 pixel on macOS between tabs with images and not
+  -- (as the height of the image is 16 pixels, but height of the font line is 15),
+  -- so increase the measuring font a bit to make all tabs of the same height
+  if ide.osname == "Macintosh" then
+    local font = wx.wxFont(wx.wxNORMAL_FONT)
+    font:SetWeight(wx.wxFONTWEIGHT_BOLD)
+    font:SetPointSize(font:GetPointSize()+1)
+    tabart:SetMeasuringFont(font)
+  end
+  return tabart
+end
+
 local statusreset
 function ide:SetStatusFor(text, interval, field)
   field = field or 0
@@ -1309,9 +1323,7 @@ function ide:AddPanel(ctrl, panel, name, conf)
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
-  if wxaui.wxAuiGenericTabArt then
-    notebook:SetArtProvider(wxaui.wxAuiGenericTabArt())
-  end
+  notebook:SetArtProvider(ide:GetTabArt())
   notebook:AddPage(ctrl, name, true)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
     function() PaneFloatToggle(notebook) end)
