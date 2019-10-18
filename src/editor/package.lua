@@ -1050,8 +1050,9 @@ function ide:GetBitmap(id, client, size)
     end
   end
   local icon = icons[file] or iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
-  -- convert bitmap to set proper scaling on it, but only if scaling is supported
-  if ide:IsValidProperty(icon, "GetScaleFactor") and scale > 1 then
+  -- convert bitmap to set proper scaling on it, but only if scaling is supported;
+  -- this requires special constructor that acceps additional (scale) parameter
+  if ide.wxver >= "3.1.2" and scale > 1 then
     icon = wx.wxBitmap(icon:ConvertToImage(), icon:GetDepth(), scale)
   end
   icons[file] = icon
