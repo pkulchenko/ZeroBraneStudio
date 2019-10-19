@@ -762,15 +762,16 @@ function CreateEditor(bare)
 
   editor:SetVisiblePolicy(wxstc.wxSTC_VISIBLE_STRICT, 3)
 
+  local charwidth = editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")
   editor:SetMarginType(margin.LINENUMBER, wxstc.wxSTC_MARGIN_NUMBER)
   editor:SetMarginMask(margin.LINENUMBER, 0)
   editor:SetMarginWidth(margin.LINENUMBER,
-    edcfg.linenumber and math.floor(linenumlen * editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, "8")) or 0)
+    edcfg.linenumber and math.floor(linenumlen * charwidth) or 0)
 
   editor:SetMarginType(margin.MARKER, wxstc.wxSTC_MARGIN_SYMBOL)
   editor:SetMarginMask(margin.MARKER, 0xffffffff - wxstc.wxSTC_MASK_FOLDERS)
   editor:SetMarginSensitive(margin.MARKER, true)
-  editor:SetMarginWidth(margin.MARKER, 18)
+  editor:SetMarginWidth(margin.MARKER, charwidth*1.8)
 
   editor:MarkerDefine(StylesGetMarker("currentline"))
   editor:MarkerDefine(StylesGetMarker("breakpoint"))
@@ -780,7 +781,7 @@ function CreateEditor(bare)
     editor:SetMarginType(margin.FOLD, wxstc.wxSTC_MARGIN_SYMBOL)
     editor:SetMarginMask(margin.FOLD, wxstc.wxSTC_MASK_FOLDERS)
     editor:SetMarginSensitive(margin.FOLD, true)
-    editor:SetMarginWidth(margin.FOLD, 18)
+    editor:SetMarginWidth(margin.FOLD, charwidth*1.8)
   end
 
   editor:SetFoldFlags(tonumber(edcfg.foldflags) or wxstc.wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED)
