@@ -969,7 +969,7 @@ function ide:GetBestIconSize()
   local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
   local scale = ide:GetContentScaleFactor()
   return (iconsize and (iconsize % 8) == 0 and iconsize
-    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500)
+    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1280)
       and scale*24 or (scale>3 and 48 or scale*16)))
 end
 
