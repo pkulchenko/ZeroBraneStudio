@@ -1103,7 +1103,7 @@ function ide:CreateFileIcon(ext)
   if mac then scale = 1 end
   bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
   local edcfg = ide.config.editor
-  iconfont = iconfont or ide:CreateFont(ide.osname == "Macintosh" and 6 or 5,
+  iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
     wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
     edcfg.fontname or "", edcfg.fontencoding or wx.wxFONTENCODING_DEFAULT)
   local mdc = wx.wxMemoryDC()
