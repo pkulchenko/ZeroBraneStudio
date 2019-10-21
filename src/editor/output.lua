@@ -20,7 +20,6 @@ out:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxF
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )
 out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
-out:SetBufferedDraw(not ide.config.hidpi and true or false)
 out:StyleClearAll()
 out:SetMarginWidth(1, 16) -- marker margin
 out:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)

@@ -714,7 +714,6 @@ function CreateEditor(bare)
     end
   end
 
-  editor:SetBufferedDraw(not ide.config.hidpi and true or false)
   editor:StyleClearAll()
 
   editorfont = editorfont or ide:CreateFont(edcfg.fontsize or 10, wx.wxFONTFAMILY_MODERN,
