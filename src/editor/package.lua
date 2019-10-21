@@ -964,6 +964,15 @@ function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
   return pid
 end
 
+function ide:GetBestIconSize()
+  -- use large icons by default on OSX and on large screens
+  local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
+  local scale = ide:GetContentScaleFactor()
+  return (iconsize and (iconsize % 8) == 0 and iconsize
+    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500)
+      and scale*24 or (scale>3 and 48 or scale*16)))
+end
+
 function ide:CreateImageList(group, ...)
   local _ = wx.wxLogNull() -- disable error reporting in popup
   local scaledsize = 16*ide:GetContentScaleFactor()

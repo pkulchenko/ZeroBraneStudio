@@ -98,21 +98,11 @@ local function menuDropDownPosition(event)
   return ide.frame:ScreenToClient(tb:ClientToScreen(rect:GetBottomLeft()))
 end
 
-local function tbIconSize()
-  -- use large icons by default on OSX and on large screens
-  local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
-  local scale = ide:GetContentScaleFactor()
-  return (iconsize and (iconsize % 8) == 0 and iconsize
-    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500)
-      and scale*24 or (scale>3 and 48 or scale*16)))
-end
-
 local function createToolBar(frame)
   local toolBar = wxaui.wxAuiToolBar(frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_TB_PLAIN_BACKGROUND)
 
-  -- there are two sets of icons: use 24 on OSX and 16 on others.
-  local iconsize = tbIconSize()
+  local iconsize = ide:GetBestIconSize()
   local toolBmpSize = wx.wxSize(iconsize, iconsize)
   local icons = ide.config.toolbar.icons
   local needseparator = false
