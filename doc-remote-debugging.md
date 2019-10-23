@@ -10,7 +10,7 @@ the IDE instance (the debugger is using a socket interface to interact with the 
 ## Remote debugging
 
 * Launch the IDE.
-Go to `Project | Start Debugger Server` and **start the debugger server** (if this menu item is disabled, the server is already started).
+Go to `Project | Start Debugger Server` and **start the debugger server** (if this menu item is checked, the server is already started).
 * **Open the Lua file** you want to debug.
 * **Select the project directory** by going to `Project | Project Directory | Choose...`
 or using `Project | Project Directory | Set From Current File`.
