@@ -720,7 +720,8 @@ do
     for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
       frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do
       uimgr:GetArtProvider():SetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE,
-        ide.config.bordersize*ide:GetContentScaleFactor())
+        -- scale bordersize on Windows, as macOS and Linux/GTK3 do the scaling
+        ide.config.bordersize*(ide.osname == "Windows" and ide:GetContentScaleFactor() or 1))
     end
   end
 

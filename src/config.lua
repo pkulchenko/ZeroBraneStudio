@@ -315,7 +315,7 @@ return {
   filehistorylength = 20,
   projecthistorylength = 20,
   commandlinehistorylength = 10,
-  bordersize = 3,
+  bordersize = 2,
   savebak = false,
   singleinstance = false,
   singleinstanceport = 8172,
