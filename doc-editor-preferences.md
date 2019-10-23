@@ -49,6 +49,7 @@ set to `false` to disable (nothing will be cut/copied if nothing is selected).
 - `editor.saveallonrun = false`: save modified files before executing Run/Debug commands (**v0.39+**).
 - `editor.showfncall = false`: mark function calls;
 set to `true` to add an [indicator for function calls](doc-styles-color-schemes#indicators).
+- `editor.showtabicon = false`: show file icon in the editor tab (**v1.80+**).
 - `editor.showtabtooltip = true`: show tooltip with the file name over editor tabs (**v1.81+**).
 - `editor.smartindent = true`: use smart indentation.
 - `editor.tabwidth = 2`: set tab width.
