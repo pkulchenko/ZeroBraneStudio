@@ -257,6 +257,7 @@ end
 
 local indicator = {
   SEARCHMATCH = ide:GetIndicator("core.searchmatch"),
+  SEARCHSELECTION = ide:GetIndicator("core.searchselection"),
 }
 
 -- returns true if replacements were done
@@ -869,6 +870,15 @@ function findReplace:refreshToolbar(value)
   self.scope:SetValue(value)
 end
 
+function findReplace:clearSelection()
+  local editor = self.backfocus and ide:IsValidCtrl(self.backfocus.editor) and self.backfocus.editor
+  if editor then
+    -- always clear the search in selection indicator
+    editor:SetIndicatorCurrent(indicator.SEARCHSELECTION)
+    editor:IndicatorClearRange(0, editor:GetLength())
+  end
+end
+
 function findReplace:createPanel()
   local ctrl = wx.wxPanel(ide:GetMainFrame(), wx.wxID_ANY, wx.wxDefaultPosition,
       wx.wxDefaultSize, wx.wxFULL_REPAINT_ON_RESIZE)
@@ -1070,6 +1080,7 @@ function findReplace:createPanel()
     if ed and ed ~= self.oveditor then
       local spos, epos = ed:GetSelectionStart(), ed:GetSelectionEnd()
       if not self.backfocus or self.backfocus.editor ~= ed then
+        self:clearSelection() -- clear current selection if switching editors
         self.backfocus = { editor = ed, spos = spos, epos = epos }
       end
       local bf = self.backfocus
@@ -1180,8 +1191,14 @@ function findReplace:refreshPanel(replace, infiles)
       self:SetScope(proj or wx.wxGetCwd(), '*.'..(#ext > 0 and ext or '*')))
   end
   if ed then -- check if there is any selection
+    local s, e = ed:GetSelectionStart(), ed:GetSelectionEnd()
     self.inselection = (ide.config.search.autoinselection
-      and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd()))
+      and ed:LineFromPosition(s) ~= ed:LineFromPosition(e))
+    if self.inselection then
+      ed:SetIndicatorCurrent(indicator.SEARCHSELECTION)
+      ed:IndicatorClearRange(0, ed:GetLength())
+      ed:IndicatorFillRange(s, e-s)
+    end
   end
   self:refreshToolbar(value)
 
@@ -1238,6 +1255,8 @@ function findReplace:Hide(restorepos)
   elseif self:IsPreview(self.reseditor) then -- there is a preview, go there
     self.reseditor:SetFocus()
   end
+
+  self:clearSelection()
 
   local mgr = ide:GetUIManager()
   mgr:GetPane(searchpanel):Hide()

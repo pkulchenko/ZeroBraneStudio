@@ -87,6 +87,7 @@ function StylesGetDefault()
       varmasked = {},
       varself = {},
       searchmatch = {},
+      searchselection = {},
     },
   }
 end
@@ -383,6 +384,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     local varmasking = ide:AddIndicator("core.varmasking")
     local varmasked = ide:AddIndicator("core.varmasked")
     local searchmatch = ide:AddIndicator("core.searchmatch")
+    local searchselection = ide:AddIndicator("core.searchselection")
 
     editor:IndicatorSetStyle(fncall, type(indic.fncall) == type{} and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
     editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(type(indic.fncall) == type{} and indic.fncall.fg or {128, 128, 255})))
@@ -398,6 +400,8 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     editor:IndicatorSetForeground(varmasked, wx.wxColour(unpack(type(indic.varmasked) == type{} and indic.varmasked.fg or defaultfg)))
     editor:IndicatorSetStyle(searchmatch, type(indic.searchmatch) == type{} and indic.searchmatch.st or wxstc.wxSTC_INDIC_BOX)
     editor:IndicatorSetForeground(searchmatch, wx.wxColour(unpack(type(indic.searchmatch) == type{} and indic.searchmatch.fg or {196, 0, 0})))
+    editor:IndicatorSetStyle(searchselection, type(indic.searchselection) == type{} and indic.searchselection.st or wxstc.wxSTC_INDIC_FULLBOX or wxstc.wxSTC_INDIC_BOX)
+    editor:IndicatorSetForeground(searchselection, wx.wxColour(unpack(type(indic.searchselection) == type{} and indic.searchselection.fg or {160, 128, 224})))
   end
 end
 
