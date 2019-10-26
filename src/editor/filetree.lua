@@ -1020,6 +1020,12 @@ function FileTreeMarkSelected(file)
         -- so scroll to make sure the item really is visible
         projtree:ScrollTo(item_id)
         projtree:SetScrollPos(wx.wxHORIZONTAL, 0, true)
+        if ide.osname == "Windows" then
+          -- the following is a workaround for SetScrollPos not scrolling in wxwidgets 3.1.3
+          -- https://trac.wxwidgets.org/ticket/18543
+          projtree:Freeze()
+          projtree:Thaw()
+        end
       end
       projtree:SetItemBold(item_id, true)
       PackageEventHandle("onFiletreeFileMarkSelected", projtree, item_id, file, true)
