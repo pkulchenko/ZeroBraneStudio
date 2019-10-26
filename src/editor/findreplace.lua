@@ -992,9 +992,6 @@ function findReplace:createPanel()
   end
 
   local function findIncremental(event)
-    -- don't do any incremental search when search in selection
-    if self.inselection then return end
-
     if not self.infiles and self.backfocus and self.backfocus.position then
       self:GetEditor():SetSelection(self.backfocus.position, self.backfocus.position)
     end
