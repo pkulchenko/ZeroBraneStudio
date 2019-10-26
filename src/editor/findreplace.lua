@@ -1183,7 +1183,6 @@ function findReplace:refreshPanel(replace, infiles)
       self:SetScope(proj or wx.wxGetCwd(), '*.'..(#ext > 0 and ext or '*')))
   end
   if ed then -- check if there is any selection
-    self.backfocus = nil
     self.inselection = (ide.config.search.autoinselection
       and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd()))
   end
