@@ -1111,12 +1111,16 @@ function ide:CreateFileIcon(ext)
   mdc:SetFont(iconfont)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
   -- take first three letters of the extension
-  mdc:DrawText(ext:sub(1,3), 2+1*(scale-1)^2, 6+3*(scale-1)^2)
+  local text = ext:sub(1,3)
+  local topstripe = 3*scale
+  local topborder = 2*scale
+  local w, h = mdc:GetTextExtent(text)
+  mdc:DrawText(text, (size*scale-w)/2, topstripe+topborder+(size*scale-topstripe-topborder-h-1)/2)
   if #ext > 0 then
     local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
     mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
     mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
-    mdc:DrawRectangle(1*scale, 2*scale, (size-(mac and 1 or 2))*scale, 3*scale)
+    mdc:DrawRectangle(1*scale, topborder, (size-(mac and 1 or 2))*scale, topstripe)
   end
   mdc:SetFont(wx.wxNullFont)
   mdc:SelectObject(wx.wxNullBitmap)
