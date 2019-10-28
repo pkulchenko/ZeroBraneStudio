@@ -812,6 +812,11 @@ function findReplace:createToolbar()
     optseltool:SetSticky(self.inselection)
     local ed = self:GetEditor()
     local inselection = ed and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd())
+    -- also check if the same editor previously had selection
+    if not inselection and self.backfocus and self.backfocus.editor == ed then
+      local bf = self.backfocus
+      inselection = ed:LineFromPosition(bf.spos) ~= ed:LineFromPosition(bf.epos)
+    end
     tb:EnableTool(ID.FINDOPTSELECTION, self.inselection or inselection)
     ctrl:Connect(ID.FINDOPTSELECTION, wx.wxEVT_COMMAND_MENU_SELECTED,
       function (event)
@@ -1085,18 +1090,6 @@ function findReplace:createPanel()
       end
       local bf = self.backfocus
       bf.position = spos == epos and ed:GetCurrentPos() or spos
-      local inselection = (ide.config.search.autoinselection
-        and ed:LineFromPosition(spos) ~= ed:LineFromPosition(epos))
-
-      -- when the focus is changed, don't remove current "inselection" status as the
-      -- selection may change to highlight the match; not doing this makes it difficult
-      -- to switch between searching and replacing without losing the current match
-      if inselection and (not self.inselection or bf.spos ~= spos or bf.epos ~= epos) then
-        bf.spos = spos
-        bf.epos = epos
-        self.inselection = inselection
-        self:refreshToolbar()
-      end
     end
   end
   findCtrl:Connect(wx.wxEVT_SET_FOCUS,
