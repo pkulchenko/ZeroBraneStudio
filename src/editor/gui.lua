@@ -29,6 +29,7 @@ local function createFrame()
       end
     end)
 
+  if wx.wxMenuBar.SetAutoWindowMenu then wx.wxMenuBar.SetAutoWindowMenu(false) end
   local menuBar = wx.wxMenuBar()
   local statusBar = frame:CreateStatusBar(5)
   local section_width = statusBar:GetTextExtent("OVRW")
