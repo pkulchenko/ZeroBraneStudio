@@ -523,6 +523,16 @@ local function treeSetConnectorsAndIcons(tree)
     return item
   end
 
+  local function updateItemImage(item_id)
+    if item_id and item_id:IsOk() then
+      local path = tree:GetItemFullName(item_id)
+      tree:SetItemImage(item_id, getIcon(path))
+      -- if the file is opened, then change the tab icon as well
+      local doc = ide:FindDocument(path)
+      if doc then doc:SetTabText() end
+    end
+  end
+
   local function unsetStartFile()
     local project = ide:GetProject()
     if not project then return end
@@ -530,10 +540,7 @@ local function treeSetConnectorsAndIcons(tree)
     local startfile = filetree.settings.startfile[project]
     filetree.settings.startfile[project] = nil
     if startfile then
-      local item_id = tree:FindItem(startfile)
-      if item_id and item_id:IsOk() then
-        tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
-      end
+      updateItemImage(tree:FindItem(startfile))
     end
     return startfile
   end
@@ -544,7 +551,7 @@ local function treeSetConnectorsAndIcons(tree)
 
     local startfile = tree:GetItemFullName(item_id):gsub(q(project), "")
     filetree.settings.startfile[project] = startfile
-    tree:SetItemImage(item_id, getIcon(tree:GetItemFullName(item_id)))
+    updateItemImage(item_id)
     return startfile
   end
 
