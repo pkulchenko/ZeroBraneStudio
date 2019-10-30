@@ -84,3 +84,7 @@ if LPATH then wx.wxSetEnv('LUA_PATH', LPATH) else wx.wxUnsetEnv('LUA_PATH') end
 if LCPATH then wx.wxSetEnv('LUA_CPATH', LCPATH) else wx.wxUnsetEnv('LUA_CPATH') end
 if LCPATH52 then wx.wxSetEnv('LUA_CPATH_5_2', LCPATH52) else wx.wxUnsetEnv('LUA_CPATH_5_2') end
 ide.test.setLuaPaths(mainpath, ide.osname)
+
+ok(ide:IsSameDirectoryPath("/foo/bar", "/foo/bar"), "Same directory path is reported as being the same.")
+is(ide:IsSameDirectoryPath(nil, "/foo/bar"), false, "Directory path comparison with `nil` is returned as `false` (1/2).")
+is(ide:IsSameDirectoryPath("/foo/bar", nil), false, "Directory path comparison with `nil` is returned as `false` (2/2).")

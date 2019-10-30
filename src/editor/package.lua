@@ -1496,7 +1496,7 @@ function ide:IsProjectSubDirectory(dir)
 end
 
 function ide:IsSameDirectoryPath(s1, s2)
-  return wx.wxFileName.DirName(s1):SameAs(wx.wxFileName.DirName(s2))
+  return s1 and s2 and wx.wxFileName.DirName(s1):SameAs(wx.wxFileName.DirName(s2)) or false
 end
 
 function ide:SetCommandLineParameters(params)
