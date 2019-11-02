@@ -312,7 +312,9 @@ local function callTipFitAndShow(editor, pos, tip)
 
   local startpos = editor:PositionFromLine(sline)
   local afterwidth = editor:GetSize():GetWidth()-point:GetX()
-  if maxwidth > afterwidth then
+  -- only adjust the position if the line is not wrapped,
+  -- otherwise the popup may cover the cursor
+  if maxwidth > afterwidth and editor:WrapCount(sline) == 1 then
     local charwidth = editor:TextWidth(wxstc.wxSTC_STYLE_DEFAULT, 'A')
     pos = math.max(startpos, pos - math.floor((maxwidth - afterwidth) / charwidth))
   end
