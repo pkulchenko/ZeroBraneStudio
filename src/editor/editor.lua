@@ -1308,12 +1308,16 @@ function CreateEditor(bare)
         local ok, res = pcall(indicateSymbols, editor, minupdated)
         if not ok then ide:Print("Internal error: ",res,minupdated) end
       end
-      local firstvisible = editor:GetFirstVisibleLine()
-      local firstline = editor:DocLineFromVisible(firstvisible)
-      local lastline = editor:DocLineFromVisible(firstvisible + editor:LinesOnScreen())
-      -- cap last line at the number of lines in the document
-      MarkupStyle(editor, minupdated or firstline, math.min(editor:GetLineCount(),lastline))
       editor.ev = {}
+      -- skip checking/updating markup when cursor position or selection changes,
+      -- as its drawing is not going to be affected by those operations
+      if event:GetUpdated() ~= wxstc.wxSTC_UPDATE_SELECTION then
+        local firstvisible = editor:GetFirstVisibleLine()
+        local firstline = editor:DocLineFromVisible(firstvisible)
+        local lastline = editor:DocLineFromVisible(firstvisible + editor:LinesOnScreen())
+        -- cap last line at the number of lines in the document
+        MarkupStyle(editor, minupdated or firstline, math.min(editor:GetLineCount(),lastline))
+      end
     end)
 
   editor:Connect(wx.wxEVT_IDLE,
