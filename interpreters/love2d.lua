@@ -43,6 +43,7 @@ return {
           "LÖVE interpreter",
           wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES then
         ide:SetProject(altpath)
+        ide:ActivateFile(altname) -- make sure that main.lua is also opened
         projdir = altpath
       else
         ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
