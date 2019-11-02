@@ -9,8 +9,8 @@ return {
   description = "LÖVE game engine",
   api = {"baselib", "love2d"},
   frun = function(self,wfilename,rundebug)
-    local love2d = ide.config.path.love2d or pathcache -- check if the path is configured
     local projdir = self:fworkdir(wfilename)
+    local love2d = ide.config.path.love2d or pathcache and pathcache[projdir]
     if love2d and not wx.wxFileExists(love2d) then
       ide:Print(("Can't find configured love2d executable: '%s'."):format(love2d))
       love2d = nil
@@ -35,7 +35,8 @@ return {
           ..table.concat(paths, ", "))
         return
       end
-      pathcache = love2d
+      pathcache = pathcache or {}
+      pathcache[projdir] = love2d
     end
 
     local main = 'main.lua'
