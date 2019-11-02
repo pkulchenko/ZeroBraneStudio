@@ -38,20 +38,21 @@ return {
       pathcache = love2d
     end
 
-    if not GetFullPathIfExists(projdir, 'main.lua') then
+    local main = 'main.lua'
+    if not GetFullPathIfExists(projdir, main) then
       local altpath = wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-      local altname = GetFullPathIfExists(altpath, 'main.lua')
+      local altname = GetFullPathIfExists(altpath, main)
       if altname and wx.wxMessageBox(
-          ("Can't find 'main.lua' file in the current project folder.\n"
-           .."Would you like to switch the project directory to '%s'?"):format(altpath),
+          ("Can't find '%s' file in the current project folder.\n"
+           .."Would you like to switch the project directory to '%s'?"):format(main, altpath),
           "LÖVE interpreter",
           wx.wxYES_NO + wx.wxCENTRE, ide:GetMainFrame()) == wx.wxYES then
         ide:SetProject(altpath)
         ide:ActivateFile(altname) -- make sure that main.lua is also opened
         projdir = altpath
       else
-        ide:Print(("Can't find 'main.lua' file in the current project folder: '%s'.")
-          :format(projdir))
+        ide:Print(("Can't find '%s' file in the current project folder: '%s'.")
+          :format(main, projdir))
         return
       end
     end
