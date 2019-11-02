@@ -11,6 +11,10 @@ return {
   frun = function(self,wfilename,rundebug)
     local love2d = ide.config.path.love2d or pathcache -- check if the path is configured
     local projdir = self:fworkdir(wfilename)
+    if love2d and not wx.wxFileExists(love2d) then
+      ide:Print(("Can't find configured love2d executable: '%s'."):format(love2d))
+      love2d = nil
+    end
     if not love2d then
       local sep = win and ';' or ':'
       local default =
