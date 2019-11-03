@@ -7,6 +7,7 @@ local ide = ide
 local frame = ide.frame
 local bottomnotebook = frame.bottomnotebook
 local out = bottomnotebook.errorlog
+local unpack = table.unpack or unpack
 
 local MESSAGE_MARKER = StylesGetMarker("message")
 local ERROR_MARKER = StylesGetMarker("error")

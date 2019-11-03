@@ -41,6 +41,7 @@
 require 'checks'
 
 local M  = { }
+local unpack = table.unpack or unpack
 
 --------------------------------------------------------------------------------
 -- Order of the transformations. if 'a' is on the left of 'b', then a 'a' can

@@ -454,6 +454,7 @@ function CompileProgram(editor, params)
   }
   local doc = ide:GetDocument(editor)
   local filePath = doc:GetFilePath() or doc:GetFileName()
+  local loadstring = loadstring or load
   local func, err = loadstring(StripShebang(editor:GetTextDyn()), '@'..filePath)
   local line = not func and tonumber(err:match(":(%d+)%s*:")) or nil
 

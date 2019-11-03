@@ -6,8 +6,8 @@ local function check(s, p1, p2)
   local r = ide.test.commandBarScoreItems({p1, p2}, s)
   ok(r[1][1] == p1,
     ("'%s' is more similar to '%s' (%d) than to '%s' (%d).")
-    :format(s, p1, r[1][1] == p1 and r[1][2] or r[2][2],
-               p2, r[2][1] == p2 and r[2][2] or r[1][2]))
+    :format(s, p1, math.floor(r[1][1] == p1 and r[1][2] or r[2][2]),
+               p2, math.floor(r[2][1] == p2 and r[2][2] or r[1][2])))
 end
 
 check("mtv", "MTVStatusBar.txt", "MyTextView.txt")

@@ -6,7 +6,7 @@
 -- Generate a unique new wxWindowID
 local ID_IDCOUNTER = wx.wxID_HIGHEST + 1
 function NewID()
-  ID_IDCOUNTER = ID_IDCOUNTER + 1
+  ID_IDCOUNTER = math.floor(ID_IDCOUNTER + 1) -- make sure it's integer
   return ID_IDCOUNTER
 end
 

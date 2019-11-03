@@ -33,6 +33,8 @@
 --
 -------------------------------------------------------------------------------
 
+local unpack = table.unpack or unpack
+
 local lexer    = require 'metalua.grammar.lexer'
 local gg       = require 'metalua.grammar.generator'
 

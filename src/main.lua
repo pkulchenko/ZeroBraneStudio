@@ -37,15 +37,16 @@ if islinux then
   end
 end
 
+local luaver = (_VERSION and _VERSION:match("Lua (%d%.%d)") or ""):gsub("%.",""):gsub("51","")
 package.cpath = (
-  iswindows and 'bin/clibs/?.dll;' or
-  islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch) or
-  --[[isosx]] 'bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
+  iswindows and ('bin/clibs%s/?.dll;'):format(luaver) or
+  islinux and ('bin/linux/%s/clibs%s/lib?.so;bin/linux/%s/clibs%s/?.so;'):format(arch,luaver,arch,luaver) or
+  --[[isosx]] ('bin/clibs%s/lib?.dylib;bin/clibs%s/?.dylib;'):format(luaver,luaver))
     .. package.cpath
 package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;' .. package.path
 
 require("wx")
-require("bit")
+if not bit then require("bit") end
 require("mobdebug")
 if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
 

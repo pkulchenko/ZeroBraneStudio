@@ -2,7 +2,7 @@ local editor = NewFile()
 ok(editor, "Open New file.")
 ok(editor.assignscache ~= nil, "Auto-complete cache is assigned.")
 
-local maxstat = 20000 -- maximum number of statements to detect looping
+local maxstat = 20000 * (jit and 1 or 2) -- maximum number of statements to detect looping
 local strategy = ide.config.acandtip.strategy
 
 for s = 2, 0, -1 do -- execute all tests for different `strategy` values

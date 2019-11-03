@@ -20,6 +20,7 @@
 require 'checks'
 
 local M = { }
+local unpack = table.unpack or unpack
 
 local lexer = { alpha={ }, sym={ } }
 lexer.__index=lexer

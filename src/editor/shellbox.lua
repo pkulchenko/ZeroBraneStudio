@@ -318,6 +318,7 @@ local function executeShellCode(tx)
   DisplayShellPrompt('')
 
   -- try to compile as statement
+  local loadstring = loadstring or load
   local _, err = loadstring(tx)
   local isstatement = not err
 

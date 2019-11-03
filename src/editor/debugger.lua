@@ -353,6 +353,7 @@ function debugger:ActivateDocument(file, line, activatehow)
       if line then
         if line == 0 then -- special case; find the first executable line
           line = math.huge
+          local loadstring = loadstring or load
           local func = loadstring(editor:GetTextDyn())
           if func then -- .activelines == {[3] = true, [4] = true, ...}
             for l in pairs(debug.getinfo(func, "L").activelines) do
@@ -462,6 +463,7 @@ end
 
 function debugger:shell(expression, isstatement)
   local debugger = self
+  local loadstring = loadstring or load
   -- check if the debugger is running and may be waiting for a response.
   -- allow that request to finish, otherwise this function does nothing.
   if debugger.running then debugger:Update() end

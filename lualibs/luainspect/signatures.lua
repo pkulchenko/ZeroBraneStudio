@@ -173,7 +173,7 @@ M.argument_counts = {
   [ipairs] = {1,1},
   [load] = {1,2},
   [loadfile] = {0,1},
-  [loadstring] = {1,2},
+  [loadstring or load] = {1,2},
   [next] = {1,2},
   [pairs] = {1,1},
   [pcall] = {1,math.huge},
@@ -187,7 +187,7 @@ M.argument_counts = {
   [tonumber] = {1,2},
   [tostring] = {1},
   [type] = {1},
-  [unpack] = {1,3},
+  [table.unpack or unpack] = {1,3},
   [xpcall] = {2,2},
   [module] = {1,math.huge},
   [require] = {1,1},
@@ -279,12 +279,13 @@ M.argument_counts = {
   [string.upper] = {1,1},
   [table.concat] = {1,4},
   [table.insert] = {2,3},
-  [table.maxn] = {1,1},
   [table.remove] = {1,2},
   [table.sort] = {1,2},
   [false] = nil -- trick (relies on potentially undefined behavior)
 }
-
+if table.maxn then
+  M.argument_counts[table.maxn] = {1,1}
+end
 
 -- functions with zero or nearly zero side-effects, and with deterministic results, that may be evaluated by the analyzer.
 M.safe_function = {
@@ -296,7 +297,7 @@ M.safe_function = {
   [tonumber] = true,
   [tostring] = true,
   [type] = true,
-  [unpack] = true,
+  [table.unpack or unpack] = true,
   [coroutine.create] = true,
   -- [coroutine.resume]
   [coroutine.running] = true,
@@ -372,8 +373,10 @@ M.safe_function = {
   [string.reverse] = true,
   [string.sub] = true,
   [string.upper] = true,
-  [table.maxn] = true,
 }
+if table.maxn then
+  M.safe_function[table.maxn] = true
+end
 
 M.mock_functions = {}
 
