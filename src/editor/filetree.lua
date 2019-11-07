@@ -341,6 +341,8 @@ local function treeSetConnectorsAndIcons(tree)
     -- check if existing file/dir is going to be overwritten
     local overwrite = ((wx.wxFileExists(target) or wx.wxDirExists(target))
       and not wx.wxFileName(source):SameAs(fn))
+    local doc = ide:FindDocument(target)
+    if overwrite and doc then doc:SetActive() end
     if overwrite and not ApproveFileOverwrite() then return false end
 
     if not fn:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then

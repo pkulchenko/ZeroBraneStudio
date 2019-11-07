@@ -355,6 +355,7 @@ function SaveFileAs(editor)
 
     -- check if there is another tab with the same name and prepare to close it
     local doc = ide:FindDocument(filePath)
+    if doc then doc:SetActive() end
     local cansave = fn:GetFullName() == filePath -- saving into the same file
        or not wx.wxFileName(filePath):FileExists() -- or a new file
        or ApproveFileOverwrite()
