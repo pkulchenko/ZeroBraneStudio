@@ -280,7 +280,7 @@ function FileGetLongPath(path)
 end
 
 function CreateFullPath(path)
-  local ok = wx.wxFileName.Mkdir(path, tonumber(755,8), wx.wxPATH_MKDIR_FULL)
+  local ok = wx.wxFileName.Mkdir(path, tonumber("755",8), wx.wxPATH_MKDIR_FULL)
   return ok, not ok and wx.wxSysErrorMsg() or nil
 end
 function GetFullPathIfExists(p, f)
@@ -322,7 +322,7 @@ if fs then
     local _ = wx.wxLogNull() -- disable error reporting; will report as needed
 
     if not wx.wxFileExists(file)
-    and not wx.wxFileName(file):Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then
+    and not wx.wxFileName(file):Mkdir(tonumber("755",8), wx.wxPATH_MKDIR_FULL) then
       return nil, wx.wxSysErrorMsg()
     end
 

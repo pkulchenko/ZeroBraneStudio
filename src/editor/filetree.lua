@@ -345,13 +345,13 @@ local function treeSetConnectorsAndIcons(tree)
     if overwrite and doc then doc:SetActive() end
     if overwrite and not ApproveFileOverwrite() then return false end
 
-    if not fn:Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL) then
+    if not fn:Mkdir(tonumber("755",8), wx.wxPATH_MKDIR_FULL) then
       ide:ReportError(TR("Unable to create directory '%s'."):format(target))
       return false
     end
 
     if isnew then -- new directory or file; create manually
-      if (isdir and not wx.wxFileName.DirName(target):Mkdir(tonumber(755,8), wx.wxPATH_MKDIR_FULL))
+      if (isdir and not wx.wxFileName.DirName(target):Mkdir(tonumber("755",8), wx.wxPATH_MKDIR_FULL))
       or (not isdir and not FileWrite(target, "")) then
         ide:ReportError(TR("Unable to create file '%s'."):format(target))
         return false
