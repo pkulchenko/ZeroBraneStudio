@@ -22,7 +22,7 @@ local _M = socket.http
 -- Program constants
 -----------------------------------------------------------------------------
 -- connection timeout in seconds
-TIMEOUT = 60
+_M.TIMEOUT = 60
 -- default port for document retrieval
 _M.PORT = 80
 -- user agent field sent in request
@@ -186,7 +186,7 @@ end
 local function adjusturi(reqt)
     local u = reqt
     -- if there is a proxy, we need the full url. otherwise, just a part.
-    if not reqt.proxy and not PROXY then
+    if not reqt.proxy and not _M.PROXY then
         u = {
            path = socket.try(reqt.path, "invalid path 'nil'"),
            params = reqt.params,
@@ -198,7 +198,7 @@ local function adjusturi(reqt)
 end
 
 local function adjustproxy(reqt)
-    local proxy = reqt.proxy or PROXY
+    local proxy = reqt.proxy or _M.PROXY
     if proxy then
         proxy = url.parse(proxy)
         return proxy.host, proxy.port or 3128

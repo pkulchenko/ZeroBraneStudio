@@ -43,7 +43,7 @@ end
 -----------------------------------------------------------------------------
 local function make_set(t)
     local s = {}
-    for i,v in base.ipairs(t) do
+    for i in base.ipairs(t) do
         s[t[i]] = 1
     end
     return s
@@ -219,6 +219,7 @@ end
 --   corresponding absolute url
 -----------------------------------------------------------------------------
 function _M.absolute(base_url, relative_url)
+    local base_parsed
     if base.type(base_url) == "table" then
         base_parsed = base_url
         base_url = _M.build(base_parsed)
