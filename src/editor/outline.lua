@@ -224,6 +224,7 @@ local function outlineRefresh(editor, force)
   if win and win ~= ide:GetMainFrame():FindFocus() then win:SetFocus() end
 end
 
+local failures = {}
 local function indexFromQueue()
   if #outline.indexqueue == 0 then return end
 
@@ -248,8 +249,9 @@ local function indexFromQueue()
 
       outline:UpdateSymbols(fname, outlineRefresh(editor))
       editor:Destroy()
-    else
+    elseif not failures[fname] then
       ide:Print(TR("Can't open file '%s': %s"):format(fname, err))
+      failures[fname] = true
     end
     if #outline.indexqueue == 0 then
       outline:SaveSettings()
