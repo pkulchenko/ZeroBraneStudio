@@ -340,8 +340,10 @@ function EditorCallTip(editor, pos, x, y)
   if debugger and debugger:IsConnected() then
     if var then
       debugger:EvalAsync(var, function(val, err)
-        -- val == `nil` if there is any error
+        -- val is `nil` if there is any error
         val = val ~= nil and (var.." = "..val) or err
+        -- convert invalid UTF8 code, as could only appear in strings
+        val = FixUTF8(val, function(s) return '\\'..string.byte(s) end)
         if #val > limit then val = val:sub(1, limit-3).."..." end
         -- check if the mouse position is specified and the mouse has moved,
         -- then don't show the tooltip as it's already too late for it.
