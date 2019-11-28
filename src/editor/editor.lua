@@ -1254,6 +1254,7 @@ function CreateEditor(bare)
   -- execution of the update is delayed till after the event is completed.
   -- See https://github.com/pkulchenko/wxlua/issues/5 for the related discussion.
   -- PAINTED is better than UPDATEUI, as it handles INS vs OVR and R/O vs R/W status.
+  -- The underlying issue has been addressed in https://trac.wxwidgets.org/ticket/18451
   editor:Connect(wxstc.wxEVT_STC_PAINTED,
     function (event)
       PackageEventHandle("onEditorPainted", editor, event)
