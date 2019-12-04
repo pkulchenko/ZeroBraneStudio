@@ -30,6 +30,8 @@ You can **access this configuration file** by going to `Edit | Preferences | Set
 
 **Per-user** packages are stored in `HOME/.zbstudio/packages/` directory.
 
+On Windows, if `HOME` environment variable is not set, then the concatenation of `HOMEDRIVE` and `HOMEPATH` environment variables is used instead.
+
 ## Configuration via command line
 
 In addition to system-wide and per-user configurations, it is also possible to provide a set of parameters that will be in effect only for one session.
