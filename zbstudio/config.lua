@@ -25,6 +25,8 @@ else
   console.fontname = editor.fontname
 end
 
+filetree.iconfontname = editor.fontname
+
 singleinstance = not mac
 
 unhidewindow = { -- allow unhiding of GUI windows

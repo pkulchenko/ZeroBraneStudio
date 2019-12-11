@@ -1102,10 +1102,9 @@ function ide:CreateFileIcon(ext)
   -- macOS does its own scaling for drawing on DC surface, so set to no scaling
   if mac then scale = 1 end
   bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
-  local edcfg = ide.config.editor
   iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
     wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
-    edcfg.fontname or "", edcfg.fontencoding or wx.wxFONTENCODING_DEFAULT)
+    ide.config.filetree.iconfontname or ide.config.editor.fontname or "", wx.wxFONTENCODING_DEFAULT)
   local mdc = wx.wxMemoryDC()
   mdc:SelectObject(bitmap)
   mdc:SetFont(iconfont)

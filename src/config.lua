@@ -222,6 +222,7 @@ return {
     fontname = nil,
     fontsize = 9,
     iconmap = {},
+    iconfontname = nil, -- font name to use in file icons
     mousemove = true,
     showchanges = true,
   },
