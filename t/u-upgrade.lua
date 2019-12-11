@@ -1,5 +1,9 @@
 if ide.wxver >= "3.1" then
-  ok(wx.wxFileName().ShouldFollowLink ~= nil, "wxlua/wxwidgets includes wxFileName().ShouldFollowLink.")
+  ok(wx.wxFileName().ShouldFollowLink ~= nil, "wxlua/wxwidgets 3.1+ includes wxFileName().ShouldFollowLink.")
+end
+
+if ide.wxver >= "3.1.4" then
+  ok(ide:GetEditorNotebook():GetActiveTabCtrl() ~= nil, "wxlua/wxwidgets 3.1.4+ includes wxAuiNotebook().GetActiveTabCtrl.")
 end
 
 local function waitToComplete(bid)
