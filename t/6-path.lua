@@ -1,6 +1,7 @@
 local LPATH = os.getenv('LUA_PATH')
 local LCPATH = os.getenv('LUA_CPATH')
 local LCPATH52 = os.getenv('LUA_CPATH_5_2')
+local LCPATH53 = os.getenv('LUA_CPATH_5_3')
 local mainpath = GetPathWithSep(ide.editorFilename)
 
 -- LUA_(C)PATH is specified, no ;; is added
@@ -54,10 +55,11 @@ ok(os.getenv('LUA_CPATH'):find(luadev..'/?51.dll', 1, true), "LUA_DEV is used in
 
 -- stub CommandLineRun and check if interpreters set paths correctly
 local CLR = CommandLineRun
-local lp, lcp
+local lp, lcp, lcp52, lcp53
 local fn = wx.wxFileName("foo")
 _G.CommandLineRun = function(cmd,wdir,tooutput,nohide,stringcallback,uid,endcallback)
-  lp, lcp, lcp52 = os.getenv('LUA_PATH'), os.getenv('LUA_CPATH'), os.getenv('LUA_CPATH_5_2')
+  lp, lcp = os.getenv('LUA_PATH'), os.getenv('LUA_CPATH')
+  lcp52, lcp53 = os.getenv('LUA_CPATH_5_2'), os.getenv('LUA_CPATH_5_3')
   if endcallback then endcallback() end
   return
 end
@@ -72,17 +74,22 @@ ok(lcp:find(ide.osclibs, 1, true) ~= 1,
   "Don't prepend clibs to LUA_CPATH if path.lua is set.")
 ide.config.path.lua = CPL
 
--- LUA_CPATH_5_2 modified if it's already set
 wx.wxSetEnv('LUA_CPATH_5_2', 'foo')
 ide.interpreters.luadeb52:frun(fn, "")
-ok(lcp:find(ide.osclibs, 1, true) ~= 1,
+ok(lcp52:find(ide.osclibs, 1, true) ~= 1,
   "LUA_CPATH_5_2 is modified if it is already set.")
+
+wx.wxSetEnv('LUA_CPATH_5_3', 'foo')
+ide.interpreters.luadeb53:frun(fn, "")
+ok(lcp53:find(ide.osclibs, 1, true) ~= 1,
+  "LUA_CPATH_5_3 is modified if it is already set.")
 
 _G.CommandLineRun = CLR
 
 if LPATH then wx.wxSetEnv('LUA_PATH', LPATH) else wx.wxUnsetEnv('LUA_PATH') end
 if LCPATH then wx.wxSetEnv('LUA_CPATH', LCPATH) else wx.wxUnsetEnv('LUA_CPATH') end
 if LCPATH52 then wx.wxSetEnv('LUA_CPATH_5_2', LCPATH52) else wx.wxUnsetEnv('LUA_CPATH_5_2') end
+if LCPATH53 then wx.wxSetEnv('LUA_CPATH_5_3', LCPATH53) else wx.wxUnsetEnv('LUA_CPATH_5_3') end
 ide.test.setLuaPaths(mainpath, ide.osname)
 
 ok(ide:IsSameDirectoryPath("/foo/bar", "/foo/bar"), "Same directory path is reported as being the same.")
