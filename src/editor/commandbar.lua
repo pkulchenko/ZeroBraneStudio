@@ -393,11 +393,12 @@ local function commandBarScoreItems(t, pattern, limit)
   local prefilter = ide.config.commandbar and tonumber(ide.config.commandbar.prefilter)
   -- anchor for 1-2 symbol patterns to speed up search
   local needanchor = prefilter and prefilter * 4 <= #t and plen <= 2
-  local pref = pattern:gsub("[^%w_]+",""):sub(1,4):lower()
+  local pref = pattern:gsub("%s",""):sub(1,4):lower()
   local filter = prefilter and prefilter <= #t
     -- expand `abc` into `a.*b.*c`, but limit the prefix to avoid penalty for `s.*s.*s.*....`
     -- if there are too many records to filter (prefilter*20), then only search for substrings
-    and (prefilter * 10 <= #t and pref or pref:gsub(".", "%1.*"):gsub("%.%*$",""))
+    and (prefilter * 10 <= #t and q(pref)
+      or pref:gsub(".", function(s) return q(s)..".*" end):gsub("%.%*$",""))
     or nil
   local lastpercent = 0
   for n, v in ipairs(t) do
@@ -416,7 +417,7 @@ local function commandBarScoreItems(t, pattern, limit)
       -- check if the current name needs to be prefiltered or anchored (for better performance);
       -- if it needs to be anchored, then anchor it at the beginning of the string or the word
       if not filter or (match and (not needanchor or match == 1 or v:find("^[%p%s]", match-1))) then
-        local p = score(pattern, v)
+        local p = math.floor(score(pattern, v))
         maxp = math.max(p, maxp)
         if p > 1 and p > maxp / 4 then
           num = num + 1

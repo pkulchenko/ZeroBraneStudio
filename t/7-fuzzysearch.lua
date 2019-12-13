@@ -19,7 +19,14 @@ check("readme", "readme", "README")
 check("ReadMe", "READme", "readME")
 check("f", "fun", "funclist.lua")
 
-ok(1 == #ide.test.commandBarScoreItems({"funclist.lua", "f"}, "fun"),
+is(#ide.test.commandBarScoreItems({"funclist.lua", "f"}, "fun"), 1,
   "Patterns longer than strings don't match.")
-ok(1 == #ide.test.commandBarScoreItems({"io.read"}, "io r"),
+is(#ide.test.commandBarScoreItems({"io.read"}, "io r"), 1,
   "Patterns with whitespaces still match.")
+is(ide.test.commandBarScoreItems({"2-autocomp.lua"}, "2 autocomp.lua")[1][2], 99,
+  "Patterns with whitespaces match closely, but not 100%.")
+is(#ide.test.commandBarScoreItems({"t\\2-autocomp.lua"}, "\\2-auto"), 1,
+  "Patterns with special characters still match.")
+ide.config.commandbar.prefilter=0.01
+is(#ide.test.commandBarScoreItems({"t\\2-autocomp.lua"}, "\\2-auto"), 1,
+  "Patterns with special characters still match after prefiltering.")
