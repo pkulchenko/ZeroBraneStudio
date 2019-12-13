@@ -1,6 +1,6 @@
 # ZeroBrane Studio Changelog
 
-## Current master (Oct 07 2019)
+## Current master (Dec 13 2019)
 
 ### Special thanks
   - To [Paul Reilly](https://github.com/paul-reilly) for improving luacheck configuration.
@@ -8,13 +8,21 @@
   - To numzero for fixing re-applying of editor styles.
   - To [Alexander Misel](https://github.com/AlexanderMisel) for improvements to Simplified Chinese translation.
   - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
+  - To [yu-tang](https://github.com/yu-tang) for Japanese translation.
 
 ### Highlights
+  - Added activating opened file before overwriting when renaming.
+  - Added Japanese translation; thanks to https://github.com/yu-tang (#1022, #70).
+  - Added resetting configured love2d path when it doesn't exist.
+  - Added activation of the main file when love2d project is switched to the suggested location.
+  - Added indicator for search-in-selection.
   - Added support for hoisted directories in the project tree.
   - Added search option to search mapped directories when present (off by default).
   - Added search option to follow symlinks to the searchbar (off by default).
+  - Added Japanese translation; thanks to https://github.com/yu-tang (#1022, #70).
+  - Added indicator and incremental search for search-in-selection.
   - Improved file renaming from the project tree.
-  - Updated Love2d API for 11.2 (#247).
+  - Updated Love2d API for 11.3 (#247).
 
 ### Improvements
   - Allowed warnings about globals from luacheck by default (#1013).
@@ -53,6 +61,18 @@
   - Refactored file renaming from the file tree to avoid creating editor tabs.
   - Removed `CloseAllExcept` method as it's not longer needed.
   - Removed `SetTabIndex` and direct tab index usage.
+  - Updated filtering logic in commandbar to better handle non-alphanum characters.
+  - Updated Love2d API for 11.3 (#247).
+  - Updated autocomplete to allow classes without any (sub-)elements.
+  - Updated to suppress repeated errors about files that can't be indexed.
+  - Updated love2d interpreter to cache love2d executable name per project.
+  - Updated love2d interpreter to reduce duplication.
+  - Updated markup restyling to not happen during cursor movement.
+  - Updated tooltip position to better work with wrapped lines.
+  - Updated `IsSameDirectoryPath` method to handle `nil` parameters (closes #1021).
+  - Updated handling of search-in-selection toggle to better work on macOS 10.14+.
+  - Updated to allow incremental search with search-in-selection.
+  - Updated editor font loading to better handle invalid/missing font names.
   - Updated to explicitly set art provider in pop out panels (#999).
   - Updated handling of static analyzer/luacheck options to allow dynamic switching (closes #1013).
   - Updated Linux arch check to handle 32bit userspace with 64bit kernel (closes #947).
@@ -85,9 +105,15 @@
   - Updated find/replace result message to get proper translation.
   - Updated `Show Location` label to more informative `Open Containing Folder`.
   - Updated `Show Location` to use the default explorer as configured (Windows).
+  - Upgraded Mobdebug (0.706) to improve debugging of wxlua apps under `strict` (closes #962).
   - Upgraded LexLPeg lexers to support new lexer syntax.
 
 ### Fixes
+  - Fixed showing invalid UTF-8 in debugger tooltips (fixes #1025).
+  - Fixed luasocket issues reported under `strict` (closes #950).
+  - Fixed updating editor tab icon when un/setting start file.
+  - Fixed restarting incremental search when initiated with search panel open.
+  - Fixed keeping the editor tab open when file is renamed from the file tree.
   - Fixed `SetupKeywords` to re-apply styles when requested (closes #1014).
   - Fixed reported error message for some file writing errors.
   - Fixed closing the current editor tab from menu with some other panel being active.
@@ -118,7 +144,7 @@
   - Fixed incorrect outline with `repeat until` before `else` (fixes #946).
 
 ### Incompatibilities
-  - Removed `CloseAllExcept` method as it's not longer needed.
+  - Removed `CloseAllExcept` method as it's no longer needed.
   - Removed `SetTabIndex` and direct tab index usage.
 
 ## v1.80 (Oct 07 2018)
