@@ -441,6 +441,8 @@ local cachemain = {}
 local cachemethod = {}
 local laststrategy
 local function getAutoCompApiList(childs,fragment,method)
+  if type(childs) ~= "table" then return {} end
+
   fragment = fragment:lower()
   local strategy = ide.config.acandtip.strategy
   if (laststrategy ~= strategy) then
@@ -566,14 +568,13 @@ function CreateAutoCompList(editor,key,pos)
       local tab = ac
       -- map "a.b.c" to class hierarchy (a.b.c)
       for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
-  
       if tab and not seen[tab] then
         seen[tab] = true
         for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
           table.insert(apilist, v)
         end
         addInheritance(tab, apilist, seen)
-    end
+      end
     end
   end
 
