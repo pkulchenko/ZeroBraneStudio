@@ -393,12 +393,12 @@ local function commandBarScoreItems(t, pattern, limit)
   local prefilter = ide.config.commandbar and tonumber(ide.config.commandbar.prefilter)
   -- anchor for 1-2 symbol patterns to speed up search
   local needanchor = prefilter and prefilter * 4 <= #t and plen <= 2
-  local pref = pattern:gsub("%s",""):sub(1,4):lower()
+  local pref = pattern:sub(1,4):lower()
   local filter = prefilter and prefilter <= #t
     -- expand `abc` into `a.*b.*c`, but limit the prefix to avoid penalty for `s.*s.*s.*....`
-    -- if there are too many records to filter (prefilter*20), then only search for substrings
-    and (prefilter * 10 <= #t and q(pref)
-      or pref:gsub(".", function(s) return q(s)..".*" end):gsub("%.%*$",""))
+    -- if there are too many records to filter, then only search for substrings
+    and (prefilter * 10 <= #t and q(pref):gsub("%s+",".")
+      or pref:gsub("%s",""):gsub(".", function(s) return q(s)..".*" end):gsub("%.%*$",""))
     or nil
   local lastpercent = 0
   for n, v in ipairs(t) do
