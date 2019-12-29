@@ -19,7 +19,6 @@
   - Added support for hoisted directories in the project tree.
   - Added search option to search mapped directories when present (off by default).
   - Added search option to follow symlinks to the searchbar (off by default).
-  - Added Japanese translation; thanks to https://github.com/yu-tang (#1022, #70).
   - Added indicator and incremental search for search-in-selection.
   - Improved file renaming from the project tree.
   - Updated Love2d API for 11.3 (#247).
