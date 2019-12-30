@@ -1121,7 +1121,8 @@ local package = ide:AddPackage('core.filetree', {
 
     onEditorFocusSet = function(plugin, editor)
       -- need to delay the sync, as the document may not yet exist for the editor
-      ide:DoWhenIdle(function() if ide:IsValidCtrl(editor) then syncTree(editor) end end)
+      ide:DoWhenIdle(function() if ide:IsValidCtrl(editor) then syncTree(editor) end end,
+        "core.filetree.oneditorfocusset")
     end,
 
     onEditorClose = function(plugin, editor)

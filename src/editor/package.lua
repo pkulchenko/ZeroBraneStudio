@@ -267,7 +267,26 @@ function ide:GetKnownExtensions(ext)
   return knownexts
 end
 
-function ide:DoWhenIdle(func) table.insert(self.onidle, func) end
+function ide:DoWhenIdle(func, group)
+  -- check if there are any group leftovers and remove them
+  if #self.onidle == 0 and next(self.onidle) then
+    self.onidle = {}
+  end
+  if group then
+    -- if there is already an element for the same group
+    if self.onidle[group] then
+      -- find and remove it, as it's not needed anymore
+      for i = 1, #self.onidle do
+        if self.onidle[i] == self.onidle[group] then
+          table.remove(self.onidle, i)
+          break
+        end
+      end
+    end
+    self.onidle[group] = func
+  end
+  table.insert(self.onidle, func)
+end
 
 function ide:FindTopMenu(item)
   local index = self:GetMenuBar():FindMenu((TR)(item))
