@@ -303,7 +303,9 @@ if [ $BUILD_WXLUA ]; then
   fi
 
   echo 'set_target_properties(wxLuaModule PROPERTIES LINK_FLAGS "-undefined dynamic_lookup -image_base 100000000")' >> modules/luamodule/CMakeLists.txt
-  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
+  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
+    -DCMAKE_BUILD_TYPE=$WXLUABUILD -DBUILD_SHARED_LIBS=FALSE \
+    -DCMAKE_SKIP_RPATH=TRUE \
     -DCMAKE_OSX_ARCHITECTURES=$MACOSX_ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_VERSION $MINSDK \
     -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DwxWidgets_CONFIG_EXECUTABLE="$INSTALL_DIR/bin/wx-config" \
     -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" \
