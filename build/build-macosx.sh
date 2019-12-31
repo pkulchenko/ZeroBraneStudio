@@ -15,7 +15,7 @@ INSTALL_DIR="$PWD/deps"
 # Mac OS X global settings
 MACOSX_ARCH="x86_64"
 MACOSX_VERSION="10.9"
-MACOSX_SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk"
+MACOSX_SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk"
 
 # number of parallel jobs used for building
 MAKEFLAGS="-j4"
