@@ -21,7 +21,7 @@
 
 local unpack = table.unpack or unpack
 
-function StylesGetDefault()
+local function getLightStyles()
   return {
     -- lexer specific (inherit fg/bg from text)
     lexerdef = {fg = {160, 160, 160}},
@@ -89,7 +89,71 @@ function StylesGetDefault()
       searchmatch = {},
       searchselection = {},
     },
+
+    auxwindow = {bg = bg, fg = fg},
   }
+end
+
+local function getDarkStyles()
+  local fg = {204, 204, 204}
+  local bg = {45, 45, 45}
+  return {
+    lexerdef = {fg = fg},
+    comment = {fg = {153, 153, 153}, fill = true},
+    stringeol = {fg = {153, 204, 153}, fill = true},
+    stringtxt = {fg = {153, 204, 153}},
+    preprocessor = {fg = {249, 145, 87}},
+    operator = {fg = {102, 204, 204}},
+    number = {fg = {242, 119, 122}},
+
+    keywords0 = {b = true, fg = {102, 153, 204}},
+    keywords1 = {b = false, fg = {102, 204, 204}},
+    keywords2 = {b = true, fg = {102, 204, 204}},
+    keywords3 = {b = false, fg = {204, 153, 204}},
+    keywords4 = {b = false, fg = {204, 153, 204}},
+    keywords5 = {b = false, fg = {204, 153, 204}},
+    keywords6 = {b = false, fg = {204, 153, 204}},
+    keywords7 = {b = false, fg = {204, 153, 204}},
+
+    text = {bg = bg, fg = fg},
+    linenumber = {fg = {153, 153, 153}},
+    bracematch = {b = true, fg = {249, 145, 87}},
+    bracemiss = {b = true, fg = {242, 119, 122}},
+    ctrlchar = {fg = {255, 204, 102}},
+    indent = {fg = {153, 153, 153}},
+
+    sel = {bg = {81, 81, 81}},
+    caret = {fg = {204, 204, 204}},
+    caretlinebg = {bg = {57, 57, 57}},
+    fold = {bg = bg, fg = {153, 153, 153}, sel = {249, 153, 153}},
+    whitespace = {fg = {153, 153, 153}},
+    edge = {},
+
+    ["["] = {hs = {217, 127, 255}},
+    ["|"] = {fg = {217, 153, 217}},
+
+    marker = {
+      message = {bg = {81, 81, 81}},
+      output = {bg = {57, 57, 57}},
+      error = {bg = {77, 45, 45}},
+      prompt = {bg = bg, fg = fg},
+    },
+
+    indicator = {
+      fncall = {fg = {204, 153, 204}, st = wxstc.wxSTC_MARK_EMPTY},
+      varglobal = {fg = fg},
+      varlocal = {fg = fg},
+      varmasked = {fg = fg},
+      varmasking = {fg = fg}
+    },
+
+    auxwindow = {bg = bg, fg = fg},
+  }
+end
+
+function StylesGetDefault()
+  local isdark = wx.wxSystemSettings.GetAppearance and wx.wxSystemSettings.GetAppearance():IsDark()
+  return setmetatable({}, {__index = isdark and getDarkStyles() or getLightStyles()})
 end
 
 local markers = {
@@ -344,22 +408,28 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     styles.linenumber.fs = ide.config.editor.fontsize and (ide.config.editor.fontsize - 1) or nil
   end
 
-  for name,style in pairs(styles) do
-    if (specialmapping[name]) then
-      specialmapping[name](editor,style)
-    elseif (defaultmapping[name]) then
-      applystyle(style,defaultmapping[name])
-    end
-
-    if (lexerconvert and lexerconvert[name]) then
-      local targets = lexerconvert[name]
-      for _, outid in pairs(targets) do
-        applystyle(style,outid)
+  function applyallstyles(styles)
+    for name,style in pairs(styles) do
+      if (specialmapping[name]) then
+        specialmapping[name](editor,style)
+      elseif (defaultmapping[name]) then
+        applystyle(style,defaultmapping[name])
       end
-    elseif style.st then
-      applystyle(style,style.st)
+
+      if (lexerconvert and lexerconvert[name]) then
+        local targets = lexerconvert[name]
+        for _, outid in pairs(targets) do
+          applystyle(style,outid)
+        end
+      elseif style.st then
+        applystyle(style,style.st)
+      end
     end
   end
+
+  -- first apply default styles, then configured modifications
+  if getmetatable(styles) then applyallstyles(getmetatable(styles).__index or {}) end
+  applyallstyles(styles)
 
   -- additional selection (seladd) attributes can only be set after
   -- normal selection (sel) attributes are set, so handle them again
