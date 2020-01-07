@@ -143,7 +143,7 @@ local specialmapping = {
     else
       editor:SetSelBackground(0,wx.wxWHITE)
     end
-    if (style.alpha and ide.wxver >= "2.9.5") then
+    if (tonumber(style.alpha) and ide.wxver >= "2.9.5") then
       editor:SetSelAlpha(style.alpha)
     end
 
@@ -159,7 +159,7 @@ local specialmapping = {
       if iscolor(style.bg) then
         editor:SetAdditionalSelBackground(wx.wxColour(unpack(style.bg)))
       end
-      if (style.alpha) then
+      if tonumber(style.alpha) then
         editor:SetAdditionalSelAlpha(style.alpha)
       end
     end
@@ -175,7 +175,7 @@ local specialmapping = {
     if iscolor(style.bg) then
       editor:SetCaretLineBackground(wx.wxColour(unpack(style.bg)))
     end
-    if (style.alpha and ide.wxver >= "2.9.5") then
+    if (tonumber(style.alpha) and ide.wxver >= "2.9.5") then
       editor:SetCaretLineBackAlpha(style.alpha)
     end
   end,
