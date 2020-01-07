@@ -46,7 +46,7 @@ function OutputAddStyles(styles)
     -- to avoid modifying all editor styles with "ansi" ones,
     -- as they will conflict with lexer-specific styles
     if ide.config.styles == styles then
-      local stylecopy = {}
+      local stylecopy = StylesGetDefault()
       for k,v in pairs(styles) do stylecopy[k] = v end
       styles = stylecopy
       ide.config.stylesoutshell = styles
