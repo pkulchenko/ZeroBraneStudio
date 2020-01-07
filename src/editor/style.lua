@@ -422,8 +422,7 @@ function ReApplySpecAndStyles()
 end
 
 function ApplyStyleConfig(config, style)
-  if not wx.wxIsAbsolutePath(config)
-    then config = MergeFullPath(GetPathWithSep(ide.editorFilename), config) end
+  if not wx.wxIsAbsolutePath(config) then config = ide:GetRootPath(config) end
 
   local cfg = {wxstc = wxstc, math = math, print = function(...) ide:Print(...) end}
   local cfgfn, err = loadfile(config)
