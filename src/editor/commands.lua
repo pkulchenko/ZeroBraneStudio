@@ -839,6 +839,21 @@ ide.editorApp:Connect(wx.wxEVT_ACTIVATE_APP,
     event:Skip()
   end)
 
+frame:Connect(wx.wxEVT_SYS_COLOUR_CHANGED,
+  function(event)
+    event:Skip()
+    local default = StylesGetDefault()
+    local mt = getmetatable(ide.config.styles)
+    if mt then
+      for k in pairs(mt.__index) do mt.__index[k] = default[k] end
+    end
+    local mto = getmetatable(ide.config.stylesoutshell)
+    if mto and mt ~= mto then
+      for k in pairs(mto.__index) do mto.__index[k] = default[k] end
+    end
+    ReApplySpecAndStyles()
+  end)
+
 if ide.config.autorecoverinactivity then
   ide.timers.session = ide:AddTimer(frame, function() saveAutoRecovery() end)
   -- check at least 5s to be never more than 5s off
