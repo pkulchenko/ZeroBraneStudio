@@ -286,7 +286,7 @@ return {
   },
 
   -- markup
-  ['['] = {hs = mixer(C.Comment, 3, 64)},
+  ['['] = {hs = mixer(mixer(C.Comment, 1, 64), 3, 128)},
   ['|'] = {fg = mixer(mixer(C.Comment, 1, 64), 3, 64)},
 
   -- markers
