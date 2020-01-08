@@ -16,7 +16,7 @@ INSTALL_DIR="$PWD/deps"
 MAKEFLAGS="-j1" # some make may hang on Windows with j4 or j7
 
 # flags for manual building with gcc
-BUILD_FLAGS="-Os -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
+BUILD_FLAGS="-Os -static-libgcc -shared -s -I $INSTALL_DIR/include -L $INSTALL_DIR/lib"
 
 # paths configuration
 WXWIDGETS_BASENAME="wxWidgets"
