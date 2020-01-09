@@ -58,9 +58,19 @@ function GetPathWithSep(wxfn)
   return wxfn:GetPath(bit.bor(wx.wxPATH_GET_VOLUME, wx.wxPATH_GET_SEPARATOR))
 end
 
-function FileDirHasContent(dir)
-  local f = wx.wxFindFirstFile(dir, wx.wxFILE + wx.wxDIR)
-  return #f>0
+local function closeDir(dir)
+  -- wxlua < 3.0 doesn't provide Close method for wxDir, so check for it
+  if ide:IsValidProperty(dir, "Close") then dir:Close() end
+end
+
+function FileDirHasContent(path)
+  local dir = wx.wxDir()
+  dir:Open(path)
+  if not dir:IsOpened() then return false end
+  local found = dir:GetFirst("*", wx.wxDIR_DIRS + wx.wxDIR_FILES
+    + (ide.config.showhiddenfiles and wx.wxDIR_HIDDEN or 0))
+  closeDir(dir)
+  return found
 end
 
 -- `fs` library provides Windows-specific functions and requires LuaJIT
@@ -174,7 +184,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       -- `false` to skip the directory and continue
       -- `nil` to abort the process
       local ondirectory = optondirectory and optondirectory(fname)
-      if optondirectory and ondirectory == nil then return false end
+      if optondirectory and ondirectory == nil then closeDir(dir); return false end
 
       if recursive and ismatch(fname..sep, nil, exmasks) and (ondirectory ~= false)
       and (optfollowsymlink or not isSymlink(fname))
@@ -186,7 +196,7 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       end
 
       num = num + 1
-      if optmaxnum and num >= optmaxnum then return false end
+      if optmaxnum and num >= optmaxnum then closeDir(dir); return false end
 
       found, file = dir:GetNext()
     end
@@ -199,12 +209,11 @@ function FileSysGetRecursive(path, recursive, spec, opts)
       end
 
       num = num + 1
-      if optmaxnum and num >= optmaxnum then return false end
+      if optmaxnum and num >= optmaxnum then closeDir(dir); return false end
 
       found, file = dir:GetNext()
     end
-    -- wxlua < 3.1 doesn't provide Close method for the directory, so check for it
-    if ide:IsValidProperty(dir, "Close") then dir:Close() end
+    closeDir(dir)
     return true
   end
   while #queue > 0 and getDir(table.remove(queue)) do end
@@ -256,15 +265,14 @@ function FileGetLongPath(path)
   local dirs = fn:GetDirs()
   table.insert(dirs, fn:GetFullName())
   local normalized = vol and volsep and vol..volsep or (path:match("^[/\\]") or ".")
-  local hasclose = ide:IsValidProperty(dir, "Close")
   while #dirs > 0 do
     dir:Open(normalized)
     if not dir:IsOpened() then return path end
     local p = table.remove(dirs, 1)
     local ok, segment = dir:GetFirst(p)
+    closeDir(dir)
     if not ok then return path end
     normalized = MergeFullPath(normalized,segment)
-    if hasclose then dir:Close() end
   end
   local file = wx.wxFileName(normalized)
   file:Normalize(wx.wxPATH_NORM_DOTS) -- remove leading dots, if any
