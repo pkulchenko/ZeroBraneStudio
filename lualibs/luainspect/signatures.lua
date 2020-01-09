@@ -189,7 +189,6 @@ M.argument_counts = {
   [type] = {1},
   [table.unpack or unpack] = {1,3},
   [xpcall] = {2,2},
-  [module] = {1,math.huge},
   [require] = {1,1},
   [coroutine.create] = {1,1},
   [coroutine.resume] = {1, math.huge},
@@ -262,7 +261,6 @@ M.argument_counts = {
   [os.time] = {0,1},
   [os.tmpname] = {0,0},
   [package.loadlib] = {2,2},
-  [package.seeall] = {1,1},
   [string.byte] = {1,3},
   [string.char] = {0,math.huge},
   [string.dump] = {1,1},
@@ -285,6 +283,12 @@ M.argument_counts = {
 }
 if table.maxn then
   M.argument_counts[table.maxn] = {1,1}
+end
+if module then
+  M.argument_counts[module] = {1,math.huge}
+end
+if package.seeall then
+  M.argument_counts[package.seeall] = {1,1}
 end
 
 -- functions with zero or nearly zero side-effects, and with deterministic results, that may be evaluated by the analyzer.
