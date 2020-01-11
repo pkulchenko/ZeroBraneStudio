@@ -213,8 +213,10 @@ function ide:SetDebugger(deb)
 end
 function ide:GetMainFrame()
   if not self.frame then
+    local screen = wx.wxDisplay():GetClientArea()
     self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, self:GetProperty("editor"),
-      wx.wxDefaultPosition, wx.wxSize(1100, 700))
+      wx.wxDefaultPosition,
+      wx.wxSize(math.floor(screen:GetWidth()*0.8), math.floor(screen:GetHeight()*0.8)))
       -- transparency range: 0 == invisible -> 255 == opaque
       -- set lower bound of 50 to prevent accidental invisibility
       local transparency = tonumber(self:GetConfig().transparency)
