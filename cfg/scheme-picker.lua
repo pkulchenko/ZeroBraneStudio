@@ -22,7 +22,6 @@
 styles = loadfile('cfg/tomorrow.lua')('TomorrowNightBlue')
 stylesoutshell = styles -- apply the same scheme to Output/Console windows
 styles.auxwindow = styles.text -- apply text colors to auxiliary windows
-styles.calltip = styles.text -- apply text colors to tooltips
 
 -- code example
 if false and true then func(1, 2, 3) end

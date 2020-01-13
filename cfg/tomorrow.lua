@@ -257,7 +257,7 @@ return {
   bracemiss = {fg = C.Red, b = true},
   ctrlchar = {fg = C.Yellow},
   indent = {fg = C.Comment},
-  calltip = nil,
+  calltip = {fg = C.Foreground, bg = C.Background},
 
   -- common special (need custom fg & bg)
   sel = {bg = C.Selection},

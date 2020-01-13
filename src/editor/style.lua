@@ -22,6 +22,8 @@
 local unpack = table.unpack or unpack
 
 local function getLightStyles()
+  local fg = {64, 64, 64}
+  local bg = {250, 250, 250}
   return {
     -- lexer specific (inherit fg/bg from text)
     lexerdef = {fg = {160, 160, 160}},
@@ -29,7 +31,7 @@ local function getLightStyles()
     stringtxt = {fg = {128, 32, 16}},
     stringeol = {fg = {128, 32, 16}, bg = {224, 192, 224}, fill = true},
     preprocessor = {fg = {128, 128, 0}},
-    operator = {fg = {64, 64, 64}},
+    operator = {fg = fg},
     number = {fg = {80, 112, 255}},
 
     keywords0 = {fg = {32, 32, 192}},
@@ -42,19 +44,19 @@ local function getLightStyles()
     keywords7 = {fg = {240, 255, 255}},
 
     -- common (inherit fg/bg from text)
-    text = {fg = {64, 64, 64}, bg = {250, 250, 250}},
-    linenumber = {fg = {128, 128, 128}, bg = {250, 250, 250}},
+    text = {fg = fg, bg = bg},
+    linenumber = {fg = {128, 128, 128}, bg = bg},
     bracematch = {fg = {32, 128, 255}, b = true},
     bracemiss = {fg = {255, 128, 32}, b = true},
     ctrlchar = {},
     indent = {fg = {192, 192, 230}, bg = {255, 255, 255}},
-    calltip = {},
+    calltip = {fg = fg, bg = bg},
 
     -- common special (need custom fg & bg)
     sel = {bg = {208, 208, 208}},
     caret = {fg = {0, 0, 0}},
     caretlinebg = {bg = {240, 240, 230}},
-    fold = {fg = {192, 192, 192}, bg = {250, 250, 250}, sel = {160, 128, 224}},
+    fold = {fg = {192, 192, 192}, bg = bg, sel = {160, 128, 224}},
     whitespace = {},
     edge = {},
 
@@ -121,6 +123,7 @@ local function getDarkStyles()
     bracemiss = {b = true, fg = {242, 119, 122}},
     ctrlchar = {fg = {255, 204, 102}},
     indent = {fg = {153, 153, 153}},
+    calltip = {bg = bg, fg = fg},
 
     sel = {bg = {81, 81, 81}},
     caret = {fg = {204, 204, 204}},
