@@ -787,7 +787,7 @@ function CreateEditor(bare)
   editor:SetBackSpaceUnIndents(edcfg.backspaceunindent and 1 or 0)
 
   if ide.wxver >= "3.0" and edcfg.showligatures then
-    editor:SetTechnology(1) -- enable DirectWrite support on Windows
+    editor:SetTechnology(wxstc.wxSTC_TECHNOLOGY_DIRECTWRITE) -- Windows only
   end
 
   if ide.wxver >= "2.9.5" then

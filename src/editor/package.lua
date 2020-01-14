@@ -810,7 +810,7 @@ function ide:CreateStyledTextCtrl(...)
     local orig = editor[method]
     editor[method] = function (editor, ...)
       local tech = editor:GetTechnology()
-      if tech ~= 0 then editor:SetTechnology(0) end
+      if tech ~= 0 then editor:SetTechnology(wxstc.wxSTC_TECHNOLOGY_DEFAULT) end
       orig(editor, ...)
       if tech ~= 0 then editor:SetTechnology(tech) end
     end
