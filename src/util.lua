@@ -113,8 +113,8 @@ function FileSysGetRecursive(path, recursive, spec, opts)
         else
           -- escape all special characters
           table.insert(list, EscapeMagic(m)
-            :gsub("%%%*%%%*", ".*") -- replace (escaped) ** with .*
-            :gsub("%%%*", "[^/\\]*") -- replace (escaped) * with [^\//]*
+            :gsub("%%%*%%%*", ".*") -- replace (escaped) ** with any character (.*)
+            :gsub("%%%*", "[^/\\]*") -- replace (escaped) * with anything except path separator
             :gsub("^"..sep, ide:GetProject() or "") -- replace leading separator with project directory (if set)
             .."$")
         end
