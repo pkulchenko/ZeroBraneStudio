@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------
--- LuaSec 0.6
--- Copyright (C) 2009-2016 PUC-Rio
+-- LuaSec 0.9
+-- Copyright (C) 2009-2019 PUC-Rio
 --
 -- Author: Pablo Musa
 -- Author: Tomas Guisasola
@@ -18,15 +18,16 @@ local try    = socket.try
 -- Module
 --
 local _M = {
-  _VERSION   = "0.6",
-  _COPYRIGHT = "LuaSec 0.6 - Copyright (C) 2009-2016 PUC-Rio",
+  _VERSION   = "0.9",
+  _COPYRIGHT = "LuaSec 0.9 - Copyright (C) 2009-2019 PUC-Rio",
   PORT       = 443,
+  TIMEOUT    = 60
 }
 
 -- TLS configuration
 local cfg = {
   protocol = "any",
-  options  = {"all", "no_sslv2", "no_sslv3"},
+  options  = {"all", "no_sslv2", "no_sslv3", "no_tlsv1"},
   verify   = "none",
 }
 
@@ -83,12 +84,14 @@ local function tcp(params)
       conn.sock = try(socket.tcp())
       local st = getmetatable(conn.sock).__index.settimeout
       function conn:settimeout(...)
-         return st(self.sock, ...)
+         return st(self.sock, _M.TIMEOUT)
       end
       -- Replace TCP's connection function
       function conn:connect(host, port)
          try(self.sock:connect(host, port))
          self.sock = try(ssl.wrap(self.sock, params))
+         self.sock:sni(host)
+         self.sock:settimeout(_M.TIMEOUT)
          try(self.sock:dohandshake())
          reg(self, getmetatable(self.sock))
          return 1
@@ -138,5 +141,6 @@ end
 --
 
 _M.request = request
+_M.tcp = tcp
 
 return _M

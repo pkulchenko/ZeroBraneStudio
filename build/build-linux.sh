@@ -48,8 +48,12 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-LUASEC_BASENAME="luasec-0.6"
-LUASEC_FILENAME="$LUASEC_BASENAME.zip"
+OPENSSL_BASENAME="openssl-1.1.1d"
+OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
+OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
+
+LUASEC_BASENAME="luasec-0.9"
+LUASEC_FILENAME="v0.9.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
 LFS_BASENAME="v_1_6_3"
@@ -361,14 +365,27 @@ fi
 
 # build LuaSec
 if [ $BUILD_LUASEC ]; then
+  # build openSSL
+  wget --no-check-certificate -c "$OPENSSL_URL" -O "$OPENSSL_FILENAME" || { echo "Error: failed to download OpenSSL"; exit 1; }
+  tar -xzf "$OPENSSL_FILENAME"
+  cd "$OPENSSL_BASENAME"
+  ./config shared
+
+  make depend
+  make
+  make install_sw INSTALLTOP="$INSTALL_DIR"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/libcrypto.so" "$INSTALL_DIR/lib/libssl.so"
+  cd ..
+  rm -rf "$OPENSSL_FILENAME" "$OPENSSL_BASENAME"
+
   # build LuaSec
   wget --no-check-certificate -c "$LUASEC_URL" -O "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
   unzip "$LUASEC_FILENAME"
-  # the folder in the archive is "luasec-luasec-....", so need to fix
-  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" \
-    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
+    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{config.c,options.c,context.c,ec.c,x509.c,ssl.c} -Isrc \
+    -Wl,-rpath,'$ORIGIN' -Wl,-rpath,'$ORIGIN/..' \
     -lssl -lcrypto \
     || { echo "Error: failed to build LuaSec"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/"
@@ -396,6 +413,8 @@ if [ $BUILD_LUASOCKET ]; then
 fi
 
 if [ $BUILD_LUASEC ]; then
+  cp "$INSTALL_DIR/lib/libcrypto.so" "$BIN_DIR/libcrypto.so.1.1"
+  cp "$INSTALL_DIR/lib/libssl.so" "$BIN_DIR/libssl.so.1.1"
   cp "$INSTALL_DIR/lib/lua/$LUAV/ssl.so" "$BIN_DIR/clibs$LUAS"
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" ../lualibs
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" ../lualibs/ssl

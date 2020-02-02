@@ -39,8 +39,12 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-LUASEC_BASENAME="luasec-0.6"
-LUASEC_FILENAME="$LUASEC_BASENAME.zip"
+OPENSSL_BASENAME="openssl-1.1.1d"
+OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
+OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
+
+LUASEC_BASENAME="luasec-0.9"
+LUASEC_FILENAME="v0.9.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
 LFS_BASENAME="v_1_6_3"
@@ -375,20 +379,49 @@ fi
 
 # build LuaSec
 if [ $BUILD_LUASEC ]; then
+  # build openSSL
+  curl -L "$OPENSSL_URL" > "$OPENSSL_FILENAME" || { echo "Error: failed to download OpenSSL"; exit 1; }
+  tar -xzf "$OPENSSL_FILENAME"
+  cd "$OPENSSL_BASENAME"
+  perl ./Configure darwin64-x86_64-cc shared
+  # add minimal macos SDK
+  sed -ie "s!^CNF_CFLAGS=!CNF_CFLAGS=${MACOSX_FLAGS} !" Makefile
+
+  make depend
+  make
+  make install_sw INSTALLTOP="$INSTALL_DIR"
+  install_name_tool -id libcrypto.dylib "$INSTALL_DIR/lib/libcrypto.dylib"
+  install_name_tool -id libssl.dylib "$INSTALL_DIR/lib/libssl.dylib"
+  install_name_tool -change /usr/local/lib/libcrypto.1.1.dylib @loader_path/libcrypto.dylib "$INSTALL_DIR/lib/libssl.dylib"
+  otool -L "$INSTALL_DIR/lib/libssl.dylib" | grep "loader_path/libcrypto" \
+    || { echo "Error: failed to update libssl for libcrypto @loader_path"; exit 1; }
+  [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/libcrypto.dylib" "$INSTALL_DIR/lib/libssl.dylib"
+  cd ..
+  rm -rf "$OPENSSL_FILENAME" "$OPENSSL_BASENAME"
+
+  # build LuaSec
   curl -L "$LUASEC_URL" > "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
   unzip "$LUASEC_FILENAME"
-  # the folder in the archive is "luasec-luasec-....", so need to fix
-  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   gcc $BUILD_FLAGS -install_name ssl.dylib -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" \
-    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{context.c,x509.c,ssl.c} -Isrc \
-    -lssl -lcrypto \
+    src/luasocket/{timeout.c,buffer.c,io.c,usocket.c} src/{config.c,options.c,context.c,ec.c,x509.c,ssl.c} -Isrc \
+    -L"$INSTALL_DIR/lib/" -lssl -lcrypto \
+    -Wl,-headerpad_max_install_names \
     || { echo "Error: failed to build LuaSec"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/"
   cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAV/"
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/ssl"
   cp src/https.lua "$INSTALL_DIR/share/lua/$LUAV/ssl/"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" ] || { echo "Error: ssl.dylib isn't found"; exit 1; }
+  install_name_tool -change libcrypto.dylib @rpath/libcrypto.dylib "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
+  otool -L "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" | grep "rpath/libcrypto" \
+    || { echo "Error: failed to update ssl library for libcrypto @rpath"; exit 1; }
+  install_name_tool -change libssl.dylib @rpath/libssl.dylib "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
+  otool -L "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" | grep "rpath/libssl" \
+    || { echo "Error: failed to update ssl library for libssl @rpath"; exit 1; }
+  install_name_tool -add_rpath @loader_path/. "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
+  install_name_tool -add_rpath @loader_path/.. "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib"
   cd ..
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
@@ -414,6 +447,7 @@ if [ $BUILD_LUASOCKET ]; then
 fi
 
 if [ $BUILD_LUASEC ]; then
+  cp "$INSTALL_DIR/lib/"{libcrypto.dylib,libssl.dylib} "$BIN_DIR"
   cp "$INSTALL_DIR/lib/lua/$LUAV/ssl.dylib" "$BIN_DIR/clibs$LUAS"
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" ../lualibs
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" ../lualibs/ssl

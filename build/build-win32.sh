@@ -29,12 +29,12 @@ LUASOCKET_BASENAME="luasocket-3.0-rc1"
 LUASOCKET_FILENAME="v3.0-rc1.zip"
 LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
 
-OPENSSL_BASENAME="openssl-1.0.2o"
+OPENSSL_BASENAME="openssl-1.1.1d"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
 OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILENAME"
 
-LUASEC_BASENAME="luasec-0.6"
-LUASEC_FILENAME="$LUASEC_BASENAME.zip"
+LUASEC_BASENAME="luasec-0.9"
+LUASEC_FILENAME="v0.9.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
 LFS_BASENAME="v_1_6_3"
@@ -377,23 +377,22 @@ if [ $BUILD_LUASEC ]; then
   tar -xzf "$OPENSSL_FILENAME"
   cd "$OPENSSL_BASENAME"
   # change `mingw` to `mingw64` to build 64bit library
-  RANLIB="$(which ranlib)" bash ./Configure mingw shared no-asm
+  RANLIB="$(which ranlib)" perl ./Configure mingw shared
   make depend
   make
   make install_sw INSTALLTOP="$INSTALL_DIR"
-  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libeay32.dll" "$INSTALL_DIR/bin/ssleay32.dll"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/libcrypto-*.dll" "$INSTALL_DIR/bin/libssl-*.dll"
   cd ..
   rm -rf "$OPENSSL_FILENAME" "$OPENSSL_BASENAME"
 
   # build LuaSec
   wget --no-check-certificate -c "$LUASEC_URL" -O "$LUASEC_FILENAME" || { echo "Error: failed to download LuaSec"; exit 1; }
   unzip "$LUASEC_FILENAME"
-  # the folder in the archive is "luasec-luasec-....", so need to fix
-  mv "luasec-$LUASEC_BASENAME" $LUASEC_BASENAME
   cd "$LUASEC_BASENAME"
+  mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll" \
     -DLUASEC_INET_NTOP -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -DNTDDI_VERSION=0x05010300 \
-    src/luasocket/{timeout.c,buffer.c,io.c,wsocket.c} src/{context.c,x509.c,ssl.c} -Isrc "$INSTALL_DIR/bin/ssleay32.dll" "$INSTALL_DIR/bin/libeay32.dll" -lws2_32 -lgdi32 -llua$LUAV \
+    src/luasocket/{timeout.c,buffer.c,io.c,wsocket.c} src/{config.c,options.c,context.c,ec.c,x509.c,ssl.c} -Isrc "$INSTALL_DIR/bin/libssl-1_1.dll" "$INSTALL_DIR/bin/libcrypto-1_1.dll" -lws2_32 -lgdi32 -llua$LUAV \
     || { echo "Error: failed to build LuaSec"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/"
   cp src/ssl.lua "$INSTALL_DIR/share/lua/$LUAV/"
@@ -442,7 +441,7 @@ if [ $BUILD_LUASOCKET ]; then
 fi
 
 if [ $BUILD_LUASEC ]; then
-  cp "$INSTALL_DIR/bin/"{ssleay32.dll,libeay32.dll} "$BIN_DIR"
+  cp "$INSTALL_DIR/bin/"{libcrypto-*.dll,libssl-*.dll} "$BIN_DIR"
   cp "$INSTALL_DIR/lib/lua/$LUAV/ssl.dll" "$BIN_DIR/clibs$LUAS"
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl.lua" "../lualibs"
   cp "$INSTALL_DIR/share/lua/$LUAV/ssl/https.lua" "../lualibs/ssl"
