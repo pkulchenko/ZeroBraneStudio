@@ -24,7 +24,9 @@ ZeroBrane LLC is **not a tax-exempt** non-profit organization, so your payment i
 
 ## What do I get?
 You get access to packages for three platforms:
-**Windows** XP or later (zip or self-extracting archive; works on **32-bit and 64-bit** systems), **Mac OS X** 10.7+ (dmg file), or **Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
+**Windows** XP or later (zip or self-extracting archive; works on **32-bit and 64-bit** systems),
+**macOS** 10.9+ (dmg file), or
+**Linux** (shell archive for Debian, Ubuntu, Xubuntu, Mint, ArchLinux, Fedora, Gentoo and other distributions).
 
 ## Isn't this an open source project?
 Yes and we make it easy for you to get the code from the version control repository and
