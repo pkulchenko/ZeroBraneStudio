@@ -77,7 +77,7 @@ GSL-shell, and other engines.
 The IDE can be **installed into and run from any directory**. There are three options to install it:
 
 * Download [installation package for the latest release](https://studio.zerobrane.com/) for individual platforms (Windows, OSX, or Linux);
-* Download [snapshot of the repository for each of the releases](releases), which works for all platforms;
+* Download [snapshot of the repository for each of the releases](https://github.com/pkulchenko/ZeroBraneStudio/releases), which works for all platforms;
 * Clone the repository to access the current development version; this option also works for all platforms.
 
 **No compilation is needed** for any of the installation options, although the scripts to compile required libraries for all supported platforms are available in the `build/` directory.
