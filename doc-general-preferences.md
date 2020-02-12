@@ -124,6 +124,7 @@ Use `outputshell` instead of `console` in earlier versions.
 
 - `filetree.fontname = nil`: set font name; Project/Filetree window has no default font as it is system dependent.
 - `filetree.fontsize = 10`: set font size (the default size is `11` on macOS).
+- `filetree.iconfontname = nil`: set font name used in filetree icon text (**v1.90+**). This value is set based on the default editor font, but is preserved and can be changed independenty to better match icons when the editor font is changed.
 - `filetree.iconmap = {}`: set mapping from extension to colors to use in Project/Filetree icons (**v1.51+**);
 set to `false` to disable showing extensions in icons.
 The color associated with an extension is in `{r,g,b}` format; for example, to associate `lua` extension with `red` color, use `filetree.iconmap.lua = {fg = {255, 0, 0}}`.
