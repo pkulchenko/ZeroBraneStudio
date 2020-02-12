@@ -243,9 +243,9 @@ For example, `api = {'foo', luadeb = {'bar'}}` will load `foo` API for all inter
 - `toolbar.iconmap = { [ID.OPEN] = {"FILE-OPEN", "Description" }, ... }`: set the content of toolbar buttons (the icon and the description).
 - `toolbar.icons = { ID.NEW, ID.OPEN, ... ID.SEPARATOR, ...}`: set the order of the buttons in the toolbar.
 - `toolbar.iconsize = nil`: set the size of the icons in the toolbar.
-Only two sizes are currently supported: `16` and `24` pixels.
-**Starting from 1.11+** the default size for icons is 24 pixels on macOS or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
-You can still set the values to `16` or `24` as desired.
+**Starting from v1.11+** the default size for icons is 24 pixels on macOS or on screens 1500+ pixels wide; all the other configurations are using 16 pixel icons.
+**Starting from v1.90+** the default size for icons is 24 pixels on macOS or on screens 1280+ pixels wide; all the other configurations are using 16 pixel icons.
+The size of icons is scaled by the scaling factor (as configured in the OS). You can still set the values to any size divisible by `16` or `24` (before **v1.90** only `16` and `24` sizes were supported).
 
 The icon used may **refer to the existing image** file by name (`"FILE-OPEN"`) or to `wx.wxBitmap` object; see this plugin for an [example on how to create a toolbar bitmap](https://github.com/pkulchenko/ZeroBranePackage/blob/master/maketoolbar.lua).
 
