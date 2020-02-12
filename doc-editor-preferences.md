@@ -75,6 +75,14 @@ Possible values: `wxstc.wxSTC_WRAPINDENT_FIXED` (align to left of window plus am
 Possible values: `wxstc.wxSTC_WRAP_WORD` (wrap on word or style boundaries), `wxstc.wxSTC_WRAP_CHAR` (wrap between any characters), `wxstc.wxSTC_WRAP_WHITESPACE` (wrap on whitespace), and `wxstc.wxSTC_WRAP_NONE` (no line wrapping).
 - `editor.wrapstartindent = 0`: set the size of indentation of sublines for wrapped lines in terms of the average character width (**v0.61+**).
 
+## Editor extension mapping
+
+(**v1.80+**) `editor.specmap` table provides a way to associate file extension with a file format.
+For example, setting `editor.specmap.foo = 'lua'` will make files with `.foo` extension to be recognized as Lua files (for the purpose of syntax highlighting, folding, and other format-specific actions).
+Note that the shebang line (the first line in a file that starts with `#!` and includes the file type) will also be analyzed, but only for files with extensions not listed in the `specmap` table.
+For example, having `#!lua` as the first line in a file with extension `.bar` will set it as a file of Lua format.
+An extension can also be specified on the shebang line as long as that extension is listed in the `specmap` table.
+
 ## Keyboard shortcuts
 
 The editor component provides its own shortcut handling mechanism linked to specific editor actions.
