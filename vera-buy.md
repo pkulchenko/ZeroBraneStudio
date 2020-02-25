@@ -65,4 +65,4 @@ You can cancel your subscription at any time with no questions asked by sending 
 
 You can review the [documentation](documentation) and [tutorial](tutorials) pages to see if it is answered there.
 If you still have questions or need some special arrangement, you may contact us at [support@zerobrane.com](mailto:support@zerobrane.com).
-We also read [Vera/MCV user forums](http://forum.micasaverde.com/) and will be happy to answer any questions you may have there.
+We also read [Vera community forums](https://community.getvera.com/) and will be happy to answer any questions you may have there.

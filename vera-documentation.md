@@ -37,7 +37,7 @@ title: Documentation
 
 ## Vera resources
 
-- [Vera user forums](http://forum.micasaverde.com/)
+- [Vera user forums](https://community.getvera.com/)
 - [Check for latest firmware](http://cp.mios.com/firmware)
 - [Vera Documentation](http://docs5.mios.com/)
 - [Vera FAQ Categories](http://faq.mios.com/showcat.html)

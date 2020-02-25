@@ -66,4 +66,4 @@ See [this Vera Software Update article](https://support.getvera.com/customer/en/
 ## What do I do if I have questions or want to receive product updates?
 
 Several ways to stay in touch are listed [here](community). If you have any problems, please [contact us](email:support@zerobrane.com) and we will get it sorted out.
-We also read [Vera/MCV user forums](http://forum.micasaverde.com/) and will be happy to answer any questions you may have there.
+We also read [Vera community forums](https://community.getvera.com/) and will be happy to answer any questions you may have there.
