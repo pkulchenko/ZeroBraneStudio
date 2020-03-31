@@ -1272,7 +1272,11 @@ function ide:AddConfig(name, files)
   if type(files) ~= "table" then files = {files} end -- allow to pass one value
   configcache[name] = {
     config = require('mobdebug').dump(self.config, {nocode = true}),
-    configmeta = getmetatable(self.config),
+    configmeta = {
+      [0] = getmetatable(self.config),
+      styles = getmetatable(self.config.styles),
+      stylesoutshell = getmetatable(self.config.stylesoutshell),
+    },
     packages = {},
     overrides = {},
   }
@@ -1314,7 +1318,10 @@ function ide:RemoveConfig(name)
     self.config = res
     -- restore overrides
     for key, value in pairs(configcache[name].overrides) do setLongKey(self.config, key, value) end
-    if configcache[name].configmeta then setmetatable(self.config, configcache[name].configmeta) end
+    -- restore metatables on a set of (predefined) config elements
+    for metaname, metaval in pairs(configcache[name].configmeta) do
+       setmetatable(metaname == 0 and self.config or self.config[metaname], metaval)
+    end
   else
     ide:Print(("Error while restoring configuration: '%s'."):format(res))
   end
