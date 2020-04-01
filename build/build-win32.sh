@@ -296,7 +296,7 @@ if [ $BUILD_WXLUA ]; then
   git clone "$WXLUA_URL" "$WXLUA_BASENAME" || { echo "Error: failed to get wxlua"; exit 1; }
   cd "$WXLUA_BASENAME/wxLua"
 
-  git checkout master
+  git checkout v3.0.0.8
 
   sed -i 's|:-/\(.\)/|:-\1:/|' "$INSTALL_DIR/bin/wx-config"
 
