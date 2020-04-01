@@ -427,9 +427,12 @@ if [ $BUILD_LUASEC ]; then
   rm -rf "$LUASEC_FILENAME" "$LUASEC_BASENAME"
 fi
 
-# now copy the compiled dependencies to ZBS binary directory
-mkdir -p "$BIN_DIR" || { echo "Error: cannot create directory $BIN_DIR"; exit 1; }
+[ -d "$BIN_DIR/clibs" ] || mkdir -p "$BIN_DIR/clibs" || { echo "Error: cannot create directory $BIN_DIR/clibs"; exit 1; }
+if [ $LUAS ]; then
+  [ -d "$BIN_DIR/clibs$LUAS" ] || mkdir -p "$BIN_DIR/clibs$LUAS" || { echo "Error: cannot create directory $BIN_DIR/clibs$LUAS"; exit 1; }
+fi
 
+# now copy the compiled dependencies to the correct locations
 if [ $BUILD_LUA ]; then
   mkdir -p "$BIN_DIR/lua.app/Contents/MacOS"
   cp "$INSTALL_DIR/bin/lua$LUAS" "$BIN_DIR/lua.app/Contents/MacOS"
