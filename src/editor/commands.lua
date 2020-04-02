@@ -257,7 +257,7 @@ function OpenFile(event)
   local editor = ide:GetEditor()
   local path = editor and ide:GetDocument(editor):GetFilePath() or nil
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Open file"),
-    (path and GetPathWithSep(path) or ide:GetProject() or ""),
+    (path and GetPathWithSep(path) or ide:GetProject() or ide.cwd or ""),
     "",
     getExtsString(editor),
     wx.wxFD_OPEN + wx.wxFD_FILE_MUST_EXIST + wx.wxFD_MULTIPLE)
