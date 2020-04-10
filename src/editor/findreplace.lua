@@ -437,7 +437,9 @@ local knownBinary = {}
 local function checkBinary(ext, content)
   if not content then return knownBinary[ext] end
   if ext == "" then return IsBinary(content) end
-  if knownBinary[ext] == nil then knownBinary[ext] = IsBinary(content) end
+  if knownBinary[ext] == nil then
+    knownBinary[ext] = #ide:GetKnownExtensions(ext) == 0 and IsBinary(content)
+  end
   return knownBinary[ext]
 end
 
