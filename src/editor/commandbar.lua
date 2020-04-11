@@ -509,7 +509,7 @@ function ShowCommandBar(default, selected)
           end
         -- insert selected method
         elseif text and text:find('^%s*'..special.METHOD) then
-          if ed then -- clean up text and insert at the current location
+          if ed and sline then -- clean up text and insert at the current location
             local method = sline
             local isfunc = methods.desc[method][1]:find(q(method).."%s*%(")
             local text = method .. (isfunc and "()" or "")
