@@ -299,7 +299,7 @@ end
 
 function ide:FindTopMenu(item)
   local index = self:GetMenuBar():FindMenu((TR)(item))
-  return self:GetMenuBar():GetMenu(index), index
+  return index >= 0 and self:GetMenuBar():GetMenu(index), index
 end
 function ide:FindMenuItem(itemid, menu)
   local menubar = self:GetMenuBar()
