@@ -340,8 +340,8 @@ local function showCommandBar(params)
   frame:Refresh()
 
   search:SetValue((defaultText or "")..(selectedText or ""))
-  search:SetSelection(#(defaultText or ""), -1)
   search:SetFocus()
+  search:SetSelection(#(defaultText or ""), -1)
 end
 
 local sep = "[/\\%-_ ]+"
