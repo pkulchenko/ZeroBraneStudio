@@ -49,6 +49,32 @@ local function fixUTF8(...)
   return unpack(t)
 end
 
+-- Motivation:
+-- when deal with the system running in the docker 
+-- file path may differ from the local one.
+-- E.g. in the docker Lua files may be installed via package manager
+-- to the `/var/lib/some_library` directory. But on the 
+-- developers system thouse files placed in the `~/projects/some_library`
+-- As result to be able to debug there needs 
+-- to convert `/var/lib/some_library` to `~/projects/some_library` for step by step debugging
+-- and convert `~/projects/some_library` to `/var/lib/some_library` when set breakpoints
+local function fix_file_name(map_name, file)
+  --! @moteus add way to modify file path
+  local dir_map = ide.config.debugger and ide.config.debugger[map_name]
+  if dir_map then
+    for _, map in ipairs(dir_map) do
+      local n
+      file, n = string.gsub(file, map[1], map[2])
+      if n > 0 then break end
+    end
+  end
+  return file
+end
+
+local function bp_file_name(file)
+  return fix_file_name('bp_dir_map', file)
+end
+
 local q = EscapeMagic
 local MORE = "{...}"
 
@@ -311,15 +337,7 @@ function debugger:ActivateDocument(file, line, activatehow)
   local debugger = self
   if not file then return end
   line = tonumber(line)
-
-  local dir_map = ide.config.debugger and ide.config.debugger.dir_map
-  if dir_map then
-    for _, map in ipairs(dir_map) do
-      local n
-      file, n = string.gsub(file, map[1], map[2])
-      if n > 0 then break end
-    end
-  end
+  file = fix_file_name('dir_map', file)
 
   -- file can be a filename or serialized file content; deserialize first.
   -- check if the filename starts with '"' and is deserializable
@@ -410,8 +428,8 @@ function debugger:ActivateDocument(file, line, activatehow)
         if not debugger.editormap[editor] and filePath then
           local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
           while filePath and line ~= -1 do
-            debugger:handle("delb " .. filePath .. " " .. (line+1))
-            debugger:handle("setb " .. file .. " " .. (line+1))
+            debugger:handle("delb " .. bp_file_name(filePath) .. " " .. (line+1))
+            debugger:handle("setb " .. bp_file_name(file) .. " " .. (line+1))
             line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
           end
         end
@@ -463,7 +481,7 @@ function debugger:reSetBreakpoints()
       local filePath = document:GetFilePath()
       local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
       while filePath and line ~= -1 do
-        debugger:handle("setb " .. filePath .. " " .. (line+1))
+        debugger:handle("setb " .. bp_file_name(filePath) .. " " .. (line+1))
         line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
       end
     end
@@ -1124,9 +1142,9 @@ end
 function debugger:breakpoint(file, line, state)
   local debugger = self
   if debugger.running then
-    return debugger:handleDirect((state and "asetb " or "adelb ") .. file .. " " .. line)
+    return debugger:handleDirect((state and "asetb " or "adelb ") .. bp_file_name(file) .. " " .. line)
   end
-  return debugger:handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
+  return debugger:handleAsync((state and "setb " or "delb ") .. bp_file_name(file) .. " " .. line)
 end
 function debugger:EvalAsync(var, callback, params)
   local debugger = self
