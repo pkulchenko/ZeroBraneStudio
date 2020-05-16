@@ -1,6 +1,6 @@
 -- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
 
-local gideros
+local pathcache
 local win = ide.osname == "Windows"
 local mac = ide.osname == "Macintosh"
 
@@ -25,7 +25,7 @@ return {
   description = "Gideros mobile platform",
   api = {"baselib", "gideros"},
   frun = function(self,wfilename,rundebug)
-    gideros = gideros or ide.config.path.gideros -- check if the path is configured
+    local gideros = ide.config.path.gideros or pathcache -- check if the path is configured
     if not gideros then
       local sep = win and ';' or ':'
       local default =
@@ -45,6 +45,7 @@ return {
           ..table.concat(paths, ", "))
         return
       end
+      pathcache = gideros
     end
     if gideros and not wx.wxFileName(gideros):FileExists() then
       ide:Print("Can't find the specified gideros executable '"..gideros.."'.")

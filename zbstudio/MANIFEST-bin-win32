@@ -26,7 +26,7 @@ bin/lua52.dll
 bin/lua52.exe
 bin/lua53.dll
 bin/lua53.exe
-bin/libeay32.dll
-bin/ssleay32.dll
+bin/libcrypto-1_1.dll
+bin/libssl-1_1.dll
 bin/winapi.dll
 zbstudio.exe

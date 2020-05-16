@@ -1,7 +1,7 @@
 local output = ide:GetOutput()
 -- three invalid UTF-8 chars
 local invalid = "\128\129\130"
-DisplayOutputLn(invalid)
+ide:Print(invalid)
 local cmptext, text = "\022\022\022\n", output:GetTextDyn()
 
 local ro = output:GetReadOnly()

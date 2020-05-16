@@ -12,13 +12,13 @@ local frame = ide.frame
 local menuBar = frame.menuBar
 
 local editMenu = ide:MakeMenu {
+  { ID_UNDO, TR("&Undo")..KSC(ID_UNDO), TR("Undo last edit") },
+  { ID_REDO, TR("&Redo")..KSC(ID_REDO), TR("Redo last edit undone") },
+  { },
   { ID_CUT, TR("Cu&t")..KSC(ID_CUT), TR("Cut selected text to clipboard") },
   { ID_COPY, TR("&Copy")..KSC(ID_COPY), TR("Copy selected text to clipboard") },
   { ID_PASTE, TR("&Paste")..KSC(ID_PASTE), TR("Paste text from the clipboard") },
   { ID_SELECTALL, TR("Select &All")..KSC(ID_SELECTALL), TR("Select all text in the editor") },
-  { },
-  { ID_UNDO, TR("&Undo")..KSC(ID_UNDO), TR("Undo last edit") },
-  { ID_REDO, TR("&Redo")..KSC(ID_REDO), TR("Redo last edit undone") },
   { },
   { ID_SHOWTOOLTIP, TR("Show &Tooltip")..KSC(ID_SHOWTOOLTIP), TR("Show tooltip for current position; place cursor after opening bracket of function") },
   { ID_AUTOCOMPLETE, TR("Complete &Identifier")..KSC(ID_AUTOCOMPLETE), TR("Complete the current identifier") },
@@ -123,8 +123,12 @@ local function onEditMenu(event)
 
   local spos, epos = editor:GetSelectionStart(), editor:GetSelectionEnd()
   if menu_id == ID_CUT then
-    if spos == epos then editor:LineCopy() else editor:CopyDyn() end
     if spos == epos then
+      if ide.config.editor.linecopy then editor:LineCopy() end
+    else
+      editor:CopyDyn()
+    end
+    if spos == epos and ide.config.editor.linecopy then
       local line = editor:LineFromPosition(spos)
       spos, epos = editor:PositionFromLine(line), editor:PositionFromLine(line+1)
       editor:SetSelectionStart(spos)
@@ -132,7 +136,11 @@ local function onEditMenu(event)
     end
     if spos ~= epos then editor:ClearAny() end
   elseif menu_id == ID_COPY then
-    if spos == epos then editor:LineCopy() else editor:CopyDyn() end
+    if spos == epos then
+      if ide.config.editor.linecopy then editor:LineCopy() end
+    else
+      editor:CopyDyn()
+    end
   elseif menu_id == ID_PASTE then
     -- first clear the text in case there is any hidden markup
     if spos ~= epos then editor:ClearAny() end
@@ -263,12 +271,12 @@ frame:Connect(ID_COMMENT, wx.wxEVT_COMMAND_MENU_SELECTED,
   end)
 
 local function processSelection(editor, func)
-  local text = editor:GetSelectedText()
+  local text = editor:GetSelectedTextDyn()
   local line = editor:GetCurrentLine()
   local posinline = editor:GetCurrentPos() - editor:PositionFromLine(line)
   if #text == 0 then
     editor:SelectAll()
-    text = editor:GetSelectedText()
+    text = editor:GetSelectedTextDyn()
   end
   local wholeline = text:find("\n$")
   local buf = {}
@@ -297,11 +305,11 @@ local function processSelection(editor, func)
         for line = #buf, 1, -1 do
           editor:SetTargetStart(line == 1 and ssel or editor:PositionFromLine(sline+line-1))
           editor:SetTargetEnd(line == eline-sline+1 and esel or editor:GetLineEndPosition(sline+line-1))
-          editor:ReplaceTarget((buf[line]:gsub("\r?\n$", "")))
+          editor:ReplaceTargetDyn((buf[line]:gsub("\r?\n$", "")))
         end
       else
         editor:TargetFromSelection()
-        editor:ReplaceTarget(newtext)
+        editor:ReplaceTargetDyn(newtext)
       end
       editor:EndUndoAction()
     end

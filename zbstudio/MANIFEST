@@ -8,6 +8,7 @@ interpreters/*.lua
 lualibs/copas/copas.lua
 lualibs/coxpcall/coxpcall.lua
 lualibs/dist/*.lua
+lualibs/fs.lua
 lualibs/git.lua
 lualibs/git/*.lua
 lualibs/lexers/*
@@ -15,6 +16,7 @@ lualibs/ltn12.lua
 lualibs/lua_lexer_loose.lua
 lualibs/lua_parser_loose.lua
 lualibs/luacheck/*.lua
+lualibs/luacheck/stages/*.lua
 lualibs/luadist.lua
 lualibs/luainspect/*.lua
 lualibs/metalua/*.lua

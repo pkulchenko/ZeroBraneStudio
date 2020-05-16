@@ -1,6 +1,6 @@
 -- Copyright 2011-12 Paul Kulchenko, ZeroBrane LLC
 
-local gslshell
+local pathcache
 local win = ide.osname == "Windows"
 
 return {
@@ -8,7 +8,7 @@ return {
   description = "GSL-shell interpreter",
   api = {"baselib"},
   frun = function(self,wfilename,rundebug)
-    gslshell = gslshell or ide.config.path.gslshell -- check if the path is configured
+    local gslshell = ide.config.path.gslshell or pathcache -- check if the path is configured
     if not gslshell then
       local sep = win and ';' or ':'
       local default = win and GenerateProgramFilesPath('gsl-shell', sep)..sep or ''
@@ -26,6 +26,7 @@ return {
           ..table.concat(paths, ", "))
         return
       end
+      pathcache = gslshell
     end
 
     do

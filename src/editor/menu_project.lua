@@ -6,7 +6,6 @@
 local ide = ide
 local frame = ide.frame
 local menuBar = frame.menuBar
-local openDocuments = ide.openDocuments
 
 ------------------------
 -- Interpreters and Menu
@@ -38,16 +37,20 @@ local debugMenu = ide:MakeMenu {
     { ID_BREAKPOINTPREV, TR("Go To Previous Breakpoint")..KSC(ID_BREAKPOINTPREV) },
   } },
   { },
-  { ID_CLEAROUTPUT, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUT), TR("Clear the output window before compiling or debugging"), wx.wxITEM_CHECK },
+  { ID_CLEAROUTPUTENABLE, TR("C&lear Output Window")..KSC(ID_CLEAROUTPUTENABLE), TR("Clear the output window before compiling or debugging"), wx.wxITEM_CHECK },
   { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS), TR("Provide command line parameters") },
   { ID_PROJECTDIR, TR("Project Directory"), TR("Set the project directory to be used"), targetDirMenu },
   { ID_INTERPRETER, TR("Lua &Interpreter"), TR("Set the interpreter to be used"), targetMenu },
 }
 menuBar:Append(debugMenu, TR("&Project"))
+menuBar:Check(ID_CLEAROUTPUTENABLE, true)
 
 -- older (<3.x) versions of wxwidgets may not have `GetLabelText`, so provide alternative
-if not pcall(function() return debugMenu.GetLabelText end) then
-  debugMenu.GetLabelText = function(self, ...) return wx.wxMenuItem.GetLabelText(self.GetLabel(self, ...)) end
+do
+  local ok, glt = pcall(function() return debugMenu.GetLabelText end)
+  if not ok or not glt then
+    debugMenu.GetLabelText = function(self, ...) return wx.wxMenuItem.GetLabelText(self.GetLabel(self, ...)) end
+  end
 end
 local debugMenuRunLabel = { [false]=debugMenu:GetLabelText(ID_STARTDEBUG), [true]=TR("Co&ntinue") }
 local debugMenuStopLabel = { [false]=debugMenu:GetLabelText(ID_STOPDEBUG), [true]=TR("S&top Debugging") }
@@ -141,7 +144,7 @@ end
 local function projChoose(event)
   local editor = ide:GetEditor()
   local fn = wx.wxFileName(
-    editor and openDocuments[editor:GetId()].filePath or "")
+    editor and ide:GetDocument(editor):GetFilePath() or "")
   fn:Normalize() -- want absolute path for dialog
 
   local projectdir = ide:GetProject()
@@ -158,8 +161,7 @@ frame:Connect(ID_PROJECTDIRCHOOSE, wx.wxEVT_COMMAND_MENU_SELECTED, projChoose)
 local function projFromFile(event)
   local editor = ide:GetEditor()
   if not editor then return end
-  local id = editor:GetId()
-  local filepath = openDocuments[id].filePath
+  local filepath = ide:GetDocument(editor):GetFilePath()
   if not filepath then return end
   local fn = wx.wxFileName(filepath)
   fn:Normalize() -- want absolute path for dialog
@@ -194,7 +196,6 @@ local function getNameToRun(skipcheck)
 
   local doc = ide:GetDocument(editor)
   local name = ide:GetProjectStartFile() or doc:GetFilePath()
-  if not name then doc:SetModified(true) end
   if not SaveIfModified(editor) then return end
   if ide.config.editor.saveallonrun then SaveAll(true) end
 

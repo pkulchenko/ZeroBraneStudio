@@ -1,6 +1,7 @@
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
 
+local unpack = table.unpack or unpack
 local funcdef = "([A-Za-z_][A-Za-z0-9_%.%:]*)%s*"
 local decindent = {
   ['else'] = true, ['elseif'] = true, ['until'] = true, ['end'] = true}
@@ -95,7 +96,7 @@ return {
       :gsub("%b()","()") -- remove all function calls
     )
 
-    local func = (isfndef(str) or str:match("%W+function%s*%(")) and 1 or 0
+    local func = (isfndef(str) or str:match("%f[%w_]function%s*%(")) and 1 or 0
     local term = str:match("^%s*([%w_]+)%W*")
     local terminc = term and incindent[term] and 1 or 0
     -- fix 'if' not terminated with 'then'
@@ -116,7 +117,7 @@ return {
     local _, opened = str:gsub("([%{%(])", "%1")
     local _, closed = str:gsub("([%}%)])", "%1")
     -- ended should only be used to negate term and func effects
-    local anon = str:match("%W+function%s*%(.+[^%w_]end%f[^%w_]")
+    local anon = str:match("%f[%w_]function%s*%(.+[^%w_]end%f[^%w_]")
     local ended = (terminc + func > 0) and (str:match("[^%w_]+end%s*$") or anon) and 1 or 0
 
     return opened - closed + func + terminc - ended

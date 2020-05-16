@@ -15,7 +15,7 @@ local print = print
 
 local iswindows = os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')
 if iswindows or not pcall(require, "wx") then
-  package.cpath = (iswindows and 'bin/?.dll;' or 'bin/lib?.dylib;') .. package.cpath
+  package.cpath = (iswindows and 'bin/clibs/?.dll;' or 'bin/clibs/lib?.dylib;') .. package.cpath
 end
 
 require "wx"

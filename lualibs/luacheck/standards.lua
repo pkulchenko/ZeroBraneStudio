@@ -45,45 +45,80 @@ local standards = {}
 -- In config and inline options its possible to use their names as strings to refer to them.
 
 -- Validates an optional table mapping field names to field definitions or non-string keys to names.
--- Returns a truthy value is the table is valid, a falsy value otherwise.
-local function validate_fields(fields)
+-- `index` is an optional string specifying position of the field table in the root table.
+-- Returns a true if the table is valid, false, an error message, and index of the table with the error otherwise.
+local function validate_fields(fields, is_root, index)
    if fields == nil then
       return true
    end
 
+   local field_type = is_root and "global" or "field"
+
    if type(fields) ~= "table" then
-      return
+      return false, ("%ss table expected, got %s"):format(field_type, type(fields)), index
    end
 
    for key, value in pairs(fields) do
       if type(key) == "string" then
+         local new_index = (index or "") .. "." .. key
+
          if type(value) ~= "table" then
-            return
+            return false, ("%s description table expected, got %s"):format(field_type, type(value)), new_index
          end
 
          if value.read_only ~= nil and type(value.read_only) ~= "boolean" then
-            return
+            local err = "invalid value of option 'read_only': boolean expected, got " .. type(value.read_only)
+            return false, err, new_index
          end
 
          if value.other_fields ~= nil and type(value.other_fields) ~= "boolean" then
-            return
+            local err = "invalid value of option 'other_fields': boolean expected, got " .. type(value.other_fields)
+            return false, err, new_index
          end
 
-         if not validate_fields(value.fields) then
-            return
+         local ok, err, err_index = validate_fields(value.fields, false, new_index .. ".fields")
+
+         if not ok then
+            return false, err, err_index
          end
       elseif type(value) ~= "string" then
-         return
+         local key_as_string = type(key) == "number" and ("%.20g"):format(key) or ("<%s>"):format(type(key))
+         local new_index = ("%s[%s]"):format(index or "", key_as_string)
+         return false, ("string expected as %s name, got %s"):format(field_type, type(value)), new_index
       end
    end
 
    return true
 end
 
+-- Validates a field table.
+-- Returns true if the table is valid, false and an error message otherwise.
+function standards.validate_globals_table(globals_table)
+   local ok, err, err_index = validate_fields(globals_table, true)
+
+   if ok then
+      return true
+   end
+
+   local err_prefix = err_index and ("in field %s: "):format(err_index) or ""
+   return false, err_prefix .. err
+end
+
 -- Validates an std table in user-side format.
--- Returns a truthy value is the table is valid, a falsy value otherwise.
+-- Returns true if the table is valid, false and an error message otherwise.
 function standards.validate_std_table(std_table)
-   return type(std_table) == "table" and validate_fields(std_table.globals) and validate_fields(std_table.read_globals)
+   local ok, err, err_index = validate_fields(std_table.globals, true, ".globals")
+
+   if ok then
+      ok, err, err_index = validate_fields(std_table.read_globals, true, ".read_globals")
+   end
+
+   if ok then
+      return true
+   end
+
+   local err_prefix = ("in field %s: "):format(err_index)
+   return false, err_prefix .. err
 end
 
 local infinitely_indexable_def = {other_fields = true}
@@ -216,6 +251,19 @@ end
 -- that do not have any writable fields, recursively.
 function standards.finalize(final_std)
    infer_deep_read_only_statuses(final_std, true)
+end
+
+local empty = {}
+
+-- Returns a definition table containing empty fields with given names.
+function standards.def_fields(...)
+   local fields = {}
+
+   for _, field in ipairs({...}) do
+      fields[field] = empty
+   end
+
+   return {fields = fields}
 end
 
 return standards

@@ -199,8 +199,8 @@ local colors = {
     Foreground  = H'F8F8F2',    -- super-light-gray (everything else)
     Comment     = H'00FF00',    -- bright green (comments)
     Red         = H'F92672',    -- purple (numbers)
-    Orange      = H'AE81FF',    -- lavendar?? (numbers)
-    Yellow      = H'F8F8F2',    -- light-gray
+    Orange      = H'AE81FF',    -- lavender (brace match)
+    Yellow      = H'F8F8F2',    -- light-gray (ctrl-char)
     Green       = H'FF8000',    -- amber (string literal)
     Aqua        = H'808080',    -- gray (operators, separators etc.)
     Blue        = H'0066FF',    -- semi-blue (keywords)
@@ -257,7 +257,7 @@ return {
   bracemiss = {fg = C.Red, b = true},
   ctrlchar = {fg = C.Yellow},
   indent = {fg = C.Comment},
-  calltip = nil,
+  calltip = {fg = C.Foreground, bg = C.Background},
 
   -- common special (need custom fg & bg)
   sel = {bg = C.Selection},
@@ -286,7 +286,7 @@ return {
   },
 
   -- markup
-  ['['] = {hs = mixer(C.Comment, 3, 64)},
+  ['['] = {hs = mixer(mixer(C.Comment, 1, 64), 3, 128)},
   ['|'] = {fg = mixer(mixer(C.Comment, 1, 64), 3, 64)},
 
   -- markers

@@ -46,6 +46,7 @@ return {
   ["&Start Debugger Server"] = "&Ekfunkciigi sencimigilo-servilon", -- src\editor\menu_project.lua
   ["&Status Bar"] = "&Stata breto", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "&Ilobreto", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Lerniloj", -- src\editor\menu_help.lua
   ["&Undo"] = "&Malfari", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "&Vidi", -- src\editor\menu_view.lua
@@ -81,7 +82,9 @@ return {
   ["Choose a project directory"] = "Elekti projektan dosierujon", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = nil, -- src\editor\findreplace.lua
   ["Choose..."] = "Elekti...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
+  ["Clear Bookmarks In File"] = nil, -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = nil, -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = nil, -- src\editor\markers.lua
   ["Clear Breakpoints In Project"] = nil, -- src\editor\markers.lua
   ["Clear Items"] = "Viŝi anojn", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "Senlistigi tiujn ĉi anojn", -- src\editor\menu_file.lua
@@ -97,7 +100,7 @@ return {
   ["Comment or uncomment current or selected lines"] = "Forkomenti aŭ eksforkomenti la kurantan aŭ la elektitajn liniojn", -- src\editor\menu_edit.lua
   ["Compilation error"] = "Eraro de kompilo", -- src\editor\commands.lua, src\editor\debugger.lua
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "Kompilo sukcesa; %.0f%% elcentaĵo da sukceso (%d/%d).", -- src\editor\commands.lua
-  ["Compile the current file"] = "Kompili la kurantan dosieron", -- src\editor\menu_project.lua
+  ["Compile the current file"] = "Kompili la kurantan dosieron", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Complete &Identifier"] = "Finfari &fontkodnomon", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = "Finfari la kurantan fontkodnomon", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "Kontemplu forigi maloblikvon el eskapsekvenco '%s'.", -- src\editor\commands.lua
@@ -128,7 +131,7 @@ return {
   ["Error while loading configuration file: %s"] = "Eraro okazis dum ŝargado de agorda dosiero: %s", -- src\editor\style.lua
   ["Error while processing API file: %s"] = "Eraro okazis dum analizado de API-a dosiero: %s", -- src\editor\autocomplete.lua
   ["Error while processing configuration file: %s"] = "Eraro okazis dum analizado de agorda dosiero: %s", -- src\editor\style.lua
-  ["Error"] = "Eraro", -- src\editor\commands.lua
+  ["Error"] = "Eraro", -- src\editor\package.lua
   ["Evaluate In Console"] = "Malkodi en la konzolo", -- src\editor\editor.lua
   ["Execute the current project/file and keep updating the code to see immediate results"] = "Plenumi la kurantan projekton/dosieron, kaj ĝisdatigadi la fontkodon por vidi tujajn rezultojn", -- src\editor\menu_project.lua
   ["Execute the current project/file"] = "Plenumi la kurantan projekton/dosieron", -- src\editor\toolbar.lua, src\editor\menu_project.lua
@@ -158,6 +161,7 @@ return {
   ["Formatting page %d..."] = nil, -- src\editor\print.lua
   ["Found %d instance."] = {}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Trovis aŭtomatrestaŭran dosieron kaj riparis konservitan seancon.", -- src\editor\commands.lua
+  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Full &Screen"] = "Plenekrana &reĝimo", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Iri al deklaro", -- src\editor\editor.lua
   ["Go To File..."] = nil, -- src\editor\menu_search.lua
@@ -217,7 +221,7 @@ return {
   ["Project"] = "Projekto", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "Projekta/&Dosierarba Fenestro", -- src\editor\menu_view.lua
   ["Provide command line parameters"] = "Doni komandliniajn parametrojn", -- src\editor\menu_project.lua
-  ["Queued %d files to index."] = nil, -- src\editor\menu_search.lua
+  ["Queued %d files to index."] = nil, -- src\editor\commandbar.lua
   ["R/O"] = "L/A", -- src\editor\editor.lua
   ["R/W"] = "L/S", -- src\editor\editor.lua
   ["Re&place In Files"] = "Anstataŭi en dosieroj", -- src\editor\menu_search.lua
@@ -261,6 +265,7 @@ return {
   ["Search in selection"] = nil, -- src\editor\toolbar.lua
   ["Search in subdirectories"] = nil, -- src\editor\toolbar.lua
   ["Searching for '%s'."] = nil, -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Ele: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Elekti &ĉion", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Elekti kaj pluserĉi", -- src\editor\menu_search.lua
@@ -268,7 +273,7 @@ return {
   ["Select all text in the editor"] = "Elekti la tekston en la redaktilo", -- src\editor\menu_edit.lua
   ["Select the word under cursor and find its next occurrence"] = "Elekti la vorton sub la tajpmontrilo, kaj pluserĉi", -- src\editor\menu_search.lua
   ["Select the word under cursor and find its previous occurrence"] = "Elekti la vorton sub la tajpmontrilo, kaj traserĉi antaŭantan", -- src\editor\menu_search.lua
-  ["Set As Start File"] = nil, -- src\editor\filetree.lua
+  ["Set As Start File"] = nil, -- src\editor\gui.lua, src\editor\filetree.lua
   ["Set From Current File"] = "Precizigi per la kuranta dosiero", -- src\editor\menu_project.lua
   ["Set To Project Directory"] = nil, -- src\editor\findreplace.lua
   ["Set To Selected Directory"] = nil, -- src\editor\filetree.lua
@@ -307,7 +312,7 @@ return {
   ["Switch to or from full screen mode"] = "Interŝanĝi al aŭ el plenekrana reĝimo", -- src\editor\menu_view.lua
   ["Symbol Index"] = nil, -- src\editor\outline.lua
   ["Text not found."] = "Teksto ne trovitis", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "La dosiero de API devas troviĝi en subdosierujo de la API-a dosierujo.", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "La dosiero de API devas troviĝi en subdosierujo de la API-a dosierujo.", -- src\main.lua
   ["Toggle Bookmark"] = "Baskuli legosignon", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "Baskuli haltopunkto", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Baskuli legosignon", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -324,13 +329,14 @@ return {
   ["Unable to stop program (pid: %d), code %d."] = "Ne kapablas fini la programon (pid: %d), kodo %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "Malfari la antaŭan redakton", -- src\editor\menu_edit.lua
   ["Unmap Directory"] = nil, -- src\editor\filetree.lua
-  ["Unset '%s' As Start File"] = nil, -- src\editor\filetree.lua
+  ["Unset '%s' As Start File"] = nil, -- src\editor\gui.lua, src\editor\filetree.lua
   ["Updated %d file."] = {}, -- src\editor\findreplace.lua
   ["Updating symbol index and settings..."] = nil, -- src\editor\outline.lua
   ["Use %s to close."] = nil, -- src\editor\findreplace.lua
   ["Use '%s' to see full description."] = "Uzu je '%s' por vidi plenan priskribon", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "Uzu je '%s' por montri linifinojn kaj je '%s' por konverti ilin", -- src\editor\commands.lua
   ["Use 'clear' to clear the shell output and the history."] = "Tajpu 'clear' por viŝi la eligon kaj historion de la ŝelo.", -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = nil, -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "Uzu <Majuskligklavon-Enenklavon> por plurlinia fontkodo.", -- src\editor\shellbox.lua
   ["View the markers window"] = nil, -- src\editor\menu_view.lua
   ["View the outline window"] = "Vidi la skemo-fenestron", -- src\editor\menu_view.lua

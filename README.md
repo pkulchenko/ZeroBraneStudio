@@ -6,6 +6,7 @@ and debugging support for various Lua engines
 ([Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
 [Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
+[Lua 5.4](http://studio.zerobrane.com/doc-lua54-debugging),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
 [LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
 [Moai](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio),
@@ -28,7 +29,7 @@ and others).
 
 * Small, portable, and **cross-platform** (Windows, macOS, and Linux).
 * Written in Lua and is extensible with Lua packages.
-* **Syntax highlighting** and folding for 110+ languages and file formats.
+* **Syntax highlighting** and folding for 125+ languages and file formats.
 * **Project view** with auto-refresh and ability to hide files and directories from the list.
 * Bundled with several of **the most popular Lua modules**
 ([luasocket](https://github.com/diegonehab/luasocket),
@@ -42,6 +43,7 @@ compiled for all supported Lua versions.
 for [Lua 5.1](http://studio.zerobrane.com/doc-lua-debugging),
 [Lua 5.2](http://studio.zerobrane.com/doc-lua52-debugging),
 [Lua 5.3](http://studio.zerobrane.com/doc-lua53-debugging),
+[Lua 5.4](http://studio.zerobrane.com/doc-lua54-debugging),
 [LuaJIT](http://studio.zerobrane.com/doc-luajit-debugging),
 and [other Lua engines](http://studio.zerobrane.com/documentation#debugging).
 * **Interactive console** to directly test code snippets with local and remote execution.
@@ -75,7 +77,7 @@ GSL-shell, and other engines.
 The IDE can be **installed into and run from any directory**. There are three options to install it:
 
 * Download [installation package for the latest release](https://studio.zerobrane.com/) for individual platforms (Windows, OSX, or Linux);
-* Download [snapshot of the repository for each of the releases](releases), which works for all platforms;
+* Download [snapshot of the repository for each of the releases](https://github.com/pkulchenko/ZeroBraneStudio/releases), which works for all platforms;
 * Clone the repository to access the current development version; this option also works for all platforms.
 
 **No compilation is needed** for any of the installation options, although the scripts to compile required libraries for all supported platforms are available in the `build/` directory.

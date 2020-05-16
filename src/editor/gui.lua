@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- Lomtik Software (J. Winwood & John Labenski)
 ---------------------------------------------------------
@@ -6,13 +6,6 @@
 local ide = ide
 local unpack = table.unpack or unpack
 
-do local config = ide.config.editor
-  ide.font.editor = wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN,
-    wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
-    config.fontencoding or wx.wxFONTENCODING_DEFAULT)
-end
-
--- treeCtrl font requires slightly different handling
 do local font, config = wx.wxTreeCtrl():GetFont(), ide.config.filetree
   if config.fontsize then font:SetPointSize(config.fontsize) end
   if config.fontname then font:SetFaceName(config.fontname) end
@@ -36,6 +29,7 @@ local function createFrame()
       end
     end)
 
+  if wx.wxMenuBar.SetAutoWindowMenu then wx.wxMenuBar.SetAutoWindowMenu(false) end
   local menuBar = wx.wxMenuBar()
   local statusBar = frame:CreateStatusBar(5)
   local section_width = statusBar:GetTextExtent("OVRW")
@@ -53,7 +47,7 @@ local function createFrame()
             local menuitem = ide:FindMenuItem(ID.COMMANDLINEPARAMETERS)
             if menuitem then
               local menu = ide:MakeMenu {
-                { ID_COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID_COMMANDLINEPARAMETERS) },
+                { ID.COMMANDLINEPARAMETERS, TR("Command Line Parameters...")..KSC(ID.COMMANDLINEPARAMETERS) },
               }
               local cmdargs = ide:GetPackage("core.project"):GetCmdLines()
               local curargs = interpreter:GetCommandLineArg()
@@ -105,19 +99,11 @@ local function menuDropDownPosition(event)
   return ide.frame:ScreenToClient(tb:ClientToScreen(rect:GetBottomLeft()))
 end
 
-local function tbIconSize()
-  -- use large icons by default on OSX and on large screens
-  local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
-  return (iconsize and (iconsize % 8) == 0 and iconsize
-    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1500) and 24 or 16))
-end
-
 local function createToolBar(frame)
   local toolBar = wxaui.wxAuiToolBar(frame, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_TB_PLAIN_BACKGROUND)
 
-  -- there are two sets of icons: use 24 on OSX and 16 on others.
-  local iconsize = tbIconSize()
+  local iconsize = ide:GetBestIconSize()
   local toolBmpSize = wx.wxSize(iconsize, iconsize)
   local icons = ide.config.toolbar.icons
   local needseparator = false
@@ -141,8 +127,8 @@ local function createToolBar(frame)
     end
   end
 
-  toolBar:SetToolDropDown(ID_OPEN, true)
-  toolBar:Connect(ID_OPEN, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
+  toolBar:SetToolDropDown(ID.OPEN, true)
+  toolBar:Connect(ID.OPEN, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
       if event:IsDropDownClicked() then
         local menu = wx.wxMenu({})
         FileRecentListUpdate(menu)
@@ -152,8 +138,8 @@ local function createToolBar(frame)
       end
     end)
 
-  toolBar:SetToolDropDown(ID_PROJECTDIRCHOOSE, true)
-  toolBar:Connect(ID_PROJECTDIRCHOOSE, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
+  toolBar:SetToolDropDown(ID.PROJECTDIRCHOOSE, true)
+  toolBar:Connect(ID.PROJECTDIRCHOOSE, wxaui.wxEVT_COMMAND_AUITOOLBAR_TOOL_DROPDOWN, function(event)
       if event:IsDropDownClicked() then
         local menu = wx.wxMenu({})
         FileTreeProjectListUpdate(menu, 0)
@@ -173,7 +159,8 @@ end
 local function getTabWindow(event, nb)
   local tabctrl = event:GetEventObject():DynamicCast("wxAuiTabCtrl")
   local idx = event:GetSelection() -- index within the current tab ctrl
-  return idx ~= wx.wxNOT_FOUND and nb:GetPageIndex(tabctrl:GetPage(idx).window) or wx.wxNOT_FOUND, tabctrl
+  local win = tabctrl:GetPage(idx).window
+  return win and idx ~= wx.wxNOT_FOUND and nb:GetPageIndex(win) or wx.wxNOT_FOUND, tabctrl
 end
 
 local function isPreview(win)
@@ -182,22 +169,34 @@ end
 
 local function createNotebook(frame)
   -- notebook for editors
-  local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local notebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     + wxaui.wxAUI_NB_WINDOWLIST_BUTTON + wx.wxNO_BORDER)
 
+  -- there is a protected method in wxwidgets, but it's not available in wxlua,
+  -- so use a workaround to find the tab control that the page belongs to.
+  function notebook:GetTabCtrl(win)
+    local pg = win and self:GetPageIndex(win) >= 0 and win or self:GetCurrentPage()
+    if not pg then return nil end
+    local px,py = pg:GetScreenPosition():GetXY()
+    local point = wx.wxPoint(px,py-10) -- right above the page in the notebook
+    local ctrl = wx.wxFindWindowAtPoint(point)
+    return ctrl and ctrl:DynamicCast("wxAuiTabCtrl") or nil
+  end
+
   -- wxEVT_SET_FOCUS could be used, but it only works on Windows with wx2.9.5+
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
-      local ed = ide:GetEditor(notebook:GetSelection())
-      local doc = ed and ide:GetDocument(ed)
+      -- skip setting focus when exiting, as it may cause looping on macOS
+      if ide:IsExiting() then return end
+
+      local doc = ide:GetDocument(notebook:GetCurrentPage())
 
       -- skip activation when any of the following is true:
       -- (1) there is no document yet, the editor tab was just added,
       -- so no changes needed as there will be a proper later call;
-      -- (2) the page change event was triggered after a tab is closed;
-      -- (3) on OSX from AddPage event when changing from the last tab
+      -- (2) on OSX from AddPage event when changing from the last tab
       -- (this is to work around a duplicate event generated in this case
       -- that first activates the added tab and then some other tab (2.9.5)).
 
@@ -205,15 +204,22 @@ local function createNotebook(frame)
         and event:GetOldSelection() == notebook:GetPageCount()
         and debug:traceback():find("'AddPage'"))
 
-      if doc and event:GetOldSelection() ~= wx.wxNOT_FOUND and not double then
-        SetEditorSelection(notebook:GetSelection())
+      if doc and doc:GetTabIndex() and not double then
+        doc:SetActive()
       end
     end)
 
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CLOSE,
     function (event)
       local idx = event:GetSelection()
-      if idx ~= wx.wxNOT_FOUND then ClosePage(idx) end
+      if idx ~= wx.wxNOT_FOUND then
+        local doc = ide:GetDocument(notebook:GetPage(idx))
+        if doc then
+          -- make sure that the doc is in the same notebook and is not moved somewhere
+          local i, nb = doc:GetTabIndex()
+          if i == idx and nb == notebook then doc:Close() end
+        end
+      end
       event:Veto() -- don't propagate the event as the page is already closed
     end)
 
@@ -242,18 +248,14 @@ local function createNotebook(frame)
   if ide.wxver >= "2.9.5" then
     notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_END_DRAG,
       function (event)
-        for page = 0, notebook:GetPageCount()-1 do
-          local editor = ide:GetEditor(page)
-          if editor then ide.openDocuments[editor:GetId()].index = page end
-        end
-
         local selection = getTabWindow(event, notebook)
         if selection == wx.wxNOT_FOUND then return end
         -- set the selection on the dragged tab to reset its state
         -- workaround for wxwidgets issue http://trac.wxwidgets.org/ticket/15071
         notebook:SetSelection(selection)
         -- select the content of the tab after drag is done
-        SetEditorSelection(selection)
+        local doc = ide:GetDocument(notebook:GetPage(selection))
+        if doc then doc:SetActive() end
         event:Skip()
       end)
   end
@@ -268,109 +270,121 @@ local function createNotebook(frame)
       if idx == wx.wxNOT_FOUND then return end
       local tabctrl = event:GetEventObject():DynamicCast("wxAuiTabCtrl")
 
+      -- save the editor from the tab initiating the event
+      selection = tabctrl:GetPage(idx).window
       -- save tab index the event is for
-      selection = notebook:GetPageIndex(tabctrl:GetPage(idx).window)
+      local curindex = notebook:GetSelection()
+      local selindex = notebook:GetPageIndex(selection)
+      if curindex ~= selindex then notebook:SetSelection(selindex) end
+
       local tree = ide:GetProjectTree()
       local startfile = tree:GetStartFile()
 
       local menu = ide:MakeMenu {
-        { ID_CLOSE, TR("&Close Page") },
-        { ID_CLOSEALL, TR("Close A&ll Pages") },
-        { ID_CLOSEOTHER, TR("Close &Other Pages") },
-        { ID_CLOSESEARCHRESULTS, TR("Close Search Results Pages") },
+        { ID.CLOSE, TR("&Close Page") },
+        { ID.CLOSEALL, TR("Close A&ll Pages") },
+        { ID.CLOSEOTHER, TR("Close &Other Pages") },
+        { ID.CLOSESEARCHRESULTS, TR("Close Search Results Pages") },
         { },
-        { ID_SAVE, TR("&Save") },
-        { ID_SAVEAS, TR("Save &As...") },
+        { ID.SAVE, TR("&Save") },
+        { ID.SAVEAS, TR("Save &As...") },
         { },
-        { ID_SETSTARTFILE, TR("Set As Start File") },
-        { ID_UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
+        { ID.SETSTARTFILE, TR("Set As Start File") },
+        { ID.UNSETSTARTFILE, TR("Unset '%s' As Start File"):format(startfile or "<none>") },
         { },
-        { ID_COPYFULLPATH, TR("Copy Full Path") },
-        { ID_SHOWLOCATION, TR("Show Location") },
-        { ID_REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
+        { ID.COPYFULLPATH, TR("Copy Full Path") },
+        { ID.SHOWLOCATION, TR("Open Containing Folder") },
+        { ID.REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
       }
 
-      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
-      if not fpath or not tree:FindItem(fpath) then menu:Enable(ID_SETSTARTFILE, false) end
-      if not startfile then menu:Destroy(ID_UNSETSTARTFILE) end
+      local fpath = ide:GetDocument(selection):GetFilePath()
+      if not fpath or not tree:FindItem(fpath) then menu:Enable(ID.SETSTARTFILE, false) end
+      if not startfile then menu:Destroy(ID.UNSETSTARTFILE) end
 
-      PackageEventHandle("onMenuEditorTab", menu, notebook, event, selection)
+      PackageEventHandle("onMenuEditorTab", menu, notebook, event, notebook:GetPageIndex(selection))
 
       -- popup statuses are not refreshed on Linux, so do it manually
       if ide.osname == "Unix" then UpdateMenuUI(menu, notebook) end
       notebook:PopupMenu(menu)
+      -- restore selection if it has changed
+      if curindex ~= selindex then notebook:SetSelection(curindex) end
     end)
 
   local function IfAtLeastOneTab(event) event:Enable(notebook:GetPageCount() > 0) end
 
-  notebook:Connect(ID_SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      local fpath = ide:GetDocument(ide:GetEditor(selection)):GetFilePath()
+  notebook:Connect(ID.SETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      local fpath = ide:GetDocument(selection):GetFilePath()
       if fpath then ide:GetProjectTree():SetStartFile(fpath) end
     end)
-  notebook:Connect(ID_UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+  notebook:Connect(ID.UNSETSTARTFILE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:GetProjectTree():SetStartFile()
     end)
-  notebook:Connect(ID_SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:GetDocument(ide:GetEditor(selection)):Save()
+  notebook:Connect(ID.SAVE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:GetDocument(selection):Save()
     end)
-  notebook:Connect(ID_SAVE, wx.wxEVT_UPDATE_UI, function(event)
-      local doc = ide:GetDocument(ide:GetEditor(selection))
+  notebook:Connect(ID.SAVE, wx.wxEVT_UPDATE_UI, function(event)
+      local doc = ide:GetDocument(selection)
       event:Enable(doc:IsModified() or doc:IsNew())
     end)
-  notebook:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      SaveFileAs(ide:GetEditor(selection))
+  notebook:Connect(ID.SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      SaveFileAs(selection)
     end)
-  notebook:Connect(ID_SAVEAS, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
+  notebook:Connect(ID.SAVEAS, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
   -- the following three methods require handling of closing in the idle event,
   -- because of wxwidgets issue that causes crash on OSX when the last page is closed
   -- (http://trac.wxwidgets.org/ticket/15417)
-  notebook:Connect(ID_CLOSE, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
-  notebook:Connect(ID_CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:DoWhenIdle(function() ClosePage(selection) end)
+  notebook:Connect(ID.CLOSE, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
+  notebook:Connect(ID.CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:DoWhenIdle(function() ide:GetDocument(selection):Close() end)
     end)
 
-  notebook:Connect(ID_CLOSEALL, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
-  notebook:Connect(ID_CLOSEALL, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:DoWhenIdle(function() CloseAllPagesExcept(nil) end)
+  notebook:Connect(ID.CLOSEALL, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
+  notebook:Connect(ID.CLOSEALL, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:DoWhenIdle(function()
+          ide:GetDocument(selection):CloseAll({scope = "section"})
+        end)
     end)
 
-  notebook:Connect(ID_CLOSEOTHER, wx.wxEVT_UPDATE_UI, function(event)
+  notebook:Connect(ID.CLOSEOTHER, wx.wxEVT_UPDATE_UI, function(event)
       event:Enable(notebook:GetPageCount() > 1)
     end)
-  notebook:Connect(ID_CLOSEOTHER, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:DoWhenIdle(function() CloseAllPagesExcept(selection) end)
+  notebook:Connect(ID.CLOSEOTHER, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:DoWhenIdle(function()
+          ide:GetDocument(selection):CloseAll({keep = true, scope = "section"})
+        end)
     end)
 
-  notebook:Connect(ID_CLOSESEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
+  notebook:Connect(ID.CLOSESEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
       local ispreview = false
       for p = 0, notebook:GetPageCount()-1 do
         ispreview = ispreview or isPreview(notebook:GetPage(p))
       end
       event:Enable(ispreview)
     end)
-  notebook:Connect(ID_CLOSESEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+  notebook:Connect(ID.CLOSESEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function()
           for p = notebook:GetPageCount()-1, 0, -1 do
-            if isPreview(notebook:GetPage(p)) then ClosePage(p) end
+            local editor = notebook:GetPage(p)
+            if isPreview(editor) then ide:GetDocument(editor):Close() end
           end
         end)
     end)
 
-  notebook:Connect(ID_REFRESHSEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
-      event:Enable(isPreview(notebook:GetPage(selection)))
+  notebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
+      event:Enable(isPreview(selection))
     end)
-  notebook:Connect(ID_REFRESHSEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide.findReplace:RefreshResults(notebook:GetPage(selection))
+  notebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide.findReplace:RefreshResults(selection)
     end)
 
-  notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ShowLocation(ide:GetDocument(ide:GetEditor(selection)):GetFilePath())
+  notebook:Connect(ID.SHOWLOCATION, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ShowLocation(ide:GetDocument(selection):GetFilePath())
     end)
-  notebook:Connect(ID_SHOWLOCATION, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
+  notebook:Connect(ID.SHOWLOCATION, wx.wxEVT_UPDATE_UI, IfAtLeastOneTab)
 
-  notebook:Connect(ID_COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
-      ide:CopyToClipboard(ide:GetDocument(ide:GetEditor(selection)):GetFilePath())
+  notebook:Connect(ID.COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+      ide:CopyToClipboard(ide:GetDocument(selection):GetFilePath())
     end)
 
   frame.notebook = notebook
@@ -493,7 +507,7 @@ end
 
 local function createBottomNotebook(frame)
   -- bottomnotebook (errorlog,shellbox)
-  local bottomnotebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local bottomnotebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
@@ -502,6 +516,9 @@ local function createBottomNotebook(frame)
 
   bottomnotebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_PAGE_CHANGED,
     function (event)
+      -- skip setting focus when exiting, as it may cause looping on macOS
+      if ide:IsExiting() then return end
+
       local nb = event:GetEventObject():DynamicCast("wxAuiNotebook")
       -- set focus on the new page
       local idx = event:GetSelection()
@@ -542,10 +559,10 @@ local function createBottomNotebook(frame)
       selection = bottomnotebook:GetPageIndex(tabctrl:GetPage(idx).window)
 
       local menu = ide:MakeMenu {
-        { ID_CLOSE, TR("&Close Page") },
-        { ID_CLOSESEARCHRESULTS, TR("Close Search Results Pages") },
+        { ID.CLOSE, TR("&Close Page") },
+        { ID.CLOSESEARCHRESULTS, TR("Close Search Results Pages") },
         { },
-        { ID_REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
+        { ID.REFRESHSEARCHRESULTS, TR("Refresh Search Results") },
       }
 
       PackageEventHandle("onMenuOutputTab", menu, bottomnotebook, event, selection)
@@ -555,21 +572,21 @@ local function createBottomNotebook(frame)
       bottomnotebook:PopupMenu(menu)
     end)
 
-  bottomnotebook:Connect(ID_CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+  bottomnotebook:Connect(ID.CLOSE, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function() bottomnotebook:DeletePage(selection) end)
     end)
-  bottomnotebook:Connect(ID_CLOSE, wx.wxEVT_UPDATE_UI, function(event)
+  bottomnotebook:Connect(ID.CLOSE, wx.wxEVT_UPDATE_UI, function(event)
       event:Enable(isPreview(bottomnotebook:GetPage(selection)))
     end)
 
-  bottomnotebook:Connect(ID_CLOSESEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+  bottomnotebook:Connect(ID.CLOSESEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:DoWhenIdle(function()
           for p = bottomnotebook:GetPageCount()-1, 0, -1 do
             if isPreview(bottomnotebook:GetPage(p)) then bottomnotebook:DeletePage(p) end
           end
         end)
     end)
-  bottomnotebook:Connect(ID_CLOSESEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
+  bottomnotebook:Connect(ID.CLOSESEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
       local ispreview = false
       for p = 0, bottomnotebook:GetPageCount()-1 do
         ispreview = ispreview or isPreview(bottomnotebook:GetPage(p))
@@ -577,10 +594,10 @@ local function createBottomNotebook(frame)
       event:Enable(ispreview)
     end)
 
-  bottomnotebook:Connect(ID_REFRESHSEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
+  bottomnotebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_UPDATE_UI, function(event)
       event:Enable(isPreview(bottomnotebook:GetPage(selection)))
     end)
-  bottomnotebook:Connect(ID_REFRESHSEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+  bottomnotebook:Connect(ID.REFRESHSEARCHRESULTS, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide.findReplace:RefreshResults(bottomnotebook:GetPage(selection))
     end)
 
@@ -590,15 +607,15 @@ local function createBottomNotebook(frame)
   errorlog:Connect(wx.wxEVT_CONTEXT_MENU,
     function (event)
       local menu = ide:MakeMenu {
-          { ID_UNDO, TR("&Undo") },
-          { ID_REDO, TR("&Redo") },
+          { ID.UNDO, TR("&Undo")..KSC(ID.UNDO) },
+          { ID.REDO, TR("&Redo")..KSC(ID.REDO) },
           { },
-          { ID_CUT, TR("Cu&t") },
-          { ID_COPY, TR("&Copy") },
-          { ID_PASTE, TR("&Paste") },
-          { ID_SELECTALL, TR("Select &All") },
+          { ID.CUT, TR("Cu&t")..KSC(ID.CUT) },
+          { ID.COPY, TR("&Copy")..KSC(ID.COPY) },
+          { ID.PASTE, TR("&Paste")..KSC(ID.PASTE) },
+          { ID.SELECTALL, TR("Select &All")..KSC(ID.SELECTALL) },
           { },
-          { ID_CLEAROUTPUT, TR("C&lear Output Window") },
+          { ID.CLEAROUTPUT, TR("C&lear Output Window")..KSC(ID.CLEAROUTPUT) },
         }
       PackageEventHandle("onMenuOutput", menu, errorlog, event)
 
@@ -607,8 +624,9 @@ local function createBottomNotebook(frame)
       errorlog:PopupMenu(menu)
     end)
 
-  errorlog:Connect(ID_CLEAROUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED,
-    function(event) ClearOutput(true) end)
+  -- connect to the main frame, so it can be called from anywhere
+  frame:Connect(ID.CLEAROUTPUT, wx.wxEVT_COMMAND_MENU_SELECTED,
+    function(event) ide:GetOutput():Erase() end)
 
   local shellbox = ide:CreateStyledTextCtrl(bottomnotebook, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
@@ -617,16 +635,16 @@ local function createBottomNotebook(frame)
   shellbox:Connect(wx.wxEVT_CONTEXT_MENU,
     function (event)
       local menu = ide:MakeMenu {
-          { ID_UNDO, TR("&Undo") },
-          { ID_REDO, TR("&Redo") },
+          { ID.UNDO, TR("&Undo")..KSC(ID.UNDO) },
+          { ID.REDO, TR("&Redo")..KSC(ID.REDO) },
           { },
-          { ID_CUT, TR("Cu&t") },
-          { ID_COPY, TR("&Copy") },
-          { ID_PASTE, TR("&Paste") },
-          { ID_SELECTALL, TR("Select &All") },
+          { ID.CUT, TR("Cu&t")..KSC(ID.CUT) },
+          { ID.COPY, TR("&Copy")..KSC(ID.COPY) },
+          { ID.PASTE, TR("&Paste")..KSC(ID.PASTE) },
+          { ID.SELECTALL, TR("Select &All")..KSC(ID.SELECTALL) },
           { },
-          { ID_SELECTCONSOLECOMMAND, TR("&Select Command") },
-          { ID_CLEARCONSOLE, TR("C&lear Console Window") },
+          { ID.SELECTCONSOLECOMMAND, TR("&Select Command") },
+          { ID.CLEARCONSOLE, TR("C&lear Console Window")..KSC(ID.CLEARCONSOLE) },
         }
       menupos = event:GetPosition()
       PackageEventHandle("onMenuConsole", menu, shellbox, event)
@@ -636,9 +654,11 @@ local function createBottomNotebook(frame)
       shellbox:PopupMenu(menu)
     end)
 
-  shellbox:Connect(ID_SELECTCONSOLECOMMAND, wx.wxEVT_COMMAND_MENU_SELECTED,
+  shellbox:Connect(ID.SELECTCONSOLECOMMAND, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ConsoleSelectCommand(menupos) end)
-  shellbox:Connect(ID_CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
+
+  -- connect to the main frame, so it can be called from anywhere
+  frame:Connect(ID.CLEARCONSOLE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function(event) ide:GetConsole():Erase() end)
 
   bottomnotebook:AddPage(errorlog, TR("Output"), true)
@@ -652,7 +672,7 @@ local function createBottomNotebook(frame)
 end
 
 local function createProjNotebook(frame)
-  local projnotebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+  local projnotebook = ide:CreateNotebook(frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
@@ -688,7 +708,7 @@ do
     CenterPane():PaneBorder(false))
   mgr:AddPane(frame.projnotebook, wxaui.wxAuiPaneInfo():
     Name("projpanel"):CaptionVisible(false):
-    MinSize(200,200):FloatingSize(200,400):
+    MinSize(200,200):BestSize(300,300):FloatingSize(200,400):
     Left():Layer(1):Position(1):PaneBorder(false):
     CloseButton(true):MaximizeButton(false):PinButton(true))
   mgr:AddPane(frame.bottomnotebook, wxaui.wxAuiPaneInfo():
@@ -701,13 +721,18 @@ do
     for _, uimgr in pairs {mgr, frame.notebook:GetAuiManager(),
       frame.bottomnotebook:GetAuiManager(), frame.projnotebook:GetAuiManager()} do
       uimgr:GetArtProvider():SetMetric(wxaui.wxAUI_DOCKART_SASH_SIZE,
-        ide.config.bordersize)
+        -- scale bordersize on Windows, as macOS and Linux/GTK3 do the scaling
+        ide.config.bordersize*(ide.osname == "Windows" and ide:GetContentScaleFactor() or 1))
     end
   end
 
   for _, nb in pairs {frame.bottomnotebook, frame.projnotebook} do
     nb:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
       function() PaneFloatToggle(nb) end)
+  end
+
+  for _, nb in pairs {frame.notebook, frame.bottomnotebook, frame.projnotebook} do
+    nb:SetArtProvider(ide:GetTabArt())
   end
 
   mgr.defaultPerspective = mgr:SavePerspective()

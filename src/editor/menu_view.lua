@@ -87,7 +87,7 @@ frame:Connect(ID_VIEWMINIMIZE, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event) ide.frame:Iconize(true) end)
 
 frame:Connect(ID_VIEWFULLSCREEN, wx.wxEVT_COMMAND_MENU_SELECTED, function ()
-    ShowFullScreen(not frame:IsFullScreen())
+    ide:ShowFullScreen(not frame:IsFullScreen())
   end)
 frame:Connect(ID_VIEWFULLSCREEN, wx.wxEVT_UPDATE_UI,
   function (event) event:Enable(ide:GetEditor() ~= nil) end)

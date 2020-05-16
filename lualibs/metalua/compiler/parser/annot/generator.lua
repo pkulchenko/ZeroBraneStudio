@@ -20,6 +20,7 @@
 require 'checks'
 local gg = require 'metalua.grammar.generator'
 local M  = { }
+local unpack = table.unpack or unpack
 
 function M.opt(mlc, primary, a_type)
     checks('table', 'table|function', 'string')

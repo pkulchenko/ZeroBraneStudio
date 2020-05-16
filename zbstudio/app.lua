@@ -10,9 +10,6 @@ return {
     end
     if icons > 0 then ide.frame:SetIcons(bundle) end
 
-    local menuBar = ide.frame.menuBar
-    menuBar:Check(ID_CLEAROUTPUT, true)
-
     -- load myprograms/welcome.lua if exists and no projectdir
     local projectdir = ide.config.path.projectdir
     if (not projectdir or string.len(projectdir) == 0

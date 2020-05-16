@@ -1,5 +1,9 @@
 if ide.wxver >= "3.1" then
-  ok(wx.wxFileName().ShouldFollowLink ~= nil, "wxlua/wxwidgets includes wxFileName().ShouldFollowLink.")
+  ok(wx.wxFileName().ShouldFollowLink ~= nil, "wxlua/wxwidgets 3.1+ includes wxFileName().ShouldFollowLink.")
+end
+
+if ide.wxver >= "3.1.4" then
+  ok(ide:GetEditorNotebook():GetActiveTabCtrl() ~= nil, "wxlua/wxwidgets 3.1.4+ includes wxAuiNotebook().GetActiveTabCtrl.")
 end
 
 local function waitToComplete(bid)
@@ -8,13 +12,14 @@ local function waitToComplete(bid)
     wx.wxWakeUpIdle()
     wx.wxMilliSleep(100)
   end
+  wx.wxSafeYield()
   wx.wxWakeUpIdle() -- wake up one more time to process messages (if any)
 end
 
 local modules = {
   ["require([[lfs]])._VERSION"] = "LuaFileSystem 1.6.3",
   ["require([[lpeg]]).version()"] = "1.0.0",
-  ["require([[ssl]])._VERSION"] = "0.6",
+  ["require([[ssl]])._VERSION"] = "0.9",
 }
 local envall = {'LUA_CPATH', 'LUA_CPATH_5_2', 'LUA_CPATH_5_3'}
 local envs = {}
@@ -39,7 +44,11 @@ for env, val in pairs(envs) do
   if val then wx.wxSetEnv(env, val) else wx.wxUnsetEnv(env) end
 end
 
-is(jit.version, "LuaJIT 2.0.4", "Using LuaJIT with the expected version.")
+is(jit and jit.version, "LuaJIT 2.0.4", "Using LuaJIT with the expected version.")
+
+if ide.osname == "Windows" then
+  ok(jit and pcall(require, 'fs'), "fs module is loaded.")
+end
 
 require "lpeg"
 local lexpath = package.searchpath("lexlpeg", ide.osclibs)

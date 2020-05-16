@@ -1,88 +1,68 @@
--- Copyright 2015-2016 Alejandro Baez (https://keybase.io/baez). See LICENSE.
+-- Copyright 2015-2018 Alejandro Baez (https://keybase.io/baez). See License.txt.
 -- Rust LPeg lexer.
 
-local l = require("lexer")
-local token, word_match = l.token, l.word_match
+local lexer = require("lexer")
+local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local M = {_NAME = 'rust'}
+local lex = lexer.new('rust')
 
 -- Whitespace.
-local ws = token(l.WHITESPACE, l.space^1)
-
--- Comments.
-local line_comment = '//' * l.nonnewline_esc^0
-local block_comment = '/*' * (l.any - '*/')^0 * P('*/')^-1
-local comment = token(l.COMMENT, line_comment + block_comment)
-
--- Strings.
-local sq_str = P('L')^-1 * l.delimited_range("'")
-local dq_str = P('L')^-1 * l.delimited_range('"')
-local raw_str =  '#"' * (l.any - '#')^0 * P('#')^-1
-local string = token(l.STRING, dq_str + raw_str)
-
--- Numbers.
-local number = token(l.NUMBER, l.float + (l.dec_num + "_")^1 +
-                     "0b" * (l.dec_num + "_")^1 + l.integer)
+lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Keywords.
-local keyword = token(l.KEYWORD, word_match{
-  'abstract',   'alignof',    'as',       'become',   'box',
-  'break',      'const',      'continue', 'crate',    'do',
-  'else',       'enum',       'extern',   'false',    'final',
-  'fn',         'for',        'if',       'impl',     'in',
-  'let',        'loop',       'macro',    'match',    'mod',
-  'move',       'mut',        "offsetof", 'override', 'priv',
-  'proc',       'pub',        'pure',     'ref',      'return',
-  'Self',       'self',       'sizeof',   'static',   'struct',
-  'super',      'trait',      'true',     'type',     'typeof',
-  'unsafe',     'unsized',    'use',      'virtual',  'where',
-  'while',      'yield'
-})
+lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
+  abstract alignof as become box break const continue crate do else enum extern
+  false final fn for if impl in let loop macro match mod move mut offsetof
+  override priv proc pub pure ref return Self self sizeof static struct super
+  trait true type typeof unsafe unsized use virtual where while yield
+]]))
+
+-- Functions.
+lex:add_rule('function', token(lexer.FUNCTION, lexer.word^1 * S("!")))
 
 -- Library types
-local library = token(l.LABEL, l.upper * (l.lower + l.dec_num)^1)
-
--- syntax extensions
-local extension = l.word^1 * S("!")
-
-local func = token(l.FUNCTION, extension)
+lex:add_rule('library', token(lexer.LABEL, lexer.upper *
+                                           (lexer.lower + lexer.dec_num)^1))
 
 -- Types.
-local type = token(l.TYPE, word_match{
-  '()', 'bool', 'isize', 'usize', 'char', 'str',
-  'u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64',
-  'f32','f64',
-})
+lex:add_rule('type', token(lexer.TYPE, word_match[[
+ () bool isize usize char str u8 u16 u32 u64 i8 i16 i32 i64 f32 f64
+]]))
+
+-- Strings.
+local sq_str = P('L')^-1 * lexer.delimited_range("'")
+local dq_str = P('L')^-1 * lexer.delimited_range('"')
+local raw_str = '#"' * (lexer.any - '#')^0 * P('#')^-1
+lex:add_rule('string', token(lexer.STRING, dq_str + raw_str))
 
 -- Identifiers.
-local identifier = token(l.IDENTIFIER, l.word)
+lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
+
+-- Comments.
+local line_comment = '//' * lexer.nonnewline_esc^0
+local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
+
+-- Numbers.
+lex:add_rule('number', token(lexer.NUMBER,
+                             lexer.float +
+                             P('0b')^-1 * (lexer.dec_num + "_")^1 +
+                             lexer.integer))
 
 -- Operators.
-local operator = token(l.OPERATOR, S('+-/*%<>!=`^~@&|?#~:;,.()[]{}'))
+lex:add_rule('operator', token(lexer.OPERATOR,
+                               S('+-/*%<>!=`^~@&|?#~:;,.()[]{}')))
 
 -- Attributes.
-local attribute = token(l.PREPROCESSOR, "#[" *
-                        (l.nonnewline - ']')^0 * P("]")^-1)
+lex:add_rule('preprocessor', token(lexer.PREPROCESSOR,
+                                   "#[" * (lexer.nonnewline - ']')^0 *
+                                   P("]")^-1))
 
-M._rules = {
-  {'whitespace', ws},
-  {'keyword', keyword},
-  {'function', func},
-  {'library', library},
-  {'type', type},
-  {'identifier', identifier},
-  {'string', string},
-  {'comment', comment},
-  {'number', number},
-  {'operator', operator},
-  {'preprocessor', attribute},
-}
+-- Fold points.
+lex:add_fold_point(lexer.COMMENT, '/*', '*/')
+lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.OPERATOR, '(', ')')
+lex:add_fold_point(lexer.OPERATOR, '{', '}')
 
-M._foldsymbols = {
-  _patterns = {'%l+', '[{}]', '/%*', '%*/', '//'},
-  [l.COMMENT] = {['/*'] = 1, ['*/'] = -1, ['//'] = l.fold_line_comments('//')},
-  [l.OPERATOR] = {['('] = 1, ['{'] = 1, [')'] = -1, ['}'] = -1}
-}
-
-return M
+return lex

@@ -4,7 +4,6 @@ local env = {}
 G.setmetatable(env, {__index = G})
 
 local pkg = package {
-  onIdleOnce = function() G.ide:GetOutput():GotoLine(G.ide:GetOutput():GetLineCount()-1) end,
   onAppShutdown = function()
     local ini = G.ide.config.ini
     if ini then G.FileRemove(ini) end
@@ -70,8 +69,9 @@ pkg.onAppLoad = function()
   local start = ide:GetTime()
   G.setfenv(runtests, env)
   G.print = function(s, ...)
-    G.DisplayOutput(s, ...)
-    G.DisplayOutputLn(s:match("ok %d") and (" -- %.3fs"):format(ide:GetTime()-start) or "")
+    G.ide:GetOutput():Write(s, ...)
+    G.ide:Print(s:match("ok %d") and (" -- %.3fs"):format(ide:GetTime()-start) or "")
   end
   runtests()
+  G.ide:GetOutput():GotoLine(G.ide:GetOutput():GetLineCount()-1)
 end

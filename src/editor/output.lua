@@ -7,6 +7,7 @@ local ide = ide
 local frame = ide.frame
 local bottomnotebook = frame.bottomnotebook
 local out = bottomnotebook.errorlog
+local unpack = table.unpack or unpack
 
 local MESSAGE_MARKER = StylesGetMarker("message")
 local ERROR_MARKER = StylesGetMarker("error")
@@ -15,12 +16,11 @@ local PROMPT_MARKER_VALUE = 2^PROMPT_MARKER
 
 local config = ide.config.output
 
-out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+out:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )
 out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
-out:SetBufferedDraw(not ide.config.hidpi and true or false)
 out:StyleClearAll()
 out:SetMarginWidth(1, 16) -- marker margin
 out:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)
@@ -42,6 +42,15 @@ function OutputAddStyles(styles)
     out:SetProperty("lexer.errorlist.escape.sequences","1")
 
     -- assign ansimap styles
+    -- if this styles table is the same as the default one, then make a copy
+    -- to avoid modifying all editor styles with "ansi" ones,
+    -- as they will conflict with lexer-specific styles
+    if ide.config.styles == styles then
+      local stylecopy = StylesGetDefault()
+      for k,v in pairs(styles) do stylecopy[k] = v end
+      styles = stylecopy
+      ide.config.stylesoutshell = styles
+    end
     for k,v in pairs(ide.config.output.ansimap) do styles["ansi"..k] = v end
   end
 end
@@ -50,7 +59,7 @@ OutputAddStyles(ide.config.stylesoutshell)
 StylesApplyToEditor(ide.config.stylesoutshell,out)
 
 function ClearOutput(force)
-  if not (force or ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)) then return end
+  if not (force or ide:GetMenuBar():IsChecked(ID.CLEAROUTPUTENABLE)) then return end
   out:SetReadOnly(false)
   out:ClearAll()
   out:SetReadOnly(true)
@@ -174,7 +183,7 @@ local function unHideWindow(pidAssign)
     local wins = winapi.find_all_windows(function(w)
       return w:get_process():get_pid() == pid
     end)
-    local any = ide.interpreter.unhideanywindow
+    local any = ide.interpreter and ide.interpreter.unhideanywindow
     local show, hide, ignore = 1, 2, 0
     for _,win in pairs(wins) do
       -- win:get_class_name() can return nil if the window is already gone
@@ -281,12 +290,12 @@ ide:GetCodePage() -- populate the codepage value if auto-detection is requested
 
 local readonce = 4096
 local maxread = readonce * 10 -- maximum number of bytes to read before pausing
-local function getStreams()
+local function getStreams(all)
   local function readStream(tab)
     for _,v in pairs(tab) do
       -- periodically stop reading to get a chance to process other events
       local processed = 0
-      while (v.check(v.proc) and processed <= maxread) do
+      while (v.check(v.proc) and (all or processed <= maxread)) do
         local str = v.stream:Read(readonce)
         -- the buffer has readonce bytes, so cut it to the actual size
         str = str:sub(1, v.stream:LastRead())
@@ -324,10 +333,12 @@ local function getStreams()
     str = str .. "\n"
     for _,v in pairs(tab) do
       local pfn
-      if (v.callback) then
+      if v.callback then
         str,pfn = v.callback(str)
       end
-      v.stream:Write(str, #str)
+      if str then
+        v.stream:Write(str, #str)
+      end
       updateInputMarker()
       pfn = pfn and pfn()
     end
@@ -345,7 +356,7 @@ end
 out:Connect(wx.wxEVT_END_PROCESS, function(event)
     local pid = event:GetPid()
     if (pid ~= -1) then
-      getStreams()
+      getStreams(true)
       streamins[pid] = nil
       streamerrs[pid] = nil
       streamouts[pid] = nil
@@ -371,6 +382,9 @@ out:Connect(wx.wxEVT_END_PROCESS, function(event)
         DisplayOutputLn(TR("Program completed in %.2f seconds (pid: %d).")
           :format(ide:GetTime() - customprocs[pid].started, pid))
       end
+      -- this protects against the object referenced in wxProcess being collected
+      -- before the wxProcess itself is collected, which may cause a crash on exit
+      if customprocs[pid].proc then customprocs[pid].proc:Detach() end
       customprocs[pid] = nil
     end
   end)
@@ -415,29 +429,19 @@ local function activateByPartialName(fname, jumpline, jumplinepos)
   return true
 end
 
-local jumptopatterns = { -- ["pattern"] = true/false for multiple/single
-  --[string "<filename>"]:line:
-  ['.-%[string "([^"]+)"%]:(%d+)%s*:'] = false,
-  -- <filename>:line:linepos -- this is used in some analyzers, like LuaCheck
-  ["%s*(.-):(%d+):(%d+):"] = false,
-  -- <filename>:line:
-  ["%s*(.-):(%d+)%s*:"] = true,
-  -- error in __gc metamethod (<filename>:line:...
-  ["%((.-):(%d+)%s*:"] = false,
-}
-
 out:Connect(wxstc.wxEVT_STC_DOUBLECLICK,
   function(event)
     local line = out:GetCurrentLine()
     local linetx = out:GetLineDyn(line)
 
     -- try to detect a filename and line in linetx
-    for pattern, multiple in pairs(jumptopatterns) do
+    for pattern, multiple in pairs(ide.config.output.lineactivate or {}) do
       local results = {}
       for fname, jumpline, jumplinepos in linetx:gmatch(pattern) do
         -- insert matches in reverse order (if any)
         table.insert(results, 1, {fname, jumpline, jumplinepos})
-        if not multiple then break end -- one match is enough if no multiple is requested
+        if type(multiple) == "function" then results[1] = {multiple(unpack(results[1]))} end
+        if multiple ~= true then break end -- one match is enough if no multiple is requested
       end
       for _, result in ipairs(results) do
         if activateByPartialName(unpack(result)) then

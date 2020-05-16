@@ -31,7 +31,7 @@ local function printScaling(dc, printOut)
   local page_y    = math.floor(pageSizeMM_y * ppmm_y)
   local pageRect  = wx.wxRect(0, 0, page_x, page_y)
 
-  -- get margins informations and convert to printer pixels
+  -- get margin information and convert to printer pixels
   local top    = math.floor(margin.top    * ppmm_y)
   local bottom = math.floor(margin.bottom * ppmm_y)
   local left   = math.floor(margin.left   * ppmm_x)
@@ -98,7 +98,7 @@ local function connectPrintEvents(printer, printOut)
       }
       dc:SetFont(editor:GetFont())
       if cfg.header then
-        local left, center, right = ExpandPlaceholders(cfg.header, placeholders):match(format)
+        local left, center, right = ide:ExpandPlaceholders(cfg.header, placeholders):match(format)
         dc:DrawText(left, printRect.X, printRect.Y)
         dc:DrawText(center, printRect.Left + (printRect.Left + printRect.Width - dc:GetTextExtentSize(center).Width)/2, printRect.Y)
         dc:DrawText(right, printRect.Left + printRect.Width - dc:GetTextExtentSize(right).Width,  printRect.Y)
@@ -106,7 +106,7 @@ local function connectPrintEvents(printer, printOut)
       end
       if cfg.footer then
         local footerY = printRect.Y + printRect.Height - headerHeight
-        local left, center, right = ExpandPlaceholders(cfg.footer, placeholders):match(format)
+        local left, center, right = ide:ExpandPlaceholders(cfg.footer, placeholders):match(format)
         dc:DrawText(left, printRect.X, footerY)
         dc:DrawText(center, printRect.Left + (printRect.Left + printRect.Width - dc:GetTextExtentSize(center).Width)/2, footerY)
         dc:DrawText(right, printRect.Left + printRect.Width - dc:GetTextExtentSize(right).Width,  footerY)
@@ -131,7 +131,7 @@ local function connectPrintEvents(printer, printOut)
   function printOut:OnPreparePrinting() self:OnPrintPage() end
 end
 
-frame:Connect(ID_PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
+frame:Connect(ID.PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     local pageSetupDD = wx.wxPageSetupDialogData()
     pageSetupDD.MarginTopLeft     = wx.wxPoint(margin.left, margin.top)
@@ -146,7 +146,7 @@ frame:Connect(ID_PAGESETUP, wx.wxEVT_COMMAND_MENU_SELECTED,
     margin.bottom, margin.right = pageSetupDD.MarginBottomRight.y, pageSetupDD.MarginBottomRight.x
   end)
 
-frame:Connect(ID_PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
+frame:Connect(ID.PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
   function (event)
     local cfg = ide.config.print
     local editor = ide:GetEditorWithFocus()
@@ -179,17 +179,18 @@ frame:Connect(ID_PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
     for n, style in pairs(indics) do editor:IndicatorSetStyle(n, style) end
     for n, style in pairs(keywords) do editor:StyleSetBold(n, style) end
     if not ok and printer:GetLastError() == wx.wxPRINTER_ERROR then
-      ide:ReportError("There was a problem while printing.\nCheck if your current printer is set correctly.")
+      ide:ReportError("There was a problem while printing.\nCheck if your selected printer is connected and configured correctly.")
     end
   end)
 
-frame:Connect(ID_PRINT, wx.wxEVT_UPDATE_UI, function(event) event:Enable(ide:GetEditorWithFocus() ~= nil) end)
+frame:Connect(ID.PRINT, wx.wxEVT_UPDATE_UI, function(event) event:Enable(ide:GetEditorWithFocus() ~= nil) end)
 
 local _, menu, epos = ide:FindMenuItem(ID.EXIT)
--- disable printing on Unix/Linux as it generates incorrect layout (wx2.9.5, wx3.1)
-if ide.osname ~= "Unix" and menu and epos then
+-- disable printing on Unix/Linux as it generates incorrect layout
+-- (fails under wx2.9.5 and wx3.1, but works under wx3.1.3+)
+if (ide.osname ~= "Unix" or ide.wxver >= "3.1.3") and menu and epos then
   -- insert Print-repated menu items (going in the opposite order)
-  menu:Insert(epos-1, ID_PAGESETUP, TR("Page Setup..."), "")
-  menu:Insert(epos-1, ID_PRINT, TR("&Print..."), TR("Print the current document"))
+  menu:Insert(epos-1, ID.PAGESETUP, TR("Page Setup..."), "")
+  menu:Insert(epos-1, ID.PRINT, TR("&Print..."), TR("Print the current document"))
   menu:InsertSeparator(epos-1)
 end

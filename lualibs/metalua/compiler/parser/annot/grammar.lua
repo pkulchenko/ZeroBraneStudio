@@ -17,6 +17,8 @@
 --
 --------------------------------------------------------------------------------
 
+local unpack = table.unpack or unpack
+
 local gg    = require 'metalua.grammar.generator'
 
 return function(M)

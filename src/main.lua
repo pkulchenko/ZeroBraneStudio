@@ -11,14 +11,14 @@ local function isproc()
 end
 local iswindows = os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')
 local islinux = not iswindows and isproc()
-local arch = "x86" -- use 32bit by default
+local arch = iswindows or islinux and "x86" or "x64" -- non-x86 linux is checked separately
 local unpack = table.unpack or unpack
 
 if islinux then
   local file = io.popen("uname -m")
   if file then
-    local machine=file:read("*l")
-    local archtype= {
+    local machine = file:read("*l")
+    local archtype = {
       x86_64  = "x64",
       armv7l  = "armhf",
       aarch64 = "aarch64",
@@ -26,17 +26,27 @@ if islinux then
     arch = archtype[machine] or arch
     file:close()
   end
+  -- check if 64bit kernel is used with 32bit userspace
+  if arch == "x64" then
+    local file = io.popen("file -L /sbin/init")
+    if file then
+      local init = file:read("*l")
+      if init and init:find("ELF 32-bit") then arch = "x86" end
+      file:close()
+    end
+  end
 end
 
+local luaver = (_VERSION and _VERSION:match("Lua (%d%.%d)") or ""):gsub("%.",""):gsub("51","")
 package.cpath = (
-  iswindows and 'bin/clibs/?.dll;' or
-  islinux and ('bin/linux/%s/clibs/lib?.so;bin/linux/%s/clibs/?.so;'):format(arch,arch) or
-  --[[isosx]] 'bin/clibs/lib?.dylib;bin/clibs/?.dylib;')
+  iswindows and ('bin/clibs%s/?.dll;'):format(luaver) or
+  islinux and ('bin/linux/%s/clibs%s/lib?.so;bin/linux/%s/clibs%s/?.so;'):format(arch,luaver,arch,luaver) or
+  --[[isosx]] ('bin/clibs%s/lib?.dylib;bin/clibs%s/?.dylib;'):format(luaver,luaver))
     .. package.cpath
 package.path  = 'lualibs/?.lua;lualibs/?/?.lua;lualibs/?/init.lua;' .. package.path
 
 require("wx")
-require("bit")
+if not bit then require("bit") end
 require("mobdebug")
 if jit and jit.on then jit.on() end -- turn jit "on" as "mobdebug" may turn it off for LuaJIT
 
@@ -88,7 +98,7 @@ ide = {
   },
 
   -- misc
-  exitingProgram = false, -- are we currently exiting, ID_EXIT
+  exitingProgram = false, -- are we currently exiting?
   infocus = nil, -- last component with a focus
   editorApp = wx.wxGetApp(),
   editorFilename = nil,
@@ -145,6 +155,16 @@ if not wx.wxNOT_FOUND then wx.wxNOT_FOUND = -1 end
 if not wx.wxEXEC_NOEVENTS then wx.wxEXEC_NOEVENTS = 16 end
 if not wx.wxEXEC_HIDE_CONSOLE then wx.wxEXEC_HIDE_CONSOLE = 32 end
 if not wx.wxEXEC_BLOCK then wx.wxEXEC_BLOCK = wx.wxEXEC_SYNC + wx.wxEXEC_NOEVENTS end
+
+-- use wxLuaProcess if available; this protects against double delete of wxProcess:
+-- in the default OnTerminate and in wxlua GC, which may cause a crash on exit
+if wx.wxLuaProcess then wx.wxProcess = wx.wxLuaProcess end
+
+for k,v in pairs({
+    VS_NONE = 0, VS_RECTANGULARSELECTION = 1, VS_USERACCESSIBLE = 2, VS_NOWRAPLINESTART = 4
+  }) do
+  if not wxstc["wxSTC_"..k] then wxstc["wxSTC_"..k] = wxstc["wxSTC_SC"..k] or v end
+end
 
 -- wxwidgets 3.1.1+ replaced wxSTC_SCMOD_* with wxSTC_KEYMOD_*; map both for compatibility
 for _, key in ipairs({"ALT", "CTRL", "SHIFT", "META", "SUPER", "NORM"}) do
@@ -247,7 +267,7 @@ function ide:LoadAPI(path)
       else
         ide.apis[ftype] = ide.apis[ftype] or {}
         -- make sure the path is absolute to access it if the current directory changes
-        ide.apis[ftype][fname] = MergeFullPath("", file)
+        ide.apis[ftype][fname] = ide:GetShortFilePath(MergeFullPath("", file))
       end
     end
   end
@@ -344,6 +364,7 @@ do
   -- on Windows use GetExecutablePath, which is Unicode friendly,
   -- whereas wxGetCwd() is not (at least in wxlua 2.8.12.2).
   -- some wxlua version on windows report wx.dll instead of *.exe.
+  -- (although wxGetCwd() is Unicode friendly in wxwidgets 3.x)
   local exepath = wx.wxStandardPaths.Get():GetExecutablePath()
   if ide.osname == "Windows" and exepath:find("%.exe$") then
     fullPath = exepath
@@ -354,7 +375,7 @@ do
     fullPath = MergeFullPath(wx.wxGetCwd(), fullPath)
   end
 
-  ide.editorFilename = fullPath
+  ide.editorFilename = ide:GetShortFilePath(fullPath)
   ide.appname = fullPath:match("([%w_-%.]+)$"):gsub("%.[^%.]*$","")
   assert(ide.appname, "no application path defined")
 
@@ -471,11 +492,18 @@ do
   local includes = {}
   local include = function(c)
     if c then
-      for _, config in ipairs({ide.configqueue[#ide.configqueue], ide.configs.user, ide.configs.system}) do
-        local p = config and MergeFullPath(config.."/../", c)
-        includes[p] = (includes[p] or 0) + 1
-        if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
-        includes[p] = includes[p] - 1
+      for _, config in ipairs({
+          -- `or ""` is needed to make sure that the loop is not stopped on `nil`
+          ide.configqueue[#ide.configqueue] or "",
+          (wx.wxFileName.SplitPath(ide.configs.user or "")),
+          (wx.wxFileName.SplitPath(ide.configs.system or "")),
+      }) do
+        if config > "" then
+          local p = MergeFullPath(config, c)
+          includes[p] = (includes[p] or 0) + 1
+          if includes[p] > 1 or LoadLuaConfig(p) or LoadLuaConfig(p..".lua") then return end
+          includes[p] = includes[p] - 1
+        end
       end
       ide:Print(("Can't find configuration file '%s' to process."):format(c))
     end
@@ -574,6 +602,12 @@ ide:LoadTool()
 -- delay loading APIs until auto-complete is loaded
 ide:LoadAPI()
 
+-- register the rest of the shortcuts to allow them to be overwritten from onRegister
+if ide.osname == 'Macintosh' then ide:SetAccelerator(ID.VIEWMINIMIZE, "Ctrl-M") end
+for _, sc in ipairs({ID.RESTART, ID.CLEAROUTPUT, ID.CLEARCONSOLE}) do
+  if ide.config.keymap[sc] then ide:SetAccelerator(sc, ide.config.keymap[sc]) end
+end
+
 -- register all the plugins
 PackageEventHandle("onRegister")
 
@@ -597,7 +631,7 @@ SettingsRestoreView()
 
 do
   for _, filename in ipairs(ide.filenames) do
-    ide:ActivateFile(ide:MergePath(ide.cwd or "", filename))
+    ide:ActivateFile(ide.cwd and GetFullPathIfExists(ide.cwd, filename) or filename)
   end
   if ide:GetEditorNotebook():GetPageCount() == 0 then NewFile() end
 end
@@ -612,11 +646,11 @@ if app.postinit then app.postinit() end
 -- conflicting events when the current focus is on a proper object.
 -- non-conflicting shortcuts are handled through key-down events.
 local remap = {
-  [ID_ADDWATCH]    = ide:GetWatch(),
-  [ID_EDITWATCH]   = ide:GetWatch(),
-  [ID_DELETEWATCH] = ide:GetWatch(),
-  [ID_RENAMEFILE]  = ide:GetProjectTree(),
-  [ID_DELETEFILE]  = ide:GetProjectTree(),
+  [ID.ADDWATCH]    = ide:GetWatch(),
+  [ID.EDITWATCH]   = ide:GetWatch(),
+  [ID.DELETEWATCH] = ide:GetWatch(),
+  [ID.RENAMEFILE]  = ide:GetProjectTree(),
+  [ID.DELETEFILE]  = ide:GetProjectTree(),
 }
 
 local function rerouteMenuCommand(obj, id)
@@ -680,11 +714,9 @@ for lid in pairs(remap) do
   end
 end
 
-if ide.osname == 'Macintosh' then ide:SetAccelerator(ID_VIEWMINIMIZE, "Ctrl-M") end
-
 -- these shortcuts need accelerators handling as they are not present anywhere in the menu
-for _, id in ipairs({ ID_GOTODEFINITION, ID_RENAMEALLINSTANCES,
-    ID_REPLACEALLSELECTIONS, ID_QUICKADDWATCH, ID_QUICKEVAL, ID_ADDTOSCRATCHPAD}) do
+for _, id in ipairs({ ID.GOTODEFINITION, ID.RENAMEALLINSTANCES,
+    ID.REPLACEALLSELECTIONS, ID.QUICKADDWATCH, ID.QUICKEVAL, ID.ADDTOSCRATCHPAD}) do
   local ksc = ide.config.keymap[id]
   if ksc and ksc > "" then
     local fakeid = NewID()
@@ -696,7 +728,7 @@ for _, id in ipairs({ ID_GOTODEFINITION, ID_RENAMEALLINSTANCES,
   end
 end
 
-for _, id in ipairs({ ID_NOTEBOOKTABNEXT, ID_NOTEBOOKTABPREV }) do
+for _, id in ipairs({ ID.NOTEBOOKTABNEXT, ID.NOTEBOOKTABPREV }) do
   local ksc = ide.config.keymap[id]
   if ksc and ksc > "" then
     local nbc = "wxAuiNotebook"
@@ -710,7 +742,7 @@ for _, id in ipairs({ ID_NOTEBOOKTABNEXT, ID_NOTEBOOKTABPREV }) do
         if not notebook then return end
 
         local first, last = 0, notebook:GetPageCount()-1
-        local fwd = event:GetId() == ID_NOTEBOOKTABNEXT
+        local fwd = event:GetId() == ID.NOTEBOOKTABNEXT
         if fwd and notebook:GetSelection() == last then
           notebook:SetSelection(first)
         elseif not fwd and notebook:GetSelection() == first then
@@ -851,9 +883,5 @@ end
 
 wx.wxGetApp():MainLoop()
 
--- There are several reasons for this call:
--- (1) to fix a crash on OSX when closing with debugging in progress.
--- (2) to fix a crash on Linux 32/64bit during GC cleanup in wxlua
--- after an external process has been started from the IDE.
--- (3) to fix exit on Windows when started as "bin\lua src\main.lua".
+-- protect from occasional crash on macOS and Linux from `wxluaO_deletegcobject`
 os.exit()

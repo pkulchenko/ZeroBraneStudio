@@ -260,15 +260,16 @@ local function resolveAssign(editor,tx)
         classname = classname or assigns[c..w]
         if (s ~= "" and old ~= classname) then
           -- continue checking unless this can lead to recursive substitution
-          change = not classname:find("^"..w..anysep) and not classname:find("^"..c..w..anysep)
+          if refs[w] then change = false; break end
           c = classname..s
         else
           c = c..w..s
         end
+        refs[w] = true
       end
       -- check for loops in type assignment
       if refs[tx] then break end
-      refs[tx] = c
+      refs[tx] = true
       tx = c
       -- if there is any class duplication, abort the loop
       if classname and select(2, c:gsub(classname, classname)) > 1 then break end
@@ -440,6 +441,8 @@ local cachemain = {}
 local cachemethod = {}
 local laststrategy
 local function getAutoCompApiList(childs,fragment,method)
+  if type(childs) ~= "table" then return {} end
+
   fragment = fragment:lower()
   local strategy = ide.config.acandtip.strategy
   if (laststrategy ~= strategy) then
@@ -565,14 +568,13 @@ function CreateAutoCompList(editor,key,pos)
       local tab = ac
       -- map "a.b.c" to class hierarchy (a.b.c)
       for class in base:gmatch("[%w_]+") do tab = tab.childs[class] end
-  
       if tab and not seen[tab] then
         seen[tab] = true
         for _,v in pairs(getAutoCompApiList(tab.childs,rest,method)) do
           table.insert(apilist, v)
         end
         addInheritance(tab, apilist, seen)
-    end
+      end
     end
   end
 

@@ -82,10 +82,10 @@ styles.text = {bg = {240,240,220}}
 
 -- to change the default color scheme; check tomorrow.lua for the list
 -- of supported schemes or use cfg/scheme-picker.lua to pick a scheme.
--- (no longer needed in v1.21+) local G = ... -- this now points to the global environment
 styles = loadfile('cfg/tomorrow.lua')('Tomorrow')
--- also apply the same scheme to Output and Console windows
-stylesoutshell = styles
+stylesoutshell = styles -- apply the same scheme to Output/Console windows
+styles.auxwindow = styles.text -- apply text colors to auxiliary windows
+styles.calltip = styles.text -- apply text colors to tooltips
 
 -- to change markers used in console and output windows
 styles.marker = styles.marker or {}

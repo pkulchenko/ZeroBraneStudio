@@ -17,12 +17,11 @@ local MESSAGE_MARKER = StylesGetMarker("message")
 
 local config = ide.config.console
 
-console:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+console:SetFont(ide:CreateFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
   wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
   config.fontencoding or wx.wxFONTENCODING_DEFAULT)
 )
 console:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, console:GetFont())
-console:SetBufferedDraw(not ide.config.hidpi and true or false)
 console:StyleClearAll()
 
 console:SetTabWidth(ide.config.editor.tabwidth or 2)
@@ -42,7 +41,7 @@ console:MarkerDefine(StylesGetMarker("output"))
 console:MarkerDefine(StylesGetMarker("message"))
 console:SetReadOnly(false)
 
-SetupKeywords(console,"lua",nil,ide.config.stylesoutshell)
+console:SetupKeywords("lua",nil,ide.config.stylesoutshell)
 
 local function getPromptLine()
   local totalLines = console:GetLineCount()
@@ -285,7 +284,7 @@ local function createenv()
 
   local os = {
     exit = function()
-      ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID_EXIT))
+      ide.frame:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, ID.EXIT))
     end,
   }
   env.os = setmetatable(os, {__index = _G.os})
@@ -319,6 +318,7 @@ local function executeShellCode(tx)
   DisplayShellPrompt('')
 
   -- try to compile as statement
+  local loadstring = loadstring or load
   local _, err = loadstring(tx)
   local isstatement = not err
 

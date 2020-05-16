@@ -21,7 +21,9 @@
 
 local unpack = table.unpack or unpack
 
-function StylesGetDefault()
+local function getLightStyles()
+  local fg = {64, 64, 64}
+  local bg = {250, 250, 250}
   return {
     -- lexer specific (inherit fg/bg from text)
     lexerdef = {fg = {160, 160, 160}},
@@ -29,7 +31,7 @@ function StylesGetDefault()
     stringtxt = {fg = {128, 32, 16}},
     stringeol = {fg = {128, 32, 16}, bg = {224, 192, 224}, fill = true},
     preprocessor = {fg = {128, 128, 0}},
-    operator = {fg = {64, 64, 64}},
+    operator = {fg = fg},
     number = {fg = {80, 112, 255}},
 
     keywords0 = {fg = {32, 32, 192}},
@@ -42,19 +44,19 @@ function StylesGetDefault()
     keywords7 = {fg = {240, 255, 255}},
 
     -- common (inherit fg/bg from text)
-    text = {fg = {64, 64, 64}, bg = {250, 250, 250}},
-    linenumber = {fg = {128, 128, 128}, bg = {250, 250, 250}},
+    text = {fg = fg, bg = bg},
+    linenumber = {fg = {128, 128, 128}, bg = bg},
     bracematch = {fg = {32, 128, 255}, b = true},
     bracemiss = {fg = {255, 128, 32}, b = true},
     ctrlchar = {},
     indent = {fg = {192, 192, 230}, bg = {255, 255, 255}},
-    calltip = {},
+    calltip = {fg = fg, bg = bg},
 
     -- common special (need custom fg & bg)
     sel = {bg = {208, 208, 208}},
     caret = {fg = {0, 0, 0}},
     caretlinebg = {bg = {240, 240, 230}},
-    fold = {fg = {192, 192, 192}, bg = {250, 250, 250}, sel = {160, 128, 224}},
+    fold = {fg = {192, 192, 192}, bg = bg, sel = {160, 128, 224}},
     whitespace = {},
     edge = {},
 
@@ -87,8 +89,74 @@ function StylesGetDefault()
       varmasked = {},
       varself = {},
       searchmatch = {},
+      searchselection = {},
     },
+
+    auxwindow = {bg = bg, fg = fg},
   }
+end
+
+local function getDarkStyles()
+  local fg = {204, 204, 204}
+  local bg = {45, 45, 45}
+  return {
+    lexerdef = {fg = fg},
+    comment = {fg = {153, 153, 153}, fill = true},
+    stringeol = {fg = {153, 204, 153}, fill = true},
+    stringtxt = {fg = {153, 204, 153}},
+    preprocessor = {fg = {249, 145, 87}},
+    operator = {fg = {102, 204, 204}},
+    number = {fg = {242, 119, 122}},
+
+    keywords0 = {b = true, fg = {102, 153, 204}},
+    keywords1 = {b = false, fg = {102, 204, 204}},
+    keywords2 = {b = true, fg = {102, 204, 204}},
+    keywords3 = {b = false, fg = {204, 153, 204}},
+    keywords4 = {b = false, fg = {204, 153, 204}},
+    keywords5 = {b = false, fg = {204, 153, 204}},
+    keywords6 = {b = false, fg = {204, 153, 204}},
+    keywords7 = {b = false, fg = {204, 153, 204}},
+
+    text = {bg = bg, fg = fg},
+    linenumber = {fg = {153, 153, 153}},
+    bracematch = {b = true, fg = {249, 145, 87}},
+    bracemiss = {b = true, fg = {242, 119, 122}},
+    ctrlchar = {fg = {255, 204, 102}},
+    indent = {fg = {153, 153, 153}},
+    calltip = {bg = bg, fg = fg},
+
+    sel = {bg = {81, 81, 81}},
+    caret = {fg = {204, 204, 204}},
+    caretlinebg = {bg = {57, 57, 57}},
+    fold = {bg = bg, fg = {153, 153, 153}, sel = {249, 153, 153}},
+    whitespace = {fg = {153, 153, 153}},
+    edge = {},
+
+    ["["] = {hs = {217, 127, 255}},
+    ["|"] = {fg = {217, 153, 217}},
+
+    marker = {
+      message = {bg = {81, 81, 81}},
+      output = {bg = {57, 57, 57}},
+      error = {bg = {77, 45, 45}},
+      prompt = {bg = bg, fg = fg},
+    },
+
+    indicator = {
+      fncall = {fg = {204, 153, 204}, st = wxstc.wxSTC_MARK_EMPTY},
+      varglobal = {fg = fg},
+      varlocal = {fg = fg},
+      varmasked = {fg = fg},
+      varmasking = {fg = fg}
+    },
+
+    auxwindow = {bg = bg, fg = fg},
+  }
+end
+
+function StylesGetDefault()
+  local isdark = wx.wxSystemSettings.GetAppearance and wx.wxSystemSettings.GetAppearance():IsDark()
+  return setmetatable({}, {__index = isdark and getDarkStyles() or getLightStyles()})
 end
 
 local markers = {
@@ -142,7 +210,7 @@ local specialmapping = {
     else
       editor:SetSelBackground(0,wx.wxWHITE)
     end
-    if (style.alpha and ide.wxver >= "2.9.5") then
+    if (tonumber(style.alpha) and ide.wxver >= "2.9.5") then
       editor:SetSelAlpha(style.alpha)
     end
 
@@ -158,7 +226,7 @@ local specialmapping = {
       if iscolor(style.bg) then
         editor:SetAdditionalSelBackground(wx.wxColour(unpack(style.bg)))
       end
-      if (style.alpha) then
+      if tonumber(style.alpha) then
         editor:SetAdditionalSelAlpha(style.alpha)
       end
     end
@@ -174,7 +242,7 @@ local specialmapping = {
     if iscolor(style.bg) then
       editor:SetCaretLineBackground(wx.wxColour(unpack(style.bg)))
     end
-    if (style.alpha and ide.wxver >= "2.9.5") then
+    if (tonumber(style.alpha) and ide.wxver >= "2.9.5") then
       editor:SetCaretLineBackAlpha(style.alpha)
     end
   end,
@@ -343,22 +411,28 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     styles.linenumber.fs = ide.config.editor.fontsize and (ide.config.editor.fontsize - 1) or nil
   end
 
-  for name,style in pairs(styles) do
-    if (specialmapping[name]) then
-      specialmapping[name](editor,style)
-    elseif (defaultmapping[name]) then
-      applystyle(style,defaultmapping[name])
-    end
-
-    if (lexerconvert and lexerconvert[name]) then
-      local targets = lexerconvert[name]
-      for _, outid in pairs(targets) do
-        applystyle(style,outid)
+  function applyallstyles(styles)
+    for name,style in pairs(styles) do
+      if (specialmapping[name]) then
+        specialmapping[name](editor,style)
+      elseif (defaultmapping[name]) then
+        applystyle(style,defaultmapping[name])
       end
-    elseif style.st then
-      applystyle(style,style.st)
+
+      if (lexerconvert and lexerconvert[name]) then
+        local targets = lexerconvert[name]
+        for _, outid in pairs(targets) do
+          applystyle(style,outid)
+        end
+      elseif style.st then
+        applystyle(style,style.st)
+      end
     end
   end
+
+  -- first apply default styles, then configured modifications
+  if getmetatable(styles) then applyallstyles(getmetatable(styles).__index or {}) end
+  applyallstyles(styles)
 
   -- additional selection (seladd) attributes can only be set after
   -- normal selection (sel) attributes are set, so handle them again
@@ -383,6 +457,7 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     local varmasking = ide:AddIndicator("core.varmasking")
     local varmasked = ide:AddIndicator("core.varmasked")
     local searchmatch = ide:AddIndicator("core.searchmatch")
+    local searchselection = ide:AddIndicator("core.searchselection")
 
     editor:IndicatorSetStyle(fncall, type(indic.fncall) == type{} and indic.fncall.st or ide.wxver >= "2.9.5" and wxstc.wxSTC_INDIC_ROUNDBOX or wxstc.wxSTC_INDIC_TT)
     editor:IndicatorSetForeground(fncall, wx.wxColour(unpack(type(indic.fncall) == type{} and indic.fncall.fg or {128, 128, 255})))
@@ -398,6 +473,8 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     editor:IndicatorSetForeground(varmasked, wx.wxColour(unpack(type(indic.varmasked) == type{} and indic.varmasked.fg or defaultfg)))
     editor:IndicatorSetStyle(searchmatch, type(indic.searchmatch) == type{} and indic.searchmatch.st or wxstc.wxSTC_INDIC_BOX)
     editor:IndicatorSetForeground(searchmatch, wx.wxColour(unpack(type(indic.searchmatch) == type{} and indic.searchmatch.fg or {196, 0, 0})))
+    editor:IndicatorSetStyle(searchselection, type(indic.searchselection) == type{} and indic.searchselection.st or wxstc.wxSTC_INDIC_FULLBOX or wxstc.wxSTC_INDIC_BOX)
+    editor:IndicatorSetForeground(searchselection, wx.wxColour(unpack(type(indic.searchselection) == type{} and indic.searchselection.fg or {160, 128, 224})))
   end
 end
 
@@ -407,19 +484,18 @@ function ReApplySpecAndStyles()
   MarkupAddStyles(ide.config.styles)
   OutputAddStyles(ide.config.stylesoutshell)
 
-  local errorlog = ide.frame.bottomnotebook.errorlog
-  local shellbox = ide.frame.bottomnotebook.shellbox
-  SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell)
-  StylesApplyToEditor(ide.config.stylesoutshell,errorlog)
+  local console = ide:GetConsole()
+  console:SetupKeywords("lua", console.spec, ide.config.stylesoutshell)
+  StylesApplyToEditor(ide.config.stylesoutshell, ide:GetOutput())
 
   for _, doc in pairs(ide:GetDocuments()) do
-    if doc.editor.spec then doc.editor:SetupKeywords(nil, doc.editor.spec) end
+    local editor = doc:GetEditor()
+    if editor.spec then editor:SetupKeywords(nil, editor.spec) end
   end
 end
 
 function ApplyStyleConfig(config, style)
-  if not wx.wxIsAbsolutePath(config)
-    then config = MergeFullPath(GetPathWithSep(ide.editorFilename), config) end
+  if not wx.wxIsAbsolutePath(config) then config = ide:GetRootPath(config) end
 
   local cfg = {wxstc = wxstc, math = math, print = function(...) ide:Print(...) end}
   local cfgfn, err = loadfile(config)

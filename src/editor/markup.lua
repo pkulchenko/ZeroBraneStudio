@@ -2,6 +2,7 @@
 -- styles for comment markup
 ---------------------------------------------------------
 
+local ide = ide
 local MD_MARK_ITAL = '_' -- italic
 local MD_MARK_BOLD = '**' -- bold
 local MD_MARK_LINK = '[' -- link description start
@@ -194,7 +195,15 @@ function MarkupStyle(editor, lines, linee)
             local lsep = w:find(q(MD_MARK_LINZ)..q(MD_MARK_LINA))
             if lsep then emark = #w-lsep+#MD_MARK_LINT end
           end
-          editor:StartStyling(p, ide.STYLEMASK)
+          local sp = bit.band(editor:GetStyleAt(p-1), ide.STYLEMASK) -- previous position style
+          if mark == MD_MARK_HEAD and not iscomment[sp] then
+            p = p + 1
+            smark = smark - 1
+          end
+          -- StartStyling deprecated the second parameter, but since a version check
+          -- is not available for Scintilla, we check for INDIC0_MASK, which was
+          -- removed in the same wxwidgets commit
+          editor:StartStyling(p, wxstc.wxSTC_INDIC0_MASK and ide.STYLEMASK or 0)
           editor:SetStyling(smark, markup[MD_MARK_MARK].st)
           editor:SetStyling(t-f+1-smark-emark, markup[mark].st or markup[MD_MARK_MARK].st)
           editor:SetStyling(emark, markup[MD_MARK_MARK].st)
@@ -208,7 +217,7 @@ function MarkupStyle(editor, lines, linee)
     -- has this line changed its wrapping because of invisible styling?
     if wrapped > 1 and editor:WrapCount(line) < wrapped then needfix = true end
   end
-  editor:StartStyling(es, ide.STYLEMASK)
+  editor:StartStyling(es, wxstc.wxSTC_INDIC0_MASK and ide.STYLEMASK or 0)
 
   -- if any wrapped lines have changed, then reset WrapMode to fix the drawing
   if needfix then

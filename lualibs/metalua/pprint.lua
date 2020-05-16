@@ -26,6 +26,7 @@
 ----------------------------------------------------------------------
 
 local M = { }
+local unpack = table.unpack or unpack
 
 M.DEFAULT_CFG = {
     hide_hash      = false; -- Print the non-array part of tables?

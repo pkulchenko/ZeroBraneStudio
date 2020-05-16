@@ -1,5 +1,341 @@
 # ZeroBrane Studio Changelog
 
+## v1.90 (Feb 09 2020)
+
+### Special thanks
+  - To [Paul Reilly](https://github.com/paul-reilly) for improving luacheck configuration.
+  - To [Alexey Melnichuk](https://github.com/moteus) for adding support for `linecomment` to lpeg lexer.
+  - To [Alexey Melnichuk](https://github.com/moteus) for fixing locking of the last expanded directory.
+  - To numzero for fixing re-applying of editor styles.
+  - To [Alexander Misel](https://github.com/AlexanderMisel) for improvements to Simplified Chinese translation.
+  - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
+  - To [yu-tang](https://github.com/yu-tang) for Japanese translation.
+  - To [Shmuel Zeigerman](https://github.com/shmuz) for fixing memory allocation for the directory path.
+
+### Highlights
+  - Added support for macOS Catalina (switched to 64-bit binaries).
+  - Added support for dark mode.
+  - Added support for font ligatures (`editor.showligatures`).
+  - Added support for hoisted directories in the project tree.
+  - Added activating opened file before overwriting when renaming.
+  - Added indicator and incremental search for search-in-selection.
+  - Added search option to search mapped directories when present (off by default).
+  - Added search option to follow symlinks (off by default).
+  - Added Japanese translation.
+  - Added support for loading private fonts.
+  - Included libtiff, XML, and XRC wxlua components.
+  - Improved file renaming from the project tree.
+  - Upgraded luasec (0.9) and bundled OpenSSL libraries (1.1.1d).
+  - Updated Linux versions to use GTK3.
+  - Updated Love2d API for 11.3.
+
+### Improvements
+  - Added handling of dark mode switching in the OS (#999).
+  - Added setting dark mode when configured by the OS (#999).
+  - Added `GetBestIconSize` method to identify the most appropriate toolbar icon size.
+  - Added rescaling to fix blury text in commandbar on hidpi screens in macOS (#999).
+  - Added `editor.showligatures` setting (#960).
+  - Added workaround for large font in auto-complete popup when DirectWrite is used (#999, #960).
+  - Added support for font ligatures (#999, #960).
+  - Added workaround for Linux crash on middle mouse click in the editor (pkulchenko/wxlua#5).
+  - Added workaround for macOS crash when editor is closed with opened autocomplete popup (#999).
+  - Added workaround for white background in focused tree items (#999).
+  - Allowed warnings about globals from luacheck by default (#1013).
+  - Added `IsExiting` method (#166).
+  - Added check to improve compatibility with 'system' versions of wxlua 2.8.
+  - Added search option to search mapped directories when present (off by default).
+  - Added search option to follow symlinks to the searchbar (off by default).
+  - Added option for skipping symlinks during search.
+  - Added activating the editor tab after right click.
+  - Added `CreateNotebook` method to provide `GetCurrentPage` if not available (#166).
+  - Added `GetShortFilePath` method (#166).
+  - Added `project` scope to `CloseAll` and switched to using it in project switching.
+  - Added `dryrun` option for `CloseAll` method to retrieve documents to be closed.
+  - Added seven lexers from Scintila 3.10.1.
+  - Added `GetTabCtrl` method for the notebook.
+  - Added `onFiletreeFileMarkSelected` event (#166).
+  - Added `MarginFromPoint` editor method (#166).
+  - Added `IsDirHoisted` method for project tree.
+  - Added showing file icons on editor tabs.
+  - Added `CreateFileIcon` method (#166).
+  - Added switching to window being saved during `Save As` and `Save All` operations.
+  - Added `SetFileName` document method (#166).
+  - Added `IsActive` document method (#166).
+  - Added `CreateDocument` method (#166).
+  - Added `OutputDebugStringW` method for `fs` module.
+  - Added `GetDocumentList` method (#166).
+  - Added `RemoveDocument` method (#166).
+  - Added end scope name for `else` statement (#946).
+  - Added writing using `fs` library on Windows, as this preserves file attributes.
+  - Added editor tooltip showing full path (when available).
+  - Added support for hoisted directories.
+  - Enabled icon scaling on macOS for better file icons (#999).
+  - Explicitly disable lines in tree controls on macOS and Linux (#999).
+  - Improved support for running the IDE using Lua 5.2+ without `module` compatibility.
+  - Improved wxwidget API/autocomplete (closes #979).
+  - Minor update to zh-cn translation (closes #990).
+  - Moved updating file history to happen on document activation.
+  - Renamed the Simplified Chinese locale and improve translation
+  - Refactored file renaming from the file tree to avoid creating editor tabs.
+  - Removed `CloseAllExcept` method as it's not longer needed.
+  - Removed `SetTabIndex` and direct tab index usage.
+  - Removed `hidpi` option, as it's no longer needed with hidpi always supported (#999).
+  - Removed message on mixed end-of-line characters for binary files (#1012).
+  - Removed message on failing to load binary files, as the error is reported anyway (#1012).
+  - Removed wxlua build workarounds that are not needed with the current wxlua version (#999).
+  - Removed freezing of the file tree, as moving active filename into view fails (#999).
+  - Updated application icons to add 128- and 256-pixel ones.
+  - Updated editor marker size to work better on hidpi screens (#999).
+  - Update tab art processing to ensure that tabs are of the same height on macOS (#999).
+  - Upgraded luasec to 0.9 and openssl to 1.1.1d (closes #958).
+  - Updated copyright year in the About screen.
+  - Updated Windows build script to set `static-libgcc` to avoid dll dependencies (#999).
+  - Updated style processing for more robust handling of color values.
+  - Updated markup color for better visibility on dark background.
+  - Updated wxlua binaries to use wxlua 3.0.0.8 (#999).
+  - Updated macOS build script to require 10.14+ SDK for dark mode support (#999).
+  - Updated build scripts to add copying headers.lua when luasocket is built.
+  - Updated file icon font processing to make it independent from editor font (#999).
+  - Updated `tonumber` conversion to improve running the IDE using Lua 5.2 or Lua 5.3.
+  - Updated to disable Window menu on macOS (#999).
+  - Updated drawing of scaled file icons to improve font readability (#999).
+  - Updated sash/border size to be smaller and only scale on Windows (#999).
+  - Updated search toolbar size to match the main toolbar (#999).
+  - Updated toolbar icon auto-sizing to better work on smaller, but scaled screens (#999).
+  - Updated rescaling check, as it's only supported in wxwidgets 3.1.2+ (#999).
+  - Updated icon processing to work with scaled resolution (#999).
+  - Updated architecture setting to 64bit on macOS (#999).
+  - Updated macOS build script to use rpath in library references (#1018, #999).
+  - Updated clipboard handling of invalid UTF-8 content on Windows (#1012).
+  - Updated editor to set block cursor for binary files (#1012).
+  - Updated handling of binary files to load the entire file (closes #1012).
+  - Updated to add workaround for occasional crash on macOS and Linux (#999).
+  - Updated build scripts to add `xml` and `xrc` wxwidgets components (#999).
+  - Updated tab close button on Linux to match those on Windows and macOS (#999).
+  - Updated END_PROCESS callback to Detach launched process (#999).
+  - Updated launcher on Windows to use more reliable method to find executable path.
+  - Updated build scripts to enable `AddPrivateFont` in wxFont (#999).
+  - Updated build scripts to add libtiff to wxlua binary (#999, closes #963).
+  - Updated Linux dependencies to install GTK3 (#999).
+  - Updated to use `wxLuaProcess` when available, as it fixes macOS crash (#999).
+  - Updated to use API call to get label text without shortcut.
+  - Updated to use screen size when setting default frame size.
+  - Updated idle processing to skip items from the same group.
+  - Updated commandbar processing to use space as any character in prefiltering.
+  - Updated filtering logic in commandbar to better handle non-alphanum characters.
+  - Updated Love2d API for 11.3 (#247).
+  - Updated autocomplete to allow classes without any (sub-)elements.
+  - Updated to suppress repeated errors about files that can't be indexed.
+  - Updated love2d interpreter to cache love2d executable name per project.
+  - Updated love2d interpreter to reduce duplication.
+  - Updated markup restyling to not happen during cursor movement.
+  - Updated tooltip position to better work with wrapped lines.
+  - Updated `IsSameDirectoryPath` method to handle `nil` parameters (closes #1021).
+  - Updated handling of search-in-selection toggle to better work on macOS 10.14+.
+  - Updated to allow incremental search with search-in-selection.
+  - Updated editor font loading to better handle invalid/missing font names.
+  - Updated to explicitly set art provider in pop out panels (#999).
+  - Updated handling of static analyzer/luacheck options to allow dynamic switching (closes #1013).
+  - Updated Linux arch check to handle 32bit userspace with 64bit kernel (closes #947).
+  - Updated shebang processing to also accept extensions.
+  - Updated the About screen to include Scintilla version when available (#994).
+  - Updated to allow `StartStyling` to work with deprecated parameters (closes #994).
+  - Updated Brazilian Portuguese translation.
+  - Updated Love2d API for 11.2 (#247).
+  - Updated `RequestAttention` method to check documents in floating panels.
+  - Updated commandbar to activate (floating) editor in symbol selection.
+  - Updated commandbar processing to work with multiple notebooks.
+  - Updated `GetEditor` to check for all notebooks that may have documents.
+  - Updated placeholder expansion to show labels for editor in any notebook.
+  - Updated `CloseAll` to report closing results.
+  - Updated to not close the document when the editor is moved to a different notebook.
+  - Updated root path generation to make it work from Windows paths with unicode names.
+  - Updated document activation to reduce dependence on tab being in a specific notebook.
+  - Updated `CloseAll` method to only retrieve tab control when needed.
+  - Updated commandbar to find better position over split notebook.
+  - Updated to improve file activation in project tree.
+  - Updated file icon generation to keep header on files with no extension.
+  - Updated dynamic icons to show the custom color in the header instead of the text (#470).
+  - Updated page closing to simplify selection of the page to activate.
+  - Updated commandbar to cancel selection on switching focus from the editor for consistency.
+  - Updated to use `wxGetUserId` to get user login for singleinstance checks (fixes #951).
+  - Updated to allow hoisting for mapped directories.
+  - Updated closing multiple tabs to stop closing on canceling save.
+  - Updated to preserve compatibility with older versions of wxlua/wxwidgets.
+  - Updated indicator handling to work when tabs are quickly closed.
+  - Updated find/replace result message to get proper translation.
+  - Updated `Show Location` label to more informative `Open Containing Folder`.
+  - Updated `Show Location` to use the default explorer as configured (Windows).
+  - Upgraded Mobdebug (0.706) to improve debugging of wxlua apps under `strict` (closes #962).
+  - Upgraded LexLPeg lexers to support new lexer syntax.
+
+### Fixes
+  - Fixed reset of the output/console window color scheme when copied from the editor styles.
+  - Fixed default reference for `editor.showligatures` config setting (#960).
+  - Fixed setting default calltip colors when setting custom color schemes (#1024).
+  - Fixed the project tree not scrolled to the left in some cases after activation (#999).
+  - Fixed caching of loaded bitmaps.
+  - Fixed showing icons in the Stack view panel (#999).
+  - Fixed setting focus on text fiels in command bar (#999).
+  - Fixed memory allocation for the directory path (thanks to Shmuel Zeigerman).
+  - Fixed assertion in `notebook:GetPage` when requested page is not in range (#999).
+  - Fixed menu item name shown in a long tooltip.
+  - Fixed closing directory handles to avoid locking last expanded directory (fixes #1029).
+  - Fixed showing invalid UTF-8 in debugger tooltips (fixes #1025).
+  - Fixed luasocket issues reported under `strict` (closes #950).
+  - Fixed updating editor tab icon when un/setting start file.
+  - Fixed restarting incremental search when initiated with search panel open.
+  - Fixed keeping the editor tab open when file is renamed from the file tree.
+  - Fixed `SetupKeywords` to re-apply styles when requested (closes #1014).
+  - Fixed reported error message for some file writing errors.
+  - Fixed closing the current editor tab from menu with some other panel being active.
+  - Fixed checking output from external commands before interpreter is set (#973).
+  - Fixed handling of output callbacks not returning expected strings (closes #973).
+  - Fixed error when no APIs loaded (in eg experimental interpreter) (closes #976).
+  - Fixed Luacheck not receiving API globals by default or with custom globals (#976).
+  - Fixed recognition of `linecomment` option in lexlpeg lexers (close #1007).
+  - Fixed error reported on shebang with executable not matching any lexer (fixes #969).
+  - Fixed loading of api files relative to package directory (fixes #965).
+  - Fixed `arg` to have the 'original' (instead of shortened) name during debugging.
+  - Fixed storing name of unsaved tabs in recovery records.
+  - Fixed error shown when focus is set on the editor while it's removed from the notebook.
+  - Fixed expanding mapped directories when adding new items under it.
+  - Fixed allowing to add new file/directory only under directories.
+  - Fixed project tree refresh and sync after un/mapping directory or setting start file.
+  - Fixed black background shown for generated file icons on Linux.
+  - Fixed showing current file in the project tree.
+  - Fixed adding files/directories under mapped and hoisted directories.
+  - Fixed adding mapped directory after drop on project tree over no item.
+  - Fixed transparent background for dynamic icons in the project tree (#470).
+  - Fixed activation of editor tab from the filetree on Windows.
+  - Fixed output truncation after launched process terminates (fixes #949).
+  - Fix margin click selection to select folded block.
+  - Fixed typo in the usage instructions.
+  - Fixed message on how to configure short path conversion on Windows (fixes #948).
+  - Fix symbol indicators when no editor windows are open.
+  - Fixed incorrect outline with `repeat until` before `else` (fixes #946).
+
+### Incompatibilities
+  - Removed `CloseAllExcept` method as it's no longer needed.
+  - Removed `SetTabIndex` and direct tab index usage.
+
+## v1.80 (Oct 07 2018)
+
+### Highlights
+  - Added drag-n-drop into project tree to set project or map directories.
+  - Added lexer detection based on the shebang content for unknown extensions.
+  - Tested debugger and luasocket support with Lua 5.4-work1 version.
+  - Updated Gideros API for v2018.2.1 and fixed showing methods for Gideros types.
+  - Updated Love2d API for 0.11.1.
+  - Upgraded LuaCheck to v0.23.0.
+
+### Special thanks
+  - To [Deyan Dobromirov](https://github.com/dvdvideo1234) for adding bulgarian language translation.
+  - To [Alexey Melnichuk](https://github.com/moteus) for adding support for `fold.compact` flag to lpeg lexer.
+  - To [olueiro](https://github.com/olueiro) for updates pt-br language translation.
+  - To [Paul Reilly](https://github.com/paul-reilly) for adding config option for transparency of window.
+  - To [fnaith](https://github.com/fnaith) for updating translation to Traditional Chinese.
+
+### Improvements
+  - Added document `SetTabIndex` method (#166).
+  - Added restoring editor content when loading a file fails.
+  - Added lexer detection based on the shebang content for unknown extensions.
+  - Added drag-n-drop into project tree to map directories.
+  - Add editor `IndicateSymbols` method (#166, #929).
+  - Added per-editor configuration for collecting dynamic words (closes #922).
+  - Added message in search toolbar after replacement in files (#910).
+  - Added shortcuts to popup menus for edit operations.
+  - Added keeping the clipboard content after exiting.
+  - Added reporting failures on file open.
+  - Added support for function to remap results in output line activation (#881).
+  - Added configuration setting for output line activation patterns (closes #881).
+  - Added showing tab name in the search status bar when no text is found (#887).
+  - Added Bulgarian translation (closes #876, #70).
+  - Added config option for transparency of window.
+  - Added support for configuring virtual space in the editor (closes #861).
+  - Added `ShowFullScreen` method (#166).
+  - Added recognition of `linecomment` option in lexlpeg lexers.
+  - Added support for `fold.compact` flag by lpeg lexer (closes #853, #847).
+  - Added switching to the editor tab being saved during confirmation.
+  - Added project tree methods to map and unmap directories (#166).
+  - Added `editor.endatlastline` to set the editor maximum scroll position (closes #842).
+  - Added `editor.wrapflagslocation` setting for specifying wrap flag location.
+  - Added `ExpandPlaceholders` method (#166).
+  - Added `GetModifiedTime` editor method (#166).
+  - Added `ReportError` method (#166).
+  - Disabled opening non-existing directories from commandbar.
+  - Enabled global shortcuts for clearing output and console (closes #844).
+  - Renamed `ID.CLEAROUTPUT` to `ID.CLEAROUTPUTENABLE` to avoid conflict between actions (#844).
+  - Renamed document method `Get/SetModTime` to `Get/SetFileModifiedTime` (#166).
+  - Refactored document 'modified' status to match the editor modification status.
+  - Reorganized setting accelerators to allow all of them to be set from `onRegister` events.
+  - Updated C/cpp spec to cover larger variety of functions.
+  - Upgraded Mobdebug (0.704) to fix serialization issue (fixes #900).
+  - Updated error navigation in output window to handle lines with `line:position` information.
+  - Upgraded luacheck to v0.23.0.
+  - Updated drag-n-drop mapping to limit to existing directories.
+  - update traditional chinese translation
+  - Updated Window build script to support building of 64bit luasec (using mingw64).
+  - Updated Windows launcher manifest description.
+  - Updated dates in the Windows launcher manifest.
+  - Upgraded Mobdebug (0.705) to fix explicit garbage collection during stepping (closes #919).
+  - Update comment markup styling to avoid hiding line comments.
+  - Updated Love2d API for 0.11.1 (#247).
+  - Updated Love2d script to include class inheritance where available.
+  - Updated `GetHotKey` to return error message instead of printing it.
+  - Updated markers menu to show images when available and configured.
+  - Updated IDs to reference the ID table instead of global variables.
+  - Updated order of items in Edit menu for consistency with other menus and apps.
+  - Updated README to add Lua 5.4 support.
+  - Updated build scripts to add Lua 5.4.0-work1.
+  - Upgraded Mobdebug (0.703) to include Serpent updates.
+  - Updated to use editor method `SetupKeywords` instead of global function.
+  - Updated path caching in intepreters to allow changing path configuration without restarting.
+  - Updated Gideros API to include `valuetype` values where needed (closes #889).
+  - Updated Gideros API script to add `valuetype` attribute to `new` methods (#889).
+  - Updated Gideros API for v2018.2.1.
+  - Updated build scripts to refresh submodules after checkout (follow-up to ebe9f572).
+  - Updated Copy/Cut commands to make line copying configurable (closes #878).
+  - Updated `SetHotKey` to allow removing hotkeys by setting to `nil` value.
+  - Updated build scripts to optimize when building wxwidgets and lexlpeg.
+  - Updated Corona interpreter to suggest project path when `main.lua` is not found in the current project.
+  - Updated to show relative path for mapped directories when it is a project subdirectory.
+  - Updated project tree to remove trailing separator from mapped directories.
+  - Updated symbol for modified tabs to a better looking unicode asterisk.
+  - Updated `xml` lexlpeg lexer to improve its performance on large files (closes #835).
+  - Updated loading files when starting second instance to speed up the process.
+
+### Fixes
+  - Fixed disabling scratchpad updates after syntax errors (#944).
+  - Fixed shebang detection with enabled dynamic words (follow-up to 663be9a7).
+  - Fixed creating files from commandbar.
+  - Fixed 'deleting' mapped directory.
+  - Fixed mapping and unmapping directories with/out trailing separator.
+  - Fixed parsing invalid Lua code (#937, #492).
+  - Fixed parsing table fields in the left side of multiple assignment (fixes #937).
+  - Fixed proper delete of hidden markup (follow up to ce5879a7).
+  - Fixed using vararg in live coding code (closes #927).
+  - Fixed showing stack content when `codepage` is set (closes #923).
+  - Fixed running/debugging on Windows with unicode characters in username (closes #921).
+  - Fixed activating file from the command line after project path is set (#829, #830).
+  - Fixed indentation on functions with `_function` in the name (fixes #905, #324).
+  - Fixed associating hotkey with editor menu items.
+  - Fixed `include` to work relative to included locations (#555).
+  - Fixed checking system location for `include` command when `HOME` is not set (#555).
+  - Fixed sorting text with invalid unicode characters (fixes #893).
+  - Fixed opening files pointing to broken symlinks or with denied access.
+  - Fixed custom lexer highlighting caused by a conflict with ansi styles (closes #891, #684).
+  - Fixed autocomplete to avoid looping on recursive references.
+  - Fixed `self` reference (#873).
+  - Fixed showing large strings in the Stack window that was slowing the IDE (fixes #863).
+  - Fixed issue with setting an accelerator for an empty shortcut (#844).
+  - Fixed keeping acccelerators after switching to full screen on Linux (fixes #857).
+  - Fixed search in selection to use correct editor when activated from Output/Console.
+  - Fixed fuzzy matching with lower case match following upper case or vise versa.
+  - Fixed autocomplete on a string longer than 32 chars with a match (fixes #837).
+  - Fixed loading files using relative names (closes #829, #830).
+  - Fixed lexlpeg Lua lexer to style numbers next to concatenation operator (closes #831).
+
 ## v1.70 (Nov 11 2017)
 
 ### Highlights

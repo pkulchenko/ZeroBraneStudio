@@ -121,6 +121,11 @@ function ide:GetLaunchPath(addparams)
   end
   return path
 end
+function ide:IsExiting(newval)
+  if newval == nil then return self.exitingProgram end
+  self.exitingProgram = newval
+  return
+end
 function ide:Exit(hotexit)
   if hotexit then self.config.hotexit = true end
   self:GetMainFrame():Close()
@@ -141,25 +146,33 @@ function ide:GetDefaultFileName()
   if ed and default.usecurrentextension then ext = self:GetDocument(ed):GetFileExt() end
   return default.name..(ext and ext > "" and "."..ext or "")
 end
-function ide:GetEditor(index)
-  local notebook = self:GetEditorNotebook()
-  if index == nil then index = notebook:GetSelection() end
 
+local function isCtrlFocused(e)
+  local ctrl = e and e:FindFocus()
+  return ctrl and
+    (ctrl:GetId() == e:GetId()
+     or ide.osname == 'Macintosh' and
+       ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
+end
+function ide:GetEditor()
+  local notebook = self:GetEditorNotebook()
+  local win = notebook:GetCurrentPage()
   local editor
-  if (index >= 0) and (index < notebook:GetPageCount())
-  and notebook:GetPage(index):GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
-    editor = notebook:GetPage(index):DynamicCast("wxStyledTextCtrl")
+  if win and win:GetClassInfo():GetClassName()=="wxStyledTextCtrl" then
+    editor = win:DynamicCast("wxStyledTextCtrl")
   end
+  -- return the editor if it has focus
+  if isCtrlFocused(editor) then return editor end
+
+  -- check the rest of the documents (those not in the EditorNotebook)
+  for _, doc in pairs(ide:GetDocuments()) do
+    local _, nb = doc:GetTabIndex()
+    if nb ~= notebook and isCtrlFocused(doc:GetEditor()) then return doc:GetEditor() end
+  end
+  -- return the current editor in the notebook, even if it's not focused
   return editor
 end
 function ide:GetEditorWithFocus(...)
-  local function isCtrlFocused(e)
-    local ctrl = e and e:FindFocus()
-    return ctrl and
-      (ctrl:GetId() == e:GetId()
-       or ide.osname == 'Macintosh' and
-         ctrl:GetParent():GetId() == e:GetId()) and ctrl or nil
-  end
   -- need to distinguish GetEditorWithFocus() and GetEditorWithFocus(nil)
   -- as the latter may happen when GetEditor() is passed and returns `nil`
   if select('#', ...) > 0 then
@@ -181,7 +194,7 @@ function ide:GetEditorWithFocus(...)
   return nil
 end
 function ide:GetEditorWithLastFocus()
-  -- make sure ide.infocus is still a valid component and not "some" userdata
+  -- make sure ide.infocus is still a valid component
   return (self:IsValidCtrl(self.infocus)
     and self.infocus:GetClassInfo():GetClassName() == "wxStyledTextCtrl"
     and self.infocus:DynamicCast("wxStyledTextCtrl") or nil)
@@ -198,16 +211,58 @@ function ide:SetDebugger(deb)
   if self:IsValidProperty(console, 'GetRemote') and console:GetRemote() then console:SetRemote(deb:GetConsole()) end
   return deb
 end
+function ide:GetContentScaleFactor()
+  if not self:IsValidProperty(self.frame, "GetContentScaleFactor") then return 1 end
+  local scale = self.frame:GetContentScaleFactor()
+  if scale == -1 then return 1 end -- special value indicating "no information"
+  -- convert `y` such that `x+0.75 <= y < x+1.75` to `x+1`
+  return math.floor(0.25+scale)
+end
 function ide:GetMainFrame()
   if not self.frame then
+    local screen = wx.wxDisplay():GetClientArea()
     self.frame = wx.wxFrame(wx.NULL, wx.wxID_ANY, self:GetProperty("editor"),
-      wx.wxDefaultPosition, wx.wxSize(1100, 700))
+      wx.wxDefaultPosition,
+      wx.wxSize(math.floor(screen:GetWidth()*0.8), math.floor(screen:GetHeight()*0.8)))
+      -- transparency range: 0 == invisible -> 255 == opaque
+      -- set lower bound of 50 to prevent accidental invisibility
+      local transparency = tonumber(self:GetConfig().transparency)
+      if transparency then self.frame:SetTransparent(math.max(50, transparency)) end
   end
   return self.frame
 end
 function ide:GetUIManager() return self.frame.uimgr end
-function ide:GetDocument(ed) return ed and self.openDocuments[ed:GetId()] end
+function ide:GetDocument(ed) return self:IsValidCtrl(ed) and self.openDocuments[ed:GetId()] end
+function ide:CreateDocument(ed, name)
+  if not self:IsValidCtrl(ed) or self.openDocuments[ed:GetId()] then return false end
+  local document = setmetatable({editor = ed}, self.proto.Document)
+  document:SetFileName(name)
+  self.openDocuments[ed:GetId()] = document
+  return document
+end
+function ide:RemoveDocument(ed)
+  if not self:IsValidCtrl(ed) or not self.openDocuments[ed:GetId()] then return false end
+
+  local index, notebook = self:GetDocument(ed):GetTabIndex()
+  if not notebook:RemovePage(index) then return false end
+
+  -- if the notebook is in a floating pane and has no pages close the pane
+  if notebook ~= ide:GetEditorNotebook() and notebook:GetPageCount() == 0 then
+    local mgr = self:GetUIManager()
+    local pane = mgr:GetPane(notebook)
+    if pane:IsOk() then mgr:DetachPane(notebook) end
+  end
+
+  self.openDocuments[ed:GetId()] = nil
+  return true
+end
 function ide:GetDocuments() return self.openDocuments end
+function ide:GetDocumentList()
+  local a = {}
+  for _, doc in pairs(self.openDocuments) do table.insert(a, doc) end
+  table.sort(a, function(a, b) return a:GetTabIndex() < b:GetTabIndex() end)
+  return a
+end
 function ide:GetKnownExtensions(ext)
   local knownexts, extmatch = {}, ext and ext:lower()
   for _, spec in pairs(self.specs) do
@@ -221,11 +276,30 @@ function ide:GetKnownExtensions(ext)
   return knownexts
 end
 
-function ide:DoWhenIdle(func) table.insert(self.onidle, func) end
+function ide:DoWhenIdle(func, group)
+  -- check if there are any group leftovers and remove them
+  if #self.onidle == 0 and next(self.onidle) then
+    self.onidle = {}
+  end
+  if group then
+    -- if there is already an element for the same group
+    if self.onidle[group] then
+      -- find and remove it, as it's not needed anymore
+      for i = 1, #self.onidle do
+        if self.onidle[i] == self.onidle[group] then
+          table.remove(self.onidle, i)
+          break
+        end
+      end
+    end
+    self.onidle[group] = func
+  end
+  table.insert(self.onidle, func)
+end
 
 function ide:FindTopMenu(item)
   local index = self:GetMenuBar():FindMenu((TR)(item))
-  return self:GetMenuBar():GetMenu(index), index
+  return index >= 0 and self:GetMenuBar():GetMenu(index), index
 end
 function ide:FindMenuItem(itemid, menu)
   local menubar = self:GetMenuBar()
@@ -291,7 +365,8 @@ function ide:MakeMenu(t)
           -- only add icons to "normal" items (OSX can take them on checkbox items too),
           -- otherwise this causes asert on Linux (http://trac.wxwidgets.org/ticket/17123)
           and (ide.osname == "Macintosh" or item:GetKind() == wx.wxITEM_NORMAL) then
-            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR", wx.wxSize(16,16))
+            local bitmap = ide:GetBitmap(iconmap[id][1], "TOOLBAR",
+              wx.wxSize(16*ide:GetContentScaleFactor(), 16*ide:GetContentScaleFactor()))
             item:SetBitmap(bitmap)
           end
           menu:Append(item)
@@ -302,12 +377,16 @@ function ide:MakeMenu(t)
   return menu
 end
 
+function ide:SetTitle(title)
+  if not self:IsValidCtrl(self.frame) then return end
+  self.frame:SetTitle(title or self:ExpandPlaceholders(self.config.format.apptitle))
+end
+
 function ide:FindDocument(path)
   local fileName = wx.wxFileName(path)
   for _, doc in pairs(self:GetDocuments()) do
-    if doc.filePath and fileName:SameAs(wx.wxFileName(doc.filePath)) then
-      return doc
-    end
+    local path = doc:GetFilePath()
+    if path and fileName:SameAs(wx.wxFileName(path)) then return doc end
   end
   return
 end
@@ -320,9 +399,8 @@ function ide:FindDocumentsByPartialPath(path)
 
   local docs = {}
   for _, doc in pairs(self:GetDocuments()) do
-    if doc.filePath
-    and (doc.filePath:find(pattern)
-         or iscaseinsensitive and doc.filePath:lower():find(lpattern)) then
+    local path = doc:GetFilePath()
+    if path and (path:find(pattern) or iscaseinsensitive and path:lower():find(lpattern)) then
       table.insert(docs, doc)
     end
   end
@@ -353,7 +431,7 @@ function ide:SetProject(projdir,skiptree)
 
   self.config.path.projectdir = projdir ~= "" and projdir or nil
   self:SetStatus(projdir)
-  self.frame:SetTitle(ExpandPlaceholders(self.config.format.apptitle))
+  self.frame:SetTitle(self:ExpandPlaceholders(self.config.format.apptitle))
 
   if skiptree then return true end
   return self.filetree:updateProjectDir(projdir)
@@ -374,6 +452,20 @@ function ide:GetTextFromUser(message, caption, value)
   local dlg = wx.wxTextEntryDialog(self.frame, message, caption, value)
   local res = dlg:ShowModal()
   return res == wx.wxID_OK and dlg:GetValue() or nil, res
+end
+
+function ide:GetTabArt()
+  local tabart = wxaui.wxAuiGenericTabArt and wxaui.wxAuiGenericTabArt() or wxaui.wxAuiDefaultTabArt()
+  -- editor tab height is off by 1 pixel on macOS between tabs with images and not
+  -- (as the height of the image is 16 pixels, but height of the font line is 15),
+  -- so increase the measuring font a bit to make all tabs of the same height
+  if ide.osname == "Macintosh" then
+    local font = wx.wxFont(wx.wxNORMAL_FONT)
+    font:SetWeight(wx.wxFONTWEIGHT_BOLD)
+    font:SetPointSize(font:GetPointSize()+1)
+    tabart:SetMeasuringFont(font)
+  end
+  return tabart
 end
 
 local statusreset
@@ -400,7 +492,21 @@ function ide:ShowCommandBar(...) return ShowCommandBar(...) end
 
 function ide:RequestAttention()
   local ide = self
-  local frame = ide.frame
+  -- first check if the active editor has focus (it may be in a floating panel)
+  local ed = ide:GetEditor()
+  local frame = ide:GetMainFrame()
+  if ed and isCtrlFocused(ed) then
+    local frameci = frame:GetClassInfo()
+    local parent = ed:GetParent()
+    while parent do
+      if parent:GetClassInfo():IsKindOf(frameci) and parent:DynamicCast("wxFrame"):IsActive() then
+        parent:Raise()
+        return true
+      end
+      parent = parent:GetParent()
+    end
+  end
+  -- then check if the main frame should have the focus
   if not frame:IsActive() then
     frame:RequestUserAttention()
     if ide.osname == "Macintosh" then
@@ -439,11 +545,13 @@ function ide:ReportError(msg)
 end
 
 local rawMethods = {"AddTextDyn", "InsertTextDyn", "AppendTextDyn", "SetTextDyn",
-  "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn"}
+  "GetTextDyn", "GetLineDyn", "GetSelectedTextDyn", "GetTextRangeDyn",
+  "ReplaceTargetDyn", -- this method is not available in wxlua 3.1, so it's simulated
+}
 local useraw = nil
 
 local invalidUTF8, invalidLength
-local suffix = "\1\0"
+local suffix = "\0"
 local DF_TEXT = wx.wxDataFormat(wx.wxDF_TEXT)
 
 function ide:CreateStyledTextCtrl(...)
@@ -455,6 +563,21 @@ function ide:CreateStyledTextCtrl(...)
     for _, m in ipairs(rawMethods) do
       if not pcall(function() return editor[m:gsub("Dyn", "Raw")] end) then useraw = false; break end
     end
+  end
+
+  if not self:IsValidProperty(editor, "ReplaceTargetRaw") then
+    editor.ReplaceTargetRaw = function(self, ...)
+      self:ReplaceTarget("")
+      self:InsertTextDyn(self:GetTargetStart(), ...)
+    end
+  end
+
+  -- `AppendTextRaw` and `AddTextRaw` methods may accept the length of text,
+  -- which is important for appending binary strings that may include zeros.
+  -- Add text length when it's not provided.
+  for _, m in ipairs(useraw and {"AppendTextRaw", "AddTextRaw"} or {}) do
+    local orig = editor[m]
+    editor[m] = function(self, text, length) return orig(self, text, length or #text) end
   end
 
   -- map all `GetTextDyn` to `GetText` or `GetTextRaw` if `*Raw` methods are present
@@ -473,7 +596,7 @@ function ide:CreateStyledTextCtrl(...)
     local text = self:GetSelectedTextRaw()
     if text == "" or wx.wxString.FromUTF8(text) ~= "" then return self:Copy() end
     local tdo = wx.wxTextDataObject()
-    -- append suffix as wxwidgets (3.1+ on Windows) truncate last char for odd-length strings
+    -- append suffix as wxwidgets (3.1+ on Windows) truncates last char for odd-length strings
     local workaround = ide.osname == "Windows" and (#text % 2 > 0) and suffix or ""
     tdo:SetData(DF_TEXT, text..workaround)
     invalidUTF8, invalidLength = text, tdo:GetDataSize()
@@ -493,7 +616,7 @@ function ide:CreateStyledTextCtrl(...)
     clip:Close()
     local ok, text = tdo:GetDataHere(DF_TEXT)
     -- check if the fragment being pasted is a valid UTF-8 sequence
-    if ide.osname == "Windows" then text = text and text:gsub(suffix.."+$","") end
+    if ide.osname == "Windows" then text = text and text:gsub("%z+$", "") end
     if not ok or wx.wxString.FromUTF8(text) ~= ""
     or not invalidUTF8 or invalidLength ~= tdo:GetDataSize() then return self:Paste() end
 
@@ -506,18 +629,27 @@ function ide:CreateStyledTextCtrl(...)
     self:EnsureVisibleEnforcePolicy(self:LineFromPosition(pos))
   end
 
+  function editor:MarginFromPoint(x)
+    if x < 0 then return nil end
+    local pos = 0
+    for m = 0, ide.MAXMARGIN do
+      pos = pos + self:GetMarginWidth(m)
+      if x < pos then return m end
+    end
+    return nil -- position outside of margins
+  end
+
   function editor:CanFold()
-    local foldable = false
     for m = 0, ide.MAXMARGIN do
       if self:GetMarginWidth(m) > 0
       and self:GetMarginMask(m) == wxstc.wxSTC_MASK_FOLDERS then
-        foldable = true
+        return true
       end
     end
-    return foldable
+    return false
   end
 
-  -- circle through "fold all" => "hide base lines" => "unfold all"
+  -- cycle through "fold all" => "hide base lines" => "unfold all"
   function editor:FoldSome(line)
     local foldall = false -- at least one header unfolded => fold all
     local hidebase = false -- at least one base is visible => hide all
@@ -669,6 +801,21 @@ function ide:CreateStyledTextCtrl(...)
 
   function editor:GetModifiedTime() return self.updated end
 
+  function editor:SetupKeywords(...) return SetupKeywords(self, ...) end
+
+  -- this is a workaround for the auto-complete popup showing large font
+  -- when Settechnology(1) is used to enable DirectWrite support.
+  -- See https://trac.wxwidgets.org/ticket/17804#comment:32
+  for _, method in ipairs({"AutoCompShow", "UserListShow"}) do
+    local orig = editor[method]
+    editor[method] = function (editor, ...)
+      local tech = editor:GetTechnology()
+      if tech ~= 0 then editor:SetTechnology(wxstc.wxSTC_TECHNOLOGY_DEFAULT) end
+      orig(editor, ...)
+      if tech ~= 0 then editor:SetTechnology(tech) end
+    end
+  end
+
   editor:Connect(wx.wxEVT_KEY_DOWN,
     function (event)
       local keycode = event:GetKeyCode()
@@ -687,9 +834,31 @@ function ide:CreateStyledTextCtrl(...)
   return editor
 end
 
+function ide:CreateNotebook(...)
+  local ctrl = wxaui.wxAuiNotebook(...)
+  if not ctrl then return end
+
+  if not self:IsValidProperty(ctrl, "GetCurrentPage") then
+    -- versions of wxlua prior to 3.1 may not have GetCurrentPage
+    function ctrl:GetCurrentPage()
+      local index = self:GetSelection()
+      return index >= 0 and self:GetPage(index) or nil
+    end
+  end
+  return ctrl
+end
+
 function ide:CreateTreeCtrl(...)
   local ctrl = wx.wxTreeCtrl(...)
   if not ctrl then return end
+
+  -- explicitly disable lines on macOS and Linux (wxwidgets v3.1.3+)
+  if ide.osname == "Unix" or ide.osname == "Macintosh" then
+    local flags = ctrl:GetWindowStyleFlag()
+    if bit.band(flags, wx.wxTR_NO_LINES) == 0 then
+      ctrl:SetWindowStyleFlag(flags + wx.wxTR_NO_LINES)
+    end
+  end
 
   if not self:IsValidProperty(ctrl, "SetFocusedItem") then
     -- versions of wxlua prior to 3.1 may not have SetFocuseditem
@@ -701,7 +870,7 @@ function ide:CreateTreeCtrl(...)
 
   local hasGetFocused = self:IsValidProperty(ctrl, "GetFocusedItem")
   if not hasGetFocused then
-    -- versions of wxlua prior to 3.1 may not have SetFocuseditem
+    -- versions of wxlua prior to 3.1 may not have GetFocusedItem
     function ctrl:GetFocusedItem() return self:GetSelections()[1] end
   end
 
@@ -719,6 +888,19 @@ function ide:CreateTreeCtrl(...)
       end)
   end
   return ctrl
+end
+
+function ide:CreateFont(size, family, style, weight, underline, name, encoding)
+  local font = wx.wxFont(size, family, style, weight, underline, "", encoding)
+  if name > "" then
+    -- assign the face name separately to detect when it fails to load the font
+    font:SetFaceName(name)
+    if ide:IsValidProperty(font, "IsOk") and not font:IsOk() then
+      -- assign default font from the same family if the exact font is not loaded
+      font = wx.wxFont(size, family, style, weight, underline, "", encoding)
+    end
+  end
+  return font
 end
 
 function ide:LoadFile(...) return LoadFile(...) end
@@ -782,10 +964,21 @@ function ide:ExecuteCommand(cmd, wdir, callback, endcallback)
   return pid
 end
 
+function ide:GetBestIconSize()
+  -- use large icons by default on OSX and on large screens
+  local iconsize = tonumber(ide.config.toolbar and ide.config.toolbar.iconsize)
+  local scale = ide:GetContentScaleFactor()
+  return (iconsize and (iconsize % 8) == 0 and iconsize
+    or ((ide.osname == 'Macintosh' or wx.wxGetClientDisplayRect():GetWidth() >= 1280)
+      and scale*24 or (scale>3 and 48 or scale*16)))
+end
+
 function ide:CreateImageList(group, ...)
   local _ = wx.wxLogNull() -- disable error reporting in popup
-  local size = wx.wxSize(16,16)
-  local imglist = wx.wxImageList(16,16)
+  local scaledsize = 16*ide:GetContentScaleFactor()
+  local size = wx.wxSize(scaledsize, scaledsize)
+  local imglist = wx.wxImageList(scaledsize, scaledsize)
+
   for i = 1, select('#', ...) do
     local icon, file = self:GetBitmap(select(i, ...), group, size)
     if imglist:Add(icon) == -1 then
@@ -860,23 +1053,78 @@ function ide:GetBitmap(id, client, size)
   local fileClient = self:GetAppName() .. "/res/" .. keyclient .. ".png"
   local fileKey = self:GetAppName() .. "/res/" .. key .. ".png"
   local isImage = type(mapped) == 'userdata' and mapped:GetClassInfo():GetClassName() == 'wxImage'
-  local file
+  local scale = self:GetContentScaleFactor()
+  local file, bmp
   if mapped and (isImage or wx.wxFileName(mapped):FileExists()) then file = mapped
   elseif wx.wxFileName(fileClient):FileExists() then file = fileClient
   elseif wx.wxFileName(fileKey):FileExists() then file = fileKey
   else
-    if width > 16 and width % 2 == 0 then
-      local _, f = self:GetBitmap(id, client, wx.wxSize(width/2, width/2))
+    if width > 16 and scale > 1 and width % scale == 0 then
+      local _, f = self:GetBitmap(id, client, wx.wxSize(width/scale, width/scale))
       if f then
         local img = wx.wxBitmap(f):ConvertToImage()
-        file = img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST)
+        bmp = wx.wxBitmap(img:Rescale(width, width, wx.wxIMAGE_QUALITY_NEAREST))
+        file = fileClient
       end
     end
-    if not file then return wx.wxArtProvider.GetBitmap(id, client, size) end
+    if not file then
+      bmp = wx.wxArtProvider.GetBitmap(id, client, size)
+      file = fileClient
+    end
   end
-  local icon = icons[file] or iconFilter(wx.wxBitmap(file), self.config.imagetint)
+  local icon = icons[file] or iconFilter(bmp or wx.wxBitmap(file), self.config.imagetint)
+  -- convert bitmap to set proper scaling on it, but only if scaling is supported;
+  -- this requires special constructor that acceps additional (scale) parameter
+  if ide.wxver >= "3.1.2" and scale > 1 then
+    icon = wx.wxBitmap(icon:ConvertToImage(), icon:GetDepth(), scale)
+  end
   icons[file] = icon
   return icon, file
+end
+
+local function str2rgb(str)
+  local a = ('a'):byte()
+  -- `red`/`blue` are more prominent colors; use them for the first two letters; suppress `green`
+  local r = (((str:sub(1,1):lower():byte() or a)-a) % 27)/27
+  local b = (((str:sub(2,2):lower():byte() or a)-a) % 27)/27
+  local g = (((str:sub(3,3):lower():byte() or a)-a) % 27)/27/3
+  local ratio = 256/(r + g + b + 1e-6)
+  return {math.floor(r*ratio), math.floor(g*ratio), math.floor(b*ratio)}
+end
+local iconfont
+function ide:CreateFileIcon(ext)
+  local iconmap = ide.config.filetree.iconmap
+  local mac = ide.osname == "Macintosh"
+  local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
+  local scale = ide:GetContentScaleFactor()
+  local size = 16
+  local bitmap = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size*scale,size*scale))
+  -- macOS does its own scaling for drawing on DC surface, so set to no scaling
+  if mac then scale = 1 end
+  bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
+  iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
+    wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
+    ide.config.filetree.iconfontname or ide.config.editor.fontname or "", wx.wxFONTENCODING_DEFAULT)
+  local mdc = wx.wxMemoryDC()
+  mdc:SelectObject(bitmap)
+  mdc:SetFont(iconfont)
+  mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
+  -- take first three letters of the extension
+  local text = ext:sub(1,3)
+  local topstripe = 3*scale
+  local topborder = 2*scale
+  local w, h = mdc:GetTextExtent(text)
+  mdc:DrawText(text, (size*scale-w)/2, topstripe+topborder+(size*scale-topstripe-topborder-h-1)/2)
+  if #ext > 0 then
+    local clr = wx.wxColour(unpack(type(color)=="table" and color or str2rgb(ext)))
+    mdc:SetPen(wx.wxPen(clr, 1, wx.wxSOLID))
+    mdc:SetBrush(wx.wxBrush(clr, wx.wxSOLID))
+    mdc:DrawRectangle(1*scale, topborder, (size-(mac and 1 or 2))*scale, topstripe)
+  end
+  mdc:SetFont(wx.wxNullFont)
+  mdc:SelectObject(wx.wxNullBitmap)
+  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
+  return bitmap
 end
 
 function ide:AddPackage(name, package)
@@ -932,7 +1180,7 @@ function ide:AddSpec(name, spec)
 end
 function ide:RemoveSpec(name) self.specs[name] = nil end
 
-function ide:FindSpec(ext)
+function ide:FindSpec(ext, firstline)
   if not ext then return end
   for _,curspec in pairs(self.specs) do
     for _,curext in ipairs(curspec.exts or {}) do
@@ -941,14 +1189,22 @@ function ide:FindSpec(ext)
   end
   -- check for extension to spec mapping and create the spec on the fly if present
   local edcfg = self.config.editor
-  if type(edcfg.specmap) == "table" and edcfg.specmap[ext] then
-    local name = edcfg.specmap[ext]
-    -- check if there is already spec with this name, but doesn't have this extension registered
+  local name = type(edcfg.specmap) == "table" and edcfg.specmap[ext]
+  local shebang = false
+  if not name and firstline then
+    name = firstline:match("#!.-(%w+)%s*$")
+    name = type(edcfg.specmap) == "table" and edcfg.specmap[name] or name
+    shebang = true
+  end
+  if name then
+    -- check if there is already spec with this name, but doesn't have this extension registered;
+    -- don't register the extension if the format was set based on the shebang
     if self.specs[name] then
-      table.insert(self.specs[name].exts or {}, ext)
+      if not self.specs[name].exts then self.specs[name].exts = {} end
+      if not shebang then table.insert(self.specs[name].exts, ext) end
       return self.specs[name]
     end
-    local spec = { exts = {ext}, lexer = "lexlpeg."..name }
+    local spec = { exts = shebang and {} or {ext}, lexer = "lexlpeg."..name }
     self:AddSpec(name, spec)
     return spec
   end
@@ -1016,7 +1272,11 @@ function ide:AddConfig(name, files)
   if type(files) ~= "table" then files = {files} end -- allow to pass one value
   configcache[name] = {
     config = require('mobdebug').dump(self.config, {nocode = true}),
-    configmeta = getmetatable(self.config),
+    configmeta = {
+      [0] = getmetatable(self.config),
+      styles = getmetatable(self.config.styles),
+      stylesoutshell = getmetatable(self.config.stylesoutshell),
+    },
     packages = {},
     overrides = {},
   }
@@ -1058,7 +1318,10 @@ function ide:RemoveConfig(name)
     self.config = res
     -- restore overrides
     for key, value in pairs(configcache[name].overrides) do setLongKey(self.config, key, value) end
-    if configcache[name].configmeta then setmetatable(self.config, configcache[name].configmeta) end
+    -- restore metatables on a set of (predefined) config elements
+    for metaname, metaval in pairs(configcache[name].configmeta) do
+       setmetatable(metaname == 0 and self.config or self.config[metaname], metaval)
+    end
   else
     ide:Print(("Error while restoring configuration: '%s'."):format(res))
   end
@@ -1073,11 +1336,13 @@ end
 
 local panels = {}
 function ide:AddPanel(ctrl, panel, name, conf)
+  if not self:IsValidCtrl(ctrl) then return end
   local width, height = 360, 200
-  local notebook = wxaui.wxAuiNotebook(self.frame, wx.wxID_ANY,
+  local notebook = ide:CreateNotebook(self.frame, wx.wxID_ANY,
     wx.wxDefaultPosition, wx.wxDefaultSize,
     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE
     - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB + wx.wxNO_BORDER)
+  notebook:SetArtProvider(ide:GetTabArt())
   notebook:AddPage(ctrl, name, true)
   notebook:Connect(wxaui.wxEVT_COMMAND_AUINOTEBOOK_BG_DCLICK,
     function() PaneFloatToggle(notebook) end)
@@ -1137,7 +1402,7 @@ function ide:IsValidProperty(ctrl, prop)
 end
 
 function ide:IsValidHotKey(ksc)
-  return wx.wxAcceleratorEntry():FromString(ksc)
+  return ksc and wx.wxAcceleratorEntry():FromString(ksc)
 end
 
 function ide:IsWindowShown(win)
@@ -1162,7 +1427,7 @@ function ide:AddTool(name, command, updateui)
     if not helpMenu then helpindex = self:GetMenuBar():GetMenuCount() end
 
     toolMenu = self:MakeMenu {}
-    self:GetMenuBar():Insert(helpindex, toolMenu, "&Tools")
+    self:GetMenuBar():Insert(helpindex, toolMenu, TR("&Tools"))
   end
   local id = tool2id(name)
   toolMenu:Append(id, name)
@@ -1218,15 +1483,17 @@ local function setAcceleratorTable(accelerators)
   ide:GetMainFrame():SetAcceleratorTable(#at > 0 and wx.wxAcceleratorTable(at) or wx.wxNullAcceleratorTable)
 end
 local at = {}
-function ide:SetAccelerator(id, ksc) at[id] = ksc; setAcceleratorTable(at) end
+function ide:SetAccelerator(id, ksc)
+  if (not id) or (ksc and not self:IsValidHotKey(ksc)) then return false end
+  at[id] = ksc
+  setAcceleratorTable(at)
+  return true
+end
 function ide:GetAccelerator(id) return at[id] end
 function ide:GetAccelerators() return at end
 
 function ide:GetHotKey(idOrKsc)
-  if not idOrKsc then
-    self:Print("GetHotKey requires id or key shortcut.")
-    return
-  end
+  if not idOrKsc then return nil, "GetHotKey requires id or key shortcut." end
 
   local id, ksc = idOrKsc
   if type(idOrKsc) == type("") then id, ksc = ksc, id end
@@ -1260,7 +1527,7 @@ function ide:GetHotKey(idOrKsc)
 end
 
 function ide:SetHotKey(id, ksc)
-  if not ksc or not self:IsValidHotKey(ksc) then
+  if ksc and not self:IsValidHotKey(ksc) then
     self:Print(("Can't set invalid hotkey value: '%s'."):format(ksc))
     return
   end
@@ -1272,31 +1539,33 @@ function ide:SetHotKey(id, ksc)
   -- 4. shortcut is assigned to a function (passed instead of ID)
   local keymap = self.config.keymap
 
-  -- remove any potential conflict with this hotkey
-  -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
-  -- this doesn't take into account different order in `Ctrl-Shift-F1` and `Shift-Ctrl-F1`.
-  local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
-  for gid, ksc in pairs(keymap) do
-    -- if the same hotkey is used elsewhere (not one of IDs being checked)
-    if ksc:lower():find(kscpat) then
-      keymap[gid] = ""
-      -- try to find a menu item with this ID (if any) to remove the hotkey
-      local item = self:FindMenuItem(gid)
-      if item then item:SetText(item:GetText():gsub("\t.+","").."") end
+  if ksc then
+    -- remove any potential conflict with this hotkey
+    -- since the hotkey can be written as `Ctrl+A` and `Ctrl-A`, account for both
+    -- this doesn't take into account different order in `Ctrl-Shift-F1` and `Shift-Ctrl-F1`.
+    local kscpat = "^"..(ksc:gsub("[+-]", "[+-]"):lower()).."$"
+    for gid, ksc in pairs(keymap) do
+      -- if the same hotkey is used elsewhere (not one of IDs being checked)
+      if ksc:lower():find(kscpat) then
+        keymap[gid] = ""
+        -- try to find a menu item with this ID (if any) to remove the hotkey
+        local item = self:FindMenuItem(gid)
+        if item then item:SetItemLabel(item:GetItemLabelText()) end
+      end
+      -- continue with the loop as there may be multiple associations with the same hotkey
     end
-    -- continue with the loop as there may be multiple associations with the same hotkey
-  end
 
-  -- remove an existing accelerator (if any)
-  local acid = self:GetHotKey(ksc)
-  if acid then self:SetAccelerator(acid) end
+    -- remove an existing accelerator (if any)
+    local acid = self:GetHotKey(ksc)
+    if acid then self:SetAccelerator(acid) end
 
-  -- if the hotkey is associated with a function, handle it first
-  if type(id) == "function" then
-    local fakeid = NewID()
-    self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
-    self:SetAccelerator(fakeid, ksc)
-    return fakeid, ksc
+    -- if the hotkey is associated with a function, handle it first
+    if type(id) == "function" then
+      local fakeid = NewID()
+      self:GetMainFrame():Connect(fakeid, wx.wxEVT_COMMAND_MENU_SELECTED, function() id() end)
+      self:SetAccelerator(fakeid, ksc)
+      return fakeid, ksc
+    end
   end
 
   -- if the keymap is already asigned, then reassign it
@@ -1305,9 +1574,8 @@ function ide:SetHotKey(id, ksc)
 
   local item = self:FindMenuItem(id)
   if item then
-    -- get the item text and replace the shortcut
-    -- since it also needs to keep the accelerator (if any), so can't use `GetLabel`
-    item:SetText(item:GetText():gsub("\t.+","")..KSC(nil, ksc))
+    -- get the item text and replace the shortcut; make sure to add the accelerator (if any)
+    item:SetItemLabel(item:GetItemLabelText()..KSC(nil, ksc))
   end
 
   -- if there is no keymap or menu item, then use the accelerator
@@ -1323,6 +1591,10 @@ function ide:IsProjectSubDirectory(dir)
   local path = wx.wxFileName(dir:sub(1, #projdir))
   path:Normalize()
   return path:SameAs(wx.wxFileName(projdir))
+end
+
+function ide:IsSameDirectoryPath(s1, s2)
+  return s1 and s2 and wx.wxFileName.DirName(s1):SameAs(wx.wxFileName.DirName(s2)) or false
 end
 
 function ide:SetCommandLineParameters(params)
@@ -1369,6 +1641,42 @@ function ide:AnalyzeString(...) return AnalyzeString(...) end
 
 function ide:AnalyzeFile(...) return AnalyzeFile(...) end
 
+--[[ format placeholders
+    - %f -- full project name (project path)
+    - %s -- short project name (directory name)
+    - %i -- interpreter name
+    - %S -- file name
+    - %F -- file path
+    - %n -- line number
+    - %c -- line content
+    - %T -- application title
+    - %v -- application version
+    - %t -- current tab name
+--]]
+function ide:ExpandPlaceholders(msg, ph)
+  ph = ph or {}
+  if type(msg) == 'function' then return msg(ph) end
+  local editor = self:GetEditor()
+  local proj = self:GetProject() or ""
+  local dirs = wx.wxFileName(proj):GetDirs()
+  local doc = editor and self:GetDocument(editor)
+  local index, nb
+  if doc then index, nb = doc:GetTabIndex() end
+  local def = {
+    f = proj,
+    s = dirs[#dirs] or "",
+    i = self:GetInterpreter():GetName() or "",
+    S = doc and doc:GetFileName() or "",
+    F = doc and doc:GetFilePath() or "",
+    n = editor and editor:GetCurrentLine()+1 or 0,
+    c = editor and editor:GetLineDyn(editor:GetCurrentLine()) or "",
+    T = self:GetProperty("editor") or "",
+    v = self.VERSION,
+    t = index and nb:GetPageText(index) or "",
+  }
+  return(msg:gsub('%%(%w)', function(p) return ph[p] or def[p] or '?' end))
+end
+
 do
   local codepage
   function ide:GetCodePage()
@@ -1382,5 +1690,80 @@ do
       end
     end
     return tonumber(codepage)
+  end
+end
+
+function ide:GetShortFilePath(filepath)
+  -- if running on Windows and can't open the file, this may mean that
+  -- the file path includes unicode characters that need special handling
+  -- when passing to applications not set up to handle them
+  if ide.osname == 'Windows' and pcall(require, "winapi") then
+    local fh = io.open(filepath, "r")
+    if fh then fh:close() end
+    if not fh and wx.wxFileExists(filepath) then
+      winapi.set_encoding(winapi.CP_UTF8)
+      local shortpath = winapi.short_path(filepath)
+      if shortpath ~= filepath then return shortpath end
+      ide:Print(
+        ("Can't get short path for a Unicode file name '%s' to use the file.")
+        :format(filepath))
+      ide:Print(
+        ("You can enable short names by using `fsutil 8dot3name set %s: 0` and recreate the file or directory.")
+        :format(wx.wxFileName(filepath):GetVolume()))
+    end
+  end
+  return filepath
+end
+
+do
+  local beforeFullScreenPerspective
+  local statusbarShown
+
+  function ide:ShowFullScreen(setFullScreen)
+    local uimgr = self:GetUIManager()
+    local frame = self:GetMainFrame()
+    if setFullScreen then
+      beforeFullScreenPerspective = uimgr:SavePerspective()
+
+      local panes = uimgr:GetAllPanes()
+      for index = 0, panes:GetCount()-1 do
+        local name = panes:Item(index).name
+        if name ~= "notebook" then uimgr:GetPane(name):Hide() end
+      end
+      uimgr:Update()
+      local ed = ide:GetEditor()
+      if ed then ide:GetDocument(ed):SetActive() end
+    end
+
+    -- On OSX, status bar is not hidden when switched to
+    -- full screen: http://trac.wxwidgets.org/ticket/14259; do manually.
+    -- need to turn off before showing full screen and turn on after,
+    -- otherwise the window is restored incorrectly and is reduced in size.
+    if self.osname == 'Macintosh' and setFullScreen then
+      statusbarShown = frame:GetStatusBar():IsShown()
+      frame:GetStatusBar():Hide()
+    end
+
+    -- protect from systems that don't have ShowFullScreen (GTK on linux?)
+    pcall(function() frame:ShowFullScreen(setFullScreen) end)
+
+    if not setFullScreen and beforeFullScreenPerspective then
+      uimgr:LoadPerspective(beforeFullScreenPerspective, true)
+      beforeFullScreenPerspective = nil
+    end
+
+    if self.osname == 'Macintosh' and not setFullScreen then
+      if statusbarShown then
+        frame:GetStatusBar():Show()
+        -- refresh AuiManager as the statusbar may be shown below the border
+        uimgr:Update()
+      end
+    end
+
+    -- accelerator table gets removed on Linux when setting full screen mode, so put it back;
+    -- see wxwidgets ticket https://trac.wxwidgets.org/ticket/18053
+    if self.osname == 'Unix' and setFullScreen then
+      self:SetAccelerator(-1) -- only refresh the accelerator table after setting full screen
+    end
   end
 end

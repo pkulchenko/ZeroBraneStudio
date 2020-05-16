@@ -1,47 +1,39 @@
--- Copyright 2006-2013 Brian "Sir Alaran" Schott. See LICENSE.
+-- Copyright 2006-2018 Brian "Sir Alaran" Schott. See License.txt.
 -- JSON LPeg lexer.
 -- Based off of lexer code by Mitchell.
 
-local l = require('lexer')
-local token, word_match = l.token, l.word_match
+local lexer = require('lexer')
+local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local M = {_NAME = 'json'}
+local lex = lexer.new('json')
 
 -- Whitespace.
-local ws = token(l.WHITESPACE, l.space^1)
-
--- Comments.
-local comment = token(l.COMMENT, '/*' * (l.any - '*/')^0 * P('*/')^-1)
+lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Strings.
-local sq_str = P('u')^-1 * l.delimited_range("'", true)
-local dq_str = P('U')^-1 * l.delimited_range('"', true)
-local string = token(l.STRING, sq_str + dq_str)
-
--- Numbers.
-local integer = S('+-')^-1 * l.digit^1 * S('Ll')^-1
-local number = token(l.NUMBER, l.float + integer)
+lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
+                                           lexer.delimited_range('"', true)))
 
 -- Keywords.
-local keyword = token(l.KEYWORD, word_match{"true", "false", "null"})
+lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[true false null]]))
+
+-- Comments.
+local line_comment = '//' * lexer.nonnewline_esc^0
+local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
+
+-- Numbers.
+local integer = S('+-')^-1 * lexer.digit^1 * S('Ll')^-1
+lex:add_rule('number', token(lexer.NUMBER, lexer.float + integer))
 
 -- Operators.
-local operator = token(l.OPERATOR, S('[]{}:,'))
+lex:add_rule('operator', token(lexer.OPERATOR, S('[]{}:,')))
 
-M._rules = {
-  {'whitespace', ws},
-  {'comment', comment},
-  {'string', string},
-  {'number', number},
-  {'keyword', keyword},
-  {'operator', operator},
-}
+-- Fold points.
+lex:add_fold_point(lexer.OPERATOR, '[', ']')
+lex:add_fold_point(lexer.OPERATOR, '{', '}')
+lex:add_fold_point(lexer.COMMENT, '/*', '*/')
+lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
 
-M._foldsymbols = {
-  _patterns = {'[%[%]{}]', '/%*', '%*/'},
-  [l.OPERATOR] = {['['] = 1, [']'] = -1, ['{'] = 1, ['}'] = -1},
-  [l.COMMENT] = {['/*'] = 1, ['*/'] = -1}
-}
-
-return M
+return lex

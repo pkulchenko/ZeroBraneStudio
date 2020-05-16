@@ -1,6 +1,6 @@
 --
 -- MobDebug -- Lua remote debugger
--- Copyright 2011-15 Paul Kulchenko
+-- Copyright 2011-18 Paul Kulchenko
 -- Based on RemDebug 1.0 Copyright Kepler Project 2005
 --
 
@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.702",
+  _VERSION = "0.706",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -130,7 +130,7 @@ end
 local function q(s) return string.gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
 
 local serpent = (function() ---- include Serpent module for serialization
-local n, v = "serpent", "0.30" -- (C) 2012-17 Paul Kulchenko; MIT License
+local n, v = "serpent", "0.302" -- (C) 2012-18 Paul Kulchenko; MIT License
 local c, d = "Paul Kulchenko", "Lua serializer and pretty printer"
 local snum = {[tostring(1/0)]='1/0 --[[math.huge]]',[tostring(-1/0)]='-1/0 --[[-math.huge]]',[tostring(0/0)]='0/0'}
 local badtype = {thread = true, userdata = true, cdata = true}
@@ -183,10 +183,10 @@ local function s(t, opts)
       sref[#sref+1] = spath..space..'='..space..seen[t]
       return tag..'nil'..comment('ref', level) end
     -- protect from those cases where __tostring may fail
-    if type(mt) == 'table' then
+    if type(mt) == 'table' and metatostring ~= false then
       local to, tr = pcall(function() return mt.__tostring(t) end)
       local so, sr = pcall(function() return mt.__serialize(t) end)
-      if (opts.metatostring ~= false and to or so) then -- knows how to serialize itself
+      if (to or so) then -- knows how to serialize itself
         seen[t] = insref or spath
         t = so and sr or tr
         ttype = type(t)
@@ -221,7 +221,7 @@ local function s(t, opts)
           local path = seen[t]..'['..tostring(seen[key] or globals[key] or gensym(key))..']'
           sref[#sref] = path..space..'='..space..tostring(seen[value] or val2str(value,nil,indent,path))
         else
-          out[#out+1] = val2str(value,key,indent,insref,seen[t],plainindex,level+1)
+          out[#out+1] = val2str(value,key,indent,nil,seen[t],plainindex,level+1)
           if maxlen then
             maxlen = maxlen - #out[#out]
             if maxlen < 0 then break end
@@ -454,7 +454,7 @@ local function capture_vars(level, thread)
   -- including access to globals, but this causes vars[name] to fail in
   -- restore_vars on local variables or upvalues with `nil` values when
   -- 'strict' is in effect. To avoid this `rawget` is used in restore_vars.
-  setmetatable(vars, { __index = getfenv(func), __newindex = getfenv(func) })
+  setmetatable(vars, { __index = getfenv(func), __newindex = getfenv(func), __mode = "v" })
   return vars
 end
 
@@ -763,7 +763,6 @@ end
 
 local function debugger_loop(sev, svars, sfile, sline)
   local command
-  local app, osname
   local eval_env = svars or {}
   local function emptyWatch () return false end
   local loaded = {}
@@ -771,34 +770,17 @@ local function debugger_loop(sev, svars, sfile, sline)
 
   while true do
     local line, err
-    local wx = rawget(genv, "wx") -- use rawread to make strict.lua happy
-    if (wx or mobdebug.yield) and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
+    if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
     while true do
       line, err = server:receive()
-      if not line and err == "timeout" then
-        -- yield for wx GUI applications if possible to avoid "busyness"
-        app = app or (wx and wx.wxGetApp and wx.wxGetApp())
-        if app then
-          local win = app:GetTopWindow()
-          local inloop = app:IsMainLoopRunning()
-          osname = osname or wx.wxPlatformInfo.Get():GetOperatingSystemFamilyName()
-          if win and not inloop then
-            -- process messages in a regular way
-            -- and exit as soon as the event loop is idle
-            if osname == 'Unix' then wx.wxTimer(app):Start(10, true) end
-            local exitLoop = function()
-              win:Disconnect(wx.wxID_ANY, wx.wxID_ANY, wx.wxEVT_IDLE)
-              win:Disconnect(wx.wxID_ANY, wx.wxID_ANY, wx.wxEVT_TIMER)
-              app:ExitMainLoop()
-            end
-            win:Connect(wx.wxEVT_IDLE, exitLoop)
-            win:Connect(wx.wxEVT_TIMER, exitLoop)
-            app:MainLoop()
-          end
-        elseif mobdebug.yield then mobdebug.yield()
+      if not line then
+        if err == "timeout" then
+          if mobdebug.yield then mobdebug.yield() end
+        elseif err == "closed" then
+          error("Debugger connection closed", 0)
+        else
+          error(("Unexpected socket error: %s"):format(err), 0)
         end
-      elseif not line and err == "closed" then
-        error("Debugger connection closed", 0)
       else
         -- if there is something in the pending buffer, prepend it to the line
         if buf then line = buf .. line; buf = nil end
@@ -839,7 +821,7 @@ local function debugger_loop(sev, svars, sfile, sline)
           -- with a specific stack frame: `capture_vars(0, coro_debugee)`
           local env = stack and coro_debugee and capture_vars(stack-1, coro_debugee) or eval_env
           setfenv(func, env)
-          status, res = stringify_results(params, pcall(func, unpack(env['...'] or {})))
+          status, res = stringify_results(params, pcall(func, unpack(rawget(env,'...') or {})))
         end
         if status then
           if mobdebug.onscratch then mobdebug.onscratch(res) end
@@ -1425,9 +1407,9 @@ local function handle(params, client, options)
         local lines = file:read("*all"):gsub("^#!.-\n", "\n")
         file:close()
 
-        local file = string.gsub(exp, "\\", "/") -- convert slash
-        file = removebasedir(file, basedir)
-        client:send("LOAD " .. tostring(#lines) .. " " .. file .. "\n")
+        local fname = string.gsub(exp, "\\", "/") -- convert slash
+        fname = removebasedir(fname, basedir)
+        client:send("LOAD " .. tostring(#lines) .. " " .. fname .. "\n")
         if #lines > 0 then client:send(lines) end
       end
       while true do
@@ -1643,7 +1625,7 @@ local function listen(host, port)
 
   while true do
     io.write("> ")
-    local file, line, err = handle(io.read("*line"), client)
+    local file, _, err = handle(io.read("*line"), client)
     if not file and err == false then break end -- completed debugging
   end
 

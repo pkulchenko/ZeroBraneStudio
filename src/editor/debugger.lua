@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- Original authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 -- Integration with MobDebug
@@ -144,6 +144,7 @@ function debugger:updateStackSync()
 
     local forceexpand = ide.config.debugger.maxdatalevel == 1
     local params = debugger:GetDataOptions({maxlevel=false})
+    local maxlen = tonumber(ide.config.debugger.maxdatalength)
 
     local root = stackCtrl:AddRoot("Stack")
     callData = {} -- reset call cache
@@ -181,6 +182,7 @@ function debugger:updateStackSync()
         -- format the variable name, value as a single line and,
         -- if not a simple type, the string value.
         local value = val[1]
+        if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
         local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.LOCAL)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
@@ -190,6 +192,7 @@ function debugger:updateStackSync()
       -- add the upvalues for this call stack level to the tree item
       for name,val in pairs(type(frame[3]) == "table" and frame[3] or {}) do
         local value = val[1]
+        if type(value) == "string" and maxlen and #value > maxlen then value = value:sub(1,maxlen) end
         local text = ("%s = %s"):format(name, fixUTF8(serialize(value, params)))
         local item = stackCtrl:AppendItem(callitem, text, image.UPVALUE)
         stackCtrl:SetItemValueIfExpandable(item, value, forceexpand)
@@ -200,8 +203,8 @@ function debugger:updateStackSync()
       stackCtrl:Expand(callitem)
     end
     stackCtrl:EnsureVisible(stackCtrl:GetFirstChild(root))
-    stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     stackCtrl:Thaw()
+    stackCtrl:SetScrollPos(wx.wxHORIZONTAL, 0, true)
     debugger.needrefresh.stack = false
   elseif not shown and canupdate then
     debugger.needrefresh.stack = true
@@ -345,8 +348,8 @@ function debugger:ActivateDocument(file, line, activatehow)
   local fileName = wx.wxFileName(file)
   local fileNameLower = wx.wxFileName(file:lower())
 
-  for _, document in pairs(ide.openDocuments) do
-    local editor = document.editor
+  for _, document in pairs(ide:GetDocuments()) do
+    local editor = document:GetEditor()
     -- either the file name matches, or the content;
     -- when checking for the content remove all newlines as they may be
     -- reported differently from the original by the Lua engine.
@@ -359,6 +362,7 @@ function debugger:ActivateDocument(file, line, activatehow)
       if line then
         if line == 0 then -- special case; find the first executable line
           line = math.huge
+          local loadstring = loadstring or load
           local func = loadstring(editor:GetTextDyn())
           if func then -- .activelines == {[3] = true, [4] = true, ...}
             for l in pairs(debug.getinfo(func, "L").activelines) do
@@ -395,10 +399,8 @@ function debugger:ActivateDocument(file, line, activatehow)
         end
       end
 
-      local selection = document.index
+      document:SetActive()
       ide:RequestAttention()
-      notebook:SetSelection(selection)
-      SetEditorSelection(selection)
 
       if content then
         -- it's possible that the current editor tab already has
@@ -456,9 +458,9 @@ function debugger:reSetBreakpoints()
 
   -- go over all windows and find all breakpoints
   if (not debugger.scratchpad) then
-    for _, document in pairs(ide.openDocuments) do
-      local editor = document.editor
-      local filePath = document.filePath
+    for _, document in pairs(ide:GetDocuments()) do
+      local editor = document:GetEditor()
+      local filePath = document:GetFilePath()
       local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
       while filePath and line ~= -1 do
         debugger:handle("setb " .. filePath .. " " .. (line+1))
@@ -470,6 +472,7 @@ end
 
 function debugger:shell(expression, isstatement)
   local debugger = self
+  local loadstring = loadstring or load
   -- check if the debugger is running and may be waiting for a response.
   -- allow that request to finish, otherwise this function does nothing.
   if debugger.running then debugger:Update() end
@@ -857,7 +860,7 @@ function debugger:handle(command, server, options)
 
   -- some filenames may be represented in a different code page; check and re-encode as UTF8
   local codepage = ide:GetCodePage()
-  if codepage and file and FixUTF8(file) == nil and winapi then
+  if codepage and type(file) == "string" and FixUTF8(file) == nil and winapi then
     file = winapi.encode(codepage, winapi.CP_UTF8, file)
   end
 
@@ -1596,34 +1599,34 @@ local function debuggerCreateWatchWindow()
       item = watchCtrl:HitTest(watchCtrl:ScreenToClient(wx.wxGetMousePosition()))
       local editlabel = watchCtrl:IsWatch(item) and TR("&Edit Watch") or TR("&Edit Value")
       local menu = ide:MakeMenu {
-        { ID_ADDWATCH, TR("&Add Watch")..KSC(ID_ADDWATCH) },
-        { ID_EDITWATCH, editlabel..KSC(ID_EDITWATCH) },
-        { ID_DELETEWATCH, TR("&Delete Watch")..KSC(ID_DELETEWATCH) },
-        { ID_COPYWATCHVALUE, TR("&Copy Value")..KSC(ID_COPYWATCHVALUE) },
+        { ID.ADDWATCH, TR("&Add Watch")..KSC(ID.ADDWATCH) },
+        { ID.EDITWATCH, editlabel..KSC(ID.EDITWATCH) },
+        { ID.DELETEWATCH, TR("&Delete Watch")..KSC(ID.DELETEWATCH) },
+        { ID.COPYWATCHVALUE, TR("&Copy Value")..KSC(ID.COPYWATCHVALUE) },
       }
       PackageEventHandle("onMenuWatch", menu, watchCtrl, event)
       watchCtrl:PopupMenu(menu)
       item = nil
     end)
 
-  watchCtrl:Connect(ID_ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
+  watchCtrl:Connect(ID.ADDWATCH, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
       watchCtrl:SetFocus()
       watchCtrl:EditLabel(watchCtrl:AppendItem(root, defaultExpr, image.LOCAL))
     end)
 
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:EditLabel(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_EDITWATCH, wx.wxEVT_UPDATE_UI,
+  watchCtrl:Connect(ID.EDITWATCH, wx.wxEVT_UPDATE_UI,
     function (event) event:Enable(watchCtrl:IsEditable(item or watchCtrl:GetSelection())) end)
 
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:Delete(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_DELETEWATCH, wx.wxEVT_UPDATE_UI,
+  watchCtrl:Connect(ID.DELETEWATCH, wx.wxEVT_UPDATE_UI,
     function (event) event:Enable(watchCtrl:IsWatch(item or watchCtrl:GetSelection())) end)
 
-  watchCtrl:Connect(ID_COPYWATCHVALUE, wx.wxEVT_COMMAND_MENU_SELECTED,
+  watchCtrl:Connect(ID.COPYWATCHVALUE, wx.wxEVT_COMMAND_MENU_SELECTED,
     function (event) watchCtrl:CopyItemValue(item or watchCtrl:GetSelection()) end)
-  watchCtrl:Connect(ID_COPYWATCHVALUE, wx.wxEVT_UPDATE_UI, function (event)
+  watchCtrl:Connect(ID.COPYWATCHVALUE, wx.wxEVT_UPDATE_UI, function (event)
       -- allow copying only when the debugger is available
       local debugger = ide:GetDebugger()
       event:Enable(item:IsOk() and debugger.server and not debugger.running
@@ -1776,7 +1779,10 @@ function debugger:ScratchpadRefresh()
     and scratchpadEditor.spec.apitype == "lua"
     and not ide.interpreter.skipcompile
     and not CompileProgram(scratchpadEditor, { jumponerror = false, reportstats = false })
-    then return end
+    then
+      debugger.scratchpad.updated = false
+      return
+    end
 
     local code = StripShebang(scratchpadEditor:GetTextDyn())
     if debugger.scratchpad.running then
@@ -1788,11 +1794,10 @@ function debugger:ScratchpadRefresh()
         debugger.scratchpad.running = now
       end
     else
-      local clear = ide:GetMenuBar():IsChecked(ID_CLEAROUTPUT)
       local filePath = debuggerMakeFileName(scratchpadEditor)
 
       -- wrap into a function call to make "return" to work with scratchpad
-      code = "(function()"..code.."\nend)()"
+      code = "(function(...)"..code.."\nend)(...)"
 
       -- this is a special error message that is generated at the very end
       -- of each script to avoid exiting the (debugee) scratchpad process.
@@ -1808,7 +1813,7 @@ function debugger:ScratchpadRefresh()
         debugger.scratchpad.updated = false
         debugger.scratchpad.runs = (debugger.scratchpad.runs or 0) + 1
 
-        if clear then ClearOutput(true) end
+        ide:GetOutput():Erase()
 
         -- the code can be running in two ways under scratchpad:
         -- 1. controlled by the application, requires stopper (most apps)
@@ -2023,7 +2028,7 @@ function debugger:ScratchpadOff()
   -- disable menu if it is still enabled
   -- (as this may be called when the debugger is being shut down)
   local menuBar = ide.frame.menuBar
-  if menuBar:IsChecked(ID_RUNNOW) then menuBar:Check(ID_RUNNOW, false) end
+  if menuBar:IsChecked(ID.RUNNOW) then menuBar:Check(ID.RUNNOW, false) end
 
   return true
 end

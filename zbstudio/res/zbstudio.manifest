@@ -5,7 +5,7 @@
     name="ZeroBraneLLC.ZeroBrane.ZeroBraneStudio"
     type="win32"
   />
-  <description>Lightweight Lua IDE</description>
+  <description>ZeroBrane Studio IDE</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
       <requestedPrivileges>

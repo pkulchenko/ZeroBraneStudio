@@ -16,5 +16,5 @@ else
     aarch64) ARCH=aarch64;;
     *)       ARCH=x86;;
   esac
-  (cd "$DIR"; bin/linux/$ARCH/lua src/main.lua zbstudio -cwd "$CWD" "$@") &
+  (cd "$DIR"; bin/linux/$ARCH/lua src/main.lua zbstudio -cwd "$CWD" "$@" 2>/dev/null) &
 fi

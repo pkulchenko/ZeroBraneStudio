@@ -46,6 +46,7 @@ return {
   ["&Start Debugger Server"] = "Lanzar servidor de depuración", -- src\editor\menu_project.lua
   ["&Status Bar"] = "Barra de e&stado", -- src\editor\menu_view.lua
   ["&Tool Bar"] = "Barra de herramientas", -- src\editor\menu_view.lua
+  ["&Tools"] = nil, -- src\editor\package.lua
   ["&Tutorials"] = "&Tutoriales", -- src\editor\menu_help.lua
   ["&Undo"] = "Deshacer", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["&View"] = "Ver", -- src\editor\menu_view.lua
@@ -81,7 +82,9 @@ return {
   ["Choose a project directory"] = "Elegir un directorio de proyecto", -- src\editor\toolbar.lua, src\editor\menu_project.lua, src\editor\filetree.lua
   ["Choose a search directory"] = "Elegir un directorio de búsqueda", -- src\editor\findreplace.lua
   ["Choose..."] = "Elegir...", -- src\editor\findreplace.lua, src\editor\menu_project.lua, src\editor\filetree.lua
+  ["Clear Bookmarks In File"] = nil, -- src\editor\markers.lua
   ["Clear Bookmarks In Project"] = "Limpiar los bookmarks del proyecto", -- src\editor\markers.lua
+  ["Clear Breakpoints In File"] = nil, -- src\editor\markers.lua
   ["Clear Breakpoints In Project"] = "Limpiar puntos de ruptura del proyecto", -- src\editor\markers.lua
   ["Clear Items"] = "Limpiar objetos", -- src\editor\findreplace.lua, src\editor\menu_file.lua
   ["Clear items from this list"] = "Limpiar objectos de esta lista", -- src\editor\menu_file.lua
@@ -97,7 +100,7 @@ return {
   ["Comment or uncomment current or selected lines"] = {"Comentar o descomentar la línea activa (seleccionada)","Comentar o descomentar las líneas activas (seleccionadas)"}, -- src\editor\menu_edit.lua
   ["Compilation error"] = "Error de compilación", -- src\editor\commands.lua, src\editor\debugger.lua
   ["Compilation successful; %.0f%% success rate (%d/%d)."] = "Compilación exitosa; factor de éxito: %.0f%% (%d/%d).", -- src\editor\commands.lua
-  ["Compile the current file"] = "Compilar el archivo actual", -- src\editor\menu_project.lua
+  ["Compile the current file"] = "Compilar el archivo actual", -- src\editor\toolbar.lua, src\editor\menu_project.lua
   ["Complete &Identifier"] = "Completar identificador", -- src\editor\menu_edit.lua
   ["Complete the current identifier"] = "Completar el actual identificador", -- src\editor\menu_edit.lua
   ["Consider removing backslash from escape sequence '%s'."] = "Considerar la eliminación de las barras invertidas de la secuencia de escape '%s'.", -- src\editor\commands.lua
@@ -128,7 +131,7 @@ return {
   ["Error while loading configuration file: %s"] = "Error mientras se cargaba el fichero de configuración: %s", -- src\editor\style.lua
   ["Error while processing API file: %s"] = "Error mientras se procesaba el archivo de API: %s", -- src\editor\autocomplete.lua
   ["Error while processing configuration file: %s"] = "Error mientras se procesaba el fichero de configuración: %s", -- src\editor\style.lua
-  ["Error"] = "Error", -- src\editor\commands.lua
+  ["Error"] = "Error", -- src\editor\package.lua
   ["Evaluate In Console"] = "Evaluar en consola", -- src\editor\editor.lua
   ["Execute the current project/file and keep updating the code to see immediate results"] = "Ejecutar el proyecto/archivo actual y manteniendo actualizado el código para ver resultados en tiempo real", -- src\editor\menu_project.lua
   ["Execute the current project/file"] = "Ejecutar el proyecto/archivo actual", -- src\editor\toolbar.lua, src\editor\menu_project.lua
@@ -158,6 +161,7 @@ return {
   ["Formatting page %d..."] = "Formateando página %d...", -- src\editor\print.lua
   ["Found %d instance."] = {"Encontrada una instancia", "Encontradas %d instancias"}, -- src\editor\findreplace.lua
   ["Found auto-recovery record and restored saved session."] = "Encontrada autorrecuperación y sesión restaurada.", -- src\editor\commands.lua
+  ["Found match in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Full &Screen"] = "Pantalla completa", -- src\editor\menu_view.lua
   ["Go To Definition"] = "Ir a definición", -- src\editor\editor.lua
   ["Go To File..."] = "Ir a fichero...", -- src\editor\menu_search.lua
@@ -217,7 +221,7 @@ return {
   ["Project"] = "Proyecto", -- src\editor\filetree.lua
   ["Project/&FileTree Window"] = "Ventana de proyecto/árbol de archivos", -- src\editor\menu_view.lua
   ["Provide command line parameters"] = "Proveer parámetros de línea de comandos", -- src\editor\menu_project.lua
-  ["Queued %d files to index."] = "Encolar %d ficheros al índice", -- src\editor\menu_search.lua
+  ["Queued %d files to index."] = "Encolar %d ficheros al índice", -- src\editor\commandbar.lua
   ["R/O"] = "R/O", -- src\editor\editor.lua
   ["R/W"] = "R/W", -- src\editor\editor.lua
   ["Re&place In Files"] = "Remplazar en archivos", -- src\editor\menu_search.lua
@@ -261,6 +265,7 @@ return {
   ["Search in selection"] = "Buscar en selección", -- src\editor\toolbar.lua
   ["Search in subdirectories"] = "Buscar en subdirectorios", -- src\editor\toolbar.lua
   ["Searching for '%s'."] = "Buscando para '%s'.", -- src\editor\findreplace.lua
+  ["Searching in '%s'."] = nil, -- src\editor\findreplace.lua
   ["Sel: %d/%d"] = "Sel: %d/%d", -- src\editor\editor.lua
   ["Select &All"] = "Seleccionar todo", -- src\editor\gui.lua, src\editor\editor.lua, src\editor\menu_edit.lua
   ["Select And Find Next"] = "Seleccionar y buscar siguiente", -- src\editor\menu_search.lua
@@ -268,7 +273,7 @@ return {
   ["Select all text in the editor"] = "Seleccionar todo el texto en el editor", -- src\editor\menu_edit.lua
   ["Select the word under cursor and find its next occurrence"] = "Seleccionar palabra bajo cursor y encontrar la siguiente aparición", -- src\editor\menu_search.lua
   ["Select the word under cursor and find its previous occurrence"] = "Seleccionar palabra bajo cursor y encontar la anterior aparición", -- src\editor\menu_search.lua
-  ["Set As Start File"] = "Establecer como fchero de inicio", -- src\editor\filetree.lua
+  ["Set As Start File"] = "Establecer como fchero de inicio", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Set From Current File"] = "Establecer fichero actual", -- src\editor\menu_project.lua
   ["Set To Project Directory"] = "Establecer a directorio de proyecto", -- src\editor\findreplace.lua
   ["Set To Selected Directory"] = "Establcer a directorio seleccionado", -- src\editor\filetree.lua
@@ -307,7 +312,7 @@ return {
   ["Switch to or from full screen mode"] = "Conmutar el modo de pantalla completa", -- src\editor\menu_view.lua
   ["Symbol Index"] = "Índice de símbolo", -- src\editor\outline.lua
   ["Text not found."] = "Texto no encontrado.", -- src\editor\findreplace.lua
-  ["The API file must be located in a subdirectory of the API directory."] = "El archivo de API debe ser almacenado en un subdirectorio del directorio de API.", -- src\editor\autocomplete.lua
+  ["The API file must be located in a subdirectory of the API directory."] = "El archivo de API debe ser almacenado en un subdirectorio del directorio de API.", -- src\main.lua
   ["Toggle Bookmark"] = "Conmutar marcador", -- src\editor\markers.lua, src\editor\menu_edit.lua
   ["Toggle Breakpoint"] = "Conmutar punto de ruptura", -- src\editor\markers.lua, src\editor\menu_project.lua
   ["Toggle bookmark"] = "Conmutar marcador", -- src\editor\toolbar.lua, src\editor\menu_edit.lua, src\editor\markers.lua
@@ -324,13 +329,14 @@ return {
   ["Unable to stop program (pid: %d), code %d."] = "No se puedo parar el programa (pid: %d), código %d.", -- src\editor\debugger.lua
   ["Undo last edit"] = "Deshacer la última edición", -- src\editor\menu_edit.lua
   ["Unmap Directory"] = "Desmapear directorio", -- src\editor\filetree.lua
-  ["Unset '%s' As Start File"] = "Quitar '%s' como fichero de inicio", -- src\editor\filetree.lua
+  ["Unset '%s' As Start File"] = "Quitar '%s' como fichero de inicio", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Updated %d file."] = {"Un fichero actualizado", "%d ficheros actualizados"}, -- src\editor\findreplace.lua
   ["Updating symbol index and settings..."] = "Actualizando índice de símbolos y configurando...", -- src\editor\outline.lua
   ["Use %s to close."] = "Usa %s para cerrar.", -- src\editor\findreplace.lua
   ["Use '%s' to see full description."] = "Usa '%s' para ver la descripción completa.", -- src\editor\editor.lua
   ["Use '%s' to show line endings and '%s' to convert them."] = "Usa '%s' para ver los finales de línea y '%s' para convertirlos", -- src\editor\commands.lua
   ["Use 'clear' to clear the shell output and the history."] = "Usa 'clear' para limpiar la consola de salida y el historial.", -- src\editor\shellbox.lua
+  ["Use 'reset' to clear the environment."] = nil, -- src\editor\shellbox.lua
   ["Use Shift-Enter for multiline code."] = "Usa <Shift-Enter> para código multilínea.", -- src\editor\shellbox.lua
   ["View the markers window"] = "Ver la ventana de marcas", -- src\editor\menu_view.lua
   ["View the outline window"] = "Ver la ventana de esquema", -- src\editor\menu_view.lua

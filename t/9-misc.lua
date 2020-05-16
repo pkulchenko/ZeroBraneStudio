@@ -1,8 +1,13 @@
-local i18n = ide:GetFileList('cfg/i18n/', true)
-is(#i18n, 10, "Language files are present in i18n directory.")
+local i18n = ide:GetFileList('cfg/i18n/', true, '*.lua')
+is(#i18n, 12, "Language files are present in i18n directory.")
 for _, ln in ipairs(i18n) do
   local func = loadfile(ln)
   ok(type(func) == 'function' and func() ~= nil, ("Loaded '%s' language file."):format(ln))
+end
+
+local ints = ide:GetFileList('interpreters/', true)
+for _, i in ipairs(ints) do
+  ok(type(loadfile(i)) == 'function', ("Loaded '%s' interpreter file."):format(i))
 end
 
 local fixed, invalid = FixUTF8("+\128\129\130+\194\127+", "+")
@@ -75,7 +80,7 @@ for _, tst in ipairs({
 
   editor:SetText(tst)
   editor:ResetTokenList()
-  while IndicateAll(editor) do end
+  while editor:IndicateSymbols() do end
   local defonly = true
   for _, token in ipairs(ide:GetEditor():GetTokenList()) do
     if token.name ~= '_' then defonly = false end
@@ -93,19 +98,23 @@ at = ide:GetAccelerators()
 ok(next(at) == nil, "No accelerators are present after removing all of them.")
 
 ide:SetHotKey(ID.STARTDEBUG, "F1")
-is(ide:FindMenuItem(ID.STARTDEBUG):GetText():match("\t(.*)"), "F1", "`SetHotKey` sets the requested hotkey.")
-ok(ide:FindMenuItem(ID.ABOUT):GetText():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (1/2).")
+is(ide:FindMenuItem(ID.STARTDEBUG):GetItemLabel():match("\t(.*)"), "F1", "`SetHotKey` sets the requested hotkey.")
+ok(ide:FindMenuItem(ID.ABOUT):GetItemLabel():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (1/2).")
 
 local keyid, keysc = ide:GetHotKey(ID.STARTDEBUG)
 is(keysc, "F1", "`GetHotKey` returns hotkey assigned with SetHotKey using id lookup.")
 is(ide:GetHotKey("F1"), ID.STARTDEBUG, "`GetHotKey` returns hotkey assigned with SetHotKey using shortcut lookup.")
+
+ide:SetHotKey(ID.STARTDEBUG)
+ok(ide:GetHotKey("F1") == nil, "Setting hotkey to `nil` properly removes it (1/2).")
+ok(ide:GetHotKey(ID.STARTDEBUG) == nil, "Setting hotkey to `nil` properly removes it (1/2).")
 
 ok(ide:GetHotKey("F13") == nil, "`GetHotKey` returns nothing for nonexisting shortcut.")
 ok(ide:GetHotKey(1) == nil, "`GetHotKey` returns nothing for nonexisting id.")
 ok(ide:GetHotKey() == nil, "`GetHotKey` returns nothing when no parameters are passed.")
 
 ide:SetHotKey(ID.STARTDEBUG, "Ctrl+N") -- this should resolve conflict with `Ctrl-N`
-ok(ide:FindMenuItem(ID.NEW):GetText():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (2/2).")
+ok(ide:FindMenuItem(ID.NEW):GetItemLabel():match("\t(.*)") == nil, "`SetHotKey` removes conflicted hotkey (2/2).")
 
 local capname, cwd = [[T\TesT.LUA]], wx.wxGetCwd()
 if ide.osname == "Windows" then
@@ -125,9 +134,45 @@ is(ide:GetProject("t"):gsub("[/\\]$",""), MergeFullPath(cwd,"t"), "Project is se
 local itemid = tree:FindItem("test.lua")
 ok(itemid and itemid:IsOk() and tree:IsFileKnown(itemid), ".lua files have 'known' type.")
 
+
+local spec = ide:FindSpec("py", "#!/bin/env ruby")
+is(spec.lexer, "lexlpeg.python", "Shebang detection is not triggered for known extensions.")
+
+spec = ide:FindSpec("", "#!/bin/env ruby")
+is(spec.lexer, "lexlpeg.ruby", "Shebang detection sets correct lexer.")
+is(#spec.exts, 0, "Shebang detection doesn't add extensions.")
+
+local p = ide:GetProject()
+ide.filetree.settings.mapped[p] = {}
+local res = tree:MapDirectory("foo")
+is(#ide.filetree.settings.mapped[p], 0, "MapDirectory doesn't add non-existing directory.")
+ok(res == nil, "MapDirectory reports failure to add directory.")
+local sep = GetPathSeparator()
+local dir = "../src"
+res = tree:MapDirectory(dir)
+is(#ide.filetree.settings.mapped[p], 1, "MapDirectory adds a new directory to the list.")
+ok(res == true, "MapDirectory reports success to add directory.")
+tree:MapDirectory(dir..sep)
+is(#ide.filetree.settings.mapped[p], 1, "MapDirectory skips adding the same directory.")
+tree:UnmapDirectory(dir..sep)
+ok(not ide.filetree.settings.mapped[p], "UnmapDirectory removes directory from the list.")
+
 ok(tree:SetStartFile("test.lua") ~= nil, "SetStartFile sets start file.")
 is(tree:GetStartFile(), "test.lua", "GetStartFile returns expected value.")
 tree:SetStartFile()
 ok(tree:GetStartFile() == nil, "GetStartFile returns `nil` after unsetting start file.")
 
 is(ide:IsValidProperty({}, "nonexisting"), false, "`IsValidProperty` returns `false ` for non-existing properties.")
+
+-- create t/foo.lua with foo=1 value
+local configfile = MergeFullPath(wx.wxStandardPaths.Get():GetTempDir(), "config.lua")
+FileWrite(configfile, "foo=1")
+ide:AddConfig("test", configfile)
+FileRemove(configfile)
+-- confirm ide.config.foo == 1
+is(ide.config.foo, 1, "AddConfig sets specified config file.")
+ide:RemoveConfig("test")
+ok(ide.config.foo == nil, "RemoveConfig unsets specified config file.")
+
+-- check that ide.config.styles still has metatable
+ok(getmetatable(ide.config.styles) ~= nil, "Removing config file restores original styles.")

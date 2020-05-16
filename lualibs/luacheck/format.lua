@@ -1,111 +1,12 @@
+local stages = require "luacheck.stages"
 local utils = require "luacheck.utils"
 
 local format = {}
 
 local color_support = not utils.is_windows or os.getenv("ANSICON")
 
-local function prefix_if_indirect(fmt)
-   return function(w)
-      if w.indirect then
-         return "indirectly " .. fmt
-      else
-         return fmt
-      end
-   end
-end
-
-local function unused_or_overwritten(fmt)
-   return function(w)
-      if w.overwritten_line then
-         return fmt .. " is overwritten on line {overwritten_line} before use"
-      else
-         return fmt .. " is unused"
-      end
-   end
-end
-
-local message_formats = {
-   ["011"] = "{msg}",
-   ["021"] = "invalid inline option",
-   ["022"] = "unpaired push directive",
-   ["023"] = "unpaired pop directive",
-   ["111"] = function(w)
-      if w.module then
-         return "setting non-module global variable {name!}"
-      else
-         return "setting non-standard global variable {name!}"
-      end
-   end,
-   ["112"] = "mutating non-standard global variable {name!}",
-   ["113"] = "accessing undefined variable {name!}",
-   ["121"] = "setting read-only global variable {name!}",
-   ["122"] = prefix_if_indirect("setting read-only field {field!} of global {name!}"),
-   ["131"] = "unused global variable {name!}",
-   ["142"] = prefix_if_indirect("setting undefined field {field!} of global {name!}"),
-   ["143"] = prefix_if_indirect("accessing undefined field {field!} of global {name!}"),
-   ["211"] = function(w)
-      if w.func then
-         if w.recursive then
-            return "unused recursive function {name!}"
-         elseif w.mutually_recursive then
-            return "unused mutually recursive function {name!}"
-         else
-            return "unused function {name!}"
-         end
-      else
-         return "unused variable {name!}"
-      end
-   end,
-   ["212"] = function(w)
-      if w.name == "..." then
-         return "unused variable length argument"
-      else
-         return "unused argument {name!}"
-      end
-   end,
-   ["213"] = "unused loop variable {name!}",
-   ["221"] = "variable {name!} is never set",
-   ["231"] = "variable {name!} is never accessed",
-   ["232"] = "argument {name!} is never accessed",
-   ["233"] = "loop variable {name!} is never accessed",
-   ["241"] = "variable {name!} is mutated but never accessed",
-   ["311"] = unused_or_overwritten("value assigned to variable {name!}"),
-   ["312"] = unused_or_overwritten("value of argument {name!}"),
-   ["313"] = unused_or_overwritten("value of loop variable {name!}"),
-   ["314"] = function(w)
-      local target = w.index and "index" or "field"
-      return "value assigned to " .. target .. " {field!} is overwritten on line {overwritten_line} before use"
-   end,
-   ["321"] = "accessing uninitialized variable {name!}",
-   ["331"] = "value assigned to variable {name!} is mutated but never accessed",
-   ["341"] = "mutating uninitialized variable {name!}",
-   ["411"] = "variable {name!} was previously defined on line {prev_line}",
-   ["412"] = "variable {name!} was previously defined as an argument on line {prev_line}",
-   ["413"] = "variable {name!} was previously defined as a loop variable on line {prev_line}",
-   ["421"] = "shadowing definition of variable {name!} on line {prev_line}",
-   ["422"] = "shadowing definition of argument {name!} on line {prev_line}",
-   ["423"] = "shadowing definition of loop variable {name!} on line {prev_line}",
-   ["431"] = "shadowing upvalue {name!} on line {prev_line}",
-   ["432"] = "shadowing upvalue argument {name!} on line {prev_line}",
-   ["433"] = "shadowing upvalue loop variable {name!} on line {prev_line}",
-   ["511"] = "unreachable code",
-   ["512"] = "loop is executed at most once",
-   ["521"] = "unused label {label!}",
-   ["531"] = "right side of assignment has more values than left side expects",
-   ["532"] = "right side of assignment has less values than left side expects",
-   ["541"] = "empty do..end block",
-   ["542"] = "empty if branch",
-   ["551"] = "empty statement",
-   ["611"] = "line contains only whitespace",
-   ["612"] = "line contains trailing whitespace",
-   ["613"] = "trailing whitespace in a string",
-   ["614"] = "trailing whitespace in a comment",
-   ["621"] = "inconsistent indentation (SPACE followed by TAB)",
-   ["631"] = "line is too long ({end_column} > {max_length})"
-}
-
 local function get_message_format(warning)
-   local message_format = message_formats[warning.code]
+   local message_format = assert(stages.warnings[warning.code], "Unkown warning code " .. warning.code).message_format
 
    if type(message_format) == "function" then
       return message_format(warning)
@@ -260,6 +161,7 @@ local function format_file_report(report, file_name, opts)
    elseif report.fatal then
       table.insert(buf, "")
       table.insert(buf, "    " .. file_name .. ": " .. report.msg)
+      table.insert(buf, "")
    end
 
    return table.concat(buf, "\n")
@@ -274,9 +176,9 @@ local function escape_xml(str)
    return str
 end
 
-local formatters = {}
+format.builtin_formatters = {}
 
-function formatters.default(report, file_names, opts)
+function format.builtin_formatters.default(report, file_names, opts)
    local buf = {}
 
    if opts.quiet <= 2 then
@@ -306,7 +208,7 @@ function formatters.default(report, file_names, opts)
    return table.concat(buf, "\n")
 end
 
-function formatters.TAP(report, file_names, opts)
+function format.builtin_formatters.TAP(report, file_names, opts)
    opts.color = false
    local buf = {}
 
@@ -326,7 +228,7 @@ function formatters.TAP(report, file_names, opts)
    return table.concat(buf, "\n")
 end
 
-function formatters.JUnit(report, file_names)
+function format.builtin_formatters.JUnit(report, file_names)
    -- JUnit formatter doesn't support any options.
    local opts = {}
    local buf = {[[<?xml version="1.0" encoding="UTF-8"?>]]}
@@ -366,7 +268,37 @@ function formatters.JUnit(report, file_names)
    return table.concat(buf, "\n")
 end
 
-function formatters.plain(report, file_names, opts)
+local fatal_error_codes = {
+   ["I/O"] = "F1",
+   ["syntax"] = "F2",
+   ["runtime"] = "F3"
+}
+
+function format.builtin_formatters.visual_studio(report, file_names)
+   local buf = {}
+
+   for i, file_report in ipairs(report) do
+      if file_report.fatal then
+         -- Older docs suggest that line number after a file name is optional; newer docs mark it as required.
+         -- Just use tool name as origin and put file name into the message.
+         table.insert(buf, ("luacheck : fatal error %s: couldn't check %s: %s"):format(
+            fatal_error_codes[file_report.fatal], file_names[i], file_report.msg))
+      else
+         for _, event in ipairs(file_report) do
+               -- Older documentation on the format suggests that it could support column range.
+               -- Newer docs don't mention it. Don't use it for now.
+               local event_type = event.code:sub(1, 1) == "0" and "error" or "warning"
+               local message = format_message(event)
+               table.insert(buf, ("%s(%d,%d) : %s %s: %s"):format(
+                  file_names[i], event.line, event.column, event_type, event_code(event), message))
+         end
+      end
+   end
+
+   return table.concat(buf, "\n")
+end
+
+function format.builtin_formatters.plain(report, file_names, opts)
    opts.color = false
    local buf = {}
 
@@ -391,7 +323,7 @@ end
 --    `options.codes`: should output warning codes? Default: false.
 --    `options.ranges`: should output token end column? Default: false.
 function format.format(report, file_names, options)
-   return formatters[options.formatter or "default"](report, file_names, {
+   return format.builtin_formatters[options.formatter or "default"](report, file_names, {
       quiet = options.quiet or 0,
       color = (options.color ~= false) and color_support,
       codes = options.codes,

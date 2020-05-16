@@ -1,68 +1,53 @@
--- Copyright 2015-2016 Alejandro Baez (https://keybase.io/baez). See LICENSE.
+-- Copyright 2015-2018 Alejandro Baez (https://keybase.io/baez). See License.txt.
 -- TOML LPeg lexer.
 
-local l = require("lexer")
-local token, word_match = l.token, l.word_match
+local lexer = require("lexer")
+local token, word_match = lexer.token, lexer.word_match
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local M = {_NAME = 'toml'}
+local lex = lexer.new('toml', {fold_by_indentation = true})
 
 -- Whitespace
-local indent = #l.starts_line(S(' \t')) *
-               (token(l.WHITESPACE, ' ') + token('indent_error', '\t'))^1
-local ws = token(l.WHITESPACE, S(' \t')^1 + l.newline^1)
-
--- Comments.
-local comment = token(l.COMMENT, '#' * l.nonnewline^0)
-
--- Strings.
-local string = token(l.STRING, l.delimited_range("'") + l.delimited_range('"'))
-
--- Numbers.
-local number = token(l.NUMBER, l.float + l.integer)
-
--- Datetime.
-local ts = token('timestamp', l.digit * l.digit * l.digit * l.digit * -- year
-                              '-' * l.digit * l.digit^-1 * -- month
-                              '-' * l.digit * l.digit^-1 * -- day
-                              ((S(' \t')^1 + S('tT'))^-1 * -- separator
-                               l.digit * l.digit^-1 * -- hour
-                               ':' * l.digit * l.digit * -- minute
-                               ':' * l.digit * l.digit * -- second
-                               ('.' * l.digit^0)^-1 * -- fraction
-                               ('Z' + -- timezone
-                                S(' \t')^0 * S('-+') * l.digit * l.digit^-1 *
-                                (':' * l.digit * l.digit)^-1)^-1)^-1)
+lex:add_rule('indent', #lexer.starts_line(S(' \t')) *
+                       (token(lexer.WHITESPACE, ' ') +
+                        token('indent_error', '\t'))^1)
+lex:add_rule('whitespace', token(lexer.WHITESPACE, S(' \t')^1 +
+                                                   lexer.newline^1))
+lex:add_style('indent_error', 'back:%(color.red)')
 
 -- kewwords.
-local keyword = token(l.KEYWORD, word_match{
-  'true', 'false'
-})
-
+lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[true false]]))
 
 -- Identifiers.
-local identifier = token(l.IDENTIFIER, l.word)
+lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
+
+-- Strings.
+lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'") +
+                                           lexer.delimited_range('"')))
+
+-- Comments.
+lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
 
 -- Operators.
-local operator = token(l.OPERATOR, S('#=+-,.{}[]()'))
+lex:add_rule('operator', token(lexer.OPERATOR, S('#=+-,.{}[]()')))
 
-M._rules = {
-  {'indent', indent},
-  {'whitespace', ws},
-  {'keyword', keyword},
-  {'identifier', identifier},
-  {'operator', operator},
-  {'string', string},
-  {'comment', comment},
-  {'number', number},
-  {'timestamp', ts},
-}
+-- Datetime.
+lex:add_rule('datetime',
+             token('timestamp',
+                   lexer.digit * lexer.digit * lexer.digit * lexer.digit * -- yr
+                   '-' * lexer.digit * lexer.digit^-1 * -- month
+                   '-' * lexer.digit * lexer.digit^-1 * -- day
+                   ((S(' \t')^1 + S('tT'))^-1 * -- separator
+                    lexer.digit * lexer.digit^-1 * -- hour
+                    ':' * lexer.digit * lexer.digit * -- minute
+                    ':' * lexer.digit * lexer.digit * -- second
+                    ('.' * lexer.digit^0)^-1 * -- fraction
+                    ('Z' + -- timezone
+                     S(' \t')^0 * S('-+') * lexer.digit * lexer.digit^-1 *
+                     (':' * lexer.digit * lexer.digit)^-1)^-1)^-1))
+lex:add_style('timestamp', lexer.STYLE_NUMBER)
 
-M._tokenstyles = {
-  indent_error = 'back:%(color.red)',
-  timestamp = l.STYLE_NUMBER,
-}
+-- Numbers.
+lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
 
-M._FOLDBYINDENTATION = true
-
-return M
+return lex

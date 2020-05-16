@@ -1,4 +1,4 @@
--- Copyright 2011-17 Paul Kulchenko, ZeroBrane LLC
+-- Copyright 2011-18 Paul Kulchenko, ZeroBrane LLC
 -- authors: Lomtik Software (J. Winwood & John Labenski)
 -- Luxinia Dev (Eike Decker & Christoph Kubisch)
 ---------------------------------------------------------
@@ -33,6 +33,8 @@ ide.findReplace = {
       Down = true, -- search downwards in doc
       Context = true, -- include context in search results
       SubDirs = true, -- search in subdirectories
+      FollowSymlink = false, -- search symlink sub-directories
+      MapDirs = false, -- search in mapped directories
       MultiResults = false, -- show multiple result tabs
     },
     flist = {},
@@ -207,6 +209,12 @@ function findReplace:Find(reverse)
     if posFind == wx.wxNOT_FOUND then
       self.foundString = false
       msg = TR("Text not found.")
+      local parent = editor:GetParent()
+      if parent and parent:GetClassInfo():GetClassName() == 'wxAuiNotebook' then
+        local nb = parent:DynamicCast("wxAuiNotebook")
+        local index = nb:GetPageIndex(editor)
+        if index ~= wx.wxNOT_FOUND then msg = nb:GetPageText(index)..": "..msg end
+      end
     else
       self.foundString = true
       local start = editor:GetTargetStart()
@@ -249,6 +257,7 @@ end
 
 local indicator = {
   SEARCHMATCH = ide:GetIndicator("core.searchmatch"),
+  SEARCHSELECTION = ide:GetIndicator("core.searchselection"),
 }
 
 -- returns true if replacements were done
@@ -428,7 +437,9 @@ local knownBinary = {}
 local function checkBinary(ext, content)
   if not content then return knownBinary[ext] end
   if ext == "" then return IsBinary(content) end
-  if knownBinary[ext] == nil then knownBinary[ext] = IsBinary(content) end
+  if knownBinary[ext] == nil then
+    knownBinary[ext] = #ide:GetKnownExtensions(ext) == 0 and IsBinary(content)
+  end
   return knownBinary[ext]
 end
 
@@ -459,8 +470,21 @@ function findReplace:ProcInFiles(startdir,mask,subdirs)
 
   local files = coroutine.wrap(function()
       ide:GetFileList(startdir, subdirs, mask, {
-          yield = true, folder = false, skipbinary = true, ondirectory = yield
+          yield = true, folder = false, skipbinary = true, ondirectory = yield,
+          followsymlink = self:GetFlags().FollowSymlink,
         })
+      -- also search mapped dirs if configured
+      if self:GetFlags().MapDirs then
+        local tree = ide:GetProjectTree()
+        local item = tree:GetFirstChild(tree:GetRootItem())
+        while item:IsOk() and tree:IsDirMapped(item) do
+          ide:GetFileList(tree:GetItemFullName(item), subdirs, mask, {
+              yield = true, folder = false, skipbinary = true, ondirectory = yield,
+              followsymlink = self:GetFlags().FollowSymlink,
+            })
+          item = tree:GetNextSibling(item)
+        end
+      end
     end)
   while true do
     local file = files()
@@ -503,7 +527,6 @@ function findReplace:RunInFiles(replace)
   ide:Yield() -- let the update of the UI happen
 
   -- save focus to restore after adding a page with search results
-  local ctrl = ide:GetMainFrame():FindFocus()
   local findText = self.findCtrl:GetValue()
   local flags = self:GetFlags()
   local showaseditor = ide.config.search.showaseditor
@@ -633,8 +656,13 @@ function findReplace:RunInFiles(replace)
   reseditor:SetReadOnly(false)
   reseditor:SetTextDyn('')
   do -- update the preview name
-    local nb = showaseditor and ide:GetEditorNotebook() or nb
-    nb:SetPageText(nb:GetPageIndex(reseditor), previewText .. findText)
+    local nb, index = nb
+    if showaseditor and ide:GetDocument(reseditor) then
+      index, nb = ide:GetDocument(reseditor):GetTabIndex()
+    else
+      index, nb = nb:GetPageIndex(reseditor), nb
+    end
+    nb:SetPageText(index, previewText .. findText)
   end
   if not showaseditor and nb then -- show the bottom notebook if hidden
     local uimgr = ide:GetUIManager()
@@ -681,8 +709,9 @@ function findReplace:RunInFiles(replace)
   -- as the controls are likely to be in some invalid state anyway
   if not ide:IsValidCtrl(self.oveditor) then return end
 
-  self:SetStatus(not completed and TR("Cancelled by the user.")
-    or TR("Found %d instance.", self.occurrences):format(self.occurrences))
+  local num = self.occurrences
+  local msg = replace and TR("Replaced %d instance.", num) or TR("Found %d instance.", num)
+  self:SetStatus(not completed and TR("Cancelled by the user.") or msg:format(num))
   self.oveditor:Destroy()
   self.oveditor = nil
   self.toolbar:UpdateWindowUI(wx.wxUPDATE_UI_FROMIDLE)
@@ -699,9 +728,10 @@ local icons = {
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
     infiles = {
-      ID.FIND, ID_SEPARATOR,
+      ID.FIND, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK, ID.FINDOPTMAPPED,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -716,7 +746,8 @@ local icons = {
     infiles = {
       ID.FIND, ID.FINDREPLACEALL, ID.SEPARATOR,
       ID.FINDOPTCONTEXT, ID.FINDOPTMULTIRESULTS, ID.FINDOPTWORD,
-      ID.FINDOPTCASE, ID.FINDOPTREGEX, ID.FINDOPTSUBDIR,
+      ID.FINDOPTCASE, ID.FINDOPTREGEX,
+      ID.SEPARATOR, ID.FINDOPTSUBDIR, ID.FINDOPTSYMLINK, ID.FINDOPTMAPPED,
       ID.FINDOPTSCOPE, ID.FINDSETDIR,
       ID.SEPARATOR, ID.FINDOPTSTATUS,
     },
@@ -728,7 +759,8 @@ function findReplace:createToolbar()
     self.panel, self.toolbar, self.scope, self.status
   local icons = icons[self.replace and "replace" or "find"][self.infiles and "infiles" or "internal"]
 
-  local toolBmpSize = wx.wxSize(16, 16)
+  local iconsize = ide:GetBestIconSize()
+  local toolBmpSize = wx.wxSize(iconsize, iconsize)
   tb:Freeze()
   tb:Clear()
   for _, id in ipairs(icons) do
@@ -756,6 +788,8 @@ function findReplace:createToolbar()
     [ID.FINDOPTCASE] = 'MatchCase',
     [ID.FINDOPTREGEX] = 'RegularExpr',
     [ID.FINDOPTSUBDIR] = 'SubDirs',
+    [ID.FINDOPTSYMLINK] = 'FollowSymlink',
+    [ID.FINDOPTMAPPED] = 'MapDirs',
     [ID.FINDOPTCONTEXT] = 'Context',
     [ID.FINDOPTMULTIRESULTS] = 'MultiResults',
   }
@@ -781,6 +815,11 @@ function findReplace:createToolbar()
     optseltool:SetSticky(self.inselection)
     local ed = self:GetEditor()
     local inselection = ed and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd())
+    -- also check if the same editor previously had selection
+    if not inselection and self.backfocus and self.backfocus.editor == ed then
+      local bf = self.backfocus
+      inselection = ed:LineFromPosition(bf.spos) ~= ed:LineFromPosition(bf.epos)
+    end
     tb:EnableTool(ID.FINDOPTSELECTION, self.inselection or inselection)
     ctrl:Connect(ID.FINDOPTSELECTION, wx.wxEVT_COMMAND_MENU_SELECTED,
       function (event)
@@ -837,6 +876,15 @@ function findReplace:refreshToolbar(value)
   self.scope:SetMinSize(wx.wxSize(scope:GetTextExtent(value..'AZ'), -1))
   self:createToolbar()
   self.scope:SetValue(value)
+end
+
+function findReplace:clearSelection()
+  local editor = self.backfocus and ide:IsValidCtrl(self.backfocus.editor) and self.backfocus.editor
+  if editor then
+    -- always clear the search in selection indicator
+    editor:SetIndicatorCurrent(indicator.SEARCHSELECTION)
+    editor:IndicatorClearRange(0, editor:GetLength())
+  end
 end
 
 function findReplace:createPanel()
@@ -962,9 +1010,6 @@ function findReplace:createPanel()
   end
 
   local function findIncremental(event)
-    -- don't do any incremental search when search in selection
-    if self.inselection then return end
-
     if not self.infiles and self.backfocus and self.backfocus.position then
       self:GetEditor():SetSelection(self.backfocus.position, self.backfocus.position)
     end
@@ -1043,22 +1088,11 @@ function findReplace:createPanel()
     if ed and ed ~= self.oveditor then
       local spos, epos = ed:GetSelectionStart(), ed:GetSelectionEnd()
       if not self.backfocus or self.backfocus.editor ~= ed then
+        self:clearSelection() -- clear current selection if switching editors
         self.backfocus = { editor = ed, spos = spos, epos = epos }
       end
       local bf = self.backfocus
       bf.position = spos == epos and ed:GetCurrentPos() or spos
-      local inselection = (ide.config.search.autoinselection
-        and ed:LineFromPosition(spos) ~= ed:LineFromPosition(epos))
-
-      -- when the focus is changed, don't remove current "inselection" status as the
-      -- selection may change to highlight the match; not doing this makes it difficult
-      -- to switch between searching and replacing without losing the current match
-      if inselection and (not self.inselection or bf.spos ~= spos or bf.epos ~= epos) then
-        bf.spos = spos
-        bf.epos = epos
-        self.inselection = inselection
-        self:refreshToolbar()
-      end
     end
   end
   findCtrl:Connect(wx.wxEVT_SET_FOCUS,
@@ -1144,7 +1178,7 @@ function findReplace:refreshPanel(replace, infiles)
   end
 
   local value = self.scope:GetValue()
-  local ed = ide:GetEditor()
+  local ed = self:GetEditor()
   if not value or #value == 0 then
     local doc = ed and ide:GetDocument(ed)
     local ext = doc and doc:GetFileExt() or ""
@@ -1153,9 +1187,14 @@ function findReplace:refreshPanel(replace, infiles)
       self:SetScope(proj or wx.wxGetCwd(), '*.'..(#ext > 0 and ext or '*')))
   end
   if ed then -- check if there is any selection
-    self.backfocus = nil
+    local s, e = ed:GetSelectionStart(), ed:GetSelectionEnd()
     self.inselection = (ide.config.search.autoinselection
-      and ed:LineFromPosition(ed:GetSelectionStart()) ~= ed:LineFromPosition(ed:GetSelectionEnd()))
+      and ed:LineFromPosition(s) ~= ed:LineFromPosition(e))
+    if self.inselection then
+      ed:SetIndicatorCurrent(indicator.SEARCHSELECTION)
+      ed:IndicatorClearRange(0, ed:GetLength())
+      ed:IndicatorFillRange(s, e-s)
+    end
   end
   self:refreshToolbar(value)
 
@@ -1212,6 +1251,8 @@ function findReplace:Hide(restorepos)
   elseif self:IsPreview(self.reseditor) then -- there is a preview, go there
     self.reseditor:SetFocus()
   end
+
+  self:clearSelection()
 
   local mgr = ide:GetUIManager()
   mgr:GetPane(searchpanel):Hide()

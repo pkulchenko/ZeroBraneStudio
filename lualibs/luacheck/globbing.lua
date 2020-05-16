@@ -5,8 +5,6 @@ local utils = require "luacheck.utils"
 -- Hidden files are not treated specially. Special characters can't be escaped.
 local globbing = {}
 
-local cur_dir = fs.get_current_dir()
-
 local function is_regular_path(glob)
    return not glob:find("[*?%[]")
 end
@@ -105,10 +103,8 @@ local function parts_match(glob_parts, glob_i, path_parts, path_i)
 end
 
 -- Checks if a path matches a globbing pattern.
+-- Both must be absolute.
 function globbing.match(glob, path)
-   glob = fs.normalize(fs.join(cur_dir, glob))
-   path = fs.normalize(fs.join(cur_dir, path))
-
    if is_regular_path(glob) then
       return fs.is_subpath(glob, path)
    end

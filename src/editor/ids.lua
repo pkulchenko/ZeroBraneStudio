@@ -6,7 +6,7 @@
 -- Generate a unique new wxWindowID
 local ID_IDCOUNTER = wx.wxID_HIGHEST + 1
 function NewID()
-  ID_IDCOUNTER = ID_IDCOUNTER + 1
+  ID_IDCOUNTER = math.floor(ID_IDCOUNTER + 1) -- make sure it's integer
   return ID_IDCOUNTER
 end
 
@@ -40,6 +40,7 @@ ID_RECENTPROJECTSPREV = NewID()
 ID_PRINT            = NewID()
 ID_PAGESETUP        = NewID()
 ID_EXIT             = linux and NewID() or wx.wxID_EXIT
+ID_RESTART          = NewID()
 -- Edit menu
 ID_CUT              = linux and NewID() or wx.wxID_CUT
 ID_COPY             = linux and NewID() or wx.wxID_COPY
@@ -119,6 +120,7 @@ ID_STEPOUT          = NewID()
 ID_RUNTO            = NewID()
 ID_BREAK            = NewID()
 ID_TRACE            = NewID()
+ID_CLEAROUTPUTENABLE = NewID()
 ID_CLEAROUTPUT      = NewID()
 ID_CLEARCONSOLE     = NewID()
 ID_COMMANDLINEPARAMETERS = NewID()
@@ -155,6 +157,8 @@ ID_SHOWEXTENSION    = NewID()
 ID_SHOWEXTENSIONALL = NewID()
 ID_MAPDIRECTORY     = NewID()
 ID_UNMAPDIRECTORY   = NewID()
+ID_HOISTDIRECTORY   = NewID()
+ID_UNHOISTDIRECTORY = NewID()
 ID_OPENEXTENSION    = NewID()
 ID_COPYFULLPATH     = NewID()
 ID_SHOWLOCATION     = NewID()
@@ -183,6 +187,8 @@ ID_FINDOPTCASE      = NewID()
 ID_FINDOPTREGEX     = NewID()
 ID_FINDOPTCONTEXT   = NewID()
 ID_FINDOPTSUBDIR    = NewID()
+ID_FINDOPTSYMLINK   = NewID()
+ID_FINDOPTMAPPED    = NewID()
 ID_FINDOPTMULTIRESULTS = NewID()
 ID_RECENTSCOPECLEAR = NewID()
 -- global shortcuts

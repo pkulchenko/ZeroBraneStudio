@@ -16,6 +16,8 @@ bin/clibs53/lpeg.dylib
 bin/clibs53/mime/core.dylib
 bin/clibs53/socket/core.dylib
 bin/clibs53/ssl.dylib
+bin/libcrypto.dylib
+bin/libssl.dylib
 bin/liblua.dylib
 bin/liblua52.dylib
 bin/liblua53.dylib

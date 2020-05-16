@@ -51,11 +51,12 @@ function SettingsRestoreFramePosition(window, windowName)
   local path = settings:GetPath()
   settings:SetPath("/"..windowName)
 
+  local clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
   local s = tonumber(select(2,settings:Read("s", -1)))
-  local x = tonumber(select(2,settings:Read("x", 0)))
-  local y = tonumber(select(2,settings:Read("y", 0)))
-  local w = tonumber(select(2,settings:Read("w", 1100)))
-  local h = tonumber(select(2,settings:Read("h", 700)))
+  local w = tonumber(select(2,settings:Read("w", math.floor(clientWidth*0.8))))
+  local h = tonumber(select(2,settings:Read("h", math.floor(clientHeight*0.8))))
+  local x = tonumber(select(2,settings:Read("x", clientX+math.floor(clientWidth-w)/2)))
+  local y = tonumber(select(2,settings:Read("y", clientY+math.floor(clientHeight-h)/2)))
 
   if (s ~= -1) then
     local clientX, clientY, clientWidth, clientHeight = wx.wxClientDisplayRect()
@@ -307,8 +308,9 @@ local function saveNotebook(nb)
   local str = "nblayout|"
   
   for i=1,cnt do
-    local id = nb:GetPageText(i-1)
     local pg = nb:GetPage(i-1)
+    local doc = ide:GetDocument(pg)
+    local id = doc and doc:GetTabText() or nb:GetPageText(i-1)
     local x,y = pg:GetPosition():GetXY()
     addTo(pagesX,x,id)
     addTo(pagesY,y,id)
@@ -364,10 +366,12 @@ local function loadNotebook(nb,str,fnIdConvert)
   -- store old pages
   local currentpages, order = {}, {}
   for i=1,cnt do
-    local id = nb:GetPageText(i-1)
+    local pg = nb:GetPage(i-1)
+    local doc = ide:GetDocument(pg)
+    local id = doc and doc:GetTabText() or nb:GetPageText(i-1)
     local newid = fnIdConvert and fnIdConvert(id) or id
     currentpages[newid] = currentpages[newid] or {}
-    table.insert(currentpages[newid], {page = nb:GetPage(i-1), text = id, index = i-1})
+    table.insert(currentpages[newid], {page = pg, text = id, index = i-1})
     order[i] = newid
   end
 
@@ -488,11 +492,10 @@ function SettingsRestoreView()
   layout = settingsReadSafe(settings,layoutlabel.NOTEBOOK,layoutcur)
   if (layout ~= layoutcur) then
     loadNotebook(ide.frame.notebook,layout)
-    local openDocuments = ide.openDocuments
     local nb = frame.notebook
     local cnt = nb:GetPageCount()
     for i=0,cnt-1 do
-      openDocuments[nb:GetPage(i):GetId()].index = i
+      ide:GetDocument(nb:GetPage(i)):SetTabText(nb:GetPageText(i))
     end
   end
 

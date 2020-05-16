@@ -45,6 +45,7 @@
 --------------------------------------------------------------------------------
 
 local M = { }
+local unpack = table.unpack or unpack
 
 local pp    = require 'metalua.pprint'
 local lexer = require 'metalua.grammar.lexer'

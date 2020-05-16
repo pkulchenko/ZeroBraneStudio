@@ -43,6 +43,7 @@ local events = {
   onFiletreeCollapse = function(self, tree, event, item) end,
   onFiletreeLDown =    function(self, tree, event, item) end,
   onFiletreeRDown =    function(self, tree, event, item) end,
+  onFiletreeFileMarkSelected = function(self, tree, item, filepath, selected) end,
   onFiletreeFileAdd =  function(self, tree, item, filepath) end,
   onFiletreeFileRemove = function(self, tree, item, filepath) end,
   onFiletreeFileRefresh = function(self, tree, item, filepath) end,

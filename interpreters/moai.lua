@@ -1,6 +1,6 @@
 -- Copyright 2011-13 Paul Kulchenko, ZeroBrane LLC
 
-local moai
+local pathcache
 local win = ide.osname == "Windows"
 
 return {
@@ -8,7 +8,7 @@ return {
   description = "Moai mobile platform",
   api = {"baselib", "moai"},
   frun = function(self,wfilename,rundebug)
-    moai = moai or ide.config.path.moai -- check if the path is configured
+    local moai = ide.config.path.moai or pathcache -- check if the path is configured
     if not moai then
       local sep = win and ';' or ':'
       local default = win and GenerateProgramFilesPath('moai', sep)..sep or ''
@@ -26,6 +26,7 @@ return {
           ..table.concat(paths, ", "))
         return
       end
+      pathcache = moai
     end
 
     local file
