@@ -49,16 +49,6 @@ local function fixUTF8(...)
   return unpack(t)
 end
 
--- Motivation:
--- when deal with the system running in the docker 
--- file path may differ from the local one.
--- E.g. in the docker Lua files may be installed via package manager
--- to the `/var/lib/some_library` directory. But on the 
--- developers system thouse files placed in the `~/projects/some_library`
--- As result to be able to debug there needs 
--- to convert `/var/lib/some_library` to `~/projects/some_library` for step by step debugging
--- and convert `~/projects/some_library` to `/var/lib/some_library` when set breakpoints
---! @moteus add way to modify file path
 local debug_file_name, bp_file_name do
   local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
 
@@ -74,8 +64,8 @@ local debug_file_name, bp_file_name do
     local pathmap = ide.config.debugger and ide.config.debugger.pathmap
 
     if pathmap then
+      local projectDir = ide:GetProject() or ide.cwd or wx.wxGetCwd()
       for _, map in ipairs(pathmap) do
-        local projectDir = ide:GetProject() or ide.cwd or wx.wxGetCwd()
         local remote_path, local_path = map[1], MergeFullPath(projectDir, map[2]) or map[2]
 
         local pattern, substitution = remote_path, local_path
