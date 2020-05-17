@@ -58,21 +58,48 @@ end
 -- As result to be able to debug there needs 
 -- to convert `/var/lib/some_library` to `~/projects/some_library` for step by step debugging
 -- and convert `~/projects/some_library` to `/var/lib/some_library` when set breakpoints
-local function fix_file_name(map_name, file)
-  --! @moteus add way to modify file path
-  local dir_map = ide.config.debugger and ide.config.debugger[map_name]
-  if dir_map then
-    for _, map in ipairs(dir_map) do
-      local n
-      file, n = string.gsub(file, map[1], map[2])
-      if n > 0 then break end
-    end
-  end
-  return file
-end
+--! @moteus add way to modify file path
+local debug_file_name, bp_file_name do
+  local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
 
-local function bp_file_name(file)
-  return fix_file_name('bp_dir_map', file)
+  local function isSameAs(f1, f2)
+    return f1 == f2 or iscaseinsensitive and f1:lower() == f2:lower()
+  end
+
+  local function filePathMatch(file, pattern)
+    return (#file >= #pattern) and isSameAs(file:sub(1, #pattern), pattern)
+  end
+
+  local function fix_file_name(reverse, file)
+    local pathmap = ide.config.debugger and ide.config.debugger.pathmap
+
+    if pathmap then
+      for _, map in ipairs(pathmap) do
+        local projectDir = ide:GetProject() or ide.cwd or wx.wxGetCwd()
+        local remote_path, local_path = map[1], MergeFullPath(projectDir, map[2]) or map[2]
+
+        local pattern, substitution = remote_path, local_path
+        if reverse then
+            pattern, substitution = substitution, pattern
+        end
+
+        if filePathMatch(file, pattern) then
+          file = substitution .. file:sub(#pattern + 1)
+          break
+        end
+      end
+    end
+
+    return file
+  end
+
+  debug_file_name = function (file)
+      return fix_file_name(false, file)
+  end
+
+  bp_file_name = function (file)
+    return fix_file_name(true, file)
+  end
 end
 
 local q = EscapeMagic
@@ -337,7 +364,7 @@ function debugger:ActivateDocument(file, line, activatehow)
   local debugger = self
   if not file then return end
   line = tonumber(line)
-  file = fix_file_name('dir_map', file)
+  file = debug_file_name(file)
 
   -- file can be a filename or serialized file content; deserialize first.
   -- check if the filename starts with '"' and is deserializable
