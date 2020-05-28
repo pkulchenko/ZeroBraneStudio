@@ -25,11 +25,13 @@ case "$(uname -m)" in
 		;;
 esac
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # per http://stackoverflow.com/a/246128
+
 # binary directory
-BIN_DIR="$(dirname "$PWD")/bin/linux/$ARCH"
+BIN_DIR="$(dirname "$DIR")/bin/linux/$ARCH"
 
 # temporary installation directory for dependencies
-INSTALL_DIR="$PWD/deps"
+INSTALL_DIR="$DIR/deps"
 
 # number of parallel jobs used for building
 MAKEFLAGS="-j4"

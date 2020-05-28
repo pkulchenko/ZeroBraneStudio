@@ -6,11 +6,13 @@ if [ $# -eq 0 ]; then
   exit 0
 fi
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # per http://stackoverflow.com/a/246128
+
 # binary directory
-BIN_DIR="$(dirname "$PWD")/bin"
+BIN_DIR="$(dirname "$DIR")/bin"
 
 # temporary installation directory for dependencies
-INSTALL_DIR="$PWD/deps"
+INSTALL_DIR="$DIR/deps"
 
 # number of parallel jobs used for building
 MAKEFLAGS="-j1" # some make may hang on Windows with j4 or j7
