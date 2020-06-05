@@ -194,6 +194,7 @@ return {
   ["Navigate"] = "Придвижване", -- src\editor\menu_search.lua
   ["New &File"] = "Нов &файл", -- src\editor\filetree.lua
   ["OVR"] = "ЗАМ", -- src\editor\editor.lua
+  ["Open Containing Folder"] = "Отвори целева директория", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Open With Default Program"] = "Отвори с програма по подразбиране", -- src\editor\filetree.lua
   ["Open an existing document"] = "Отвори съществуващ документ", -- src\editor\toolbar.lua, src\editor\menu_file.lua
   ["Open file"] = "Отвори файл", -- src\editor\commands.lua
@@ -286,7 +287,6 @@ return {
   ["Show &Tooltip"] = "Покажи &подсказка", -- src\editor\menu_edit.lua
   ["Show All Files"] = "Покажи всички файлове", -- src\editor\filetree.lua
   ["Show Hidden Files"] = "Покажи скрити файлове", -- src\editor\filetree.lua
-  ["Show Location"] = "Покажи местонахождение", -- src\editor\gui.lua, src\editor\filetree.lua
   ["Show all files"] = "Покажи всички файлове", -- src\editor\filetree.lua
   ["Show context"] = "Покажи контекст", -- src\editor\toolbar.lua
   ["Show files previously hidden"] = "Покажи първоначално скритите", -- src\editor\filetree.lua
