@@ -398,6 +398,8 @@ local function treeSetConnectorsAndIcons(tree)
     -- close the target document, since the source has already been updated for it
     if targetdoc and #sourcedocs > 0 then targetdoc:Close() end
 
+    tree:Thaw()
+
     local itemdst = tree:FindItem(target)
     if itemdst then
       tree:UnselectAll()
@@ -407,8 +409,6 @@ local function treeSetConnectorsAndIcons(tree)
       if expanded then tree:Expand(itemdst) end
       tree:SetScrollPos(wx.wxVERTICAL, pos)
     end
-
-    tree:Thaw()
 
     PackageEventHandle("onFiletreeFileRename", tree, itemsrc, source, target)
 
