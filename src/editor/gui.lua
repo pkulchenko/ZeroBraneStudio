@@ -24,7 +24,10 @@ local function createFrame()
       local mgr = ide:GetUIManager()
       local toolbar = mgr:GetPane("toolbar")
       if toolbar and toolbar:IsOk() then
-        toolbar:BestSize(event:GetSize():GetWidth(), ide:GetToolBar():GetClientSize():GetHeight())
+        -- Workaround: LXQt gives the wrong client size to wx
+        if ide:GetToolBar():GetClientSize():GetHeight() > 1 then
+          toolbar:BestSize(event:GetSize():GetWidth(), ide:GetToolBar():GetClientSize():GetHeight())
+        end
         mgr:Update()
       end
     end)
@@ -153,6 +156,8 @@ local function createToolBar(frame)
   toolBar:Realize()
 
   frame.toolBar = toolBar
+
+
   return toolBar
 end
 
@@ -386,6 +391,8 @@ local function createNotebook(frame)
   notebook:Connect(ID.COPYFULLPATH, wx.wxEVT_COMMAND_MENU_SELECTED, function()
       ide:CopyToClipboard(ide:GetDocument(selection):GetFilePath())
     end)
+
+
 
   frame.notebook = notebook
   return notebook
