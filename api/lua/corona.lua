@@ -1,5 +1,5 @@
 -- Original author Sergey Lerg; updates by Paul Kulchenko
--- Converted from CoronaSDK-APIDOC-2017-3068;
+-- Converted from CoronaSDK-APIDOC-2020.3606;
 -- the conversion script is at the bottom of this file
 
 -- To process:
@@ -114,7 +114,7 @@ local api = {
     type = "value"
    },
    isSensor = {
-    description = "A sensor is a fixture that detects collisions but does not produce a response. Sensors do not generate contact points.",
+    description = "A sensor is a fixture that detects collisions but does not produce a physical response. Sensors do not generate contact points.",
     type = "value"
    },
    isSleepingAllowed = {
@@ -368,8 +368,9 @@ local api = {
    removeSelf = {
     args = "()",
     description = "Removes the display object and frees its memory, assuming there are no other references to it. This is equivalent to calling group:remove() on the same display object, but it is syntactically simpler. The `object:removeSelf()` syntax is also supported in other cases, such as removing physics joints in the physics engine.",
-    returns = "()",
-    type = "method"
+    returns = "(DisplayObject)",
+    type = "method",
+    valuetype = "_DisplayObject"
    },
    rotate = {
     args = "( deltaAngle )",
@@ -581,8 +582,9 @@ local api = {
    remove = {
     args = "( indexOrChild )",
     description = "Remove an object from a group by either an index number or a reference to the object.",
-    returns = "()",
-    type = "method"
+    returns = "(DisplayObject)",
+    type = "method",
+    valuetype = "_DisplayObject"
    }
   },
   description = "Group objects are a special type of display object. You can add other display objects as children of a group object. You can also remove them. Even if an object is not visible, it remains in the group object until explicitly removed. Thus, to minimize memory consumption, you should explicitly remove any object that will no longer be used.",
@@ -1019,13 +1021,13 @@ local api = {
   childs = {
    getNativeProperty = {
     args = "( property )",
-    description = "This function allows you to __get__ properties of the underlying native object created by the native on iOS, you can access the <nobr>Obj-C</nobr> properties of the corresponding `UIWebView`.",
+    description = "This function allows you to __get__ properties of the underlying native object created by the native on iOS, you can access the <nobr>Obj-C</nobr> properties of the corresponding `WKWebView` (or `WKWebViewConfiguration` if called before a request is made).",
     returns = "()",
     type = "method"
    },
    setNativeProperty = {
     args = "( property, value )",
-    description = "This function allows you to __set__ properties of the underlying native object created by the native on iOS, you can set the Obj-C properties of the corresponding `UIWebView`.",
+    description = "This function allows you to __set__ properties of the underlying native object created by the native on iOS, you can set the Obj-C properties of the corresponding `WKWebView` (or `WKWebViewConfiguration` if called before a request is made).",
     returns = "()",
     type = "method"
    }
@@ -1291,12 +1293,6 @@ local api = {
    hideErrorAlerts = {
     args = "()",
     description = "Disables the runtime error alert that appears if the application hits an error condition. This is shorthand for defining your own unhandledError listener and returning `true`.",
-    returns = "()",
-    type = "method"
-   },
-   setCheckGlobals = {
-    args = "( enabled )",
-    description = "Allows the usage of global variables to be flagged. Because Lua automatically assumes that any variable it doesn't recognize is a global variable, typos in variable names can lead to unexpected behavior. For example, accessing a variable that has never been set will yield a value of `nil`. ",
     returns = "()",
     type = "method"
    }
@@ -1838,6 +1834,10 @@ local api = {
  },
  _TextObject = {
   childs = {
+   baselineOffset = {
+    description = "The amount by which the baseline of the first line is offset from the center of the text object.",
+    type = "value"
+   },
    setEmbossColor = {
     args = "( colorTable )",
     description = "Sets the color parameters for an embossed text object created via display.newEmbossedText().",
@@ -2334,7 +2334,7 @@ local api = {
    },
    showOverlay = {
     args = "( sceneName [, options] )",
-    description = "This function loads an overlay scene above the currently active scene (the __parent__ scene), leaving the parent scene intact.",
+    description = "This function loads an overlay scene above the currently active scene - <nobr>the \"parent\" scene -</nobr> leaving the parent scene intact.",
     returns = "()",
     type = "function"
    },
@@ -2476,6 +2476,12 @@ local api = {
     returns = "()",
     type = "function"
    },
+   getSafeAreaInsets = {
+    args = "()",
+    description = "Returns four numbers corresponding to the top, left, bottom, and right \"safe area\" insets. The \"safe area\" is the rectangular region where it's safe to place important UI elements, ensuring that they are not obscured by status bars, device aspects like a sensor bar or rounded corners, software buttons, TV overscan areas, etc.",
+    returns = "(Numbers)",
+    type = "function"
+   },
    imageSuffix = {
     description = "Returns the suffix used by the dynamic image selection feature of Corona. If the content scaling is 1, then returns `nil`.",
     type = "value"
@@ -2488,7 +2494,7 @@ local api = {
    },
    newCircle = {
     args = "( [parent,] xCenter, yCenter, radius )",
-    description = "Creates a circle with radius radius centered at specified coordinates (`xCenter`, `yCenter`). The local origin is at the center of the circle and the anchor point is initialized to this local origin.",
+    description = "Creates a circle with radius centered at specified coordinates (`xCenter`, `yCenter`). The local origin is at the center of the circle and the anchor point is initialized to this local origin.",
     returns = "(ShapeObject)",
     type = "function",
     valuetype = "_ShapeObject"
@@ -2604,6 +2610,22 @@ local api = {
     returns = "()",
     type = "function"
    },
+   safeActualContentHeight = {
+    description = "The height of the screen \"safe area\" in Corona content units. The \"safe area\" is the rectangular region where it's safe to place important UI elements, ensuring that they are not obscured by status bars, device aspects like a sensor bar or rounded corners, software buttons, TV overscan areas, etc.",
+    type = "value"
+   },
+   safeActualContentWidth = {
+    description = "The width of the screen \"safe area\" in Corona content units. The \"safe area\" is the rectangular region where it's safe to place important UI elements, ensuring that they are not obscured by status bars, device aspects like a sensor bar or rounded corners, software buttons, TV overscan areas, etc.",
+    type = "value"
+   },
+   safeScreenOriginX = {
+    description = "Returns the __x__ distance from the left side of the \"safe area\" boundary to the left side of the content area, in Corona content units. The \"safe area\" is the rectangular region where it's safe to place important UI elements, ensuring that they are not obscured by status bars, device aspects like a sensor bar or rounded corners, software buttons, TV overscan areas, etc.",
+    type = "value"
+   },
+   safeScreenOriginY = {
+    description = "Returns the __y__ distance from the top side of the \"safe area\" boundary to the top side of the content area, in Corona content units. The \"safe area\" is the rectangular region where it's safe to place important UI elements, ensuring that they are not obscured by status bars, device aspects like a sensor bar or rounded corners, software buttons, TV overscan areas, etc.",
+    type = "value"
+   },
    save = {
     args = "( displayObject, options )",
     description = "Renders the display object referenced by first argument into a JPEG or PNG image and saves it as a new file. The display object must currently be in the display hierarchy or no image will be saved. If the object is a display group, all children are also rendered.",
@@ -2611,11 +2633,11 @@ local api = {
     type = "function"
    },
    screenOriginX = {
-    description = "Returns the __x__ distance from the left side of the actual screen to the left side of the content area, in reference screen units. For example, in `\"letterbox\"` or `\"zoomEven\"` scaling modes, there may be added area or cropped area on the current device screen. These methods let you find out how much visible area has been added or removed on the current device.",
+    description = "Returns the __x__ distance from the left side of the actual screen to the left side of the content area, in Corona content units. For example, in `\"letterbox\"` or `\"zoomEven\"` scaling modes, there may be added area or cropped area on the current device screen. This lets you find out how much visible area has been added or removed on the current device.",
     type = "value"
    },
    screenOriginY = {
-    description = "Returns the __y__ distance from the top of the actual screen to the top of the content area, in reference screen units. For example, in `\"letterbox\"` or `\"zoomEven\"` scaling modes, there may be added area or cropped area on the current device screen. These methods let you find out how much visible area has been added or removed on the current device.",
+    description = "Returns the __y__ distance from the top of the actual screen to the top of the content area, in Corona content units. For example, in `\"letterbox\"` or `\"zoomEven\"` scaling modes, there may be added area or cropped area on the current device screen. This lets you find out how much visible area has been added or removed on the current device.",
     type = "value"
    },
    setDefault = {
@@ -2681,6 +2703,12 @@ local api = {
     args = "( effect )",
     description = "This function allows you to extend Corona and define a custom shader effect. Your custom effect can define either a vertex kernel or a fragment kernel (or both). These kernels are similar to shaders, except that they must define functions with a specific name and which conform to specific function signatures. ",
     returns = "()",
+    type = "function"
+   },
+   getFontMetrics = {
+    args = "( fontName [, fontSize] )",
+    description = "This function calculates and returns the various metrics for the font with the given name (file name) and text size. The returned value is a table containing the following properties:",
+    returns = "(Table)",
     type = "function"
    },
    newImageSheet = {
@@ -3066,8 +3094,8 @@ local api = {
     type = "function"
    },
    newEventSound = {
-    args = "( filename [, baseDir] )",
-    description = "Loads the event sound (1-3 seconds) from a sound file and returns an event sound ID that can be passed to media.playEventSound().",
+    args = "( audioFileName [, baseDir] )",
+    description = "Loads the event sound <nobr>(1-3 seconds)</nobr> from a sound file and returns an event sound ID that can be passed to media.playEventSound().",
     returns = "(Userdata)",
     type = "function"
    },
@@ -3086,13 +3114,13 @@ local api = {
    },
    playEventSound = {
     args = "( sound [, baseDir] [, completionListener] )",
-    description = "Plays an event sound (1-3 seconds). The first argument may be either an event sound ID or a filename for the event sound. This is recommended for short sounds, especially to avoid performance hiccups.",
+    description = "Because of various limitations outlined below, it is recommended that the audio library be used for playing back audio.",
     returns = "()",
     type = "function"
    },
    playSound = {
     args = "( soundfile [, baseDir] [, onComplete] )",
-    description = "Plays an extended sound (as opposed to an \"event sound\" which is typically 1-3 seconds in duration), or resumes play of a paused extended sound. You can only have one such sound file open at a time.",
+    description = "Because of various limitations outlined below, it is recommended that the audio library be used for playing back audio.",
     returns = "()",
     type = "function"
    },
@@ -3187,35 +3215,35 @@ local api = {
     type = "function"
    },
    newMapView = {
-    args = "( centerX, centerY, width, height )",
+    args = "( x, y, width, height )",
     description = "Renders a map view within the specified boundaries and returns a display object wrapper. On the map view, touch events are available when you add a mapLocation event listener.",
     returns = "(Map)",
     type = "function",
     valuetype = "_Map"
    },
    newTextBox = {
-    args = "( centerX, centerY, width, height )",
-    description = "Creates a scrollable, __multi-line__ text box for text input. For <nobr>single-line</nobr> text input, see native.newTextField().",
+    args = "( x, y, width, height )",
+    description = "Creates a scrollable, __multi-line__ TextBox.",
     returns = "(TextBox)",
     type = "function",
     valuetype = "_TextBox"
    },
    newTextField = {
-    args = "( centerX, centerY, width, height )",
-    description = "Creates a single-line text field for text input.",
+    args = "( x, y, width, height )",
+    description = "Creates a __single-line__ TextField.",
     returns = "(TextField)",
     type = "function",
     valuetype = "_TextField"
    },
    newVideo = {
-    args = "( centerX, centerY, width, height )",
-    description = "Returns a video object that can be moved and rotated. This API supports local videos (in one of the system directories) or from a remote location (server).",
+    args = "( x, y, width, height )",
+    description = "Returns a video object that can be moved and rotated. This API supports local videos (in one of the system directories) or from a remote location (streaming).",
     returns = "(Video)",
     type = "function",
     valuetype = "_Video"
    },
    newWebView = {
-    args = "( centerX, centerY, width, height )",
+    args = "( x, y, width, height )",
     description = "Loads a web page in a web view container. This native web view can be moved via `x`/`y` properties in the same manner as other display objects. On iOS, you can also rotate it via the `rotation` property.",
     returns = "(WebView)",
     type = "function",
@@ -3223,7 +3251,7 @@ local api = {
    },
    requestExit = {
     args = "()",
-    description = "On Android or Windows Phone, this closes the application window gracefully without terminating the process. On macOS and Windows, this closes the application.",
+    description = "On Android, this closes the application window gracefully without terminating the process. On macOS and Windows, this closes the application.",
     returns = "()",
     type = "function"
    },
@@ -3296,13 +3324,13 @@ local api = {
    download = {
     args = "( url, method, listener [, params], filename [, baseDirectory] )",
     description = "This API is a convenience method that is very similar to the asynchronous network.request(), putting the destination `filename` and `baseDirectory` parameters into `params.response` and specifying `\"download\"` progress notifications. ",
-    returns = "()",
+    returns = "(Userdata)",
     type = "function"
    },
    request = {
     args = "( url, method, listener [, params] )",
     description = "Makes an asynchronous HTTP or HTTPS request to a URL. This function returns a handle that can be passed to network.cancel() in order to cancel the request.",
-    returns = "(Table)",
+    returns = "(Userdata)",
     type = "function"
    },
    setStatusListener = {
@@ -3314,7 +3342,7 @@ local api = {
    upload = {
     args = "( url, method, listener [, params], filename [, baseDirectory] [, contentType] )",
     description = "This API is a convenience method that is very similar to the asynchronous network.request(), putting the source `filename` and `baseDirectory` parameters into a `params.body` table, adding `contentType` as a `params.headers` request header value, and specifying `\"upload\"` progress notifications. ",
-    returns = "()",
+    returns = "(Userdata)",
     type = "function"
    }
   },
@@ -3336,8 +3364,8 @@ local api = {
     valuetype = "string"
    },
    difftime = {
-    args = "( t1, t2 )",
-    description = "Returns the number of seconds from time `t1` to time `t2`. In POSIX, Windows, and some other systems, this value is exactly `t2 - t1`.",
+    args = "( newerTime, olderTime )",
+    description = "Returns the number of seconds from time `t1` to time `t2`. In POSIX, Windows, and some other systems, this value is exactly <nobr>`t2 - t1`</nobr>.",
     returns = "(Number)",
     type = "function"
    },
@@ -3386,21 +3414,11 @@ local api = {
     description = "A table used by `require()` to control how to load modules.",
     type = "value"
    },
-   module = {
-    args = "( name [, ...] )",
-    description = "This function has been deprecated and should not be used.",
-    returns = "()",
-    type = "function"
-   },
    require = {
     args = "( \"moduleName\" )",
     description = "Loads the given module. ",
     returns = "(Library)",
     type = "function"
-   },
-   seeall = {
-    description = "This function is deprecated. Please refer to require() instead.",
-    type = "value"
    }
   },
   description = "Corona supports Lua's module functionality for creating and loading external libraries. You can create your own libraries and call them from your application.",
@@ -3426,7 +3444,7 @@ local api = {
    },
    getAverageCollisionPositions = {
     args = "()",
-    description = "It's common for Box2D to report multiple contact points during a single iteration of a simulation.",
+    description = "It's common for Box2D to report multiple contact points during a single iteration of a simulation. This function is use to determine if averaging of all the contact points is enabled.",
     returns = "(Boolean)",
     type = "function"
    },
@@ -3452,6 +3470,12 @@ local api = {
     args = "()",
     description = "This function is used to determine if the content origin is the collision point in the collision physics events.",
     returns = "(Boolean)",
+    type = "function"
+   },
+   getTimeScale = {
+    args = "()",
+    description = "Returns the physics time flow multiplier set via physics.setTimeScale().",
+    returns = "(Number)",
     type = "function"
    },
    newJoint = {
@@ -3518,7 +3542,7 @@ local api = {
    },
    setDrawMode = {
     args = "( mode )",
-    description = "Sets one of three possible \"rendering modes\" for the physics engine. While this feature will run on devices, it's most useful in the Corona Simulator when debugging unexpected physics engine behavior.",
+    description = "Sets one of three possible \"rendering modes\" for the physics engine. While this feature will run on devices, it's most useful in the Corona Simulator when testing/debugging physics behavior.",
     returns = "()",
     type = "function"
    },
@@ -3549,6 +3573,12 @@ local api = {
    setScale = {
     args = "( value )",
     description = "Sets the internal pixels-per-meter ratio that is used in converting between on-screen Corona coordinates and simulated physics coordinates. This should be done only once, before any physical objects are instantiated.",
+    returns = "()",
+    type = "function"
+   },
+   setTimeScale = {
+    args = "( scale )",
+    description = "Adjusts the physics simulation time flow with a multiplier.",
     returns = "()",
     type = "function"
    },
@@ -3668,18 +3698,6 @@ local api = {
  },
  storeTransaction = {
   childs = {
-   errorString = {
-    description = "If an error value stating the cause of the error.",
-    type = "value"
-   },
-   errorType = {
-    description = "If an error value stating the type of error.",
-    type = "value"
-   },
-   isError = {
-    description = "Boolean stating the reason.",
-    type = "value"
-   },
    name = {
     description = "The string `\"storeTransaction\"`.",
     type = "value"
@@ -3734,7 +3752,7 @@ local api = {
    },
    gsub = {
     args = "( s, pattern, repl [, n] )",
-    description = "Replace all occurrences of a pattern in a string.",
+    description = "Replaces all occurrences of a pattern in a string. Returns the string after the substitutions have been performed, along with the number of substitutions made <nobr>(`0` if none)</nobr>.",
     returns = "(String)",
     type = "function",
     valuetype = "string"
@@ -3882,7 +3900,7 @@ local api = {
    },
    hasEventSource = {
     args = "( eventName )",
-    description = "Returns whether the system delivers events corresponding to `eventName`.",
+    description = "Returns a boolean `true` or `false` depending on whether the system delivers events corresponding to `eventName`.",
     returns = "(Boolean)",
     type = "function"
    },
@@ -3985,7 +4003,7 @@ local api = {
    },
    indexOf = {
     args = "( t, element )",
-    description = "Returns the integer index of `element` in array `t`. Returns `nil` if not in array. The search goes through the length of the array as determined by `#t`, whose value is undefined if there are holes.",
+    description = "Returns the integer index of an element within an array, or `nil` if the element is not in the array. The search goes through the length of the array as determined by `#t` whose value is undefined if there are holes.",
     returns = "(Number)",
     type = "function"
    },
@@ -4019,6 +4037,10 @@ local api = {
  },
  timer = {
   childs = {
+   allowIterationsWithinFrame = {
+    description = "Changes the behavior of the timer object to provide events as soon as possible instead of waiting until the next frame to execute. The default behavior is `false` meaning that timers fire on frame intervals. Setting this to `true` will enable the events to arrive as soon as possible.",
+    type = "value"
+   },
    cancel = {
     args = "( timerID )",
     description = "Cancels a timer operation initiated with timer.performWithDelay().",
