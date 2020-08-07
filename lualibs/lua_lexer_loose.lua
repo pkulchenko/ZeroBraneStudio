@@ -53,7 +53,7 @@ local function match_comment(s, pos)
       return '--' .. partt, post
     end
   end
-  local part; part, pos = s:match('^([^\n]*\n?)()', pos)
+  local part; part, pos = s:match('^([^\r\n]*[\r\n]?)()', pos)
   return '--' .. part, pos
 end
 
@@ -112,7 +112,7 @@ local is_keyword = qws[[
 
 function M.lex(code, f, pos)
   local pos = pos or 1
-  local tok = code:match('^#![^\n]*\n', pos) -- shebang
+  local tok = code:match('^#![^\r\n]*[\r\n]', pos) -- shebang
   if tok then f('Shebang', tok, 1) pos = pos + #tok end
   while pos <= #code do
     local p2, n2, n1, n3 = code:match('^%s*()((%S)(%S?))', pos)
