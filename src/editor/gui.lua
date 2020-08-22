@@ -307,6 +307,10 @@ local function createNotebook(frame)
 
       PackageEventHandle("onMenuEditorTab", menu, notebook, event, notebook:GetPageIndex(selection))
 
+      if selection:GetClassInfo():GetClassName() == "wxStyledTextCtrl" then
+        selection = selection:DynamicCast("wxStyledTextCtrl")
+      end
+
       -- popup statuses are not refreshed on Linux, so do it manually
       if ide.osname == "Unix" then UpdateMenuUI(menu, notebook) end
       notebook:PopupMenu(menu)
