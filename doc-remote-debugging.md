@@ -3,6 +3,8 @@ layout: default
 title: Remote Debugging
 ---
 
+<ul id='toc'>&nbsp;</ul>
+
 ZeroBrane Studio supports **remote debugging** that allows to debug arbitrary Lua applications.
 The application may be running on the same or a different computer from the one running
 the IDE instance (the debugger is using a socket interface to interact with the application).
