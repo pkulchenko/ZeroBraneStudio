@@ -303,8 +303,12 @@ local function getStreams(all)
 
         local codepage = ide:GetCodePage()
         if codepage and FixUTF8(str) == nil and winapi then
-          -- this looks like invalid UTF-8 content, which may be in a different code page
-          str = winapi.encode(codepage, winapi.CP_UTF8, str)
+          -- this looks like invalid UTF-8 content, which may be in a different code page;
+          -- replace it with the UTF8, but do it line-by-line,
+          -- as it may be a buffered mix of different commands
+          str = str:gsub("[^\r\n]+", function(s)
+              return FixUTF8(s) == nil and winapi.encode(codepage, winapi.CP_UTF8, s) or s
+            end)
         end
 
         local pfn
