@@ -453,7 +453,7 @@ function TR(msg, count)
   -- if there is count and no corresponding message, then
   -- get the message from the (default) english language,
   -- otherwise the message is not going to be pluralized properly
-  if count and (not message or type(message) == 'table' and not next(message)) then
+  if count and messages.en and (not message or type(message) == 'table' and not next(message)) then
     message, counter = messages.en[msg], messages.en[0]
   end
   return count and counter and message and type(message) == 'table'
