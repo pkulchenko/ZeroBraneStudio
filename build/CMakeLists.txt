@@ -106,12 +106,10 @@ else()
   check_lua_module(socket TRUE)
   check_lua_module(copas ${USE_SYSTEM_COPAS})
   check_lua_module(luainspect ${USE_SYSTEM_LUAINSPECT})
-  #check_lua_module(mobdebug ${USE_SYSTEM_MOBDEBUG})
 
   # add user options to select between system-wide and bundled Lua modules
   add_system_lua_module_option(copas)
   add_system_lua_module_option(luainspect)
-  #add_system_lua_module_option(mobdebug)
 
   # setup the data directory
   set(DATADIR share/zbstudio)
@@ -128,9 +126,10 @@ else()
   if(NOT USE_SYSTEM_LUAINSPECT)
     install(DIRECTORY ${TOPDIR}/lualibs/luainspect ${TOPDIR}/lualibs/metalua DESTINATION ${DATADIR}/lualibs)
   endif()
-  if(NOT USE_SYSTEM_MOBDEBUG)
-    install(DIRECTORY ${TOPDIR}/lualibs/mobdebug DESTINATION ${DATADIR}/lualibs)
-  endif()
+  install(DIRECTORY ${TOPDIR}/lualibs/mobdebug DESTINATION ${DATADIR}/lualibs)
+  install(DIRECTORY ${TOPDIR}/lualibs/lexers DESTINATION ${DATADIR}/lualibs)
+  install(FILES ${TOPDIR}/lualibs/lua_lexer_loose.lua DESTINATION ${DATADIR}/lualibs)
+  install(FILES ${TOPDIR}/lualibs/lua_parser_loose.lua DESTINATION ${DATADIR}/lualibs)
 
   # install .desktop file and hicolor icon theme
   install(DIRECTORY ${TOPDIR}/zbstudio/res/icons/ DESTINATION share/icons/hicolor)
