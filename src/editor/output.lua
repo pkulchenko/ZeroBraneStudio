@@ -24,6 +24,7 @@ out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
 out:StyleClearAll()
 out:SetMarginWidth(1, 16) -- marker margin
 out:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)
+out:SetTabWidth(2) -- second position from the end of the previous character
 out:MarkerDefine(StylesGetMarker("message"))
 out:MarkerDefine(StylesGetMarker("error"))
 out:MarkerDefine(StylesGetMarker("prompt"))
