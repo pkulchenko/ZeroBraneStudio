@@ -32,6 +32,8 @@ singleinstance = not mac
 unhidewindow = { -- allow unhiding of GUI windows
   -- 1 - show if hidden, 0 - ignore, 2 -- hide if shown
   ConsoleWindowClass = 2,
+  -- IUP library window
+  ['GDI+ Hook Window Class'] = 2,
   -- ignore the following windows when "showing all"
   IME = 0,
   wxDisplayHiddenWindow = 0,

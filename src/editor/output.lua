@@ -196,7 +196,11 @@ local function unHideWindow(pidAssign)
         -- use show_async call (ShowWindowAsync) to avoid blocking the IDE
         -- if the app is busy or is being debugged
         win:show_async(action == show and winapi.SW_SHOW or winapi.SW_HIDE)
-        pid = nil -- indicate that unhiding is done
+        -- indicate that unhiding is done, but make sure to
+        -- check late enough for all windows to get created
+        if ide:GetTime() - ((customprocs[pid] or {}).started or 0) > 1 then
+          pid = nil
+        end
       end
     end
   end
