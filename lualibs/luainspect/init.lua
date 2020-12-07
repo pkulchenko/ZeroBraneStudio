@@ -719,7 +719,7 @@ function M.infer_values(top_ast, tokenlist, src, report)
         local t_ast = iter_ast[1][2]
         local value = T.universal
         local key
-        if t_ast.value and (known(t_ast.value) or T.istabletype[t_ast.value]) then
+        if t_ast.value and T.istabletype[t_ast.value] then
           key = next(t_ast.value)
           local ok; ok, value = pzcall(tindex, {t_ast, {tag='String', key}}, t_ast.value, key)
           if not ok then value = T.error(t_ast.value) end
