@@ -17,7 +17,7 @@ local function waitToComplete(bid)
 end
 
 local modules = {
-  ["require([[lfs]])._VERSION"] = "LuaFileSystem 1.6.3",
+  ["require([[lfs]])._VERSION"] = "LuaFileSystem 1.8.0",
   ["require([[lpeg]]).version()"] = "1.0.0",
   ["require([[ssl]])._VERSION"] = "0.9",
 }
@@ -37,7 +37,7 @@ for _, luaver in ipairs({"", "5.2", "5.3", "5.4"}) do
     if pid then waitToComplete(pid) end
     -- when there is an error, show the error instead of the expected value
     is((pid and res or err):gsub("%s+$",""), modver,
-      ("Checking module version (%s) with Lua%s."):format(mod:match("%[%[(%w+)%]%]"), luaver))
+      ("Checking module version (%s) with Lua %s."):format(mod:match("%[%[(%w+)%]%]"), luaver))
   end
 end
 for env, val in pairs(envs) do

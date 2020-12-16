@@ -39,8 +39,8 @@ LUASEC_BASENAME="luasec-0.9"
 LUASEC_FILENAME="v0.9.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
-LFS_BASENAME="v_1_6_3"
-LFS_FILENAME="$LFS_BASENAME.tar.gz"
+LFS_BASENAME="1_8_0"
+LFS_FILENAME="v$LFS_BASENAME.tar.gz"
 LFS_URL="https://github.com/keplerproject/luafilesystem/archive/$LFS_FILENAME"
 
 LPEG_BASENAME="lpeg-1.0.0"
