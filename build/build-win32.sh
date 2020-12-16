@@ -221,6 +221,8 @@ if [ $BUILD_LUA ]; then
 #define l_seeknum off64_t
 #endif
 EOF
+    # add -static to remove dependencies on mingw/libc dlls
+    sed -i "s/-shared -o/-static -shared -o/" src/Makefile
     make mingw $LUA_COMPAT || { echo "Error: failed to build Lua"; exit 1; }
     make install INSTALL_TOP="$INSTALL_DIR"
   fi

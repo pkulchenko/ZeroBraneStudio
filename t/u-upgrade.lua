@@ -21,12 +21,12 @@ local modules = {
   ["require([[lpeg]]).version()"] = "1.0.0",
   ["require([[ssl]])._VERSION"] = "0.9",
 }
-local envall = {'LUA_CPATH', 'LUA_CPATH_5_2', 'LUA_CPATH_5_3'}
+local envall = {'LUA_CPATH', 'LUA_CPATH_5_2', 'LUA_CPATH_5_3', 'LUA_CPATH_5_4'}
 local envs = {}
 -- save and unset all LUA_CPATH* environmental variables, as we'll only be setting LUA_CPATH
 -- for simplicity, so LUA_CPATH_5_2 and _5_3 need to be cleared as they take precedence
 for _, env in ipairs(envall) do envs[env] = os.getenv(env); wx.wxUnsetEnv(env) end
-for _, luaver in ipairs({"", "5.2", "5.3"}) do
+for _, luaver in ipairs({"", "5.2", "5.3", "5.4"}) do
   local clibs = ide.osclibs:gsub("clibs", "clibs"..luaver:gsub("%.",""))
   wx.wxSetEnv('LUA_CPATH', clibs)
 
