@@ -298,7 +298,7 @@ function M.related_keywords(ast, top_ast, tokenlist, src)
   end
 
   --  keywords in statement/block.
-  if iskeystat[ast.tag] then
+  if ast and iskeystat[ast.tag] then
     local keywords = {}
     for i=1,#tokenlist do
      local token = tokenlist[i]
