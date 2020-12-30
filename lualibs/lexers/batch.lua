@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Batch LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('batch', {case_insensitive_fold_points = true})
 
@@ -26,19 +26,19 @@ lex:add_rule('function', token(lexer.FUNCTION, word_match([[
 ]], true)))
 
 -- Comments.
-local rem = (P('REM') + 'rem') * lexer.space
-lex:add_rule('comment', token(lexer.COMMENT, (rem + '::') * lexer.nonnewline^0))
+local rem = (P('REM') + 'rem') * #lexer.space
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol(rem + '::')))
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"', true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true)))
 
 -- Variables.
-lex:add_rule('variable', token(lexer.VARIABLE,
-                               '%' * (lexer.digit + '%' * lexer.alpha) +
-                               lexer.delimited_range('%', true, true)))
+local arg = '%' * lexer.digit + '%~' * lexer.alnum^1
+local variable = lexer.range('%', true, false)
+lex:add_rule('variable', token(lexer.VARIABLE, arg + variable))
 
 -- Labels.
 lex:add_rule('label', token(lexer.LABEL, ':' * lexer.word))

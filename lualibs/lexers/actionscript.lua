@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Actionscript LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('actionscript')
 
@@ -33,19 +33,18 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", true)
-local dq_str = lexer.delimited_range('"', true)
-local ml_str = '<![CDATA[' * (lexer.any - ']]>')^0 * ']]>'
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+local ml_str = lexer.range('<![CDATA[', ']]>')
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + ml_str))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//')
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('LlUuFf')^-2))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('LlUuFf')^-2))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*%&|^~.,;?()[]{}')))
@@ -53,7 +52,7 @@ lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*%&|^~.,;?()[]{}')))
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
 lex:add_fold_point(lexer.STRING, '<![CDATA[', ']]>')
 
 return lex

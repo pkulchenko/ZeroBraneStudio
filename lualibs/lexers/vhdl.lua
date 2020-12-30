@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- VHDL LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('vhdl')
 
@@ -50,18 +50,18 @@ lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, (lexer.alpha + "'") *
-                                                   (lexer.alnum + S("_'"))^1))
+  (lexer.alnum + S("_'"))^1))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", true, true)
-local dq_str = lexer.delimited_range('"', true)
+local sq_str = lexer.range("'", true, false)
+local dq_str = lexer.range('"', true)
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '--' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('--')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=/!:;<>+-/*%&|^~()')))

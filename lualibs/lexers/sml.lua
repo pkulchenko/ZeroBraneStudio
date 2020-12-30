@@ -1,21 +1,21 @@
--- Copyright 2017-2018 Murray Calavera. See License.txt.
+-- Copyright 2017-2020 Murray Calavera. See LICENSE.
 -- Standard ML LPeg lexer.
 
 local lexer = require('lexer')
 local token = lexer.token
 
-function mlword(words)
+local function mlword(words)
   return lexer.word_match(words, "'")
 end
 
 local ws = token(lexer.WHITESPACE, lexer.space^1)
 
 -- single line comments are valid in successor ml
-local cl = '(*)' * lexer.nonnewline^0
-local comment = token(lexer.COMMENT, cl + lexer.nested_pair('(*', '*)'))
+local line_comment = lexer.to_eol('(*)')
+local block_comment = lexer.range('(*', '*)', false, false, true)
+local comment = token(lexer.COMMENT, line_comment + block_comment)
 
-local string = token(lexer.STRING, lpeg.P('#')^-1 *
-                                   lexer.delimited_range('"', true))
+local string = token(lexer.STRING, lpeg.P('#')^-1 * lexer.range('"', true))
 
 local function num(digit)
   return digit * (digit^0 * lpeg.P('_'))^0 * digit^1 + digit
@@ -29,15 +29,10 @@ local real = int * frac^-1 * exp + int * frac * exp^-1
 local hex = num(lexer.xdigit)
 local bin = num(lpeg.S('01'))
 
-local number = token(lexer.NUMBER,
-  lpeg.P('0w') * int
-  + (lpeg.P('0wx') + lpeg.P('0xw')) * hex
-  + (lpeg.P('0wb') + lpeg.P('0bw')) * bin
-  + minus * lpeg.P('0x') * hex
-  + minus * lpeg.P('0b') * bin
-  + minus * real
-  + minus * int
-)
+local number = token(lexer.NUMBER, lpeg.P('0w') * int +
+  (lpeg.P('0wx') + lpeg.P('0xw')) * hex +
+  (lpeg.P('0wb') + lpeg.P('0bw')) * bin + minus * lpeg.P('0x') * hex +
+  minus * lpeg.P('0b') * bin + minus * real + minus * int)
 
 local keyword = token(lexer.KEYWORD, mlword{
   'abstype', 'and', 'andalso', 'as', 'case', 'do', 'datatype', 'else', 'end',
@@ -51,7 +46,7 @@ local keyword = token(lexer.KEYWORD, mlword{
 
 -- includes valid symbols for identifiers
 local operator = token(lexer.OPERATOR,
-                       lpeg.S('!*/+-^:@=<>()[]{},;._|#%&$?~`\\'))
+  lpeg.S('!*/+-^:@=<>()[]{},;._|#%&$?~`\\'))
 
 local type = token(lexer.TYPE, mlword{
   'int', 'real', 'word', 'bool', 'char', 'string', 'unit',
@@ -78,14 +73,11 @@ local c = mlword{'true', 'false', 'nil'}
 local const = token(lexer.CONSTANT, lexer.upper * id + c)
 local structure = token(lexer.CLASS, aid * lpeg.P('.'))
 
-local open
-  = token(lexer.KEYWORD, mlword{'open', 'structure', 'functor'})
-  * ws * token(lexer.CLASS, longid)
+local open = token(lexer.KEYWORD, mlword{'open', 'structure', 'functor'}) * ws *
+  token(lexer.CLASS, longid)
 
-local struct_dec
-  = token(lexer.KEYWORD, lpeg.P('structure')) * ws
-  * token(lexer.CLASS, aid) * ws
-  * token(lexer.OPERATOR, lpeg.P('=')) * ws
+local struct_dec = token(lexer.KEYWORD, lpeg.P('structure')) * ws *
+  token(lexer.CLASS, aid) * ws * token(lexer.OPERATOR, lpeg.P('=')) * ws
 
 local struct_new = struct_dec * token(lexer.KEYWORD, lpeg.P('struct'))
 local struct_alias = struct_dec * token(lexer.CLASS, longid)

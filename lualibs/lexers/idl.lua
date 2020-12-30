@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- IDL LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('idl')
 
@@ -27,23 +27,24 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Preprocessor.
 local preproc_word = word_match[[
   define undef ifdef ifndef if elif else endif include warning pragma
 ]]
 lex:add_rule('preproc', token(lexer.PREPROCESSOR, lexer.starts_line('#') *
-                                                  preproc_word))
+  preproc_word))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('!<>=+-/*%&|^~.,:;?()[]{}')))

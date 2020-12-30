@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Martin Morawetz. See License.txt.
+-- Copyright 2006-2020 Martin Morawetz. See LICENSE.
 -- Matlab LPeg lexer.
 -- Based off of lexer code by Mitchell.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('matlab')
 
@@ -54,23 +54,22 @@ lex:add_rule('variable', token(lexer.VARIABLE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"') +
-                                           lexer.delimited_range('`')))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"')
+local bq_str = lexer.range('`')
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + bq_str))
 
 -- Comments.
-local line_comment = (P('%') + '#') * lexer.nonnewline^0
-local block_comment = '%{' * (lexer.any - '%}')^0 * P('%}')^-1
+local line_comment = lexer.to_eol(P('%') + '#')
+local block_comment = lexer.range('%{', '%}')
 lex:add_rule('comment', token(lexer.COMMENT, block_comment + line_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer +
-                                           lexer.dec_num + lexer.hex_num +
-                                           lexer.oct_num))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR,
-                               S('!%^&*()[]{}-=+/\\|:;.,?<>~`´')))
+  S('!%^&*()[]{}-=+/\\|:;.,?<>~`´')))
 
 -- Fold points.
 lex:add_fold_point(lexer.KEYWORD, 'if', 'end')
@@ -80,7 +79,7 @@ lex:add_fold_point(lexer.KEYWORD, 'switch', 'end')
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '[', ']')
 lex:add_fold_point(lexer.COMMENT, '%{', '%}')
-lex:add_fold_point(lexer.COMMENT, '%', lexer.fold_line_comments('%'))
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('%'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex

@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Gap LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('gap')
 
@@ -20,14 +20,15 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.digit^1 * -lexer.alpha))
+lex:add_rule('number', token(lexer.NUMBER, lexer.dec_num * -lexer.alpha))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('*+-,./:;<=>~^#()[]{}')))
@@ -37,6 +38,6 @@ lex:add_fold_point(lexer.KEYWORD, 'function', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'do', 'od')
 lex:add_fold_point(lexer.KEYWORD, 'if', 'fi')
 lex:add_fold_point(lexer.KEYWORD, 'repeat', 'until')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex

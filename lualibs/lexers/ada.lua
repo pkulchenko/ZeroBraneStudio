@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Ada LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('ada')
 
@@ -37,19 +37,15 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range('"', true, true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true, false)))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '--' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('--')))
 
 -- Numbers.
-local hex_num = 'O' * S('xX') * (lexer.xdigit + '_')^1
 local integer = lexer.digit^1 * ('_' * lexer.digit^1)^0
 local float = integer^1 * ('.' * integer^0)^-1 * S('eE') * S('+-')^-1 * integer
-lex:add_rule('number', token(lexer.NUMBER, hex_num +
-                                           S('+-')^-1 * (float + integer) *
-                                           S('LlUuFf')^-3))
+lex:add_rule('number', token(lexer.NUMBER, S('+-')^-1 * (float + integer)))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S(':;=<>&+-*/.()')))

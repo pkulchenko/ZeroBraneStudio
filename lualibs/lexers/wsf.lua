@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- WSF LPeg lexer (based on XML).
 -- Contributed by Jeff Stone.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
+local P, S, V = lpeg.P, lpeg.S, lpeg.V
 
 local lex = lexer.new('wsf')
 
@@ -13,17 +13,16 @@ local ws = token(lexer.WHITESPACE, lexer.space^1)
 lex:add_rule('whitespace', ws)
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '<!--' * (lexer.any - '-->')^0 *
-                                             P('-->')^-1))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.range('<!--', '-->')))
 
-local alpha = R('az', 'AZ', '\127\255')
-local word_char = lexer.alnum + S('_-:.??')
-local identifier = (alpha + S('_-:.??')) * word_char^0
+local alpha = lpeg.R('az', 'AZ', '\127\255')
+local word_char = lexer.alnum + S('_-:.?')
+local identifier = (alpha + S('_-:.?')) * word_char^0
 
 -- Elements.
 local element = token('element', '<' * P('/')^-1 * identifier)
 lex:add_rule('element', element)
-lex:add_style('element', lexer.STYLE_KEYWORD)
+lex:add_style('element', lexer.styles.keyword)
 
 -- Closing tags.
 local tag_close = token('element', P('/')^-1 * '>')
@@ -32,7 +31,7 @@ lex:add_rule('tag_close', tag_close)
 -- Attributes.
 local attribute = token('attribute', identifier) * #(lexer.space^0 * '=')
 lex:add_rule('attribute', attribute)
-lex:add_style('attribute', lexer.STYLE_TYPE)
+lex:add_style('attribute', lexer.styles.type)
 
 local in_tag = P(function(input, index)
   local before = input:sub(1, index - 1)
@@ -47,20 +46,21 @@ local equals = token(lexer.OPERATOR, '=') * in_tag
 lex:add_rule('equals', equals)
 
 -- Strings.
+local sq_str = lexer.range("'", false, false)
+local dq_str = lexer.range('"', false, false)
 local string = #S('\'"') * lexer.last_char_includes('=') *
-               token(lexer.STRING, lexer.delimited_range("'", false, true) +
-                                   lexer.delimited_range('"', false, true))
+  token(lexer.STRING, sq_str + dq_str)
 lex:add_rule('string', string)
 
 -- Numbers.
 lex:add_rule('number', #lexer.digit * lexer.last_char_includes('=') *
-                       token(lexer.NUMBER, lexer.digit^1 * P('%')^-1) * in_tag)
+  token(lexer.NUMBER, lexer.dec_num * P('%')^-1) * in_tag)
 
 -- Entities.
 lex:add_rule('entity', token('entity', '&' * word_match[[
   lt gt amp apos quot
 ]] * ';'))
-lex:add_style('entity', lexer.STYLE_OPERATOR)
+lex:add_style('entity', lexer.styles.operator)
 
 -- Fold points.
 local function disambiguate_lt(text, pos, line, s)
@@ -74,8 +74,7 @@ lex:add_fold_point(lexer.COMMENT, '<!--', '-->')
 
 -- Tags that start embedded languages.
 local embed_start_tag = element *
-                        (ws^1 * attribute * ws^0 * equals * ws^0 * string)^0 *
-                        ws^0 * tag_close
+  (ws^1 * attribute * ws^0 * equals * ws^0 * string)^0 * ws^0 * tag_close
 local embed_end_tag = element * tag_close
 
 -- Embedded JavaScript.

@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- GLSL LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S, R = lpeg.P, lpeg.S, lpeg.R
 
 local lex = lexer.new('glsl', {inherit = lexer.load('cpp')})
 
@@ -19,21 +19,15 @@ lex:modify_rule('keyword', token(lexer.KEYWORD, word_match[[
 ]]) + lex:get_rule('keyword'))
 
 -- Types.
-lex:modify_rule('type',
-                token(lexer.TYPE,
-                      S('bdiu')^-1 * 'vec' * R('24') +
-                      P('d')^-1 * 'mat' * R('24') * ('x' * R('24')^-1) +
-                      S('iu')^-1 * 'sampler' * R('13') * 'D' +
-                      'sampler' * R('12') * 'D' * P('Array')^-1 * 'Shadow' +
-                      S('iu')^-1 * 'sampler' * (R('12') * 'DArray' +
-                                                word_match[[
-                        Cube 2DRect Buffer 2DMS 2DMSArray 2DMSCubeArray
-                      ]]) +
-                      word_match[[
-                        samplerCubeShadow sampler2DRectShadow
-                        samplerCubeArrayShadow
-                      ]]) +
-                lex:get_rule('type') +
+lex:modify_rule('type', token(lexer.TYPE, S('bdiu')^-1 * 'vec' * R('24') +
+  P('d')^-1 * 'mat' * R('24') * ('x' * R('24')^-1) +
+  S('iu')^-1 * 'sampler' * R('13') * 'D' +
+  'sampler' * R('12') * 'D' * P('Array')^-1 * 'Shadow' +
+  S('iu')^-1 * 'sampler' * (R('12') * 'DArray' + word_match[[
+    Cube 2DRect Buffer 2DMS 2DMSArray 2DMSCubeArray
+  ]]) +
+  word_match[[samplerCubeShadow sampler2DRectShadow samplerCubeArrayShadow]]) +
+  lex:get_rule('type') +
 
 -- Functions.
 token(lexer.FUNCTION, word_match[[

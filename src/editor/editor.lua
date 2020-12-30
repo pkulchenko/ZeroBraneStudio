@@ -1735,13 +1735,15 @@ local function setLexLPegLexer(editor, spec)
   if dynlexer then
     local ok, err = CreateFullPath(tmppath)
     if not ok then return nil, err end
-    -- update lex.LEXERPATH to search there
-    lex.LEXERPATH = MergeFullPath(tmppath, "?.lua")
     dynfile = MergeFullPath(tmppath, lexer..".lua")
     -- save the file to the temp folder
     ok, err = FileWrite(dynfile, dynlexer)
     if not ok then cleanup({tmppath}); return nil, err end
   end
+  -- set lexer.lpeg.home that is used in lpeg lexer since 2020-03 (60547a32 in scintillua)
+  if not lex.property then lex.property = {} end
+  lex.property["lexer.lpeg.home"] = dynlexer and tmppath or lpath
+
   local ok, err = pcall(lex.load, lexer)
   if dynlexer then cleanup({dynfile, tmppath}) end
   if not ok then return nil, (err:gsub(".+lexer%.lua:%d+:%s*","")) end

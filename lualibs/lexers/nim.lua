@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Nim LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('nim', {fold_by_indentation = true})
 
@@ -69,33 +69,32 @@ lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
 ]]))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", true)
-local dq_str = lexer.delimited_range('"', true)
-local triple_dq_str = '"""' * (lexer.any - '"""')^0 * P('"""')^-1
-local raw_dq_str = 'r' * lexer.delimited_range('"', false, true)
-lex:add_rule('string', token(lexer.STRING, triple_dq_str + sq_str + dq_str +
-                                           raw_dq_str))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+local tq_str = lexer.range('"""')
+local raw_str = 'r' * lexer.range('"', false, false)
+lex:add_rule('string', token(lexer.STRING, tq_str + sq_str + dq_str + raw_str))
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline_esc^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#', true)))
 
 -- Numbers.
 local dec = lexer.digit^1 * ('_' * lexer.digit^1)^0
 local hex = '0' * S('xX') * lexer.xdigit^1 * ('_' * lexer.xdigit^1)^0
 local bin = '0' * S('bB') * S('01')^1 * ('_' * S('01')^1)^0
-local oct = '0o' * R('07')^1
+local oct = '0o' * lpeg.R('07')^1
 local integer = S('+-')^-1 * (bin + hex + oct + dec) *
-                ("'" * S('iIuUfF') * (P('8') + '16' + '32' + '64'))^-1
+  ("'" * S('iIuUfF') * (P('8') + '16' + '32' + '64'))^-1
 local float = lexer.digit^1 * ('_' * lexer.digit^1)^0 *
-              ('.' * ('_' * lexer.digit)^0)^-1 * S('eE') * S('+-')^-1 *
-              lexer.digit^1 * ('_' * lexer.digit^1)^0
+  ('.' * ('_' * lexer.digit)^0)^-1 * S('eE') * S('+-')^-1 * lexer.digit^1 *
+  ('_' * lexer.digit^1)^0
 lex:add_rule('number', token(lexer.NUMBER, lexer.float + integer))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR,
-                               S('=+-*/<>@$~&%|!?^.:\\`()[]{},;')))
+  S('=+-*/<>@$~&%|!?^.:\\`()[]{},;')))
 
 return lex

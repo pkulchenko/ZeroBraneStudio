@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Pascal LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('pascal')
 
@@ -38,23 +38,21 @@ lex:add_rule('type', token(lexer.TYPE, word_match([[
 ]], true)))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             S('uUrR')^-1 *
-                             lexer.delimited_range("'", true, true)))
+lex:add_rule('string', token(lexer.STRING, S('uUrR')^-1 *
+  lexer.range("'", true, false)))
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local bblock_comment = '{' * (lexer.any - '}')^0 * P('}')^-1
-local pblock_comment = '(*' * (lexer.any - '*)')^0 * P('*)')^-1
+local line_comment = lexer.to_eol('//', true)
+local bblock_comment = lexer.range('{', '}')
+local pblock_comment = lexer.range('(*', '*)')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + bblock_comment +
-                                             pblock_comment))
+  pblock_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('LlDdFf')^-1))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('LlDdFf')^-1))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('.,;^@:=<>+-/*()[]')))

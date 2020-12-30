@@ -1,10 +1,10 @@
--- Copyright 2013-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2013-2020 Mitchell. See LICENSE.
 -- Dart LPeg lexer.
 -- Written by Brian Schott (@Hackerpilot on Github).
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('dart')
 
@@ -25,33 +25,32 @@ lex:add_rule('builtin', token(lexer.CONSTANT, word_match[[
 ]]))
 
 -- Strings.
-local sq_str = S('r')^-1 * lexer.delimited_range("'", true)
-local dq_str = S('r')^-1 * lexer.delimited_range('"', true)
-local sq_str_multiline = S('r')^-1 * "'''" * (lexer.any - "'''")^0 * P("'''")^-1
-local dq_str_multiline = S('r')^-1 * '"""' * (lexer.any - '"""')^0 * P('"""')^-1
-lex:add_rule('string', token(lexer.STRING, sq_str_multiline + dq_str_multiline +
-                                           sq_str + dq_str))
+local sq_str = S('r')^-1 * lexer.range("'", true)
+local dq_str = S('r')^-1 * lexer.range('"', true)
+local tq_str = S('r')^-1 * (lexer.range("'''") + lexer.range('"""'))
+lex:add_rule('string', token(lexer.STRING, tq_str + sq_str + dq_str))
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '//' * lexer.nonnewline_esc^0 +
-                                             lexer.nested_pair('/*', '*/')))
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/', false, false, true)
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.hex_num))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('#?=!<>+-*$/%&|^~.,;()[]{}')))
 
 -- Annotations.
 lex:add_rule('annotation', token('annotation', '@' * lexer.word^1))
-lex:add_style('annotation', lexer.STYLE_PREPROCESSOR)
+lex:add_style('annotation', lexer.styles.preprocessor)
 
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
 
 return lex

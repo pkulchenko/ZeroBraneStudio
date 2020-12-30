@@ -1,4 +1,4 @@
--- Copyright 2006-2018 Robert Gieseke. See License.txt.
+-- Copyright 2006-2020 Robert Gieseke. See LICENSE.
 -- Literate CoffeeScript LPeg lexer.
 -- http://coffeescript.org/#literate
 
@@ -17,6 +17,6 @@ lex:embed(coffeescript, coffee_start_rule, coffee_end_rule)
 -- Use 'markdown_whitespace' instead of lexer.WHITESPACE since the latter would
 -- expand to 'litcoffee_whitespace'.
 lex:modify_rule('whitespace', token('markdown_whitespace', S(' \t')^1 +
-                                                           S('\r\n')^1))
+  S('\r\n')^1))
 
 return lex

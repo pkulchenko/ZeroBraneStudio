@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Python LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('python', {fold_by_indentation = true})
 
@@ -12,9 +12,9 @@ lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
-  and as assert break class continue def del elif else except exec finally for
-  from global if import in is lambda nonlocal not or pass print raise return try
-  while with yield
+  and as assert async await break class continue def del elif else except exec
+  finally for from global if import in is lambda nonlocal not or pass print
+  raise return try while with yield
   -- Descriptors/attr access.
   __get__ __set__ __delete__ __slots__
   -- Class.
@@ -67,36 +67,34 @@ lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
 
 -- Self.
 lex:add_rule('self', token('self', P('self')))
-lex:add_style('self', lexer.STYLE_TYPE)
+lex:add_style('self', lexer.styles.type)
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline_esc^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#', true)))
 
 -- Strings.
-local sq_str = P('u')^-1 * lexer.delimited_range("'", true)
-local dq_str = P('U')^-1 * lexer.delimited_range('"', true)
-local triple_sq_str = "'''" * (lexer.any - "'''")^0 * P("'''")^-1
-local triple_dq_str = '"""' * (lexer.any - '"""')^0 * P('"""')^-1
+local sq_str = P('u')^-1 * lexer.range("'", true)
+local dq_str = P('U')^-1 * lexer.range('"', true)
+local tq_str = lexer.range("'''") + lexer.range('"""')
 -- TODO: raw_strs cannot end in single \.
-local raw_sq_str = P('u')^-1 * 'r' * lexer.delimited_range("'", false, true)
-local raw_dq_str = P('U')^-1 * 'R' * lexer.delimited_range('"', false, true)
-lex:add_rule('string', token(lexer.STRING, triple_sq_str + triple_dq_str +
-                                           sq_str + dq_str + raw_sq_str +
-                                           raw_dq_str))
+local raw_sq_str = P('u')^-1 * 'r' * lexer.range("'", false, false)
+local raw_dq_str = P('U')^-1 * 'R' * lexer.range('"', false, false)
+lex:add_rule('string', token(lexer.STRING, tq_str + sq_str + dq_str +
+  raw_sq_str + raw_dq_str))
 
 -- Numbers.
-local dec = lexer.digit^1 * S('Ll')^-1
+local dec = lexer.dec_num * S('Ll')^-1
 local bin = '0b' * S('01')^1 * ('_' * S('01')^1)^0
-local oct = '0' * R('07')^1 * S('Ll')^-1
+local oct = lexer.oct_num * S('Ll')^-1
 local integer = S('+-')^-1 * (bin + lexer.hex_num + oct + dec)
 lex:add_rule('number', token(lexer.NUMBER, lexer.float + integer))
 
 -- Decorators.
-lex:add_rule('decorator', token('decorator', '@' * lexer.nonnewline^0))
-lex:add_style('decorator', lexer.STYLE_PREPROCESSOR)
+lex:add_rule('decorator', token('decorator', lexer.to_eol('@')))
+lex:add_style('decorator', lexer.styles.preprocessor)
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('!%^&*()[]{}-=+/|:;.,?<>~`')))

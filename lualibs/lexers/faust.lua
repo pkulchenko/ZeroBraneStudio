@@ -1,9 +1,9 @@
--- Copyright 2015-2018 David B. Lamkins <david@lamkins.net>. See License.txt.
+-- Copyright 2015-2020 David B. Lamkins <david@lamkins.net>. See LICENSE.
 -- Faust LPeg lexer, see http://faust.grame.fr/
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('faust')
 
@@ -21,15 +21,15 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"', true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true)))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//')
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-local int = R('09')^1
+local int = lexer.digit^1
 local rad = P('.')
 local exp = (P('e') * S('+-')^-1 * int)^-1
 local flt = int * (rad * int)^-1 * exp + int^-1 * rad * int * exp
@@ -37,11 +37,10 @@ lex:add_rule('number', token(lexer.NUMBER, flt + int))
 
 -- Pragmas.
 lex:add_rule('pragma', token(lexer.PREPROCESSOR, P('<mdoc>') *
-                                                 (lexer.any - P('</mdoc>'))^0 *
-                                                 P('</mdoc>')^-1))
+  (lexer.any - P('</mdoc>'))^0 * P('</mdoc>')^-1))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR,
-                               S('+-/*%<>~!=^&|?~:;,.()[]{}@#$`\\\'')))
+  S('+-/*%<>~!=^&|?~:;,.()[]{}@#$`\\\'')))
 
 return lex

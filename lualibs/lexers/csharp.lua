@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- C# LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('csharp')
 
@@ -31,27 +31,24 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", true)
-local dq_str = lexer.delimited_range('"', true)
-local ml_str = P('@')^-1 * lexer.delimited_range('"', false, true)
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+local ml_str = P('@')^-1 * lexer.range('"', false, false)
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + ml_str))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('lLdDfFMm')^-1))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('lLdDfFmM')^-1))
 
 -- Preprocessor.
-local preproc_word = word_match[[
-  define elif else endif error if line undef warning region endregion
-]]
-lex:add_rule('preprocessor', token(lexer.PREPROCESSOR, lexer.starts_line('#') *
-                                                       S('\t ')^0 *
-                                                       preproc_word))
+lex:add_rule('preprocessor', token(lexer.PREPROCESSOR, '#' * S('\t ')^0 *
+  word_match[[
+    define elif else endif error if line undef warning region endregion
+  ]]))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('~!.,:;+-*/<>=\\^|&%?()[]{}')))
@@ -63,6 +60,6 @@ lex:add_fold_point(lexer.PREPROCESSOR, 'ifndef', 'endif')
 lex:add_fold_point(lexer.PREPROCESSOR, 'region', 'endregion')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
 
 return lex

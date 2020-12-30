@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Ini LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('ini')
 
@@ -17,19 +17,19 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, (lexer.alpha + '_') *
-                                                   (lexer.alnum + S('_.'))^0))
+  (lexer.alnum + S('_.'))^0))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'") +
-                                           lexer.delimited_range('"')))
+local sq_str = lexer.range("'")
+local dq_str = lexer.range('"')
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Labels.
-lex:add_rule('label', token(lexer.LABEL,
-                            lexer.delimited_range('[]', true, true)))
+lex:add_rule('label', token(lexer.LABEL, lexer.range('[', ']', true)))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, lexer.starts_line(S(';#')) *
-                                             lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT,
+  lexer.to_eol(lexer.starts_line(S(';#')))))
 
 -- Numbers.
 local dec = lexer.digit^1 * ('_' * lexer.digit^1)^0

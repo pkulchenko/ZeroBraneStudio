@@ -53,3 +53,27 @@ end
 require "lpeg"
 local lexpath = package.searchpath("lexlpeg", ide.osclibs)
 ok(package.loadlib(lexpath, "GetLexerCount") ~= nil, "LexLPeg lexer is loaded.")
+
+-- get the list of lexers and check that the match specs in editor.specmap
+local lexers = {}
+for _, lexer in ipairs(ide:GetFileList('lualibs/lexers/', true, '*.lua', {path = false})) do
+  lexers[lexer:gsub("%.lua","")] = 0
+end
+for ext, lexer in pairs(ide.config.editor.specmap) do
+  local msg = "Lexer '"..lexer.."' is present."
+  if not lexers[lexer] then
+    ok(false, msg)
+  else
+    if lexers[lexer] == 0 then
+      ok(true, msg)
+    end
+    lexers[lexer] = lexers[lexer] + 1
+  end
+end
+local exceptions = {lexer = true, null = true, rc = true, context = true, tex = true,
+  text = true, rails = true, container = true, mediawiki = true, django = true}
+for lexer, num in pairs(lexers) do
+  if num == 0 and not exceptions[lexer] then
+    ok(false, "Lexer '"..lexer.."' is listed in editor.specmap.")
+  end
+end

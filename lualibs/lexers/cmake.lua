@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- CMake LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('cmake')
 
@@ -111,7 +111,7 @@ lex:add_rule('variable', token(lexer.VARIABLE, word_match[[
   MINGW MSVC MSVC60 MSVC70 MSVC71 MSVC80 MSVC_IDE POST_BUILD PRE_BUILD
   PROJECT_BINARY_DIR PROJECT_NAME PROJECT_SOURCE_DIR RUN_CONFIGURE TARGET
   UNIX WIN32
-]] + P('$') * lexer.delimited_range('{}', false, true)))
+]] + P('$') * lexer.range('{', '}')))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, word_match[[
@@ -123,10 +123,10 @@ lex:add_rule('operator', token(lexer.OPERATOR, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"')))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"')))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Fold points.
 lex:add_fold_point(lexer.KEYWORD, 'IF', 'ENDIF')
@@ -135,6 +135,6 @@ lex:add_fold_point(lexer.KEYWORD, 'WHILE', 'ENDWHILE')
 lex:add_fold_point(lexer.FUNCTION, 'MACRO', 'ENDMACRO')
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex

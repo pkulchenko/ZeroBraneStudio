@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Postscript LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('ps')
 
@@ -28,15 +28,15 @@ local word = (lexer.alpha + '-') * (lexer.alnum + '-')^0
 lex:add_rule('identifier', token(lexer.IDENTIFIER, word))
 
 -- Strings.
-local arrow_string = lexer.delimited_range('<>')
-local nested_string = lexer.delimited_range('()', false, false, true)
+local arrow_string = lexer.range('<', '>')
+local nested_string = lexer.range('(', ')', false, false, true)
 lex:add_rule('string', token(lexer.STRING, arrow_string + nested_string))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '%' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('%')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Labels.
 lex:add_rule('label', token(lexer.LABEL, '/' * word))

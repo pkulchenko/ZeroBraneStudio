@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Django LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('django')
 
@@ -32,21 +32,20 @@ lex:add_rule('function', token(lexer.FUNCTION, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range('"', false, true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', false, false)))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S(':,.|')))
 
 -- Embed Django in HTML.
 local html = lexer.load('html')
-local html_comment = '<!--' * (lexer.any - '-->')^0 * P('-->')^-1
-local django_comment = '{#' * (lexer.any - lexer.newline - '#}')^0 * P('#}')^-1
+local html_comment = lexer.range('<!--', '-->')
+local django_comment = lexer.range('{#', '#}', true)
 html:modify_rule('comment', token(lexer.COMMENT, html_comment + django_comment))
 local django_start_rule = token('django_tag', '{' * S('{%'))
 local django_end_rule = token('django_tag', S('%}') * '}')
 html:embed(lex, django_start_rule, django_end_rule)
-lex:add_style('django_tag', lexer.STYLE_EMBEDDED)
+lex:add_style('django_tag', lexer.styles.embedded)
 
 -- Fold points.
 lex:add_fold_point('django_tag', '{{', '}}')

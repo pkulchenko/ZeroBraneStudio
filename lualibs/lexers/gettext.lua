@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Gettext LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('gettext')
 
@@ -22,10 +22,9 @@ lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 lex:add_rule('variable', token(lexer.VARIABLE, S('%$@') * lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"', true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true)))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * S(': .~') *
-                                             lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#' * S(': .~'))))
 
 return lex

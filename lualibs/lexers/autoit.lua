@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- AutoIt LPeg lexer.
 -- Contributed by Jeff Stone.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('autoit')
 
@@ -97,12 +97,10 @@ lex:add_rule('function', token(lexer.FUNCTION, word_match([[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-local line_comment = ';' * lexer.nonnewline_esc^0
-local block_comment1 = '#comments-start' * (lexer.any - '#comments-end')^0 *
-                       P('#comments-end')^-1
-local block_comment2 = '#cs' * (lexer.any - '#ce')^0 * P('#ce')^-1
-lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment1 +
-                                             block_comment2))
+local line_comment = lexer.to_eol(';')
+local block_comment = lexer.range('#comments-start', '#comments-end') +
+  lexer.range('#cs', '#ce')
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Preprocessor.
 lex:add_rule('preprocessor', token(lexer.PREPROCESSOR, '#' * word_match([[
@@ -111,20 +109,20 @@ lex:add_rule('preprocessor', token(lexer.PREPROCESSOR, '#' * word_match([[
 ]], true)))
 
 -- Strings.
-local dq_str = lexer.delimited_range('"', true, true)
-local sq_str = lexer.delimited_range("'", true, true)
-local inc = lexer.delimited_range('<>', true, true, true)
+local dq_str = lexer.range('"', true, false)
+local sq_str = lexer.range("'", true, false)
+local inc = lexer.range('<', '>', true, false, true)
 lex:add_rule('string', token(lexer.STRING, dq_str + sq_str + inc))
 
 -- Macros.
 lex:add_rule('macro', token('macro', '@' * (lexer.alnum + '_')^1))
-lex:add_style('macro', lexer.STYLE_PREPROCESSOR)
+lex:add_style('macro', lexer.styles.preprocessor)
 
 -- Variables.
 lex:add_rule('variable', token(lexer.VARIABLE, '$' * (lexer.alnum + '_')^1))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-^*/&<>=?:()[]')))

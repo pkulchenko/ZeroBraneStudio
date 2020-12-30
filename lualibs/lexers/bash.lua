@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Shell LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('bash')
 
@@ -23,29 +23,29 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", false, true)
-local dq_str = lexer.delimited_range('"')
-local ex_str = lexer.delimited_range('`')
+local sq_str = lexer.range("'", false, false)
+local dq_str = lexer.range('"')
+local ex_str = lexer.range('`')
 local heredoc = '<<' * P(function(input, index)
-  local s, e, _, delimiter =
-    input:find('%-?(["\']?)([%a_][%w_]*)%1[\n\r\f;]+', index)
-  if s == index and delimiter then
-    local _, e = input:find('[\n\r\f]+'..delimiter, e)
-    return e and e + 1 or #input + 1
-  end
+  local _, e, _, delimiter = input:find(
+    '^%-?(["\']?)([%a_][%w_]*)%1[\n\r\f;]+', index)
+  if not delimiter then return end
+  _, e = input:find('[\n\r\f]+' .. delimiter, e)
+  return e and e + 1 or #input + 1
 end)
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + ex_str + heredoc))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Variables.
-lex:add_rule('variable', token(lexer.VARIABLE,
-                               '$' * (S('!#?*@$') + lexer.digit^1 + lexer.word +
-                                      lexer.delimited_range('{}', true, true))))
+lex:add_rule('variable', token(lexer.VARIABLE, '$' * (
+  S('!#?*@$') + lexer.digit^1 + lexer.word +
+    lexer.range('{', '}', true, false, true)
+)))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*^&|~.,:;?()[]{}')))
@@ -55,6 +55,6 @@ lex:add_fold_point(lexer.KEYWORD, 'if', 'fi')
 lex:add_fold_point(lexer.KEYWORD, 'case', 'esac')
 lex:add_fold_point(lexer.KEYWORD, 'do', 'done')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex

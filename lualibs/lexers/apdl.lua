@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- APDL LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('apdl', {case_insensitive_fold_points = true})
 
@@ -46,21 +46,19 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range("'", true, true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range("'", true, false)))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Functions.
-lex:add_rule('function', token(lexer.FUNCTION,
-                               lexer.delimited_range('%', true, true)))
+lex:add_rule('function', token(lexer.FUNCTION, lexer.range('%', true, false)))
 
 -- Labels.
 lex:add_rule('label', token(lexer.LABEL, lexer.starts_line(':') * lexer.word))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '!' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('!')))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-*/$=,;()')))
@@ -69,6 +67,6 @@ lex:add_rule('operator', token(lexer.OPERATOR, S('+-*/$=,;()')))
 lex:add_fold_point(lexer.KEYWORD, '*if', '*endif')
 lex:add_fold_point(lexer.KEYWORD, '*do', '*enddo')
 lex:add_fold_point(lexer.KEYWORD, '*dowhile', '*enddo')
-lex:add_fold_point(lexer.COMMENT, '!', lexer.fold_line_comments('!'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('!'))
 
 return lex

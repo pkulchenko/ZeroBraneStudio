@@ -1,4 +1,4 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 
 local M = {}
 
@@ -6,14 +6,14 @@ local M = {}
 ---
 -- Lexes Scintilla documents and source code with Lua and LPeg.
 --
--- ## Writing Lua Lexers
+-- ### Writing Lua Lexers
 --
 -- Lexers highlight the syntax of source code. Scintilla (the editing component
--- behind [Textadept][]) traditionally uses static, compiled C++ lexers which
--- are notoriously difficult to create and/or extend. On the other hand, Lua
--- makes it easy to to rapidly create new lexers, extend existing ones, and
--- embed lexers within one another. Lua lexers tend to be more readable than C++
--- lexers too.
+-- behind [Textadept][] and [SciTE][]) traditionally uses static, compiled C++
+-- lexers which are notoriously difficult to create and/or extend. On the other
+-- hand, Lua makes it easy to to rapidly create new lexers, extend existing
+-- ones, and embed lexers within one another. Lua lexers tend to be more
+-- readable than C++ lexers too.
 --
 -- Lexers are Parsing Expression Grammars, or PEGs, composed with the Lua
 -- [LPeg library][]. The following table comes from the LPeg documentation and
@@ -24,14 +24,14 @@ local M = {}
 -- Operator             | Description
 -- ---------------------|------------
 -- `lpeg.P(string)`     | Matches `string` literally.
--- `lpeg.P(`_`n`_`)`    | Matches exactly _`n`_ characters.
+-- `lpeg.P(`_`n`_`)`    | Matches exactly _`n`_ number of characters.
 -- `lpeg.S(string)`     | Matches any character in set `string`.
 -- `lpeg.R("`_`xy`_`")` | Matches any character between range `x` and `y`.
 -- `patt^`_`n`_         | Matches at least _`n`_ repetitions of `patt`.
 -- `patt^-`_`n`_        | Matches at most _`n`_ repetitions of `patt`.
 -- `patt1 * patt2`      | Matches `patt1` followed by `patt2`.
 -- `patt1 + patt2`      | Matches `patt1` or `patt2` (ordered choice).
--- `patt1 - patt2`      | Matches `patt1` if `patt2` does not match.
+-- `patt1 - patt2`      | Matches `patt1` if `patt2` does not also match.
 -- `-patt`              | Equivalent to `("" - patt)`.
 -- `#patt`              | Matches `patt` but consumes no input.
 --
@@ -40,11 +40,13 @@ local M = {}
 -- coloring and embedding lexers within one another. Following that is a
 -- discussion about code folding, or being able to tell Scintilla which code
 -- blocks are "foldable" (temporarily hideable from view). After that are
--- instructions on how to use Lua lexers with the aforementioned Textadept
--- editor. Finally there are comments on lexer performance and limitations.
+-- instructions on how to use Lua lexers with the aforementioned Textadept and
+-- SciTE editors. Finally there are comments on lexer performance and
+-- limitations.
 --
 -- [LPeg library]: http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html
--- [Textadept]: http://foicica.com/textadept
+-- [Textadept]: https://orbitalquark.github.io/textadept
+-- [SciTE]: https://scintilla.org/SciTE.html
 --
 -- ### Lexer Basics
 --
@@ -57,8 +59,8 @@ local M = {}
 -- lexer has the name *lua.lua*.
 --
 -- Note: Try to refrain from using one-character language names like "c", "d",
--- or "r". For example, Lua lexers for those language names are named "ansi_c",
--- "dmd", and "rstats", respectively.
+-- or "r". For example, Scintillua uses "ansi_c", "dmd", and "rstats",
+-- respectively.
 --
 -- #### New Lexer Template
 --
@@ -70,7 +72,7 @@ local M = {}
 --
 --     local lexer = require('lexer')
 --     local token, word_match = lexer.token, lexer.word_match
---     local P, R, S = lpeg.P, lpeg.R, lpeg.S
+--     local P, S = lpeg.P, lpeg.S
 --
 --     local lex = lexer.new('?')
 --
@@ -133,13 +135,12 @@ local M = {}
 -- [`lexer.PREPROCESSOR`](), [`lexer.CONSTANT`](), [`lexer.VARIABLE`](),
 -- [`lexer.FUNCTION`](), [`lexer.CLASS`](), [`lexer.TYPE`](), [`lexer.LABEL`](),
 -- [`lexer.REGEX`](), and [`lexer.EMBEDDED`](). Patterns include
--- [`lexer.any`](), [`lexer.ascii`](), [`lexer.extend`](), [`lexer.alpha`](),
--- [`lexer.digit`](), [`lexer.alnum`](), [`lexer.lower`](), [`lexer.upper`](),
--- [`lexer.xdigit`](), [`lexer.cntrl`](), [`lexer.graph`](), [`lexer.print`](),
--- [`lexer.punct`](), [`lexer.space`](), [`lexer.newline`](),
--- [`lexer.nonnewline`](), [`lexer.nonnewline_esc`](), [`lexer.dec_num`](),
--- [`lexer.hex_num`](), [`lexer.oct_num`](), [`lexer.integer`](),
--- [`lexer.float`](), and [`lexer.word`](). You may use your own token names if
+-- [`lexer.any`](), [`lexer.alpha`](), [`lexer.digit`](), [`lexer.alnum`](),
+-- [`lexer.lower`](), [`lexer.upper`](), [`lexer.xdigit`](), [`lexer.graph`](),
+-- [`lexer.print`](), [`lexer.punct`](), [`lexer.space`](), [`lexer.newline`](),
+-- [`lexer.nonnewline`](), [`lexer.dec_num`](), [`lexer.hex_num`](),
+-- [`lexer.oct_num`](), [`lexer.integer`](), [`lexer.float`](),
+-- [`lexer.number`](), and [`lexer.word`](). You may use your own token names if
 -- none of the above fit your language, but an advantage to using predefined
 -- token names is that your lexer's tokens will inherit the universal syntax
 -- highlighting color theme used by your text editor.
@@ -185,9 +186,8 @@ local M = {}
 --
 -- Line-style comments with a prefix character(s) are easy to express with LPeg:
 --
---     local shell_comment = token(lexer.COMMENT, '#' * lexer.nonnewline^0)
---     local c_line_comment = token(lexer.COMMENT,
---                                  '//' * lexer.nonnewline_esc^0)
+--     local shell_comment = token(lexer.COMMENT, lexer.to_eol('#'))
+--     local c_line_comment = token(lexer.COMMENT, lexer.to_eol('//', true))
 --
 -- The comments above start with a '#' or "//" and go to the end of the line.
 -- The second comment recognizes the next line also as a comment if the current
@@ -196,8 +196,7 @@ local M = {}
 -- C-style "block" comments with a start and end delimiter are also easy to
 -- express:
 --
---     local c_comment = token(lexer.COMMENT,
---                             '/*' * (lexer.any - '*/')^0 * P('*/')^-1)
+--     local c_comment = token(lexer.COMMENT, lexer.range('/*', '*/'))
 --
 -- This comment starts with a "/\*" sequence and contains anything up to and
 -- including an ending "\*/" sequence. The ending "\*/" is optional so the lexer
@@ -205,21 +204,13 @@ local M = {}
 --
 -- **Strings**
 --
--- It is tempting to think that a string is not much different from the block
--- comment shown above in that both have start and end delimiters:
+-- Most programming languages allow escape sequences in strings such that a
+-- sequence like "\\&quot;" in a double-quoted string indicates that the
+-- '&quot;' is not the end of the string. [`lexer.range()`]() handles escapes
+-- inherently.
 --
---     local dq_str = '"' * (lexer.any - '"')^0 * P('"')^-1
---     local sq_str = "'" * (lexer.any - "'")^0 * P("'")^-1
---     local simple_string = token(lexer.STRING, dq_str + sq_str)
---
--- However, most programming languages allow escape sequences in strings such
--- that a sequence like "\\&quot;" in a double-quoted string indicates that the
--- '&quot;' is not the end of the string. The above token incorrectly matches
--- such a string. Instead, use the [`lexer.delimited_range()`]() convenience
--- function.
---
---     local dq_str = lexer.delimited_range('"')
---     local sq_str = lexer.delimited_range("'")
+--     local dq_str = lexer.range('"')
+--     local sq_str = lexer.range("'")
 --     local string = token(lexer.STRING, dq_str + sq_str)
 --
 -- In this case, the lexer treats '\' as an escape character in a string
@@ -228,9 +219,9 @@ local M = {}
 -- **Numbers**
 --
 -- Most programming languages have the same format for integer and float tokens,
--- so it might be as simple as using a couple of predefined LPeg patterns:
+-- so it might be as simple as using a predefined LPeg pattern:
 --
---     local number = token(lexer.NUMBER, lexer.float + lexer.integer)
+--     local number = token(lexer.NUMBER, lexer.number)
 --
 -- However, some languages allow postfix characters on integers.
 --
@@ -316,70 +307,39 @@ local M = {}
 -- different tokens. Instead of highlighting with just colors, Scintilla allows
 -- for more rich highlighting, or "styling", with different fonts, font sizes,
 -- font attributes, and foreground and background colors, just to name a few.
--- The unit of this rich highlighting is called a "style". Styles are simply
--- strings of comma-separated property settings. By default, lexers associate
--- predefined token names like `lexer.WHITESPACE`, `lexer.COMMENT`,
--- `lexer.STRING`, etc. with particular styles as part of a universal color
--- theme. These predefined styles include [`lexer.STYLE_CLASS`](),
--- [`lexer.STYLE_COMMENT`](), [`lexer.STYLE_CONSTANT`](),
--- [`lexer.STYLE_ERROR`](), [`lexer.STYLE_EMBEDDED`](),
--- [`lexer.STYLE_FUNCTION`](), [`lexer.STYLE_IDENTIFIER`](),
--- [`lexer.STYLE_KEYWORD`](), [`lexer.STYLE_LABEL`](), [`lexer.STYLE_NUMBER`](),
--- [`lexer.STYLE_OPERATOR`](), [`lexer.STYLE_PREPROCESSOR`](),
--- [`lexer.STYLE_REGEX`](), [`lexer.STYLE_STRING`](), [`lexer.STYLE_TYPE`](),
--- [`lexer.STYLE_VARIABLE`](), and [`lexer.STYLE_WHITESPACE`](). Like with
--- predefined token names and LPeg patterns, you may define your own styles. At
--- their core, styles are just strings, so you may create new ones and/or modify
--- existing ones. Each style consists of the following comma-separated settings:
---
--- Setting        | Description
--- ---------------|------------
--- font:_name_    | The name of the font the style uses.
--- size:_int_     | The size of the font the style uses.
--- [not]bold      | Whether or not the font face is bold.
--- weight:_int_   | The weight or boldness of a font, between 1 and 999.
--- [not]italics   | Whether or not the font face is italic.
--- [not]underlined| Whether or not the font face is underlined.
--- fore:_color_   | The foreground color of the font face.
--- back:_color_   | The background color of the font face.
--- [not]eolfilled | Does the background color extend to the end of the line?
--- case:_char_    | The case of the font ('u': upper, 'l': lower, 'm': normal).
--- [not]visible   | Whether or not the text is visible.
--- [not]changeable| Whether the text is changeable or read-only.
---
--- Specify font colors in either "#RRGGBB" format, "0xBBGGRR" format, or the
--- decimal equivalent of the latter. As with token names, LPeg patterns, and
--- styles, there is a set of predefined color names, but they vary depending on
--- the current color theme in use. Therefore, it is generally not a good idea to
--- manually define colors within styles in your lexer since they might not fit
--- into a user's chosen color theme. Try to refrain from even using predefined
--- colors in a style because that color may be theme-specific. Instead, the best
--- practice is to either use predefined styles or derive new color-agnostic
--- styles from predefined ones. For example, Lua "longstring" tokens use the
--- existing `lexer.STYLE_STRING` style instead of defining a new one.
+-- The unit of this rich highlighting is called a "style". Styles are simply Lua
+-- tables of properties. By default, lexers associate predefined token names
+-- like `lexer.WHITESPACE`, `lexer.COMMENT`, `lexer.STRING`, etc. with
+-- particular styles as part of a universal color theme. These predefined styles
+-- are contained in [`lexer.styles`](), and you may define your own styles. See
+-- that table's documentation for more information. As with token names,
+-- LPeg patterns, and styles, there is a set of predefined color names, but they
+-- vary depending on the current color theme in use. Therefore, it is generally
+-- not a good idea to manually define colors within styles in your lexer since
+-- they might not fit into a user's chosen color theme. Try to refrain from even
+-- using predefined colors in a style because that color may be theme-specific.
+-- Instead, the best practice is to either use predefined styles or derive new
+-- color-agnostic styles from predefined ones. For example, Lua "longstring"
+-- tokens use the existing `lexer.styles.string` style instead of defining a new
+-- one.
 --
 -- ##### Example Styles
 --
 -- Defining styles is pretty straightforward. An empty style that inherits the
--- default theme settings is simply an empty string:
+-- default theme settings is simply an empty table:
 --
---     local style_nothing = ''
+--     local style_nothing = {}
 --
 -- A similar style but with a bold font face looks like this:
 --
---     local style_bold = 'bold'
+--     local style_bold = {bold = true}
 --
--- If you want the same style, but also with an italic font face, define the new
--- style in terms of the old one:
+-- You can derive new styles from predefined ones without having to rewrite
+-- them. This operation leaves the old style unchanged. For example, if you had
+-- a "static variable" token whose style you wanted to base off of
+-- `lexer.styles.variable`, it would probably look like:
 --
---     local style_bold_italic = style_bold..',italics'
---
--- This allows you to derive new styles from predefined ones without having to
--- rewrite them. This operation leaves the old style unchanged. Thus if you
--- had a "static variable" token whose style you wanted to base off of
--- `lexer.STYLE_VARIABLE`, it would probably look like:
---
---     local style_static_var = lexer.STYLE_VARIABLE..',italics'
+--     local style_static_var = lexer.styles.variable .. {italics = true}
 --
 -- The color theme files in the *lexers/themes/* folder give more examples of
 -- style definitions.
@@ -401,7 +361,7 @@ local M = {}
 --
 -- Assigning a style to this token looks like:
 --
---     lex:add_style('custom_whitespace', lexer.STYLE_WHITESPACE)
+--     lex:add_style('custom_whitespace', lexer.styles.whitespace)
 --
 -- Do not confuse token names with rule names. They are completely different
 -- entities. In the example above, the lexer associates the "custom_whitespace"
@@ -409,13 +369,11 @@ local M = {}
 -- prefer to color the background of whitespace a shade of grey, it might look
 -- like:
 --
---     local custom_style = lexer.STYLE_WHITESPACE..',back:$(color.grey)'
---     lex:add_style('custom_whitespace', custom_style)
+--     lex:add_style('custom_whitespace',
+--                   lexer.styles.whitespace .. {back = lexer.colors.grey})
 --
--- Notice that the lexer peforms Scintilla-style "$()" property expansion. You
--- may also use "%()". Remember to refrain from assigning specific colors in
--- styles, but in this case, all user color themes probably define the
--- "color.grey" property.
+-- Remember to refrain from assigning specific colors in styles, but in this
+-- case, all user color themes probably define `colors.grey`.
 --
 -- #### Line Lexers
 --
@@ -501,7 +459,7 @@ local M = {}
 --     local html = lexer.load('html')
 --     local php_start_rule = token('php_tag', '<?php ')
 --     local php_end_rule = token('php_tag', '?>')
---     lex:add_style('php_tag', lexer.STYLE_EMBEDDED)
+--     lex:add_style('php_tag', lexer.styles.embedded)
 --     html:embed(lex, php_start_rule, php_end_rule)
 --
 -- #### Lexers with Complex State
@@ -522,12 +480,11 @@ local M = {}
 --
 -- When reading source code, it is occasionally helpful to temporarily hide
 -- blocks of code like functions, classes, comments, etc. This is the concept of
--- "folding". In many Scintilla-based editors, such as Textadept, little
--- indicators in the editor margins appear next to code that can be folded at
--- places called "fold points". When the user clicks an indicator, the editor
--- hides the code associated with the indicator until the user clicks the
--- indicator again. The lexer specifies these fold points and what code exactly
--- to fold.
+-- "folding". In the Textadept and SciTE editors for example, little indicators
+-- in the editor margins appear next to code that can be folded at places called
+-- "fold points". When the user clicks an indicator, the editor hides the code
+-- associated with the indicator until the user clicks the indicator again. The
+-- lexer specifies these fold points and what code exactly to fold.
 --
 -- The fold points for most languages occur on keywords or character sequences.
 -- Examples of fold keywords are "if" and "end" in Lua and examples of fold
@@ -593,15 +550,30 @@ local M = {}
 --
 -- ### Using Lexers
 --
--- #### Textadept
+-- **Textadept**
 --
 -- Put your lexer in your *~/.textadept/lexers/* directory so you do not
 -- overwrite it when upgrading Textadept. Also, lexers in this directory
 -- override default lexers. Thus, Textadept loads a user *lua* lexer instead of
 -- the default *lua* lexer. This is convenient for tweaking a default lexer to
--- your liking. Then add a [file type][] for your lexer if necessary.
+-- your liking. Then add a [file type](#textadept.file_types) for your lexer if
+-- necessary.
 --
--- [file type]: textadept.file_types.html
+-- **SciTE**
+--
+-- Create a *.properties* file for your lexer and `import` it in either your
+-- *SciTEUser.properties* or *SciTEGlobal.properties*. The contents of the
+-- *.properties* file should contain:
+--
+--     file.patterns.[lexer_name]=[file_patterns]
+--     lexer.$(file.patterns.[lexer_name])=[lexer_name]
+--
+-- where `[lexer_name]` is the name of your lexer (minus the *.lua* extension)
+-- and `[file_patterns]` is a set of file extensions to use your lexer for.
+--
+-- Please note that Lua lexers ignore any styling information in *.properties*
+-- files. Your theme file in the *lexers/themes/* directory contains styling
+-- information.
 --
 -- ### Migrating Legacy Lexers
 --
@@ -633,9 +605,9 @@ local M = {}
 --
 --     return M
 --
--- While such legacy lexers will be handled just fine without any changes, it is
--- recommended that you migrate yours. The migration process is fairly
--- straightforward:
+-- While Scintillua will handle such legacy lexers just fine without any
+-- changes, it is recommended that you migrate yours. The migration process is
+-- fairly straightforward:
 --
 -- 1. Replace all instances of `l` with `lexer`, as it's better practice and
 --    results in less confusion.
@@ -691,7 +663,7 @@ local M = {}
 --     }
 --
 --     M._tokenstyles = {
---       'custom' = l.STYLE_KEYWORD..',bold'
+--       'custom' = l.STYLE_KEYWORD .. ',bold'
 --     }
 --
 --     M._foldsymbols = {
@@ -705,18 +677,18 @@ local M = {}
 --
 --     local lexer = require('lexer')
 --     local token, word_match = lexer.token, lexer.word_match
---     local P, R, S = lpeg.P, lpeg.R, lpeg.S
+--     local P, S = lpeg.P, lpeg.S
 --
 --     local lex = lexer.new('legacy')
 --
 --     lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 --     lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[foo bar baz]]))
 --     lex:add_rule('custom', token('custom', P('quux')))
---     lex:add_style('custom', lexer.STYLE_KEYWORD..',bold')
+--     lex:add_style('custom', lexer.styles.keyword .. {bold = true})
 --     lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
---     lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"')))
---     lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
---     lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+--     lex:add_rule('string', token(lexer.STRING, lexer.range('"')))
+--     lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
+--     lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 --     lex:add_rule('operator', token(lexer.OPERATOR, S('+-*/%^=<>,.()[]{}')))
 --
 --     lex:add_fold_point(lexer.OPERATOR, '{', '}')
@@ -769,13 +741,9 @@ local M = {}
 -- #### Acknowledgements
 --
 -- Thanks to Peter Odding for his [lexer post][] on the Lua mailing list
--- that inspired me, and thanks to Roberto Ierusalimschy for LPeg.
+-- that provided inspiration, and thanks to Roberto Ierusalimschy for LPeg.
 --
 -- [lexer post]: http://lua-users.org/lists/lua-l/2007-04/msg00116.html
--- @field path (string)
---   The path used to search for a lexer to load.
---   Identical in format to Lua's `package.path` string.
---   The default value is `package.path`.
 -- @field DEFAULT (string)
 --   The token name for default tokens.
 -- @field WHITESPACE (string)
@@ -810,58 +778,6 @@ local M = {}
 --   The token name for label tokens.
 -- @field REGEX (string)
 --   The token name for regex tokens.
--- @field STYLE_CLASS (string)
---   The style typically used for class definitions.
--- @field STYLE_COMMENT (string)
---   The style typically used for code comments.
--- @field STYLE_CONSTANT (string)
---   The style typically used for constants.
--- @field STYLE_ERROR (string)
---   The style typically used for erroneous syntax.
--- @field STYLE_FUNCTION (string)
---   The style typically used for function definitions.
--- @field STYLE_KEYWORD (string)
---   The style typically used for language keywords.
--- @field STYLE_LABEL (string)
---   The style typically used for labels.
--- @field STYLE_NUMBER (string)
---   The style typically used for numbers.
--- @field STYLE_OPERATOR (string)
---   The style typically used for operators.
--- @field STYLE_REGEX (string)
---   The style typically used for regular expression strings.
--- @field STYLE_STRING (string)
---   The style typically used for strings.
--- @field STYLE_PREPROCESSOR (string)
---   The style typically used for preprocessor statements.
--- @field STYLE_TYPE (string)
---   The style typically used for static types.
--- @field STYLE_VARIABLE (string)
---   The style typically used for variables.
--- @field STYLE_WHITESPACE (string)
---   The style typically used for whitespace.
--- @field STYLE_EMBEDDED (string)
---   The style typically used for embedded code.
--- @field STYLE_IDENTIFIER (string)
---   The style typically used for identifier words.
--- @field STYLE_DEFAULT (string)
---   The style all styles are based off of.
--- @field STYLE_LINENUMBER (string)
---   The style used for all margins except fold margins.
--- @field STYLE_BRACELIGHT (string)
---   The style used for highlighted brace characters.
--- @field STYLE_BRACEBAD (string)
---   The style used for unmatched brace characters.
--- @field STYLE_CONTROLCHAR (string)
---   The style used for control characters.
---   Color attributes are ignored.
--- @field STYLE_INDENTGUIDE (string)
---   The style used for indentation guides.
--- @field STYLE_CALLTIP (string)
---   The style used by call tips if [`buffer.call_tip_use_style`]() is set.
---   Only the font name, size, and color attributes are used.
--- @field STYLE_FOLDDISPLAYTEXT (string)
---   The style used for fold display text.
 -- @field any (pattern)
 --   A pattern that matches any single character.
 -- @field ascii (pattern)
@@ -897,9 +813,6 @@ local M = {}
 --   A pattern that matches a sequence of end of line characters.
 -- @field nonnewline (pattern)
 --   A pattern that matches any single, non-newline character.
--- @field nonnewline_esc (pattern)
---   A pattern that matches any single, non-newline character or any set of end
---   of line characters escaped with '\'.
 -- @field dec_num (pattern)
 --   A pattern that matches a decimal number.
 -- @field hex_num (pattern)
@@ -910,6 +823,9 @@ local M = {}
 --   A pattern that matches either a decimal, hexadecimal, or octal number.
 -- @field float (pattern)
 --   A pattern that matches a floating point number.
+-- @field number (pattern)
+--   A pattern that matches a typical number, either a floating point, decimal,
+--   hexadecimal, or octal number.
 -- @field word (pattern)
 --   A pattern that matches a typical word. Words begin with a letter or
 --   underscore and consist of alphanumeric and underscore characters.
@@ -920,7 +836,7 @@ local M = {}
 -- @field FOLD_HEADER (number)
 --   Flag indicating the line is fold point.
 -- @field fold_level (table, Read-only)
---   Table of fold level bit-masks for line numbers starting from zero.
+--   Table of fold level bit-masks for line numbers starting from 1.
 --   Fold level masks are composed of an integer level combined with any of the
 --   following bits:
 --
@@ -932,9 +848,9 @@ local M = {}
 --     The line is a header, or fold point.
 -- @field indent_amount (table, Read-only)
 --   Table of indentation amounts in character columns, for line numbers
---   starting from zero.
+--   starting from 1.
 -- @field line_state (table)
---   Table of integer line states for line numbers starting from zero.
+--   Table of integer line states for line numbers starting from 1.
 --   Line states can be used by lexers for keeping track of persistent states.
 -- @field property (table)
 --   Map of key-value string pairs.
@@ -946,7 +862,40 @@ local M = {}
 --   found.
 -- @field style_at (table, Read-only)
 --   Table of style names at positions in the buffer starting from 1.
+-- @field folding (boolean)
+--   Whether or not folding is enabled for the lexers that support it.
+--   This option is disabled by default.
+--   This is an alias for `lexer.property['fold'] = '1|0'`.
+-- @field fold_on_zero_sum_lines (boolean)
+--   Whether or not to mark as a fold point lines that contain both an ending
+--   and starting fold point. For example, `} else {` would be marked as a fold
+--   point.
+--   This option is disabled by default.
+--   This is an alias for `lexer.property['fold.on.zero.sum.lines'] = '1|0'`.
+-- @field fold_compact (boolean)
+--   Whether or not blank lines after an ending fold point are included in that
+--   fold.
+--   This option is disabled by default.
+--   This is an alias for `lexer.property['fold.compact'] = '1|0'`.
+-- @field fold_by_indentation (boolean)
+--   Whether or not to fold based on indentation level if a lexer does not have
+--   a folder.
+--   Some lexers automatically enable this option. It is disabled by default.
+--   This is an alias for `lexer.property['fold.by.indentation'] = '1|0'`.
+-- @field fold_line_groups (boolean)
+--   Whether or not to fold multiple, consecutive line groups (such as line
+--   comments and import statements) and only show the top line.
+--   This option is disabled by default.
+--   This is an alias for `lexer.property['fold.line.groups'] = '1|0'`.
 module('lexer')]=]
+
+if not require then
+  -- Substitute for Lua's require() function, which does not require the package
+  -- module to be loaded.
+  -- Note: all modules must be in the global namespace, which is the case in
+  -- LexerLPeg's default Lua State.
+  function require(name) return name == 'lexer' and M or _G[name] end
+end
 
 local lpeg = require('lpeg')
 local lpeg_P, lpeg_R, lpeg_S, lpeg_V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
@@ -954,46 +903,148 @@ local lpeg_Ct, lpeg_Cc, lpeg_Cp = lpeg.Ct, lpeg.Cc, lpeg.Cp
 local lpeg_Cmt, lpeg_C = lpeg.Cmt, lpeg.C
 local lpeg_match = lpeg.match
 
-M.path = package.path
-
-if not package.searchpath then
-  -- Searches for the given *name* in the given *path*.
-  -- This is an implementation of Lua 5.2's `package.searchpath()` function for
-  -- Lua 5.1.
-  function package.searchpath(name, path)
-    local tried = {}
-    for part in path:gmatch('[^;]+') do
-      local filename = part:gsub('%?', name)
-      local f = io.open(filename, 'r')
-      if f then
-        f:close()
-        return filename
-      end
-      tried[#tried + 1] = string.format("no file '%s'", filename)
-    end
-    return nil, table.concat(tried, '\n')
+-- Searches for the given *name* in the given *path*.
+-- This is a safe implementation of Lua 5.2's `package.searchpath()` function
+-- that does not require the package module to be loaded.
+local function searchpath(name, path)
+  local tried = {}
+  for part in path:gmatch('[^;]+') do
+    local filename = part:gsub('%?', name)
+    local ok, errmsg = loadfile(filename)
+    if ok or not errmsg:find('cannot open') then return filename end
+    tried[#tried + 1] = string.format("no file '%s'", filename)
   end
+  return nil, table.concat(tried, '\n')
 end
 
-local string_upper = string.upper
+---
+-- Map of color name strings to color values in `0xBBGGRR` or `"#RRGGBB"`
+-- format.
+-- Note: for applications running within a terminal emulator, only 16 color
+-- values are recognized, regardless of how many colors a user's terminal
+-- actually supports. (A terminal emulator's settings determines how to actually
+-- display these recognized color values, which may end up being mapped to a
+-- completely different color set.) In order to use the light variant of a
+-- color, some terminals require a style's `bold` attribute must be set along
+-- with that normal color. Recognized color values are black (0x000000), red
+-- (0x000080), green (0x008000), yellow (0x008080), blue (0x800000), magenta
+-- (0x800080), cyan (0x808000), white (0xC0C0C0), light black (0x404040), light
+-- red (0x0000FF), light green (0x00FF00), light yellow (0x00FFFF), light blue
+-- (0xFF0000), light magenta (0xFF00FF), light cyan (0xFFFF00), and light white
+-- (0xFFFFFF).
+-- @name colors
+-- @class table
+M.colors = setmetatable({}, {
+  __index = function(_, name)
+    local color = M.property['color.' .. name]
+    return tonumber(color) or color
+  end,
+  __newindex = function(_, name, color) M.property['color.' .. name] = color end
+})
+
+-- A style object that distills into a property string that can be read by the
+-- LPeg lexer.
+local style_obj = {}
+style_obj.__index = style_obj
+
+-- Create a style object from a style name, property table, or legacy style
+-- string.
+function style_obj.new(name_or_props)
+  local prop_string = tostring(name_or_props)
+  if type(name_or_props) == 'string' and name_or_props:find('^[%w_]+$') then
+    prop_string = string.format('$(style.%s)', name_or_props)
+  elseif type(name_or_props) == 'table' then
+    local settings = {}
+    for k, v in pairs(name_or_props) do
+      settings[#settings + 1] = type(v) ~= 'boolean' and
+        string.format('%s:%s', k, v) or
+        string.format('%s%s', v and '' or 'not', k)
+    end
+    prop_string = table.concat(settings, ',')
+  end
+  return setmetatable({prop_string = prop_string}, style_obj)
+end
+
+-- Returns a new style based on this one with the properties defined in the
+-- given table or legacy style string.
+function style_obj.__concat(self, props)
+  if type(props) == 'table' then props = tostring(style_obj.new(props)) end
+  return setmetatable(
+    {prop_string = string.format('%s,%s', self.prop_string, props)}, style_obj)
+end
+
+-- Returns this style object as property string for use with the LPeg lexer.
+function style_obj.__tostring(self) return self.prop_string end
+
+---
+-- Map of style names to style definition tables.
+--
+-- Style names consist of the following default names as well as the token names
+-- defined by lexers.
+--
+-- * `default`: The default style all others are based on.
+-- * `line_number`: The line number margin style.
+-- * `control_char`: The style of control character blocks.
+-- * `indent_guide`: The style of indentation guides.
+-- * `call_tip`: The style of call tip text. Only the `font`, `size`, `fore`,
+--   and `back` style definition fields are supported.
+-- * `fold_display_text`: The style of text displayed next to folded lines.
+-- * `class`, `comment`, `constant`, `embedded`, `error`, `function`,
+--   `identifier`, `keyword`, `label`, `number`, `operator`, `preprocessor`,
+--   `regex`, `string`, `type`, `variable`, `whitespace`: Some token names used
+--   by lexers. Some lexers may define more token names, so this list is not
+--   exhaustive.
+-- * *`lang`*`_whitespace`: A special style for whitespace tokens in lexer name
+--   *lang*. It inherits from `whitespace`, and is used in place of it for all
+--   lexers.
+--
+-- Style definition tables may contain the following fields:
+--
+-- * `font`: String font name.
+-- * `size`: Integer font size.
+-- * `bold`: Whether or not the font face is bold. The default value is `false`.
+-- * `weight`: Integer weight or boldness of a font, between 1 and 999.
+-- * `italics`: Whether or not the font face is italic. The default value is
+--   `false`.
+-- * `underlined`: Whether or not the font face is underlined. The default value
+--   is `false`.
+-- * `fore`: Font face foreground color in `0xBBGGRR` or `"#RRGGBB"` format.
+-- * `back`: Font face background color in `0xBBGGRR` or `"#RRGGBB"` format.
+-- * `eolfilled`: Whether or not the background color extends to the end of the
+--   line. The default value is `false`.
+-- * `case`: Font case, `'u'` for upper, `'l'` for lower, and `'m'` for normal,
+--   mixed case. The default value is `'m'`.
+-- * `visible`: Whether or not the text is visible. The default value is `true`.
+-- * `changeable`: Whether the text is changeable instead of read-only. The
+--   default value is `true`.
+-- @class table
+-- @name styles
+M.styles = setmetatable({}, {
+  __index = function(_, name) return style_obj.new(name) end,
+  __newindex = function(_, name, style)
+    if getmetatable(style) ~= style_obj then style = style_obj.new(style) end
+    M.property['style.' .. name] = tostring(style)
+  end
+})
+
 -- Default styles.
 local default = {
   'nothing', 'whitespace', 'comment', 'string', 'number', 'keyword',
   'identifier', 'operator', 'error', 'preprocessor', 'constant', 'variable',
   'function', 'class', 'type', 'label', 'regex', 'embedded'
 }
-for i = 1, #default do
-  local name, upper_name = default[i], string_upper(default[i])
-  M[upper_name], M['STYLE_'..upper_name] = name, '$(style.'..name..')'
+for _, name in ipairs(default) do
+  M[name:upper()] = name
+  M['STYLE_' .. name:upper()] = style_obj.new(name) -- backward compatibility
 end
 -- Predefined styles.
 local predefined = {
-  'default', 'linenumber', 'bracelight', 'bracebad', 'controlchar',
-  'indentguide', 'calltip', 'folddisplaytext'
+  'default', 'line_number', 'brace_light', 'brace_bad', 'control_char',
+  'indent_guide', 'call_tip', 'fold_display_text'
 }
-for i = 1, #predefined do
-  local name, upper_name = predefined[i], string_upper(predefined[i])
-  M[upper_name], M['STYLE_'..upper_name] = name, '$(style.'..name..')'
+for _, name in ipairs(predefined) do
+  M[name:upper()] = name
+  M['STYLE_' .. name:upper()] = style_obj.new(name) -- backward compatibility
 end
 
 ---
@@ -1043,44 +1094,47 @@ function M.get_rule(lexer, id)
 end
 
 ---
--- Associates string *token_name* in lexer *lexer* with Scintilla style string
--- *style*.
--- Style strings are comma-separated property settings. Available property
--- settings are:
+-- Associates string *token_name* in lexer *lexer* with style table *style*.
+-- *style* may have the following fields:
 --
---   * `font:name`: Font name.
---   * `size:int`: Font size.
---   * `bold` or `notbold`: Whether or not the font face is bold.
---   * `weight:int`: Font weight (between 1 and 999).
---   * `italics` or `notitalics`: Whether or not the font face is italic.
---   * `underlined` or `notunderlined`: Whether or not the font face is
---     underlined.
---   * `fore:color`: Font face foreground color in "#RRGGBB" or 0xBBGGRR format.
---   * `back:color`: Font face background color in "#RRGGBB" or 0xBBGGRR format.
---   * `eolfilled` or `noteolfilled`: Whether or not the background color
---     extends to the end of the line.
---   * `case:char`: Font case ('u' for uppercase, 'l' for lowercase, and 'm' for
---     mixed case).
---   * `visible` or `notvisible`: Whether or not the text is visible.
---   * `changeable` or `notchangeable`: Whether or not the text is changeable or
---     read-only.
+-- * `font`: String font name.
+-- * `size`: Integer font size.
+-- * `bold`: Whether or not the font face is bold. The default value is `false`.
+-- * `weight`: Integer weight or boldness of a font, between 1 and 999.
+-- * `italics`: Whether or not the font face is italic. The default value is
+--   `false`.
+-- * `underlined`: Whether or not the font face is underlined. The default value
+--   is `false`.
+-- * `fore`: Font face foreground color in `0xBBGGRR` or `"#RRGGBB"` format.
+-- * `back`: Font face background color in `0xBBGGRR` or `"#RRGGBB"` format.
+-- * `eolfilled`: Whether or not the background color extends to the end of the
+--   line. The default value is `false`.
+-- * `case`: Font case, `'u'` for upper, `'l'` for lower, and `'m'` for normal,
+--   mixed case. The default value is `'m'`.
+-- * `visible`: Whether or not the text is visible. The default value is `true`.
+-- * `changeable`: Whether the text is changeable instead of read-only. The
+--   default value is `true`.
 --
--- Property settings may also contain "$(property.name)" expansions for
--- properties defined in Scintilla, theme files, etc.
+-- Field values may also contain "$(property.name)" expansions for properties
+-- defined in Scintilla, theme files, etc.
 -- @param lexer The lexer to add a style to.
 -- @param token_name The name of the token to associated with the style.
 -- @param style A style string for Scintilla.
--- @usage lex:add_style('longstring', lexer.STYLE_STRING)
--- @usage lex:add_style('deprecated_function', lexer.STYLE_FUNCTION..',italics')
--- @usage lex:add_style('visible_ws',
---   lexer.STYLE_WHITESPACE..',back:$(color.grey)')
+-- @usage lex:add_style('longstring', lexer.styles.string)
+-- @usage lex:add_style('deprecated_func', lexer.styles['function'] ..
+--   {italics = true}
+-- @usage lex:add_style('visible_ws', lexer.styles.whitespace ..
+--   {back = lexer.colors.grey}
 -- @name add_style
 function M.add_style(lexer, token_name, style)
   local num_styles = lexer._numstyles
-  if num_styles == 32 then num_styles = num_styles + 8 end -- skip predefined
-  if num_styles >= 255 then print('Too many styles defined (255 MAX)') end
+  if num_styles == 33 then num_styles = num_styles + 8 end -- skip predefined
+  if num_styles >= 256 then print('Too many styles defined (256 MAX)') end
   lexer._TOKENSTYLES[token_name], lexer._numstyles = num_styles, num_styles + 1
-  lexer._EXTRASTYLES[token_name] = style
+  if type(style) == 'table' and not getmetatable(style) then
+    style = style_obj.new(style)
+  end
+  lexer._EXTRASTYLES[token_name] = tostring(style)
   -- If the lexer is a proxy or a child that embedded itself, copy this style to
   -- the parent lexer.
   if lexer._lexer then lexer._lexer:add_style(token_name, style) end
@@ -1110,7 +1164,7 @@ end
 --   point (1), an ending fold point (-1), or not a fold point at all (0).
 -- @usage lex:add_fold_point(lexer.OPERATOR, '{', '}')
 -- @usage lex:add_fold_point(lexer.KEYWORD, 'if', 'end')
--- @usage lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+-- @usage lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 -- @usage lex:add_fold_point('custom', function(text, pos, line, s, symbol)
 --   ... end)
 -- @name add_fold_point
@@ -1148,7 +1202,7 @@ local function join_tokens(lexer)
   return lexer._TOKENRULE
 end
 
--- Metatable for lexer grammars.
+-- Metatable for Scintillua grammars.
 -- These grammars are just tables ultimately passed to `lpeg.P()`.
 local grammar_mt = {__index = {
   -- Adds lexer *lexer* and any of its embedded lexers to this grammar.
@@ -1156,20 +1210,18 @@ local grammar_mt = {__index = {
   add_lexer = function(self, lexer)
     local lexer_name = lexer._PARENTNAME or lexer._NAME
     local token_rule = lexer:join_tokens()
-    for i = 1, #lexer._CHILDREN do
-      local child = lexer._CHILDREN[i]
+    for _, child in ipairs(lexer._CHILDREN) do
       if child._CHILDREN then self:add_lexer(child) end
       local rules = child._EMBEDDEDRULES[lexer_name]
-      local rules_token_rule = self['__'..child._NAME] or rules.token_rule
+      local rules_token_rule = self['__' .. child._NAME] or rules.token_rule
       self[child._NAME] = (-rules.end_rule * rules_token_rule)^0 *
-                          rules.end_rule^-1 * lpeg_V(lexer_name)
-      local embedded_child = '_'..child._NAME
+        rules.end_rule^-1 * lpeg_V(lexer_name)
+      local embedded_child = '_' .. child._NAME
       self[embedded_child] = rules.start_rule *
-                             (-rules.end_rule * rules_token_rule)^0 *
-                             rules.end_rule^-1
+        (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1
       token_rule = lpeg_V(embedded_child) + token_rule
     end
-    self['__'..lexer_name] = token_rule -- can contain embedded lexer rules
+    self['__' .. lexer_name] = token_rule -- can contain embedded lexer rules
     self[lexer_name] = token_rule^0
   end
 }}
@@ -1252,7 +1304,8 @@ function M.lex(lexer, text, init_style)
     if lexer._CHILDREN then
       for style, style_num in pairs(lexer._TOKENSTYLES) do
         if style_num == init_style then
-          local lexer_name = style:match('^(.+)_whitespace') or lexer._NAME
+          local lexer_name = style:match('^(.+)_whitespace') or
+            lexer._PARENTNAME or lexer._NAME
           if lexer._INITIALRULE ~= lexer_name then
             lexer:build_grammar(lexer_name)
           end
@@ -1291,9 +1344,9 @@ end
 -- beginning fold level of *start_level* in the buffer.
 -- @param lexer The lexer to fold text with.
 -- @param text The text in the buffer to fold.
--- @param start_pos The position in the buffer *text* starts at, starting at
---   zero.
--- @param start_line The line number *text* starts on.
+-- @param start_pos The position in the buffer *text* starts at, counting from
+--   1.
+-- @param start_line The line number *text* starts on, counting from 1.
 -- @param start_level The fold level *text* starts on.
 -- @return table of fold levels associated with line numbers.
 -- @name fold
@@ -1305,7 +1358,7 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
   local FOLD_HEADER, FOLD_BLANK  = M.FOLD_HEADER, M.FOLD_BLANK
   if fold and lexer._FOLDPOINTS then
     local lines = {}
-    for p, l in (text..'\n'):gmatch('()(.-)\r?\n') do
+    for p, l in (text .. '\n'):gmatch('()(.-)\r?\n') do
       lines[#lines + 1] = {p, l}
     end
     local fold_zero_sum_lines = M.property_int['fold.on.zero.sum.lines'] > 0
@@ -1315,20 +1368,21 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
     local style_at, fold_level = M.style_at, M.fold_level
     local line_num, prev_level = start_line, start_level
     local current_level = prev_level
-    for i = 1, #lines do
-      local pos, line = lines[i][1], lines[i][2]
+    for _, captures in ipairs(lines) do
+      local pos, line = captures[1], captures[2]
       if line ~= '' then
         if lexer._CASEINSENSITIVEFOLDPOINTS then line = line:lower() end
         local level_decreased = false
-        for j = 1, #fold_point_symbols do
-          local symbol = fold_point_symbols[j]
+        for _, symbol in ipairs(fold_point_symbols) do
           local word = not symbol:find('[^%w_]')
           local s, e = line:find(symbol, 1, true)
           while s and e do
-            --if not word or line:find('^%f[%w_]'..symbol..'%f[^%w_]', s) then
-            if not word or not ((s > 1 and line:find('^[%w_]', s - 1)) or
-                                line:find('^[%w_]', e + 1)) then
-              local symbols = fold_points[style_at[start_pos + pos + s - 1]]
+            --if not word or
+            --   line:find('^%f[%w_]' .. symbol .. '%f[^%w_]', s) then
+            local word_before = s > 1 and line:find('^[%w_]', s - 1)
+            local word_after = line:find('^[%w_]', e + 1)
+            if not word or not (word_before or word_after) then
+              local symbols = fold_points[style_at[start_pos + pos - 1 + s - 1]]
               local level = symbols and symbols[symbol]
               if type(level) == 'function' then
                 level = level(text, pos, line, s, symbol)
@@ -1342,7 +1396,7 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
                 end
               end
             end
-            s = line:find(symbol, s + 1, true)
+            s, e = line:find(symbol, s + 1, true)
           end
         end
         folds[line_num] = prev_level
@@ -1354,7 +1408,7 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
             folds[line_num] = prev_level - 1 + FOLD_HEADER
           else
             -- Typing within a zero-sum line.
-            local level = fold_level[line_num - 1] - 1
+            local level = fold_level[line_num] - 1
             if level > FOLD_HEADER then level = level - FOLD_HEADER end
             if level > FOLD_BLANK then level = level - FOLD_BLANK end
             folds[line_num] = level + FOLD_HEADER
@@ -1373,7 +1427,7 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
     -- Indentation based folding.
     -- Calculate indentation per line.
     local indentation = {}
-    for indent, line in (text..'\n'):gmatch('([\t ]*)([^\r\n]*)\r?\n') do
+    for indent, line in (text .. '\n'):gmatch('([\t ]*)([^\r\n]*)\r?\n') do
       indentation[#indentation + 1] = line ~= '' and #indent
     end
     -- Find the first non-blank line before start_line. If the current line is
@@ -1381,7 +1435,7 @@ function M.fold(lexer, text, start_pos, start_line, start_level)
     -- blank lines inbetween. If the current line is blank, match the level of
     -- the previous non-blank line.
     local current_level = start_level
-    for i = start_line - 1, 0, -1 do
+    for i = start_line, 1, -1 do
       local level = M.fold_level[i]
       if level >= FOLD_HEADER then level = level - FOLD_HEADER end
       if level < FOLD_BLANK then
@@ -1456,9 +1510,9 @@ function M.new(name, opts)
 
   -- Create the initial maps for token names to style numbers and styles.
   local token_styles = {}
-  for i = 1, #default do token_styles[default[i]] = i - 1 end
-  for i = 1, #predefined do token_styles[predefined[i]] = i + 31 end
-  lexer._TOKENSTYLES, lexer._numstyles = token_styles, #default
+  for i = 1, #default do token_styles[default[i]] = i end
+  for i = 1, #predefined do token_styles[predefined[i]] = i + 32 end
+  lexer._TOKENSTYLES, lexer._numstyles = token_styles, #default + 1
   lexer._EXTRASTYLES = {}
 
   return setmetatable(lexer, {__index = {
@@ -1480,15 +1534,15 @@ local function process_legacy_lexer(lexer)
     lexer._LEGACY = true
     warn("lexers as tables are deprecated; use 'lexer.new()'")
     local token_styles = {}
-    for i = 1, #default do token_styles[default[i]] = i - 1 end
-    for i = 1, #predefined do token_styles[predefined[i]] = i + 31 end
-    lexer._TOKENSTYLES, lexer._numstyles = token_styles, #default
+    for i = 1, #default do token_styles[default[i]] = i end
+    for i = 1, #predefined do token_styles[predefined[i]] = i + 32 end
+    lexer._TOKENSTYLES, lexer._numstyles = token_styles, #default + 1
     lexer._EXTRASTYLES = {}
     setmetatable(lexer, getmetatable(M.new('')))
     if lexer._rules then
       warn("lexer '_rules' table is deprecated; use 'add_rule()'")
-      for i = 1, #lexer._rules do
-        lexer:add_rule(lexer._rules[i][1], lexer._rules[i][2])
+      for _, rule in ipairs(lexer._rules) do
+        lexer:add_rule(rule[1], rule[2])
       end
     end
   end
@@ -1522,7 +1576,7 @@ local lexers = {} -- cache of loaded lexers
 -- Initializes or loads and returns the lexer of string name *name*.
 -- Scintilla calls this function in order to load a lexer. Parent lexers also
 -- call this function in order to load child lexers and vice-versa. The user
--- calls this function in order to load a lexer when using this module as a Lua
+-- calls this function in order to load a lexer when using Scintillua as a Lua
 -- library.
 -- @param name The name of the lexing language.
 -- @param alt_name The alternate name of the lexing language. This is useful for
@@ -1536,11 +1590,16 @@ local lexers = {} -- cache of loaded lexers
 function M.load(name, alt_name, cache)
   if cache and lexers[alt_name or name] then return lexers[alt_name or name] end
 
-  -- When using this module as a stand-alone module, the `property` and
+  -- When using Scintillua as a stand-alone module, the `property` and
   -- `property_int` tables do not exist (they are not useful). Create them in
   -- order prevent errors from occurring.
   if not M.property then
-    M.property, M.property_int = {}, setmetatable({}, {
+    M.property = setmetatable(
+      {['lexer.lpeg.home'] = package.path:gsub('/%?%.lua', '')}, {
+        __index = function() return '' end,
+        __newindex = function(t, k, v) rawset(t, k, tostring(v)) end
+      })
+    M.property_int = setmetatable({}, {
       __index = function(t, k) return tonumber(M.property[k]) or 0 end,
       __newindex = function() error('read-only property') end
     })
@@ -1552,8 +1611,9 @@ function M.load(name, alt_name, cache)
   -- embedded lexing relies on these unique whitespace style names. Note that
   -- loading embedded lexers changes `WHITESPACE` again, so when adding it
   -- later, do not reference the potentially incorrect value.
-  M.WHITESPACE = (alt_name or name)..'_whitespace'
-  local lexer = dofile(assert(package.searchpath(name, M.path)))
+  M.WHITESPACE = (alt_name or name) .. '_whitespace'
+  local path = M.property['lexer.lpeg.home']:gsub(';', '/?.lua;') .. '/?.lua'
+  local lexer = dofile(assert(searchpath(name, path)))
   assert(lexer, string.format("'%s.lua' did not return a lexer", name))
   if alt_name then lexer._NAME = alt_name end
   if not getmetatable(lexer) or lexer._LEGACY then
@@ -1564,7 +1624,7 @@ function M.load(name, alt_name, cache)
       process_legacy_lexer(lexer._lexer) -- mainly for `_foldsymbols` edits
     end
   end
-  lexer:add_style((alt_name or name)..'_whitespace', M.STYLE_WHITESPACE)
+  lexer:add_style((alt_name or name) .. '_whitespace', M.styles.whitespace)
 
   -- If the lexer is a proxy or a child that embedded itself, set the parent to
   -- be the main lexer. Keep a reference to the old parent name since embedded
@@ -1582,34 +1642,37 @@ end
 
 -- Common patterns.
 M.any = lpeg_P(1)
-M.ascii = lpeg_R('\000\127')
-M.extend = lpeg_R('\000\255')
 M.alpha = lpeg_R('AZ', 'az')
 M.digit = lpeg_R('09')
 M.alnum = lpeg_R('AZ', 'az', '09')
 M.lower = lpeg_R('az')
 M.upper = lpeg_R('AZ')
 M.xdigit = lpeg_R('09', 'AF', 'af')
-M.cntrl = lpeg_R('\000\031')
 M.graph = lpeg_R('!~')
-M.print = lpeg_R(' ~')
 M.punct = lpeg_R('!/', ':@', '[\'', '{~')
 M.space = lpeg_S('\t\v\f\n\r ')
 
 M.newline = lpeg_P('\r')^-1 * '\n'
 M.nonnewline = 1 - M.newline
-M.nonnewline_esc = 1 - (M.newline + '\\') + '\\' * M.any
 
 M.dec_num = M.digit^1
 M.hex_num = '0' * lpeg_S('xX') * M.xdigit^1
 M.oct_num = '0' * lpeg_R('07')^1
 M.integer = lpeg_S('+-')^-1 * (M.hex_num + M.oct_num + M.dec_num)
-M.float = lpeg_S('+-')^-1 *
-          ((M.digit^0 * '.' * M.digit^1 + M.digit^1 * '.' * M.digit^0) *
-           (lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1)^-1 +
-           (M.digit^1 * lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1))
+M.float = lpeg_S('+-')^-1 * (
+  (M.digit^0 * '.' * M.digit^1 + M.digit^1 * '.' * M.digit^0 * -lpeg_P('.')) *
+  (lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1)^-1 +
+  (M.digit^1 * lpeg_S('eE') * lpeg_S('+-')^-1 * M.digit^1))
+M.number = M.float + M.integer
 
 M.word = (M.alpha + '_') * (M.alnum + '_')^0
+
+-- Deprecated.
+M.nonnewline_esc = 1 - (M.newline + '\\') + '\\' * M.any
+M.ascii = lpeg_R('\000\127')
+M.extend = lpeg_R('\000\255')
+M.cntrl = lpeg_R('\000\031')
+M.print = lpeg_R(' ~')
 
 ---
 -- Creates and returns a token pattern with token name *name* and pattern
@@ -1628,6 +1691,69 @@ function M.token(name, patt)
 end
 
 ---
+-- Creates and returns a pattern that matches from string or pattern *prefix*
+-- until the end of the line.
+-- *escape* indicates whether the end of the line can be escaped with a '\'
+-- character.
+-- @param prefix String or pattern prefix to start matching at.
+-- @param escape Optional flag indicating whether or not newlines can be escaped
+--  by a '\' character. The default value is `false`.
+-- @return pattern
+-- @usage local line_comment = lexer.to_eol('//')
+-- @usage local line_comment = lexer.to_eol(P('#') + ';')
+-- @name to_eol
+function M.to_eol(prefix, escape)
+  return prefix * (not escape and M.nonnewline or M.nonnewline_esc)^0
+end
+
+---
+-- Creates and returns a pattern that matches a range of text bounded by strings
+-- or patterns *s* and *e*.
+-- This is a convenience function for matching more complicated ranges like
+-- strings with escape characters, balanced parentheses, and block comments
+-- (nested or not). *e* is optional and defaults to *s*. *single_line* indicates
+-- whether or not the range must be on a single line; *escapes* indicates
+-- whether or not to allow '\' as an escape character; and *balanced* indicates
+-- whether or not to handle balanced ranges like parentheses, and requires *s*
+-- and *e* to be different.
+-- @param s String or pattern start of a range.
+-- @param e Optional string or pattern end of a range. The default value is *s*.
+-- @param single_line Optional flag indicating whether or not the range must be
+--   on a single line.
+-- @param escapes Optional flag indicating whether or not the range end may
+--   be escaped by a '\' character.
+--   The default value is `false` unless *s* and *e* are identical,
+--   single-character strings. In that case, the default value is `true`.
+-- @param balanced Optional flag indicating whether or not to match a balanced
+--   range, like the "%b" Lua pattern. This flag only applies if *s* and *e* are
+--   different.
+-- @return pattern
+-- @usage local dq_str_escapes = lexer.range('"')
+-- @usage local dq_str_noescapes = lexer.range('"', false, false)
+-- @usage local unbalanced_parens = lexer.range('(', ')')
+-- @usage local balanced_parens = lexer.range('(', ')', false, false, true)
+-- @name range
+function M.range(s, e, single_line, escapes, balanced)
+  if type(e) ~= 'string' and type(e) ~= 'userdata' then
+    e, single_line, escapes, balanced = s, e, single_line, escapes
+  end
+  local any = M.any - e
+  if single_line then any = any - '\n' end
+  if balanced then any = any - s end
+  if escapes == nil then
+    -- Only allow escapes by default for ranges with identical, single-character
+    -- string delimiters.
+    escapes = type(s) == 'string' and #s == 1 and s == e
+  end
+  if escapes then any = any - '\\' + '\\' * M.any end
+  if balanced and s ~= e then
+    return lpeg_P{s * (any + lpeg_V(1))^0 * lpeg_P(e)^-1}
+  else
+    return s * any^0 * lpeg_P(e)^-1
+  end
+end
+
+-- Deprecated function. Use `lexer.range()` instead.
 -- Creates and returns a pattern that matches a range of text bounded by
 -- *chars* characters.
 -- This is a convenience function for matching more complicated delimited ranges
@@ -1650,19 +1776,20 @@ end
 -- @usage local unbalanced_parens = lexer.delimited_range('()')
 -- @usage local balanced_parens = lexer.delimited_range('()', false, false,
 --   true)
--- @see nested_pair
+-- @see range
 -- @name delimited_range
 function M.delimited_range(chars, single_line, no_escape, balanced)
+  print("lexer.delimited_range() is deprecated, use lexer.range()")
   local s = chars:sub(1, 1)
   local e = #chars == 2 and chars:sub(2, 2) or s
   local range
   local b = balanced and s or ''
   local n = single_line and '\n' or ''
   if no_escape then
-    local invalid = lpeg_S(e..n..b)
+    local invalid = lpeg_S(e .. n .. b)
     range = M.any - invalid
   else
-    local invalid = lpeg_S(e..n..b) + '\\'
+    local invalid = lpeg_S(e .. n .. b) + '\\'
     range = M.any - invalid + '\\' * M.any
   end
   if balanced and s ~= e then
@@ -1690,15 +1817,15 @@ function M.starts_line(patt)
 end
 
 ---
--- Creates and returns a pattern that verifies that string set *s* contains the
--- first non-whitespace character behind the current match position.
+-- Creates and returns a pattern that verifies the first non-whitespace
+-- character behind the current match position is in string set *s*.
 -- @param s String character set like one passed to `lpeg.S()`.
 -- @return pattern
 -- @usage local regex = lexer.last_char_includes('+-*!%^&|=,([{') *
---   lexer.delimited_range('/')
+--   lexer.range('/')
 -- @name last_char_includes
 function M.last_char_includes(s)
-  s = '['..s:gsub('[-%%%[]', '%%%1')..']'
+  s = string.format('[%s]', s:gsub('[-%%%[]', '%%%1'))
   return lpeg_P(function(input, index)
     if index == 1 then return index end
     local i = index
@@ -1707,18 +1834,19 @@ function M.last_char_includes(s)
   end)
 end
 
----
+-- Deprecated function. Use `lexer.range()` instead.
 -- Returns a pattern that matches a balanced range of text that starts with
 -- string *start_chars* and ends with string *end_chars*.
 -- With single-character delimiters, this function is identical to
--- `delimited_range(start_chars..end_chars, false, true, true)`.
+-- `delimited_range(start_chars .. end_chars, false, true, true)`.
 -- @param start_chars The string starting a nested sequence.
 -- @param end_chars The string ending a nested sequence.
 -- @return pattern
 -- @usage local nested_comment = lexer.nested_pair('/*', '*/')
--- @see delimited_range
+-- @see range
 -- @name nested_pair
 function M.nested_pair(start_chars, end_chars)
+  print("lexer.nested_pair() is deprecated, use lexer.range()")
   local s, e = start_chars, lpeg_P(end_chars)^-1
   return lpeg_P{s * (M.any - s - end_chars + lpeg_V(1))^0 * e}
 end
@@ -1751,7 +1879,7 @@ function M.word_match(words, case_insensitive, word_chars)
     word_list[case_insensitive and word:lower() or word] = true
     for char in word:gmatch('[^%w_]') do
       if not (word_chars or ''):find(char, 1, true) then
-        word_chars = (word_chars or '')..char
+        word_chars = (word_chars or '') .. char
       end
     end
   end
@@ -1824,6 +1952,28 @@ local function next_line_is_comment(prefix, text, pos, line, s)
 end
 
 ---
+-- Returns for `lexer.add_fold_point()` the parameters needed to fold
+-- consecutive lines that start with string *prefix*.
+-- @param prefix The prefix string (e.g. a line comment).
+-- @usage lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('--'))
+-- @usage lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
+-- @usage lex:add_fold_point(
+--   lexer.KEYWORD, lexer.fold_consecutive_lines('import'))
+-- @name fold_consecutive_lines
+function M.fold_consecutive_lines(prefix)
+  local property_int = M.property_int
+  return prefix, function(text, pos, line, s)
+    if property_int['fold.line.groups'] == 0 then return 0 end
+    if s > 1 and line:match('^%s*()') < s then return 0 end
+    local prev_line_comment = prev_line_is_comment(prefix, text, pos, line, s)
+    local next_line_comment = next_line_is_comment(prefix, text, pos, line, s)
+    if not prev_line_comment and next_line_comment then return 1 end
+    if prev_line_comment and not next_line_comment then return -1 end
+    return 0
+  end
+end
+
+-- Deprecated legacy function. Use `lexer.fold_consecutive_lines()` instead.
 -- Returns a fold function (to be passed to `lexer.add_fold_point()`) that folds
 -- consecutive line comments that start with string *prefix*.
 -- @param prefix The prefix string defining a line comment.
@@ -1833,16 +1983,10 @@ end
 --   lexer.fold_line_comments('//'))
 -- @name fold_line_comments
 function M.fold_line_comments(prefix)
-  local property_int = M.property_int
-  return function(text, pos, line, s)
-    if property_int['fold.line.comments'] == 0 then return 0 end
-    if s > 1 and line:match('^%s*()') < s then return 0 end
-    local prev_line_comment = prev_line_is_comment(prefix, text, pos, line, s)
-    local next_line_comment = next_line_is_comment(prefix, text, pos, line, s)
-    if not prev_line_comment and next_line_comment then return 1 end
-    if prev_line_comment and not next_line_comment then return -1 end
-    return 0
-  end
+  print(
+    "lexer.fold_line_comments() is deprecated, " ..
+    "use lexer.fold_consecutive_lines()")
+  return select(2, M.fold_consecutive_lines(prefix))
 end
 
 M.property_expanded = setmetatable({}, {
@@ -1859,8 +2003,8 @@ M.property_expanded = setmetatable({}, {
 --[[ The functions and fields below were defined in C.
 
 ---
--- Returns the line number of the line that contains position *pos*, which
--- starts from 1.
+-- Returns the line number (starting from 1) of the line that contains position
+-- *pos*, which starts from 1.
 -- @param pos The position to get the line number of.
 -- @return number
 local function line_from_position(pos) end

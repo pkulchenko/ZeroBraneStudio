@@ -1,9 +1,9 @@
--- Copyright 2017-2018 Michael Forney. See License.txt
+-- Copyright 2017-2020 Michael Forney. See LICENSE
 -- Myrddin LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
+local P, S, V = lpeg.P, lpeg.S, lpeg.V
 
 local lex = lexer.new('myrddin')
 
@@ -26,26 +26,24 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local block_comment = P{
-  V'part' * P'*/'^-1,
-  part = '/*' * (V'full' + (lexer.any - '/*' - '*/'))^0,
-  full = V'part' * '*/',
-}
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/', false, false, true)
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Numbers.
 local digit = lexer.digit + '_'
-local bdigit = R'01' + '_'
+local bdigit = S'01' + '_'
 local xdigit = lexer.xdigit + '_'
-local odigit = R'07' + '_'
+local odigit = lpeg.R'07' + '_'
 local integer = '0x' * xdigit^1 + '0o' * odigit^1 + '0b' * bdigit^1 + digit^1
-local float = digit^1 * (('.' * digit^1) * (S'eE' * S'+-'^-1 * digit^1)^-1 +
-                         ('.' * digit^1)^-1 * S'eE' * S'+-'^-1 * digit^1)
+local float = digit^1 * (
+  ('.' * digit^1) * (S'eE' * S'+-'^-1 * digit^1)^-1 +
+  ('.' * digit^1)^-1 * S'eE' * S'+-'^-1 * digit^1)
 lex:add_rule('number', token(lexer.NUMBER, float + integer))
 
 -- Operators.

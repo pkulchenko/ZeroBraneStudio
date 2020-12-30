@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- NASM Assembly LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('asm')
 
@@ -68,7 +68,14 @@ lex:add_rule('instruction', token('instruction', word_match[[
   scasq scasw sfence sgdt shl shld shr shrd sidt sldt skinit smi smint smintold
   smsw stc std sti stosb stosd stosq stosw str sub svdc svldt svts swapgs
   syscall sysenter sysexit sysret test ud0 ud1 ud2b ud2 ud2a umov verr verw
-  fwait wbinvd wrshr wrmsr xadd xbts xchg xlatb xlat xor cmovcc jcc setcc
+  fwait wbinvd wrshr wrmsr xadd xbts xchg xlatb xlat xor xor cmova cmovae cmovb
+  cmovbe cmovc cmove cmovg cmovge cmovl cmovle cmovna cmovnae cmovnb cmovnbe
+  cmovnc cmovne cmovng cmovnge cmovnl cmovnle cmovno cmovnp cmovns cmovnz cmovo
+  cmovp cmovpe cmovpo cmovs cmovz cmovcc ja jae jb jbe jc je jg jge jl jle jna
+  jnae jnb jnbe jnc jne jng jnge jnl jnle jno jnp jns jnz jo jp jpe jpo js jz
+  seta setae setb setbe setc sete setg setge setl setle setna setnae setnb
+  setnbe setnc setne setng setnge setnl setnle setno setnp setns setnz seto setp
+  setpe setpo sets setz
   -- Katmai Streaming SIMD instructions (SSE -- a.k.a. KNI XMM MMX2).
   addps addss andnps andps cmpeqps cmpeqss cmpleps cmpless cmpltps cmpltss
   cmpneqps cmpneqss cmpnleps cmpnless cmpnltps cmpnltss cmpordps cmpordss
@@ -280,7 +287,7 @@ lex:add_rule('instruction', token('instruction', word_match[[
   hint_nop56 hint_nop57 hint_nop58 hint_nop59 hint_nop60 hint_nop61 hint_nop62
   hint_nop63
 ]]))
-lex:add_style('instruction', lexer.STYLE_FUNCTION)
+lex:add_style('instruction', lexer.styles['function'])
 
 -- Registers.
 lex:add_rule('register', token('register', word_match[[
@@ -294,7 +301,7 @@ lex:add_rule('register', token('register', word_match[[
   xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15 ymm8 ymm9 ymm10 ymm11 ymm12 ymm13
   ymm14 ymm15
 ]]))
-lex:add_style('register', lexer.STYLE_CONSTANT)
+lex:add_style('register', lexer.styles.constant)
 
 -- Types.
 local sizes = word_match[[
@@ -314,7 +321,7 @@ local constants = word_match[[
   __float80e__ __float80m__ __Infinity__ __NaN__ __QNaN__ __SNaN__
 ]]
 lex:add_rule('constant', token(lexer.CONSTANT, constants +
-                                               '$' * P('$')^-1 * -word))
+  '$' * P('$')^-1 * -word))
 
 -- Labels.
 lex:add_rule('label', token(lexer.LABEL, word * ':'))
@@ -323,18 +330,18 @@ lex:add_rule('label', token(lexer.LABEL, word * ':'))
 lex:add_rule('identifier', token(lexer.IDENTIFIER, word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, ';' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol(';')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float +
-                                           lexer.integer * S('hqb')^-1))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('hqb')^-1))
 
 -- Preprocessor.
-local preproc_word = word_match[[
+local pp_word = word_match[[
   arg assign clear define defstr deftok depend elif elifctx elifdef elifempty
   elifenv elifid elifidn elifidni elifmacro elifn elifnctx elifndef elifnempty
   elifnenv elifnid elifnidn elifnidni elifnmacro elifnnum elifnstr elifntoken
@@ -345,9 +352,8 @@ local preproc_word = word_match[[
   ixdefine line local macro pathsearch pop push rep repl rmacro rotate stacksize
   strcat strlen substr undef unmacro use warning while xdefine
 ]]
-local preproc_symbol = '??' + S('!$+?') + '%' * -lexer.space + R('09')^1
-lex:add_rule('preproc', token(lexer.PREPROCESSOR, '%' * (preproc_word +
-                                                         preproc_symbol)))
+local pp_symbol = '??' + S('!$+?') + '%' * -lexer.space + lexer.digit^1
+lex:add_rule('preproc', token(lexer.PREPROCESSOR, '%' * (pp_word + pp_symbol)))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-/*%<>!=^&|~:,()[]')))
@@ -358,6 +364,6 @@ lex:add_fold_point(lexer.PREPROCESSOR, '%macro', '%endmacro')
 lex:add_fold_point(lexer.PREPROCESSOR, '%rep', '%endrep')
 lex:add_fold_point(lexer.PREPROCESSOR, '%while', '%endwhile')
 lex:add_fold_point(lexer.KEYWORD, 'struc', 'endstruc')
-lex:add_fold_point(lexer.COMMENT, ';', lexer.fold_line_comments(';'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines(';'))
 
 return lex

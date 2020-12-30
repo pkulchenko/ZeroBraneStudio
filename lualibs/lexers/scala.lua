@@ -1,9 +1,9 @@
--- Copyright 2006-2018 JMS. See License.txt.
+-- Copyright 2006-2020 JMS. See LICENSE.
 -- Scala LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('scala')
 
@@ -13,7 +13,7 @@ lex:add_rule('whitespace', ws)
 
 -- Classes.
 lex:add_rule('class', token(lexer.KEYWORD, P('class')) * ws^1 *
-                      token(lexer.CLASS, lexer.word))
+  token(lexer.CLASS, lexer.word))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
@@ -37,18 +37,17 @@ lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
 local symbol = "'" * lexer.word
-local dq_str = lexer.delimited_range('"', true)
-local tq_str = '"""' * (lexer.any - '"""')^0 * P('"""')^-1
+local dq_str = lexer.range('"', true)
+local tq_str = lexer.range('"""')
 lex:add_rule('string', token(lexer.STRING, tq_str + symbol + dq_str))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('LlFfDd')^-1))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('LlFfDd')^-1))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-/*%<>!=^&|?~:;.()[]{}')))
@@ -56,6 +55,6 @@ lex:add_rule('operator', token(lexer.OPERATOR, S('+-/*%<>!=^&|?~:;.()[]{}')))
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
 
 return lex

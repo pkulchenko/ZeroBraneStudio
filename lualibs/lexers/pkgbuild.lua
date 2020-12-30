@@ -1,9 +1,9 @@
--- Copyright 2006-2018 gwash. See License.txt.
+-- Copyright 2006-2020 gwash. See LICENSE.
 -- Archlinux PKGBUILD LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('pkgbuild')
 
@@ -11,24 +11,24 @@ local lex = lexer.new('pkgbuild')
 lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", false, true)
-local dq_str = lexer.delimited_range('"')
-local ex_str = lexer.delimited_range('`')
+local sq_str = lexer.range("'", false, false)
+local dq_str = lexer.range('"')
+local ex_str = lexer.range('`')
 local heredoc = '<<' * P(function(input, index)
-  local s, e, _, delimiter =
-    input:find('(["\']?)([%a_][%w_]*)%1[\n\r\f;]+', index)
+  local s, e, _, delimiter = input:find('(["\']?)([%a_][%w_]*)%1[\n\r\f;]+',
+    index)
   if s == index and delimiter then
-    local _, e = input:find('[\n\r\f]+'..delimiter, e)
+    local _, e = input:find('[\n\r\f]+' .. delimiter, e)
     return e and e + 1 or #input + 1
   end
 end)
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str + ex_str + heredoc))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
@@ -59,14 +59,14 @@ lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Variables.
-lex:add_rule('variable', token(lexer.VARIABLE,
-                               '$' * (S('!#?*@$') +
-                               lexer.delimited_range('()', true, true) +
-                               lexer.delimited_range('[]', true, true) +
-                               lexer.delimited_range('{}', true, true) +
-                               lexer.delimited_range('`', true, true) +
-                               lexer.digit^1 +
-                               lexer.word)))
+local symbol = S('!#?*@$')
+local parens = lexer.range('(', ')', true)
+local brackets = lexer.range('[', ']', true)
+local braces = lexer.range('{', '}', true)
+local backticks = lexer.range('`', true, false)
+local number = lexer.dec_num
+lex:add_rule('variable', token(lexer.VARIABLE, '$' *
+  (symbol + parens + brackets + braces + backticks + number + lexer.word)))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*^~.,:;?()[]{}')))
@@ -74,6 +74,6 @@ lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*^~.,:;?()[]{}')))
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex

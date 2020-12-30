@@ -1,9 +1,9 @@
--- Copyright (c) 2014-2018 Piotr Orzechowski [drzewo.org]. See License.txt.
+-- Copyright (c) 2014-2020 Piotr Orzechowski [drzewo.org]. See LICENSE.
 -- Xtend LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('xtend')
 
@@ -13,7 +13,7 @@ lex:add_rule('whitespace', ws)
 
 -- Classes.
 lex:add_rule('class', token(lexer.KEYWORD, P('class')) * ws^1 *
-                      token(lexer.CLASS, lexer.word))
+  token(lexer.CLASS, lexer.word))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
@@ -41,17 +41,17 @@ lex:add_rule('function', token(lexer.FUNCTION, lexer.word) * #P('('))
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Templates.
-lex:add_rule('template', token('template', "'''" * (lexer.any - P("'''"))^0 *
-                                           P("'''")^-1))
-lex:add_style('template', lexer.STYLE_EMBEDDED)
+lex:add_rule('template', token('template', lexer.range("'''")))
+lex:add_style('template', lexer.styles.embedded)
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-local line_comment = '//' * lexer.nonnewline_esc^0
-local block_comment = '/*' * (lexer.any - '*/')^0 * P('*/')^-1
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
@@ -73,7 +73,7 @@ lex:add_rule('number', token(lexer.NUMBER, float + hex + dec))
 
 -- Annotations.
 lex:add_rule('annotation', token('annotation', '@' * lexer.word))
-lex:add_style('annotation', lexer.STYLE_PREPROCESSOR)
+lex:add_style('annotation', lexer.styles.preprocessor)
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-/*%<>!=^&|?~:;.()[]{}#')))
@@ -84,7 +84,7 @@ lex:add_rule('error', token(lexer.ERROR, lexer.any))
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
-lex:add_fold_point(lexer.KEYWORD, 'import', lexer.fold_line_comments('import'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
+lex:add_fold_point(lexer.KEYWORD, lexer.fold_consecutive_lines('import'))
 
 return lex

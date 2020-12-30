@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Forth LPeg lexer.
 -- Contributions from Joseph Eib.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('forth')
 
@@ -12,14 +12,14 @@ local lex = lexer.new('forth')
 lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Strings.
-local c_str = 'c' * lexer.delimited_range('"', true, true)
-local s_str = 's' * lexer.delimited_range('"', true, true)
-local s_bs_str = 's\\' * lexer.delimited_range('"', true, false)
-local dot_str = '.' * lexer.delimited_range('"', true, true)
-local dot_paren_str = '.' * lexer.delimited_range('()', true, true, false)
-local abort_str = 'abort' * lexer.delimited_range('"', true, true)
+local c_str = 'c' * lexer.range('"', true, false)
+local s_str = 's' * lexer.range('"', true, false)
+local s_bs_str = 's\\' * lexer.range('"', true)
+local dot_str = '.' * lexer.range('"', true, false)
+local dot_paren_str = '.' * lexer.range('(', ')', true)
+local abort_str = 'abort' * lexer.range('"', true, false)
 lex:add_rule('string', token(lexer.STRING, c_str + s_str + s_bs_str + dot_str +
-                                           dot_paren_str + abort_str))
+  dot_paren_str + abort_str))
 
 -- Keywords.
 lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
@@ -38,17 +38,17 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 ]], true))
 
 -- Identifiers.
-lex:add_rule('identifier', token(lexer.IDENTIFIER, (lexer.alnum +
-                                                    S('+-*=<>.?/\'%,_$#'))^1))
+lex:add_rule('identifier', token(lexer.IDENTIFIER,
+  (lexer.alnum + S('+-*=<>.?/\'%,_$#'))^1))
 
 -- Comments.
-local line_comment = S('|\\') * lexer.nonnewline^0
-local block_comment = '(' * (lexer.any - ')')^0 * P(')')^-1
+local line_comment = lexer.to_eol(S('|\\'))
+local block_comment = lexer.range('(', ')')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
 lex:add_rule('number', token(lexer.NUMBER, P('-')^-1 * lexer.digit^1 *
-                                           (S('./') * lexer.digit^1)^-1))
+  (S('./') * lexer.digit^1)^-1))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S(':;<>+*-/[]#')))

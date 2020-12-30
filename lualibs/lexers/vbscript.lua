@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- VisualBasic LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('vbscript')
 
@@ -33,19 +33,16 @@ lex:add_rule('type', token(lexer.TYPE, word_match([[
 
 -- Comments.
 lex:add_rule('comment', token(lexer.COMMENT,
-                              (P("'") + word_match([[rem]], true)) *
-                              lexer.nonnewline^0))
+  lexer.to_eol("'" + word_match([[rem]], true))))
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range('"', true, true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true, false)))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('LlUuFf')^-2))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('LlUuFf')^-2))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=><+-*^&:.,_()')))

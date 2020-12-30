@@ -1,10 +1,10 @@
--- Copyright 2010-2018 Jeff Stone. See License.txt.
--- Inform LPeg lexer for Scintilla.
+-- Copyright 2010-2020 Jeff Stone. See LICENSE.
+-- Inform LPeg lexer for Scintillua.
 -- JMS 2010-04-25.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('inform')
 
@@ -48,23 +48,24 @@ lex:add_rule('action', token('action', word_match[[
   ThrowAt ThrownAt Tie Touch Transfer Turn Unlock VagueGo Verify Version Wait
   Wake WakeOther Wave WaveHands Wear Yes
 ]]))
-lex:add_style('action', lexer.STYLE_VARIABLE)
+lex:add_style('action', lexer.styles.variable)
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'") +
-                                           lexer.delimited_range('"')))
+local sq_str = lexer.range("'")
+local dq_str = lexer.range('"')
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '!' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('!')))
 
 -- Numbers.
 local inform_hex = '$' * lexer.xdigit^1
 local inform_bin = '$$' * S('01')^1
 lex:add_rule('number', token(lexer.NUMBER, lexer.integer + inform_hex +
-                                           inform_bin))
+  inform_bin))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('@~=+-*/%^#=<>;:,.{}[]()&|?')))

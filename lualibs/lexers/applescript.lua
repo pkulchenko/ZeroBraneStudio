@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Applescript LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('applescript')
 
@@ -46,19 +46,19 @@ lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
 ]], true))
 
 -- Identifiers.
-lex:add_rule('identifier', token(lexer.IDENTIFIER, (lexer.alpha + '_') *
-                                                   lexer.alnum^0))
+lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.alpha *
+  (lexer.alnum + '_')^0))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range('"', true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', true)))
 
 -- Comments.
-local line_comment = '--' * lexer.nonnewline^0
-local block_comment = '(*' * (lexer.any - '*)')^0 * P('*)')^-1
+local line_comment = lexer.to_eol('--')
+local block_comment = lexer.range('(*', '*)')
 lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-^*/&<>=:,(){}')))

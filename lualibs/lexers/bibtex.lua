@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Bibtex LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('bibtex')
 
@@ -16,15 +16,15 @@ lex:add_rule('field', token('field', word_match[[
   series address edition howpublished booktitle organization chapter school
   institution type isbn issn affiliation issue keyword url
 ]]))
-lex:add_style('field', lexer.STYLE_CONSTANT)
+lex:add_style('field', lexer.styles.constant)
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range('"') +
-                             lexer.delimited_range('{}', false, true, true)))
+local dq_str = lexer.range('"')
+local br_str = lexer.range('{', '}', false, false, true)
+lex:add_rule('string', token(lexer.STRING, dq_str + br_str))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S(',=')))
@@ -37,7 +37,7 @@ local entry = token('entry', P('@') * word_match([[
   book article booklet conference inbook incollection inproceedings manual
   mastersthesis lambda misc phdthesis proceedings techreport unpublished
 ]], true))
-lex:add_style('entry', lexer.STYLE_PREPROCESSOR)
+lex:add_style('entry', lexer.styles.preprocessor)
 local bibtex_start_rule = entry * ws^0 * token(lexer.OPERATOR, P('{'))
 local bibtex_end_rule = token(lexer.OPERATOR, P('}'))
 latex:embed(lex, bibtex_start_rule, bibtex_end_rule)

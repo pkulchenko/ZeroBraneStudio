@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Erlang LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('erlang')
 
@@ -42,29 +42,30 @@ lex:add_rule('function', token(lexer.FUNCTION, word_match[[
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.lower *
-                                                   ('_' + lexer.alnum)^0))
+  ('_' + lexer.alnum)^0))
 
 -- Variables.
 lex:add_rule('variable', token(lexer.VARIABLE, P('_')^0 * lexer.upper *
-                                               ('_' + lexer.alnum)^0))
+  ('_' + lexer.alnum)^0))
 
 -- Directives.
 lex:add_rule('directive', token('directive', '-' * word_match[[
   author behaviour behavior compile copyright define doc else endif export file
   ifdef ifndef import include include_lib module record spec type undef
 ]]))
-lex:add_style('directive', lexer.STYLE_PREPROCESSOR)
+lex:add_style('directive', lexer.styles.preprocessor)
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"') +
-                                           '$' * lexer.any * lexer.alnum^0))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"')
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str +
+  '$' * lexer.any * lexer.alnum^0))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '%' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('%')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('-<>.;=/|+*:,!()[]{}')))
@@ -84,6 +85,6 @@ lex:add_fold_point(lexer.KEYWORD, 'receive', 'end')
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '[', ']')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '%', lexer.fold_line_comments('%'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('%'))
 
 return lex

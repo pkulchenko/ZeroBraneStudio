@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Makefile LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('makefile', {lex_by_line = true})
 
@@ -29,8 +29,8 @@ local special_target = token(lexer.CONSTANT, word_match[[
 ]])
 local normal_target = token('target', (lexer.any - lexer.space - S(':#='))^1)
 lex:add_rule('target', lexer.starts_line((special_target + normal_target) *
-                                         ws^0 * #(':' * -P('='))))
-lex:add_style('target', lexer.STYLE_LABEL)
+  ws^0 * #(':' * -P('='))))
+lex:add_style('target', lexer.styles.label)
 
 -- Variables.
 local word_char = lexer.any - lexer.space - S(':#=(){}')
@@ -52,21 +52,22 @@ local implicit_var = word_match[[
   DESTDIR MAKE MAKEFLAGS MAKEOVERRIDES MFLAGS
 ]] * #(ws^0 * assign)
 local computed_var = token(lexer.OPERATOR, '$' * S('({')) *
-                     token(lexer.FUNCTION, word_match[[
-  -- Functions for String Substitution and Analysis.
-  subst patsubst strip findstring filter filter-out sort word wordlist words
-  firstword lastword
-  -- Functions for File Names.
-  dir notdir suffix basename addsuffix addprefix join wildcard realpath abspath
-  -- Functions for Conditionals.
-  if or and
-  -- Miscellaneous Functions.
-  foreach call value eval origin flavor shell
-  -- Functions That Control Make.
-  error warning info
-]])
+  token(lexer.FUNCTION, word_match[[
+    -- Functions for String Substitution and Analysis.
+    subst patsubst strip findstring filter filter-out sort word wordlist words
+    firstword lastword
+    -- Functions for File Names.
+    dir notdir suffix basename addsuffix addprefix join wildcard realpath
+    abspath
+    -- Functions for Conditionals.
+    if or and
+    -- Miscellaneous Functions.
+    foreach call value eval origin flavor shell
+    -- Functions That Control Make.
+    error warning info
+  ]])
 local variable = token(lexer.VARIABLE, expanded_var + auto_var + special_var +
-                                       implicit_var) + computed_var
+  implicit_var) + computed_var
 lex:add_rule('variable', variable)
 
 -- Operators.
@@ -76,14 +77,14 @@ lex:add_rule('operator', token(lexer.OPERATOR, assign + S(':$(){}')))
 lex:add_rule('identifier', token(lexer.IDENTIFIER, word_char^1))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Embedded Bash.
 local bash = lexer.load('bash')
 bash:modify_rule('variable', token(lexer.VARIABLE, '$$' * word_char^1) +
-                             bash:get_rule('variable') + variable)
+  bash:get_rule('variable') + variable)
 local bash_start_rule = token(lexer.WHITESPACE, P('\t')) +
-                        token(lexer.OPERATOR, P(';'))
+  token(lexer.OPERATOR, P(';'))
 local bash_end_rule = token(lexer.WHITESPACE, P('\n'))
 lex:embed(bash, bash_start_rule, bash_end_rule)
 

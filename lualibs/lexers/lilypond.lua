@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Robert Gieseke. See License.txt.
+-- Copyright 2006-2020 Robert Gieseke. See LICENSE.
 -- Lilypond LPeg lexer.
 -- TODO Embed Scheme; Notes?, Numbers?
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('lilypond')
 
@@ -18,12 +18,11 @@ lex:add_rule('keyword', token(lexer.KEYWORD, '\\' * lexer.word))
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING,
-                             lexer.delimited_range('"', false, true)))
+lex:add_rule('string', token(lexer.STRING, lexer.range('"', false, false)))
 
 -- Comments.
 -- TODO: block comment.
-lex:add_rule('comment', token(lexer.COMMENT, '%' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('%')))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S("{}'~<>|")))

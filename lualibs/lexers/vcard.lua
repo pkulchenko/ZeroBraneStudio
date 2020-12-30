@@ -1,9 +1,9 @@
--- Copyright (c) 2015-2018 Piotr Orzechowski [drzewo.org]. See License.txt.
+-- Copyright (c) 2015-2020 Piotr Orzechowski [drzewo.org]. See LICENSE.
 -- vCard 2.1, 3.0 and 4.0 LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local M = {_NAME = 'vcard'}
 
@@ -44,35 +44,30 @@ local identifier = lexer.alpha^1 * lexer.digit^0 * (P('-') * lexer.alnum^1)^0
 
 -- Extension.
 local extension = token(lexer.TYPE, lexer.starts_line(S('xX') * P('-') *
-                                                      identifier * #S(':;')))
+  identifier * #S(':;')))
 
 -- Parameter.
 local parameter = token(lexer.IDENTIFIER,
-                        lexer.starts_line(identifier * #S(':='))) +
-                  token(lexer.STRING, identifier) * #S(':=')
+  lexer.starts_line(identifier * #S(':='))) + token(lexer.STRING, identifier) *
+  #S(':=')
 
 -- Operators.
 local operator = token(lexer.OPERATOR, S('.:;='))
 
 -- Group and property.
 local group_sequence = token(lexer.CONSTANT, lexer.starts_line(identifier)) *
-                       token(lexer.OPERATOR, P('.')) *
-                       (required_property + supported_property +
-                        lexer.token(lexer.TYPE, S('xX') * P('-') * identifier) *
-                       #S(':;'))
+  token(lexer.OPERATOR, P('.')) * (required_property + supported_property +
+  lexer.token(lexer.TYPE, S('xX') * P('-') * identifier) * #S(':;'))
 -- Begin vCard, end vCard.
 local begin_sequence = token(lexer.KEYWORD, P('BEGIN')) *
-                       token(lexer.OPERATOR, P(':')) *
-                       token(lexer.COMMENT, P('VCARD'))
+  token(lexer.OPERATOR, P(':')) * token(lexer.COMMENT, P('VCARD'))
 local end_sequence = token(lexer.KEYWORD, P('END')) *
-                     token(lexer.OPERATOR, P(':')) *
-                     token(lexer.COMMENT, P('VCARD'))
+  token(lexer.OPERATOR, P(':')) * token(lexer.COMMENT, P('VCARD'))
 
 -- vCard version (in v3.0 and v4.0 must appear immediately after BEGIN:VCARD).
 local version_sequence = token(lexer.KEYWORD, P('VERSION')) *
-                         token(lexer.OPERATOR, P(':')) *
-                         token(lexer.CONSTANT, lexer.digit^1 *
-                                               (P('.') * lexer.digit^1)^-1)
+  token(lexer.OPERATOR, P(':')) *
+  token(lexer.CONSTANT, lexer.digit^1 * (P('.') * lexer.digit^1)^-1)
 
 -- Data.
 local data = token(lexer.IDENTIFIER, lexer.any)

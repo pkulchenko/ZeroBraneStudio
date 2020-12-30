@@ -1,9 +1,9 @@
--- Copyright 2015-2018 Jason Schindler. See License.txt.
+-- Copyright 2015-2020 Jason Schindler. See LICENSE.
 -- Fish (http://fishshell.com/) script LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('fish')
 
@@ -25,24 +25,23 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Variables.
-lex:add_rule('variable', token(lexer.VARIABLE,
-                               '$' * (lexer.word +
-                                      lexer.delimited_range('{}', true, true))))
+lex:add_rule('variable', token(lexer.VARIABLE, '$' * (lexer.word +
+  lexer.range('{', '}', true))))
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", false, true)
-local dq_str = lexer.delimited_range('"')
+local sq_str = lexer.range("'", false, false)
+local dq_str = lexer.range('"')
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Shebang.
-lex:add_rule('shebang', token('shebang', '#!/' * lexer.nonnewline^0))
-lex:add_style('shebang', lexer.STYLE_LABEL)
+lex:add_rule('shebang', token('shebang', lexer.to_eol('#!/')))
+lex:add_style('shebang', lexer.styles.label)
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('=!<>+-/*^&|~.,:;?()[]{}')))

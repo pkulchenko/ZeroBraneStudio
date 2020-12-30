@@ -1,46 +1,53 @@
--- Copyright 2006-2018 Robert Gieseke. See License.txt.
+-- Copyright 2006-2020 Robert Gieseke, Lars Otter. See LICENSE.
 -- ConTeXt LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('context')
+
+-- TeX and ConTeXt mkiv environment definitions.
+local beginend = (P('begin') + 'end')
+local startstop = (P('start') + 'stop')
 
 -- Whitespace.
 lex:add_rule('whitespace', token(lexer.WHITESPACE, lexer.space^1))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '%' * lexer.nonnewline^0))
-
--- ConTeXt environments.
-local environment = token('environment', '\\' * (P('start') + 'stop') *
-                                         lexer.word)
-lex:add_rule('environment', environment)
-lex:add_style('environment', lexer.STYLE_KEYWORD)
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('%')))
 
 -- Sections.
-lex:add_rule('section', token('section', '\\' * word_match[[
+local wm_section = word_match[[
   chapter part section subject subsection subsubject subsubsection subsubsubject
-  title
-]]))
-lex:add_style('section', lexer.STYLE_CLASS)
+  subsubsubsection subsubsubsubject title
+]]
+local section = token(lexer.CLASS, '\\' *
+  (wm_section + (startstop * wm_section)))
+lex:add_rule('section', section)
+
+-- TeX and ConTeXt mkiv environments.
+local environment = token(lexer.STRING, '\\' * (beginend + startstop) *
+  lexer.alpha^1)
+lex:add_rule('environment', environment)
 
 -- Commands.
-local command = token('command', '\\' * (lexer.alpha^1 *
-                                         ('\\' * lexer.alpha^0)^-1 +
-                                         S('#$&~_^%{}\\')))
+local command = token(lexer.KEYWORD, '\\' * (
+  lexer.alpha^1 * P('\\') * lexer.space^1 +
+  lexer.alpha^1 +
+  S('!"#$%&\',./;=[\\]_{|}~`^-')
+))
 lex:add_rule('command', command)
-lex:add_style('command', lexer.STYLE_KEYWORD)
 
 -- Operators.
-lex:add_rule('operator', token(lexer.OPERATOR, S('$&#{}[]')))
+local operator = token(lexer.OPERATOR, S('#$_[]{}~^'))
+lex:add_rule('operator', operator)
 
 -- Fold points.
 lex:add_fold_point('environment', '\\start', '\\stop')
-lex:add_fold_point('command', '\\begin', '\\end')
+lex:add_fold_point('environment', '\\begin', '\\end')
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '%', lexer.fold_line_comments('%'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('%'))
 
 -- Embedded Lua.
 local luatex = lexer.load('lua')

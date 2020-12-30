@@ -1,9 +1,9 @@
--- Copyright 2016-2018 Alejandro Baez (https://keybase.io/baez). See License.txt.
+-- Copyright 2016-2020 Alejandro Baez (https://keybase.io/baez). See LICENSE.
 -- Moonscript LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, S, R = lpeg.P, lpeg.S, lpeg.R
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('moonscript', {fold_by_indentation = true})
 
@@ -24,7 +24,7 @@ lex:add_rule('error', token(lexer.ERROR, word_match[[function end]]))
 
 -- Self reference.
 lex:add_rule('self_ref', token('self_ref', '@' * lexer.word + 'self'))
-lex:add_style('self_ref', lexer.STYLE_LABEL)
+lex:add_style('self_ref', lexer.styles.label)
 
 -- Functions.
 lex:add_rule('function', token(lexer.FUNCTION, word_match[[
@@ -99,43 +99,44 @@ lex:add_rule('library', token('library', word_match[[
   -- Debug functions.
   debug.upvalue
 ]]))
-lex:add_style('library', lexer.STYLE_TYPE)
+lex:add_style('library', lexer.styles.type)
 
 -- Identifiers.
 local identifier = token(lexer.IDENTIFIER, lexer.word)
-local proper_ident = token('proper_ident', R('AZ') * lexer.word)
+local proper_ident = token('proper_ident', lexer.upper * lexer.word)
 local tbl_key = token('tbl_key', lexer.word * ':' + ':' * lexer.word )
 lex:add_rule('identifier', tbl_key + proper_ident + identifier)
-lex:add_style('proper_ident', lexer.STYLE_CLASS)
-lex:add_style('tbl_key', lexer.STYLE_REGEX)
+lex:add_style('proper_ident', lexer.styles.class)
+lex:add_style('tbl_key', lexer.styles.regex)
 
 local longstring = lpeg.Cmt('[' * lpeg.C(P('=')^0) * '[',
-                            function(input, index, eq)
-                              local _, e = input:find(']'..eq..']', index, true)
-                              return (e or #input) + 1
-                            end)
+  function(input, index, eq)
+    local _, e = input:find(']' .. eq .. ']', index, true)
+    return (e or #input) + 1
+  end)
 
 -- Strings.
-local sq_str = lexer.delimited_range("'", false, true)
-local dq_str = lexer.delimited_range('"', false, true)
+local sq_str = lexer.range("'", false, false)
+local dq_str = lexer.range('"', false, false)
 lex:add_rule('string', token(lexer.STRING, sq_str + dq_str) +
-                       token('longstring', longstring))
-lex:add_style('longstring', lexer.STYLE_STRING)
+  token('longstring', longstring))
+lex:add_style('longstring', lexer.styles.string)
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '--' * (longstring +
-                                                     lexer.nonnewline^0)))
+local line_comment = lexer.to_eol('--')
+local block_comment = '--' * longstring
+lex:add_rule('comment', token(lexer.COMMENT, block_comment + line_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, lexer.float + lexer.integer))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number))
 
 -- Function definition.
 lex:add_rule('fndef', token('fndef', P('->') + '=>'))
-lex:add_style('fndef', lexer.STYLE_PREPROCESSOR)
+lex:add_style('fndef', lexer.styles.preprocessor)
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('+-*!\\/%^#=<>;:,.')))
 lex:add_rule('symbol', token('symbol', S('(){}[]')))
-lex:add_style('symbol', lexer.STYLE_EMBEDDED)
+lex:add_style('symbol', lexer.styles.embedded)
 
 return lex

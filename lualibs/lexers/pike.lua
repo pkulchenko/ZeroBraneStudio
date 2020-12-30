@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Pike LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('pike')
 
@@ -29,21 +29,21 @@ lex:add_rule('type', token(lexer.TYPE, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true) +
-                                           '#' * lexer.delimited_range('"')))
+local sq_str = lexer.range("'", true)
+local dq_str = P('#')^-1 * lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '//' * lexer.nonnewline_esc^0 +
-                                             lexer.nested_pair('/*', '*/')))
+local line_comment = lexer.to_eol('//', true)
+local block_comment = lexer.range('/*', '*/', false, false, true)
+lex:add_rule('comment', token(lexer.COMMENT, line_comment + block_comment))
 
 -- Numbers.
-lex:add_rule('number', token(lexer.NUMBER, (lexer.float + lexer.integer) *
-                                           S('lLdDfF')^-1))
+lex:add_rule('number', token(lexer.NUMBER, lexer.number * S('lLdDfF')^-1))
 
 -- Preprocessors.
-lex:add_rule('preprocessor', token(lexer.PREPROCESSOR, lexer.starts_line('#') *
-                                                       lexer.nonnewline^0))
+lex:add_rule('preprocessor', token(lexer.PREPROCESSOR,
+  lexer.to_eol(lexer.starts_line('#'))))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S('<>=!+-/*%&|^~@`.,:;()[]{}')))
@@ -51,6 +51,6 @@ lex:add_rule('operator', token(lexer.OPERATOR, S('<>=!+-/*%&|^~@`.,:;()[]{}')))
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
 lex:add_fold_point(lexer.COMMENT, '/*', '*/')
-lex:add_fold_point(lexer.COMMENT, '//', lexer.fold_line_comments('//'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('//'))
 
 return lex

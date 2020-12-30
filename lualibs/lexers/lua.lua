@@ -1,10 +1,10 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Lua LPeg lexer.
 -- Original written by Peter Odding, 2007/04/04.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('lua')
 
@@ -32,7 +32,8 @@ local deprecated_func = token('deprecated_function', word_match[[
   getfenv loadstring module setfenv unpack
 ]])
 lex:add_rule('function', func + deprecated_func)
-lex:add_style('deprecated_function', lexer.STYLE_FUNCTION..',italics')
+lex:add_style(
+  'deprecated_function', lexer.styles['function'] .. {italics = true})
 
 -- Constants.
 lex:add_rule('constant', token(lexer.CONSTANT, word_match[[
@@ -102,27 +103,29 @@ local deprecated_library = token('deprecated_library', word_match[[
   debug.getfenv debug.setfenv
 ]])
 lex:add_rule('library', library + deprecated_library)
-lex:add_style('library', lexer.STYLE_TYPE)
-lex:add_style('deprecated_library', lexer.STYLE_TYPE..',italics')
+lex:add_style('library', lexer.styles.type)
+lex:add_style('deprecated_library', lexer.styles.type .. {italics = true})
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 local longstring = lpeg.Cmt('[' * lpeg.C(P('=')^0) * '[',
-                            function(input, index, eq)
-                              local _, e = input:find(']'..eq..']', index, true)
-                              return (e or #input) + 1
-                            end)
+  function(input, index, eq)
+    local _, e = input:find(']' .. eq .. ']', index, true)
+    return (e or #input) + 1
+  end)
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'") +
-                                           lexer.delimited_range('"')) +
-                       token('longstring', longstring))
-lex:add_style('longstring', lexer.STYLE_STRING)
+local sq_str = lexer.range("'")
+local dq_str = lexer.range('"')
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str) +
+  token('longstring', longstring))
+lex:add_style('longstring', lexer.styles.string)
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '--' * (longstring +
-                                                     lexer.nonnewline^0)))
+local line_comment = lexer.to_eol('--')
+local block_comment = '--' * longstring
+lex:add_rule('comment', token(lexer.COMMENT, block_comment + line_comment))
 
 -- Numbers.
 local lua_integer = P('-')^-1 * (lexer.hex_num + lexer.dec_num)
@@ -133,7 +136,7 @@ lex:add_rule('label', token(lexer.LABEL, '::' * lexer.word * '::'))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, '..' +
-                                               S('+-*/%^#=<>&|~;:,.{}[]()')))
+  S('+-*/%^#=<>&|~;:,.{}[]()')))
 
 -- Fold points.
 local function fold_longcomment(text, pos, line, s, symbol)
@@ -150,7 +153,7 @@ lex:add_fold_point(lexer.KEYWORD, 'function', 'end')
 lex:add_fold_point(lexer.KEYWORD, 'repeat', 'until')
 lex:add_fold_point(lexer.COMMENT, '[', fold_longcomment)
 lex:add_fold_point(lexer.COMMENT, ']', fold_longcomment)
-lex:add_fold_point(lexer.COMMENT, '--', lexer.fold_line_comments('--'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('--'))
 lex:add_fold_point('longstring', '[', ']')
 lex:add_fold_point(lexer.OPERATOR, '(', ')')
 lex:add_fold_point(lexer.OPERATOR, '[', ']')

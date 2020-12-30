@@ -1,10 +1,10 @@
--- Copyright 2016-2018 Alejandro Baez (https://keybase.io/baez). See License.txt.
+-- Copyright 2016-2020 Alejandro Baez (https://keybase.io/baez). See LICENSE.
 -- PICO-8 lexer.
 -- http://www.lexaloffle.com/pico-8.php
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('pico8')
 
@@ -20,7 +20,7 @@ lex:add_rule('keyword', token(lexer.KEYWORD, word_match[[
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.word))
 
 -- Comments
-lex:add_rule('comment', token(lexer.COMMENT, '//' * lexer.nonnewline_esc^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('//', true)))
 
 -- Numbers
 lex:add_rule('number', token(lexer.NUMBER, lexer.integer))
@@ -34,6 +34,6 @@ local lua = lexer.load('lua')
 local lua_start_rule = token('pico8_tag', '__lua__')
 local lua_end_rule = token('pico8_tag', '__gfx__' )
 lex:embed(lua, lua_start_rule, lua_end_rule)
-lex:add_style('pico8_tag', lexer.STYLE_EMBEDDED)
+lex:add_style('pico8_tag', lexer.styles.embedded)
 
 return lex

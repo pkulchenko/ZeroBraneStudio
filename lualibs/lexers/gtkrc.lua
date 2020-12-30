@@ -1,9 +1,9 @@
--- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Copyright 2006-2020 Mitchell. See LICENSE.
 -- Gtkrc LPeg lexer.
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
-local P, R, S = lpeg.P, lpeg.R, lpeg.S
+local P, S = lpeg.P, lpeg.S
 
 local lex = lexer.new('gtkrc')
 
@@ -26,7 +26,7 @@ lex:add_rule('variable', token(lexer.VARIABLE, word_match[[
 lex:add_rule('state', token('state', word_match[[
   ACTIVE SELECTED NORMAL PRELIGHT INSENSITIVE TRUE FALSE
 ]]))
-lex:add_style('state', lexer.STYLE_CONSTANT)
+lex:add_style('state', lexer.styles.constant)
 
 -- Functions.
 lex:add_rule('function', token(lexer.FUNCTION, word_match[[
@@ -35,24 +35,25 @@ lex:add_rule('function', token(lexer.FUNCTION, word_match[[
 
 -- Identifiers.
 lex:add_rule('identifier', token(lexer.IDENTIFIER, lexer.alpha *
-                                                   (lexer.alnum + S('_-'))^0))
+  (lexer.alnum + S('_-'))^0))
 
 -- Strings.
-lex:add_rule('string', token(lexer.STRING, lexer.delimited_range("'", true) +
-                                           lexer.delimited_range('"', true)))
+local sq_str = lexer.range("'", true)
+local dq_str = lexer.range('"', true)
+lex:add_rule('string', token(lexer.STRING, sq_str + dq_str))
 
 -- Comments.
-lex:add_rule('comment', token(lexer.COMMENT, '#' * lexer.nonnewline^0))
+lex:add_rule('comment', token(lexer.COMMENT, lexer.to_eol('#')))
 
 -- Numbers.
 lex:add_rule('number', token(lexer.NUMBER, lexer.digit^1 *
-                                           ('.' * lexer.digit^1)^-1))
+  ('.' * lexer.digit^1)^-1))
 
 -- Operators.
 lex:add_rule('operator', token(lexer.OPERATOR, S(':=,*()[]{}')))
 
 -- Fold points.
 lex:add_fold_point(lexer.OPERATOR, '{', '}')
-lex:add_fold_point(lexer.COMMENT, '#', lexer.fold_line_comments('#'))
+lex:add_fold_point(lexer.COMMENT, lexer.fold_consecutive_lines('#'))
 
 return lex
