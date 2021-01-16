@@ -347,7 +347,7 @@ if [ $BUILD_LFS ]; then
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" lfs.c \
     || { echo "Error: failed to build lfs"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/lfs.so" ] || { echo "Error: lfs.so isn't found"; exit 1; }
-  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/lfs.so"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lfs.so"
   cd ../..
   rm -rf "$LFS_FILENAME" "$LFS_BASENAME"
 fi
