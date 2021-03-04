@@ -1011,7 +1011,10 @@ function findReplace:createPanel()
 
   local function findIncremental(event)
     if not self.infiles and self.backfocus and self.backfocus.position then
-      self:GetEditor():SetSelection(self.backfocus.position, self.backfocus.position)
+      local editor = self:GetEditor()
+      if editor then
+        editor:SetSelection(self.backfocus.position, self.backfocus.position)
+      end
     end
     -- don't search when used with "infiles", but still trigger autocomplete
     if self.infiles or self:Find() then
