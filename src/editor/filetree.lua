@@ -376,12 +376,15 @@ local function treeSetConnectorsAndIcons(tree)
       or {ide:FindDocument(source)})
     local targetdoc = ide:FindDocument(target)
 
+    -- need to protect against `%` characters in target, as those can be interpteted
+    -- as a sequence number in replacement
+    local escapedtarget = target:gsub("%%", "%%%%")
     for _, doc in ipairs(sourcedocs) do
       local fullpath = doc:GetFilePath()
       -- when moving folders, /foo/bar/file.lua can be replaced with
       -- /foo/baz/bar/file.lua, so change /foo/bar to /foo/baz/bar
-      local path = (not iscaseinsensitive and fullpath:gsub(q(source), target)
-        or fullpath:lower():gsub(q(source:lower()), target))
+      local path = (not iscaseinsensitive and fullpath:gsub(q(source), escapedtarget)
+        or fullpath:lower():gsub(q(source:lower()), escapedtarget))
 
       doc:SetFilePath(path)
       doc:SetFileName(wx.wxFileName(path):GetFullName())
