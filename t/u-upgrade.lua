@@ -71,7 +71,9 @@ for ext, lexer in pairs(ide.config.editor.specmap) do
   end
 end
 local exceptions = {lexer = true, null = true, rc = true, context = true, tex = true,
-  text = true, rails = true, container = true, mediawiki = true, django = true}
+  text = true, rails = true, container = true, mediawiki = true, django = true,
+  vbscript = true, -- vbscript is only used as an embedded lexer
+}
 for lexer, num in pairs(lexers) do
   if num == 0 and not exceptions[lexer] then
     ok(false, "Lexer '"..lexer.."' is listed in editor.specmap.")
