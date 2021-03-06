@@ -252,7 +252,7 @@ end
 
 function FileNormalizePath(path)
   local filePath = wx.wxFileName(path)
-  filePath:Normalize()
+  filePath:Normalize(normalflags)
   filePath:SetVolume(filePath:GetVolume():upper())
   return filePath:GetFullPath()
 end

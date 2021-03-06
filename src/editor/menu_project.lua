@@ -143,10 +143,6 @@ end
 
 local function projChoose(event)
   local editor = ide:GetEditor()
-  local fn = wx.wxFileName(
-    editor and ide:GetDocument(editor):GetFilePath() or "")
-  fn:Normalize() -- want absolute path for dialog
-
   local projectdir = ide:GetProject()
   local filePicker = wx.wxDirDialog(frame, TR("Choose a project directory"),
     projectdir ~= "" and projectdir or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
@@ -164,7 +160,7 @@ local function projFromFile(event)
   local filepath = ide:GetDocument(editor):GetFilePath()
   if not filepath then return end
   local fn = wx.wxFileName(filepath)
-  fn:Normalize() -- want absolute path for dialog
+  fn:Normalize(wx.wxPATH_NORM_ABSOLUTE + wx.wxPATH_NORM_DOTS)
 
   if ide.interpreter then
     ide:SetProject(ide.interpreter:fprojdir(fn))

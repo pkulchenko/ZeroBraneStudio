@@ -335,8 +335,6 @@ function SaveFileAs(editor)
   if document then document:SetActive() end
 
   local fn = wx.wxFileName(filePath)
-  fn:Normalize() -- want absolute path for dialog
-
   local ext = fn:GetExt()
   if (not ext or #ext == 0) and editor.spec and editor.spec.exts then
     ext = editor.spec.exts[1]
@@ -344,6 +342,8 @@ function SaveFileAs(editor)
     -- to present the correct default "save as type" choice.
     if ext then fn:SetExt(ext) end
   end
+
+  fn:Normalize(wx.wxPATH_NORM_ABSOLUTE + wx.wxPATH_NORM_DOTS) -- make absolute path for the dialog
   local fileDialog = wx.wxFileDialog(ide.frame, TR("Save file as"),
     fn:GetPath(wx.wxPATH_GET_VOLUME),
     fn:GetFullName(),
@@ -520,10 +520,7 @@ function GetOpenFiles()
   local opendocs = {}
   for _, document in ipairs(ide:GetDocumentList()) do
     if document:GetFilePath() then
-      local wxfname = wx.wxFileName(document:GetFilePath())
-      wxfname:Normalize()
-
-      table.insert(opendocs, {filename=wxfname:GetFullPath(),
+      table.insert(opendocs, {filename=FileNormalizePath(document:GetFilePath()),
         id=document:GetTabIndex(), cursorpos = document:GetEditor():GetCurrentPos()})
     end
   end

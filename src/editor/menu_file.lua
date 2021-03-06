@@ -43,9 +43,7 @@ do -- recent file history
   local function addFileHistory(filename)
     -- a new (empty) tab is opened; don't change the history
     if not filename then return end
-
-    local fn = wx.wxFileName(filename)
-    if fn:Normalize() then filename = fn:GetFullPath() end
+    filename = FileNormalizePath(filename)
 
     local index = filehistory[0]
 
@@ -75,9 +73,7 @@ do -- recent file history
 
   local function remFileHistory(filename)
     if not filename then return end
-
-    local fn = wx.wxFileName(filename)
-    if fn:Normalize() then filename = fn:GetFullPath() end
+    filename = FileNormalizePath(filename)
 
     local index = filehistory[0]
 

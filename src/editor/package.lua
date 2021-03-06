@@ -424,7 +424,7 @@ function ide:SetProject(projdir,skiptree)
   -- strip trailing spaces as this may create issues with "path/ " on Windows
   projdir = projdir:gsub("%s+$","")
   local dir = wx.wxFileName.DirName(FixDir(projdir))
-  dir:Normalize() -- turn into absolute path if needed
+  dir:Normalize(wx.wxPATH_NORM_ABSOLUTE + wx.wxPATH_NORM_DOTS) -- turn into absolute path if needed
   if not wx.wxDirExists(dir:GetFullPath()) then return self.filetree:updateProjectDir(projdir) end
 
   projdir = dir:GetPath(wx.wxPATH_GET_VOLUME) -- no trailing slash
@@ -1589,7 +1589,7 @@ function ide:IsProjectSubDirectory(dir)
   -- normalize and check if directory when cut is the same as the project directory;
   -- this relies on the project directory ending in a path separator.
   local path = wx.wxFileName(dir:sub(1, #projdir))
-  path:Normalize()
+  path:Normalize(wx.wxPATH_NORM_ABSOLUTE + wx.wxPATH_NORM_DOTS)
   return path:SameAs(wx.wxFileName(projdir))
 end
 

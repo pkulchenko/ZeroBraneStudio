@@ -217,9 +217,7 @@ local function treeSetConnectorsAndIcons(tree)
       if cur and #cur > 0 then str = MergeFullPath(cur, str) end
     end
     -- as root may already include path separator, normalize the path
-    local fullPath = wx.wxFileName(str)
-    fullPath:Normalize()
-    return fullPath:GetFullPath()
+    return FileNormalizePath(str)
   end
 
   function tree:RefreshChildren(node)
