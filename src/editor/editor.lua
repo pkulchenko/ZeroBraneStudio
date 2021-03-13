@@ -1741,7 +1741,10 @@ local function setLexLPegLexer(editor, spec)
     if not ok then cleanup({tmppath}); return nil, err end
   end
   -- set lexer.lpeg.home that is used in lpeg lexer since 2020-03 (60547a32 in scintillua)
-  if not lex.property then lex.property = {} end
+  if not lex.property then
+    -- provide an empty string for non-existing properties
+    lex.property = setmetatable({}, {__index = function() return '' end})
+  end
   lex.property["lexer.lpeg.home"] = dynlexer and tmppath or lpath
 
   local ok, err = pcall(lex.load, lexer)
