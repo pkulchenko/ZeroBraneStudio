@@ -17,7 +17,7 @@ There are six elements that are supported in the IDE:
 - `_` - italic, for example, _italic_ (`_italic_`)
 - `**` - bold, for example, **bold** (`**bold**`)
 - `[link description](link itself)` - links, for example, [ZeroBrane Studio project](http://studio.zerobrane.com) (`[ZeroBrane Studio project](http://studio.zerobrane.com)`)
-- ` - code, for example `print(1+2)`
+- `` ` `` - code, for example `` `print(1+2)` ``
 - `#` - header, for example, `# Section 1`
 - `|` - highlight, for example, `|warning|` (this is an extension of Markdown syntax)
 
