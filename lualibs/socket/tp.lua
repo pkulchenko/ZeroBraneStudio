@@ -26,14 +26,14 @@ _M.TIMEOUT = 60
 -- gets server reply (works for SMTP and FTP)
 local function get_reply(c)
     local code, current, sep
-    local line, err = c:receive()
+    local line, err = c:receive("*l")
     local reply = line
     if err then return nil, err end
     code, sep = socket.skip(2, string.find(line, "^(%d%d%d)(.?)"))
     if not code then return nil, "invalid server reply" end
     if sep == "-" then -- reply is multiline
         repeat
-            line, err = c:receive()
+            line, err = c:receive("*l")
             if err then return nil, err end
             current, sep = socket.skip(2, string.find(line, "^(%d%d%d)(.?)"))
             reply = reply .. "\n" .. line
