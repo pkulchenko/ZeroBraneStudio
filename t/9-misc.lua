@@ -167,6 +167,7 @@ is(ide:IsValidProperty({}, "nonexisting"), false, "`IsValidProperty` returns `fa
 -- create t/foo.lua with foo=1 value
 local configfile = MergeFullPath(wx.wxStandardPaths.Get():GetTempDir(), "config.lua")
 FileWrite(configfile, "foo=1")
+local cmt = getmetatable(ide.config.styles)
 ide:AddConfig("test", configfile)
 FileRemove(configfile)
 -- confirm ide.config.foo == 1
@@ -175,4 +176,4 @@ ide:RemoveConfig("test")
 ok(ide.config.foo == nil, "RemoveConfig unsets specified config file.")
 
 -- check that ide.config.styles still has metatable
-ok(getmetatable(ide.config.styles) ~= nil, "Removing config file restores original styles.")
+ok(getmetatable(ide.config.styles) == cmt, "Removing config file restores original styles.")

@@ -560,8 +560,8 @@ do
 
   -- check and apply default styles in case a user resets styles in the config
   for _, styles in ipairs({"styles", "stylesoutshell"}) do
-    if not ide.config[styles] then
-      ide:Print(("Ignored incorrect value of '%s' setting in the configuration file")
+    if type(ide.config[styles]) ~= "table" then
+      ide:Print(("Warning: ignored incorrect value of '%s' setting in the configuration file.")
         :format(styles))
       ide.config[styles] = StylesGetDefault()
     end
