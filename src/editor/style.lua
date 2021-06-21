@@ -375,7 +375,16 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     editor:StyleSetEOLFilled(id, style.fill or false)
 
     if style.fn then editor:StyleSetFaceName(id, style.fn) end
-    if style.fs then editor:StyleSetSize(id, style.fs) end
+    local fs = tonumber(style.fs)
+    if fs then
+      -- if the number has no fractional part
+      if fs % 1 == 0 then
+        editor:StyleSetSize(id, style.fs)
+      else
+        -- set fractional points; 9.4 => 940
+        editor:StyleSetSizeFractional(id, style.fs * 100)
+      end
+    end
     if style.v ~= nil then editor:StyleSetVisible(id, style.v) end
 
     if style.hs then
