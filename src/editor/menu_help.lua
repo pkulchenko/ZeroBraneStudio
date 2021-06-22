@@ -47,7 +47,7 @@ local function displayAbout(event)
 	  <tr>
 		<td>
 		<b>ZeroBrane Studio (%s; MobDebug %s)</b><br>
-		<b>Copyright &copy; 2011-2020 ZeroBrane LLC</b><br>
+		<b>Copyright &copy; 2011-2021 ZeroBrane LLC</b><br>
 		Paul Kulchenko<br>
 		Licensed under the MIT License.
 		</td>
