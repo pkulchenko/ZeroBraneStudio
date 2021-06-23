@@ -564,7 +564,11 @@ function SetOpenTabs(params)
       local opendoc = ide:GetDocument(editor)
       if doc.content then
         editor:SetTextDyn(doc.content)
-        if doc.filepath and opendoc.modTime and doc.modified < opendoc.modTime:GetTicks() then
+        -- doc.modified may be not present if a file opened in the IDE is removed on disk
+        -- and then restored, the content of the tab is modified and the recovery record
+        -- is kept (for example, during a restart).
+        -- Still warn the user even if `doc.modified` is not present.
+        if doc.filepath and opendoc.modTime and (tonumber(doc.modified) or 0) < opendoc.modTime:GetTicks() then
           ide:Print(TR("File '%s' has more recent timestamp than restored '%s'; please review before saving.")
             :format(doc.filepath, opendoc:GetTabText()))
         end
