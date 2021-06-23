@@ -368,9 +368,12 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
     fontitalic:SetStyle(wx.wxFONTSTYLE_ITALIC)
   end
 
+  local weight = ide:IsValidProperty(font, "GetNumericWeight") and font:GetNumericWeight()
+
   local function applystyle(style,id)
     editor:StyleSetFont(id, style.i and fontitalic or font)
     editor:StyleSetBold(id, style.b or false)
+    if weight and not style.b then editor:StyleSetWeight(id, weight) end
     editor:StyleSetUnderline(id, style.u or false)
     editor:StyleSetEOLFilled(id, style.fill or false)
 

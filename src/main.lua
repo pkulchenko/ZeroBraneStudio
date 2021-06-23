@@ -177,6 +177,15 @@ for _, key in ipairs({"ALT", "CTRL", "SHIFT", "META", "SUPER", "NORM"}) do
   end
 end
 
+-- add font weights that's been added in wxwidgets 3.1.2
+local fontWeights = {
+  THIN = 100, EXTRALIGHT = 200, LIGHT = 300, NORMAL = 400, MEDIUM = 500,
+  SEMIBOLD = 600, BOLD = 700, EXTRABOLD = 800, HEAVY = 900, EXTRAHEAVY = 1000,
+}
+for k,v in pairs(fontWeights) do
+  if not wx["wxFONTWEIGHT_"..k] then wx["wxFONTWEIGHT_"..k] = v end
+end
+
 -- it's an interface constant and is not public in wxlua, so add it
 if not wxstc.wxSTC_SETLEXERLANGUAGE then wxstc.wxSTC_SETLEXERLANGUAGE = 4006 end
 
