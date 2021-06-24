@@ -412,9 +412,9 @@ function StylesApplyToEditor(styles,editor,font,fontitalic,lexerconvert)
   editor:StyleResetDefault()
   editor:SetFont(font)
   if (styles.text) then
-    applystyle(styles.text,defaultmapping["text"])
+    applystyle(styles.text,defaultmapping.text)
   else
-    applystyle({},defaultmapping["text"])
+    applystyle({},defaultmapping.text)
   end
   editor:StyleClearAll()
 
