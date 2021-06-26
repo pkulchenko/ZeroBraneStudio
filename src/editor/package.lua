@@ -438,7 +438,7 @@ function ide:SetProject(projdir,skiptree)
 end
 function ide:GetProjectStartFile()
   local projectdir = self:GetProject()
-  local startfile = self.filetree.settings.startfile[projectdir]
+  local startfile = self:GetProjectTree():GetStartFile()
   return MergeFullPath(projectdir, startfile), startfile
 end
 function ide:GetLaunchedProcess() return self.debugger and self.debugger.pid end
