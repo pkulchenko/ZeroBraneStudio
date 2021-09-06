@@ -684,8 +684,9 @@ function M.infer_values(top_ast, tokenlist, src, report)
             if not ok then var_ast.value = T.error(var_ast.value) end
               --FIX: propagate to localdefinition?
           end
-        else
-          assert(var_ast.tag == 'Id', var_ast.tag)
+        -- explicitly check if the tag is present here, as the analysis
+        -- may be running on syntactically incorrect code, which may then fail
+        elseif var_ast.tag == 'Id' then
           if var_ast.localdefinition then
             set_value(var_ast, value)
           else -- global
