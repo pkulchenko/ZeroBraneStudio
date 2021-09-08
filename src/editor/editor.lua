@@ -1266,16 +1266,6 @@ function CreateEditor(bare)
         editor:DoWhenIdle(function() updateStatusText(editor) end)
       end
 
-      if ide.osname == 'Windows' then
-        if edcfg.usewrap ~= true and editor:AutoCompActive() then
-          -- showing auto-complete list leaves artifacts on the screen,
-          -- which can only be fixed by a forced refresh.
-          -- shows with wxSTC 3.21 and both wxwidgets 2.9.5 and 3.1
-          editor:Update()
-          editor:Refresh()
-        end
-      end
-
       -- adjust line number margin, but only if it's already shown
       local linecount = #tostring(editor:GetLineCount()) + 0.5
       local mwidth = editor:GetMarginWidth(margin.LINENUMBER)
