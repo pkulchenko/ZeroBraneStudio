@@ -745,6 +745,10 @@ function ide:CreateStyledTextCtrl(...)
   end
 
   function editor:ClearAny()
+    -- don't delete anything if there is nothing to delete, as this logic
+    -- may be incorrect with empty rectangular selection that has
+    -- different selection start and end markers despite being empty
+    if self:GetSelectionEmpty() then return end
     local length = self:GetLength()
     local selections = ide.wxver >= "2.9.5" and self:GetSelections() or 1
     self:Clear() -- remove selected fragments
