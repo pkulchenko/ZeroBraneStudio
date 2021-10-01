@@ -289,7 +289,9 @@ local function processSelection(editor, func)
     local newtext = table.concat(buf, ""):gsub("(\r?\n)$", wholeline and "%1" or "")
     -- straightforward editor:ReplaceSelection() doesn't work reliably as
     -- it sometimes doubles the context when the entire file is selected.
-    -- this seems like Scintilla issue, so use ReplaceTarget instead.
+    -- This seems like Scintilla issue, so use ReplaceTarget instead.
+    -- One reason why ReplaceSelection() may not work is the presence of
+    -- hidden characters (for example, in the hidden markdown markup).
     -- Since this doesn't work with rectangular selection, which
     -- ReplaceSelection should handle (after wxwidgets 3.x upgrade), this
     -- will need to be revisited when ReplaceSelection is updated.
