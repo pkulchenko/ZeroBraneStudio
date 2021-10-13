@@ -181,7 +181,7 @@ If you launch the application outside of the IDE, make sure you **flush the prin
 Lua (and some engines based on it, like LÖVE) has output buffered by default,
 so if you only `print` a small number of bytes, you may see the results only after the script is completed.
 
-If you want to see the `print` output immediately, **add `io.stdout:setvbuf("no")` to your script**, which will turn the buffering on.
+If you want to see the `print` output immediately, **add `io.stdout:setvbuf("no")` to your script**, which will turn the buffering off.
 There may be a small performance penalty as the output will be flushed after each `print`, so keep that in mind.
 
 ## How to pass command line arguments?
