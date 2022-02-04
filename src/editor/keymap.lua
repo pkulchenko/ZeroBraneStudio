@@ -134,6 +134,13 @@ function KSC(id, default)
   return (keymap[id] and "\t"..keymap[id]) or (default and "\t"..default) or ""
 end
 
+function TSC(id) -- shortcut converted to system-dependent text
+  local osx = ide.osname == "Macintosh"
+  local shortcut = KSC(id):gsub("\t","")
+  -- replace Ctrl with Cmd, but not in RawCtrl
+  return shortcut and #shortcut > 0 and shortcut:gsub("%f[%w]Ctrl", osx and "Cmd" or "Ctrl") or ""
+end
+
 ide.config.editor.keymap = {
   -- key, modifier, command, os: http://www.scintilla.org/ScintillaDoc.html#KeyboardCommands
   -- Cmd+Left/Right moves to start/end of line

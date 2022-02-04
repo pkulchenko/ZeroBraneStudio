@@ -361,7 +361,8 @@ function EditorCallTip(editor, pos, x, y)
     -- only shorten if shown on mouse-over. Use shortcut to get full info.
     local showtooltip = ide.frame.menuBar:FindItem(ID.SHOWTOOLTIP)
     local suffix = "...\n"
-        ..TR("Use '%s' to see full description."):format(showtooltip:GetItemLabelText())
+        ..TR("Use '%s' to see full description."):format(
+          showtooltip:GetItemLabelText().." ("..TSC(ID.SHOWTOOLTIP)..")")
     if x and y and #tip > limit then
       tip = tip:sub(1, limit-#suffix):gsub("%W*%w*$","")..suffix
     end

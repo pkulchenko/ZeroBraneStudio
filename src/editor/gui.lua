@@ -91,12 +91,6 @@ local function createFrame()
   return frame
 end
 
-local function SCinB(id) -- shortcut in brackets
-  local osx = ide.osname == "Macintosh"
-  local shortcut = KSC(id):gsub("\t","")
-  return shortcut and #shortcut > 0 and (" ("..shortcut:gsub("%f[%w]Ctrl", osx and "Cmd" or "Ctrl")..")") or ""
-end
-
 local function menuDropDownPosition(event)
   local tb = event:GetEventObject():DynamicCast('wxAuiToolBar')
   local rect = tb:GetToolRect(event:GetId())
@@ -125,7 +119,7 @@ local function createToolBar(frame)
           local icon, description = unpack(iconmap)
           local isbitmap = type(icon) == "userdata" and icon:GetClassInfo():GetClassName() == "wxBitmap"
           local bitmap = isbitmap and icon or ide:GetBitmap(icon, "TOOLBAR", toolBmpSize)
-          toolBar:AddTool(id, "", bitmap, (TR)(description)..SCinB(id))
+          toolBar:AddTool(id, "", bitmap, (TR)(description).." ("..TSC(id)..")")
         end
       end
     end
