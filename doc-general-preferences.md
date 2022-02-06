@@ -214,8 +214,10 @@ Possible values: `wxstc.wxSTC_PRINT_NORMAL` (print using the current screen colo
 `wxstc.wxSTC_PRINT_BLACKONWHITE` (print all text as black on white background),
 `wxstc.wxSTC_PRINT_COLOURONWHITE` (print everything in its own color on white background),
 and `wxstc.wxSTC_PRINT_COLOURWHITEDEFAULTBG` (print everything in its own color on white background except line numbers that use their own background color).
-- `print.header = "%S\t%D\t%p/%P"`: set the header for printed content (**v1.21+**).
+- `print.edgemode = wxstc.wxSTC_EDGE_NONE`: set how the edge for the long lines is displayed (**v1.91+**);
+set to `wxstc.wxSTC_EDGE_LINE` to display as a line.
 - `print.footer = nil`: set the footer for printed content (**v1.21+**).
+- `print.header = "%S\t%D\t%p/%P"`: set the header for printed content (**v1.21+**).
 
 The values for the header and the footer are strings that may include arbitraty text and various placeholders.
 In addition to [placeholders from this list](#formats), `%D` can be used for the current timestamp, `%p` for the current page, and `%P` for the total number of pages.
