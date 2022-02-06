@@ -153,6 +153,8 @@ frame:Connect(ID.PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
     editor:SetPrintMagnification(cfg.magnification)
     editor:SetPrintColourMode(cfg.colourmode)
     editor:SetPrintWrapMode(cfg.wrapmode)
+    local edgemode = editor:GetEdgeMode()
+    editor:SetEdgeMode(cfg.edgemode or wxstc.wxSTC_EDGE_NONE)
 
     -- only enable selection if there is something selected in the editor (ignore multiple selections)
     local printDD = wx.wxPrintDialogData()
@@ -175,7 +177,8 @@ frame:Connect(ID.PRINT, wx.wxEVT_COMMAND_MENU_SELECTED,
       editor:StyleSetBold(num, true)
     end
     local ok = printer:Print(frame, luaPrintout, true)
-    -- restore indicators
+    -- restore indicators and other editor settings
+    editor:SetEdgeMode(edgemode)
     for n, style in pairs(indics) do editor:IndicatorSetStyle(n, style) end
     for n, style in pairs(keywords) do editor:StyleSetBold(n, style) end
     if not ok and printer:GetLastError() == wx.wxPRINTER_ERROR then
