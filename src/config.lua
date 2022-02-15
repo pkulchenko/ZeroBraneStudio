@@ -101,7 +101,7 @@ return {
       --[[Man]] ['1']='man',['2']='man',['3']='man',['4']='man',['5']='man',['6']='man',['7']='man',['8']='man',['9']='man',['1x']='man',['2x']='man',['3x']='man',['4x']='man',['5x']='man',['6x']='man',['7x']='man',['8x']='man',['9x']='man',
       --[[Markdown]] md='markdown',
       --[[MATLAB]] M='matlab',
-      --[[MoonScript]] moon='moonscript',
+      --[[MoonScript]] moon='moonscript', yue = 'moonscript',
       --[[Myrddin]] myr='myrddin',
       --[[Nemerle]] n='nemerle',
       --[[Nim]] nim='nim',
