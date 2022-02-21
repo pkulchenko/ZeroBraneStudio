@@ -26,7 +26,7 @@ lex:modify_rule('keyword', token(lexer.KEYWORD, word_match[[
 --                     (if (or v.special? v.macro?) k)) table.sort) " ")
 
 -- Identifiers.
-local initial = lexer.alpha + S"|$%&#*+-./:<=>?~^_λ!"
+local initial = lexer.alpha + S"|$%&#*+-/<=>?^_λ!"
 local subsequent = initial + lexer.digit
 lex:modify_rule('identifier', token(lexer.IDENTIFIER, initial * subsequent^0))
 
