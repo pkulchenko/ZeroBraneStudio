@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.801",
+  _VERSION = "0.802",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -55,7 +55,14 @@ local MOAICoroutine = rawget(genv, "MOAICoroutine")
 -- methods use a different mechanism that doesn't allow resume calls
 -- from debug hook handlers.
 -- Instead, the "original" coroutine.* methods are used.
+-- `rawget` needs to be used to protect against `strict` checks
 local ngx = rawget(genv, "ngx")
+if not ngx then
+  -- "older" versions of ngx_lua (0.10.x at least) hide ngx table in metatable,
+  -- so need to use that
+  local metagindex = getmetatable(genv) and getmetatable(genv).__index
+  ngx = type(metagindex) == "table" and metagindex.rawget and metagindex:rawget("ngx") or nil
+end
 local corocreate = ngx and coroutine._create or coroutine.create
 local cororesume = ngx and coroutine._resume or coroutine.resume
 local coroyield = ngx and coroutine._yield or coroutine.yield
