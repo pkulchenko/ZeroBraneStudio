@@ -19,7 +19,7 @@ end)("os")
 
 local mobdebug = {
   _NAME = "mobdebug",
-  _VERSION = "0.802",
+  _VERSION = "0.803",
   _COPYRIGHT = "Paul Kulchenko",
   _DESCRIPTION = "Mobile Remote Debugger for the Lua programming language",
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
@@ -731,9 +731,9 @@ local function stringify_results(params, status, ...)
   if params.nocode == nil then params.nocode = true end
   if params.comment == nil then params.comment = 1 end
 
-  local t = {...}
-  for i,v in pairs(t) do -- stringify each of the returned values
-    local ok, res = pcall(mobdebug.line, v, params)
+  local t = {}
+  for i = 1, select('#', ...) do -- stringify each of the returned values
+    local ok, res = pcall(mobdebug.line, select(i, ...), params)
     t[i] = ok and res or ("%q"):format(res):gsub("\010","n"):gsub("\026","\\026")
   end
   -- stringify table with all returned values
