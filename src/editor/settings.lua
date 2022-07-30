@@ -37,6 +37,8 @@ end
 
 local settings = wx.wxFileConfig(
   ide:GetProperty("settingsapp"), ide:GetProperty("settingsvendor"), ini or "")
+-- disable expanding env vars in config values, as it may fail on `$` used in som of them
+settings:SetExpandEnvVars(false)
 ide.settings = settings
 
 local function settingsReadSafe(settings,what,default)
