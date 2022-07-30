@@ -211,6 +211,10 @@ return {
         end
 
         if (var and typ) then
+          -- expand known types
+          local tbl, rest = typ:match("^(.+)(["..sep.."][^"..sep.."]+)$")
+          if tbl and assigns[tbl] then typ = assigns[tbl]..rest end
+
           if (assigns[typ] and not req) then
             assigns[var] = assigns[typ]
           else
