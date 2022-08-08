@@ -280,7 +280,7 @@ local checkers = {}
 local function warnings_from_string(...)
   local checktype = (ide.config.staticanalyzer.luacheck
     -- luacheck globals depend on the interpreter, so create different checkers if needed
-    and "luacheck" .. (ide:GetInterpreter():GetFileName() or "")
+    and "luacheck" .. (ide:GetInterpreter():GetFileName() or "") .. (ide:GetProject() or "")
     or "luainspect")
   if not checkers[checktype] then checkers[checktype] = create_checker() end
   return checkers[checktype](...)
