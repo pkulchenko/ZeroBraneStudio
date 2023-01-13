@@ -59,7 +59,7 @@ LPEG_URL="http://www.inf.puc-rio.br/~roberto/lpeg/$LPEG_FILENAME"
 
 LEXLPEG_BASENAME="scintillua_3.6.5-1"
 LEXLPEG_FILENAME="$LEXLPEG_BASENAME.zip"
-LEXLPEG_URL="https://foicica.com/scintillua/download/$LEXLPEG_FILENAME"
+LEXLPEG_URL="https://github.com/orbitalquark/scintillua/archive/refs/tags/$LEXLPEG_FILENAME"
 
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
@@ -235,7 +235,7 @@ if [ $BUILD_LEXLPEG ]; then
   git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   curl -L "$LEXLPEG_URL" > "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
   unzip "$LEXLPEG_FILENAME"
-  cd "$LEXLPEG_BASENAME"
+  cd "scintillua-$LEXLPEG_BASENAME"
 
   # comment out loading lpeg as it's causing issues with _luaopen_lpeg symbol
   # (as it's not statically compiled) and will be loaded from Lua code anyway
@@ -251,7 +251,7 @@ if [ $BUILD_LEXLPEG ]; then
   [ $DEBUGBUILD ] || strip -u -r "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.dylib"
 
   cd ..
-  rm -rf "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+  rm -rf "scintillua-$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
   # don't delete wxwidgets, if it's requested to be built
   [ $BUILD_WXWIDGETS ] || rm -rf "$WXWIDGETS_BASENAME"
 fi

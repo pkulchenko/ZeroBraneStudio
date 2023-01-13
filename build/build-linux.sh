@@ -68,7 +68,7 @@ LPEG_URL="http://www.inf.puc-rio.br/~roberto/lpeg/$LPEG_FILENAME"
 
 LEXLPEG_BASENAME="scintillua_3.6.5-1"
 LEXLPEG_FILENAME="$LEXLPEG_BASENAME.zip"
-LEXLPEG_URL="https://foicica.com/scintillua/download/$LEXLPEG_FILENAME"
+LEXLPEG_URL="https://github.com/orbitalquark/scintillua/archive/refs/tags/$LEXLPEG_FILENAME"
 
 WXWIDGETSDEBUG="--disable-debug"
 WXLUABUILD="MinSizeRel"
@@ -237,7 +237,7 @@ if [ $BUILD_LEXLPEG ]; then
   git clone "$WXWIDGETS_URL" "$WXWIDGETS_BASENAME" || { echo "Error: failed to get wxWidgets"; exit 1; }
   wget --no-check-certificate -c "$LEXLPEG_URL" -O "$LEXLPEG_FILENAME" || { echo "Error: failed to download LexLPeg"; exit 1; }
   unzip "$LEXLPEG_FILENAME"
-  cd "$LEXLPEG_BASENAME"
+  cd "scintillua-$LEXLPEG_BASENAME"
 
   # replace loading lpeg with os and debug as they are needed for debugging;
   # loading lpeg is not needed as it will be loaded from the Lua module.
@@ -253,7 +253,7 @@ if [ $BUILD_LEXLPEG ]; then
   [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/lexlpeg.so"
 
   cd ..
-  rm -rf "$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
+  rm -rf "scintillua-$LEXLPEG_BASENAME" "$LEXLPEG_FILENAME"
   # don't delete wxwidgets, if it's requested to be built
   [ $BUILD_WXWIDGETS ] || rm -rf "$WXWIDGETS_BASENAME"
 fi
