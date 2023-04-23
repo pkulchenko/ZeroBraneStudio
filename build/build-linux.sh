@@ -46,9 +46,9 @@ WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://github.com/pkulchenko/wxlua.git"
 
-LUASOCKET_BASENAME="luasocket-3.0-rc1"
-LUASOCKET_FILENAME="v3.0-rc1.zip"
-LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
+LUASOCKET_BASENAME="luasocket-3.1.0"
+LUASOCKET_FILENAME="v3.1.0.zip"
+LUASOCKET_URL="https://github.com/lunarmodules/luasocket/archive/refs/tags/$LUASOCKET_FILENAME"
 
 OPENSSL_BASENAME="openssl-1.1.1d"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
@@ -321,11 +321,11 @@ if [ $BUILD_LUASOCKET ]; then
   unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" src/mime.c \
-    || { echo "Error: failed to build LuaSocket"; exit 1; }
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" src/mime.c src/compat.c \
+    || { echo "Error: failed to build LuaSocket (mime)"; exit 1; }
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" \
-    src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
-    || { echo "Error: failed to build LuaSocket"; exit 1; }
+    src/{auxiliar.c,buffer.c,compat.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
+    || { echo "Error: failed to build LuaSocket (core)"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{headers.lua,ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
