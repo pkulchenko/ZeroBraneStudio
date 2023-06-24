@@ -183,17 +183,18 @@ LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
 if [ $BUILD_53 ]; then
   LUAV="53"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.3.1"
+  LUA_BASENAME="lua-5.3.6"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
   LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
+  LUA_COMPAT="MYCFLAGS=-DLUA_COMPAT_MODULE"
 fi
 
 if [ $BUILD_54 ]; then
   LUAV="54"
   LUAS=$LUAV
-  LUA_BASENAME="lua-5.4.0-work1"
+  LUA_BASENAME="lua-5.4.6"
   LUA_FILENAME="$LUA_BASENAME.tar.gz"
-  LUA_URL="http://www.lua.org/work/$LUA_FILENAME"
+  LUA_URL="http://www.lua.org/ftp/$LUA_FILENAME"
   LUA_COMPAT="MYCFLAGS=-DLUA_COMPAT_MODULE"
 fi
 
