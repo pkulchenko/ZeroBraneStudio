@@ -20,6 +20,7 @@ local modules = {
   ["require([[lfs]])._VERSION"] = "LuaFileSystem 1.8.0",
   ["require([[lpeg]]).version()"] = "1.0.0",
   ["require([[ssl]])._VERSION"] = "0.9",
+  ["require([[socket]])._VERSION"] = "LuaSocket 3.0.0",
 }
 local envall = {'LUA_CPATH', 'LUA_CPATH_5_2', 'LUA_CPATH_5_3', 'LUA_CPATH_5_4'}
 local envs = {}
