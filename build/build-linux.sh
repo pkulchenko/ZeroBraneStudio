@@ -46,9 +46,9 @@ WXWIDGETS_URL="https://github.com/pkulchenko/wxWidgets.git"
 WXLUA_BASENAME="wxlua"
 WXLUA_URL="https://github.com/pkulchenko/wxlua.git"
 
-LUASOCKET_BASENAME="luasocket-3.0-rc1"
-LUASOCKET_FILENAME="v3.0-rc1.zip"
-LUASOCKET_URL="https://github.com/diegonehab/luasocket/archive/$LUASOCKET_FILENAME"
+LUASOCKET_BASENAME="luasocket-3.1.0"
+LUASOCKET_FILENAME="v3.1.0.zip"
+LUASOCKET_URL="https://github.com/lunarmodules/luasocket/archive/refs/tags/$LUASOCKET_FILENAME"
 
 OPENSSL_BASENAME="openssl-1.1.1d"
 OPENSSL_FILENAME="$OPENSSL_BASENAME.tar.gz"
@@ -58,8 +58,8 @@ LUASEC_BASENAME="luasec-0.9"
 LUASEC_FILENAME="v0.9.zip"
 LUASEC_URL="https://github.com/brunoos/luasec/archive/$LUASEC_FILENAME"
 
-LFS_BASENAME="v_1_6_3"
-LFS_FILENAME="$LFS_BASENAME.tar.gz"
+LFS_BASENAME="1_8_0"
+LFS_FILENAME="v$LFS_BASENAME.tar.gz"
 LFS_URL="https://github.com/keplerproject/luafilesystem/archive/$LFS_FILENAME"
 
 LPEG_BASENAME="lpeg-1.0.0"
@@ -322,17 +322,17 @@ if [ $BUILD_LUASOCKET ]; then
   unzip "$LUASOCKET_FILENAME"
   cd "$LUASOCKET_BASENAME"
   mkdir -p "$INSTALL_DIR/lib/lua/$LUAV/"{mime,socket}
-  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" src/mime.c \
+  gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" src/compat.c src/mime.c \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
   gcc $BUILD_FLAGS -o "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" \
-    src/{auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
+    src/{compat.c,auxiliar.c,buffer.c,except.c,inet.c,io.c,luasocket.c,options.c,select.c,tcp.c,timeout.c,udp.c,usocket.c} \
     || { echo "Error: failed to build LuaSocket"; exit 1; }
   mkdir -p "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{headers.lua,ftp.lua,http.lua,smtp.lua,tp.lua,url.lua} "$INSTALL_DIR/share/lua/$LUAV/socket"
   cp src/{ltn12.lua,mime.lua,socket.lua} "$INSTALL_DIR/share/lua/$LUAV"
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so" ] || { echo "Error: mime/core.so isn't found"; exit 1; }
   [ -f "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" ] || { echo "Error: socket/core.so isn't found"; exit 1; }
-  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/bin/lua/$LUAV/socket/core.so" "$INSTALL_DIR/bin/lua/$LUAV/mime/core.so"
+  [ $DEBUGBUILD ] || strip --strip-unneeded "$INSTALL_DIR/lib/lua/$LUAV/socket/core.so" "$INSTALL_DIR/lib/lua/$LUAV/mime/core.so"
   cd ..
   rm -rf "$LUASOCKET_FILENAME" "$LUASOCKET_BASENAME"
 fi
