@@ -26,14 +26,14 @@ _M.TIMEOUT = 60
 -- gets server reply (works for SMTP and FTP)
 local function get_reply(c)
     local code, current, sep
-    local line, err = c:receive("*l")
+    local line, err = c:receive()
     local reply = line
     if err then return nil, err end
     code, sep = socket.skip(2, string.find(line, "^(%d%d%d)(.?)"))
     if not code then return nil, "invalid server reply" end
     if sep == "-" then -- reply is multiline
         repeat
-            line, err = c:receive("*l")
+            line, err = c:receive()
             if err then return nil, err end
             current, sep = socket.skip(2, string.find(line, "^(%d%d%d)(.?)"))
             reply = reply .. "\n" .. line
@@ -45,6 +45,14 @@ end
 
 -- metatable for sock object
 local metat = { __index = {} }
+
+function metat.__index:getpeername()
+    return self.c:getpeername()
+end
+
+function metat.__index:getsockname()
+    return self.c:getpeername()
+end
 
 function metat.__index:check(ok)
     local code, reply = get_reply(self.c)
@@ -74,7 +82,7 @@ function metat.__index:command(cmd, arg)
 end
 
 function metat.__index:sink(snk, pat)
-    local chunk, err = c:receive(pat)
+    local chunk, err = self.c:receive(pat)
     return snk(chunk, err)
 end
 

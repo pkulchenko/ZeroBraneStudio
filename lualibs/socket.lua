@@ -48,23 +48,23 @@ function _M.bind(host, port, backlog)
     err = "no info on address"
     for i, alt in base.ipairs(addrinfo) do
         if alt.family == "inet" then
-            sock, err = socket.tcp()
+            sock, err = socket.tcp4()
         else
             sock, err = socket.tcp6()
         end
         if not sock then return nil, err end
         sock:setoption("reuseaddr", true)
         res, err = sock:bind(alt.addr, port)
-        if not res then 
+        if not res then
             sock:close()
-        else 
+        else
             res, err = sock:listen(backlog)
-            if not res then 
+            if not res then
                 sock:close()
             else
                 return sock
             end
-        end 
+        end
     end
     return nil, err
 end
