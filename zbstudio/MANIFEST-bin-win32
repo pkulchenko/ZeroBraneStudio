@@ -19,6 +19,11 @@ bin/clibs53/lpeg.dll
 bin/clibs53/mime/core.dll
 bin/clibs53/socket/core.dll
 bin/clibs53/ssl.dll
+bin/clibs54/lfs.dll
+bin/clibs54/lpeg.dll
+bin/clibs54/mime/core.dll
+bin/clibs54/socket/core.dll
+bin/clibs54/ssl.dll
 bin/lua.exe
 bin/lua5.1.dll
 bin/lua51.dll
@@ -26,6 +31,8 @@ bin/lua52.dll
 bin/lua52.exe
 bin/lua53.dll
 bin/lua53.exe
+bin/lua54.dll
+bin/lua54.exe
 bin/libcrypto-1_1.dll
 bin/libssl-1_1.dll
 bin/winapi.dll
