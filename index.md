@@ -5,7 +5,8 @@ layout: default
 ZeroBrane Studio is a **lightweight Lua IDE** with code completion, syntax
 highlighting, live coding, code analyzer, and debugging support
 for Lua 5.1, [Lua 5.2](doc-lua52-debugging), [Lua 5.3](doc-lua53-debugging),
-[LuaJIT](doc-luajit-debugging), and [other Lua engines](documentation#debugging).
+[Lua 5.4](doc-lua54-debugging), [LuaJIT](doc-luajit-debugging),
+and [other Lua engines](documentation#debugging).
 
 It is **[feature-rich](features)** and **[extensible](doc-plugin)** for experienced developers,
 yet **simple and instantly usable** for beginners (as tested with middle and
@@ -19,10 +20,11 @@ immediate feedback, **Markdown formatting** in comments for providing
 instructions with minimal context switching, and **integrated interactive
 materials** for those learning Lua or getting familiar with programming.
 
-The installation package includes some of the **most popular Lua libraries** ([luasocket](https://github.com/diegonehab/luasocket),
-[luafilesystem](https://github.com/keplerproject/luafilesystem),
+The installation package includes some of the **most popular Lua libraries** ([luasocket](https://github.com/lunarmodules/luasocket),
+[luafilesystem](https://github.com/lunarmodules/luafilesystem),
 [luasec](https://github.com/brunoos/luasec),
-and [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg/)) compiled for Lua 5.1, 5.2, and 5.3 versions on all supported platforms.
+and [lpeg](http://www.inf.puc-rio.br/~roberto/lpeg/)) compiled for Lua 5.1, 5.2, 5.3, and 5.4
+on all supported platforms.
 
 For those interested in **game and mobile development**, the IDE supports debugging for
 [LÖVE](http://notebook.kulchenko.com/zerobrane/love2d-debugging),
