@@ -1,5 +1,70 @@
 # ZeroBrane Studio Changelog
 
+## v2.00 (Aug 28 2023)
+
+### Highlights
+
+  - Updated Windows, macOS and Linux binaries for Lua 5.4.
+  - Updated luasocket to 3.1.0 though it reports as 3.0.0.
+  - Upgraded lfs to 1.8.0.
+
+### Improvements
+
+  - Added luasec for Lua 5.4 for Windows (#1075).
+  - Added Lua 5.4, luasocket and lpeg for Windows (#1075).
+  - Added reset of luacheck cache on project change (#1151).
+  - Added Moonscript highlighting for Yuescript (#1134).
+  - Added shortcut reference to the `Show tooltip` suggestion (#1135).
+  - Added support for font weight suffix in font editor (closes #1082).
+  - Added handling of fractional font sizes in editor styles.
+  - Added returning empty string for non-existing properties for scintillua lexers.
+  - Disabled showing edge line in printed output by default.
+  - Improved auto-complete for local assignments (closes #1148).
+  - Improved handling of comments with mixed end-of-line markers.
+  - Replaced assertion with explicit check in luainspect (fixes #1120).
+  - Skip binary check for known extensions during search in files (closes #1046).
+  - Updated macOS binaries and build script for Lua 5.4, luasocket, and lfs (#1075).
+  - Updated Linux binaries and build script for Lua 5.4 (#1075).
+  - Updated showing tooltip to also check mouse location (closes #1135).
+  - Updated to clarify why ReplaceSelection may fail on hidden text (#1125).
+  - Updated config handling to improve robustness against wrong `styles` values.
+  - Updated luasocket components that use default `receive()` method to work with Lua 5.4.3.
+  - Updated list of window classes to hide (used in some wxlua apps).
+  - Updated LexLPeg lexers to support extended lexer syntax.
+  - Updated default tab size in the output panel (closes #1065).
+  - Updated corona API to 2020.3606; thanks to @b-and-p.
+  - Upgraded Mobdebug (0.803) to fix showing multiple values in Console (fixes #1149).
+  - Upgraded Mobdebug (0.802) to improve openresty debugging.
+  - Upgraded Mobdebug (0.801) to improve Lua 5.4 support.
+
+### Fixes
+
+  - Fixed styling of table.move and string.pack/unpack functions (closes #1159).
+  - Disabled env variable expansion in config values to handle `$` (fixes #1142).
+  - Fixed pasting into an empty rectangular selection (fixes #1123).
+  - Fixed processing of recovery record that may not have modification timestamp (fixes #859).
+  - Fixed handling renaming to a name with `%` in it (#1107).
+  - Fixed handling of `$%` in file paths for consistent normalization (fixes #1108).
+  - Fixed lexer tests by adding vbscript exception (follow-up to 34f7deb2).
+  - Fixed search update with no active editor tab (closes #1107).
+  - Fixed analyzer issue when checking `break` not in loop when inferring values (#1095).
+  - Fixed showing control and null characters in the output window (fixes #1098).
+  - Fixed analyzer issue with running `pairs` on a wrongly inferred value (fixes #1093).
+  - Fixed showing of launched application windows on Windows (closes #1092).
+  - Fixed errors when `en` translation is not available or not readable (fixes #1091).
+  - Fixed outline indentation when `elseif` is used after `repeat until` (fixes #1086).
+  - Fixed processing of output that has mixed lines with different encodings (fixes #984).
+  - Fixed saving file from the editor tab popup menu (fixes #1077).
+  - Fixed project tree processing that requires focus item access (closes #1062, closes #1070).
+  - Fixed wrong toolbar size reported by LXQt (closes #1069, #1068); thanks to @fbosio.
+  - Fixed scrolling to newly added item from Project menu (#1062).
+  - Fixed styling function calls on table fields (closes #957, ref #937).
+  - Fixed initial selection in the commandbar on Linux (fixes #1053).
+  - Fixed error with tools added without Tools menu already present.
+  - Fixed an error on inserting a method from commandbar with no match.
+  - Fixed restoring styles when using RemoveConfig API (fixes #1044).
+  - Fixed relative link to releases page (closes #1038).
+
 ## v1.90 (Feb 09 2020)
 
 ### Special thanks
