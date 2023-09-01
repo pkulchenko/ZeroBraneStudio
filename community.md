@@ -3,10 +3,8 @@ layout: default
 title: Community
 ---
 
-- Follow [ZeroBrane on Twitter](https://twitter.com/zerobrane) to get announcements and updates;
-- Join the #zerobrane channel on Freenode ([web access](http://webchat.freenode.net/?channels=zerobrane&uio=MT1mYWxzZQ9a)) if you need to ask questions or get some quick help (look for `paulk`);
 - Ask a [question on Stack Overflow using tag zerobrane](https://stackoverflow.com/questions/tagged/zerobrane).
-- Join the [mailing list](http://www.freelists.org/list/zerobrane) to ask questions, discuss issues, or provide feature suggestions;
+- Join the [mailing list](http://www.freelists.org/list/zerobrane) to ask questions, discuss issues, or provide feature suggestions.
 - Use the [issues list](https://github.com/pkulchenko/ZeroBraneStudio/issues) to review existing issues and open a new issue or a feature request.
 
 ## Mailing list subscription
