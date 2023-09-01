@@ -29,6 +29,7 @@ title: Documentation
 - [Lua 5.4 debugging](doc-lua54-debugging)
 - [Remote debugging](doc-remote-debugging)
 - [LÖVE/Love2d debugging](http://notebook.kulchenko.com/zerobrane/love2d-debugging)
+- [Redbean](https://notebook.kulchenko.com/redbean/redbean-debugging-with-zerobrane-studio)
 - [Moai debugging](http://notebook.kulchenko.com/zerobrane/moai-debugging-with-zerobrane-studio)
 - [Gideros debugging](http://notebook.kulchenko.com/zerobrane/gideros-debugging-with-zerobrane-studio-ide)
 - [Marmalade Quick debugging](http://notebook.kulchenko.com/zerobrane/marmalade-quick-debugging-with-zerobrane-studio)
