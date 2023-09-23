@@ -1061,6 +1061,8 @@ function findReplace:createPanel()
   ctrl:Connect(wx.wxEVT_ERASE_BACKGROUND, function() end)
 
   local taborder = {findCtrl, replaceCtrl, scope}
+  -- create accelerator entry for SelectAll to check later
+  local aesa = wx.wxAcceleratorEntry(); aesa:FromString(KSC(ID.SELECTALL))
   local function keyHandle(event)
     local keycode = event:GetKeyCode()
     self.ac[event:GetEventObject():DynamicCast('wxTextCtrl'):GetId()].lastkeycode = keycode
@@ -1081,6 +1083,10 @@ function findReplace:createPanel()
       order[pos]:SetFocus()
       if order[pos] ~= scope then order[pos]:SetSelection(-1, -1) end
     else
+      if aesa:GetFlags() == event:GetModifiers() and aesa:GetKeyCode() == keycode then
+        ide:RerouteMenuCommand(ide.frame, ID.SELECTALL)
+        return
+      end
       event:Skip()
     end
   end

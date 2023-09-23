@@ -1501,6 +1501,16 @@ function ide:AddTimer(ctrl, callback)
   return wx.wxTimer(ctrl, #timers)
 end
 
+function ide:RerouteMenuCommand(obj, id)
+  -- check if the conflicting shortcut is enabled:
+  -- (1) SetEnabled wasn't called or (2) Enabled was set to `true`.
+  local uievent = wx.wxUpdateUIEvent(id)
+  obj:ProcessEvent(uievent)
+  if not uievent:GetSetEnabled() or uievent:GetEnabled() then
+    obj:AddPendingEvent(wx.wxCommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED, id))
+  end
+end
+
 local function setAcceleratorTable(accelerators)
   local at = {}
   for id, ksc in pairs(accelerators) do
