@@ -1123,12 +1123,10 @@ function ide:CreateFileIcon(ext)
   local iconmap = ide.config.filetree.iconmap
   local mac = ide.osname == "Macintosh"
   local color = type(iconmap)=="table" and type(iconmap[ext])=="table" and iconmap[ext].fg
-  local scale = ide:GetContentScaleFactor()
-  local size = 16
-  local bitmap = ide:GetBitmap("FILE-NORMAL-CLR", "PROJECT", wx.wxSize(size*scale,size*scale))
   -- macOS does its own scaling for drawing on DC surface, so set to no scaling
-  if mac then scale = 1 end
-  bitmap = wx.wxBitmap(bitmap:GetSubBitmap(wx.wxRect(0, 0, size*scale, size*scale)))
+  local scale = mac and 1 or ide:GetContentScaleFactor()
+  local size = 16
+  local bitmap = wx.wxBitmap(size*scale, size*scale)
   iconfont = iconfont or ide:CreateFont(mac and 6 or 5,
     wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL, wx.wxFONTWEIGHT_NORMAL, false,
     ide.config.filetree.iconfontname or ide.config.editor.fontname or "", wx.wxFONTENCODING_DEFAULT)
@@ -1136,6 +1134,10 @@ function ide:CreateFileIcon(ext)
   mdc:SelectObject(bitmap)
   mdc:SetFont(iconfont)
   mdc:SetTextForeground(wx.wxColour(0, 0, 32)) -- used fixed neutral color for text
+
+  mdc:SetBackgroundMode(wx.wxBRUSHSTYLE_TRANSPARENT)
+  mdc:SetPen(wx.wxPen(wx.wxColour(146, 164, 196), 1, wx.wxSOLID))
+  mdc:DrawRectangle(0, 1, size*scale, size*scale-2)
   -- take first three letters of the extension
   local text = ext:sub(1,3)
   local topstripe = 3*scale
@@ -1150,7 +1152,7 @@ function ide:CreateFileIcon(ext)
   end
   mdc:SetFont(wx.wxNullFont)
   mdc:SelectObject(wx.wxNullBitmap)
-  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set transparent background
+  bitmap:SetMask(wx.wxMask(bitmap, wx.wxBLACK)) -- set the rest as transparent background
   return bitmap
 end
 
