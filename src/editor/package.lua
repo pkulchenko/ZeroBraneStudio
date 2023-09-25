@@ -212,6 +212,7 @@ function ide:SetDebugger(deb)
   return deb
 end
 function ide:GetContentScaleFactor()
+  if self.osname == "Macintosh" and self.wxver >= "3.2.0" then return 1 end
   if not self:IsValidProperty(self.frame, "GetContentScaleFactor") then return 1 end
   local scale = self.frame:GetContentScaleFactor()
   if scale == -1 then return 1 end -- special value indicating "no information"
