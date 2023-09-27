@@ -1,5 +1,18 @@
 # ZeroBrane Studio Changelog
 
+## v2.01 (Sep 26 2023)
+
+### Highlights
+
+  - Fixed crash on macOS Sonoma (fixes #1163).
+
+### Improvements
+
+  - Allowed using SelectAll/Ctrl-A in search/replace boxes (closes #1165).
+  - Upgraded libwx on macOS (wxwidgets 3.2.1, wxlua 3.2.0.2) to fix crash on Sonoma (fixes #1163).
+  - Upgraded Mobdebug (0.805) to fix Love2d livecoding (fixes #1164 and #992).
+  - Updated icon generation to work with wxwidgets 3.2+.
+
 ## v2.00 (Aug 28 2023)
 
 ### Highlights
