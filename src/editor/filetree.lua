@@ -114,7 +114,7 @@ local function treeAddDir(tree,parent_id,rootdir)
 
   -- cache the mapping from names to tree items
   if ide.wxver >= "2.9.5" then
-    local data = wx.wxLuaTreeItemData()
+    local data = tree:GetItemData(parent_id) or wx.wxLuaTreeItemData()
     data:SetData(cache)
     tree:SetItemData(parent_id, data)
   end
