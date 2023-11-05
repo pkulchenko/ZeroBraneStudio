@@ -909,6 +909,8 @@ local fontWeights = {
 }
 
 function ide:CreateFont(size, family, style, weight, underline, name, encoding)
+  -- check if size is a valid number to avoid complaints from wxFont
+  size = tonumber(size) or 11
   local font = wx.wxFont(size, family, style, weight, underline, "", encoding)
   if name > "" then
     -- assign the face name separately to detect when it fails to load the font
