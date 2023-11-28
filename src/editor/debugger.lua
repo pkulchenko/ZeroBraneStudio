@@ -28,7 +28,6 @@ end)()
 debugger.imglist = ide:CreateImageList("STACK", "VALUE-CALL", "VALUE-LOCAL", "VALUE-UP")
 
 local image = { STACK = 0, LOCAL = 1, UPVALUE = 2 }
-local notebook = ide.frame.notebook
 
 local CURRENT_LINE_MARKER = StylesGetMarker("currentline")
 local CURRENT_LINE_MARKER_VALUE = 2^CURRENT_LINE_MARKER

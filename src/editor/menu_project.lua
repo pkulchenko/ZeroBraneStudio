@@ -142,7 +142,6 @@ end
 -- Project directory handling
 
 local function projChoose(event)
-  local editor = ide:GetEditor()
   local projectdir = ide:GetProject()
   local filePicker = wx.wxDirDialog(frame, TR("Choose a project directory"),
     projectdir ~= "" and projectdir or wx.wxGetCwd(), wx.wxDIRP_DIR_MUST_EXIST)
