@@ -340,9 +340,14 @@ local function treeSetConnectorsAndIcons(tree)
     local overwrite = ((wx.wxFileExists(target) or wx.wxDirExists(target))
       and not wx.wxFileName(source):SameAs(fn))
     local doc = ide:FindDocument(target)
-    if overwrite and doc then doc:SetActive() end
-    if overwrite and not ApproveFileOverwrite() then return false end
-
+    if overwrite then
+      if doc then doc:SetActive() end
+      if isdir then
+        ide:ReportError(TR("Can't overwrite existing directory '%s'."):format(target))
+        return false
+      end
+      if not ApproveFileOverwrite() then return false end
+    end
     if not fn:Mkdir(tonumber("755",8), wx.wxPATH_MKDIR_FULL) then
       ide:ReportError(TR("Unable to create directory '%s'."):format(target))
       return false
