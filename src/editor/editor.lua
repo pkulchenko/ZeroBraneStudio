@@ -966,7 +966,13 @@ function CreateEditor(bare)
       local from = header and line or editor:GetFoldParent(line)
       local marginno = event:GetMargin()
       if marginno == margin.MARKER then
-        editor:BreakpointToggle(line)
+
+        local ctrl = wx.wxGetKeyState(wx.WXK_CONTROL)
+        if ctrl then
+          editor:BookmarkToggle(line)
+        else
+          editor:BreakpointToggle(line)
+        end
       elseif marginno == margin.FOLD then
         local shift, ctrl = wx.wxGetKeyState(wx.WXK_SHIFT), wx.wxGetKeyState(wx.WXK_CONTROL)
         if shift and ctrl then
