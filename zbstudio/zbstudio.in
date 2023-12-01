@@ -1,6 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
-if [[ "$(uname -m)" == "x86_64" ]]; then ARCH="x64"; else ARCH="x86"; fi
-CWD="$PWD" # save the current directory, as it's going to change
+# Stash the current PWD so we can pass it to the IDE, the
+# IDE itself will be launched from it's own location
+CWD="$PWD"
 
-(cd "@IDE_DATADIR@"; bin/linux/$ARCH/lua src/main.lua zbstudio -cwd "$CWD" "$@" 2>/dev/null) &
+# Figure out which architecture binary is approprate for the host system
+case $(uname -m) in
+    *64) ARCH="x64" ;;
+    *) ARCH="x86" ;;
+esac
+
+# Lua executable to run, can be overridden with ENV variable
+: ${LUA_EXECUTABLE:="bin/linux/$ARCH/lua"}
+
+cd "@IDE_DATADIR@"
+exec "$LUA_EXECUTABLE" src/main.lua zbstudio -cwd "$CWD" "$@"
