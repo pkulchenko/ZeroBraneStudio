@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application>
-  <id type="desktop">zbstudio.desktop</id>
+<component type="desktop-application">
+  <id type="desktop">com.zerobrane.studio</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>ZeroBrane Studio</name>
+  <developer_name>Paul Kulchenko</developer_name>
   <summary>Lightweight Lua-based IDE for Lua</summary>
   <description>
     <p>
-      ZeroBrane Studio is a lightweight Lua IDE with code completion, syntax 
+      ZeroBrane Studio is a lightweight Lua IDE with code completion, syntax
       highlighting, live coding, code analyzer, and debugging support for
       Lua 5.1, Lua 5.2, Lua 5.3, LuaJIT, and other Lua engines.
     </p>
@@ -18,9 +19,21 @@
       set including a remote debugger.
     </p>
   </description>
+  <content_rating type="oars-1.1"/>
   <url type="homepage">https://studio.zerobrane.com</url>
+  <url type="bugtracker">https://github.com/pkulchenko/ZeroBraneStudio/issues</url>
+  <url type="donation">https://studio.zerobrane.com/support</url>
+  <url type="faq">https://studio.zerobrane.com/doc-faq</url>
+  <url type="translate">https://studio.zerobrane.com/doc-translation</url>
+  <url type="vcs-browser">https://github.com/pkulchenko/ZeroBraneStudio/</url>
   <screenshots>
-    <screenshot type="default">https://studio.zerobrane.com/images/scratchpad-linux-mint.png</screenshot>
+    <screenshot type="default">
+      <image>https://studio.zerobrane.com/images/scratchpad-linux-mint.png</image>
+    </screenshot>
   </screenshots>
+  <launchable type="desktop-id">zbstudio.desktop</launchable>
   <update_contact>paul@zerobrane.com</update_contact>
-</application>
+  <releases>
+    <release version="1.90" date="2020-02-09"/>
+  </releases>
+</component>
