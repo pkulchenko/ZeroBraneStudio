@@ -830,6 +830,11 @@ if ide.osname == 'Unix' then
             wx.wxGetKeyState(wx.WXK_SHIFT) and ID.NOTEBOOKTABPREV or ID.NOTEBOOKTABNEXT
         ))
       else
+        -- cancel calltip if it's shown, as it's sometimes left on when the app is switched from
+        if wx.wxGetKeyState(wx.WXK_ALT) or wx.wxGetKeyState(wx.WXK_CONTROL) then
+          local ed = ide:GetEditor()
+          if ed and ed:CallTipActive() then ed:CallTipCancel() end
+        end
         event:Skip()
       end
     end)
