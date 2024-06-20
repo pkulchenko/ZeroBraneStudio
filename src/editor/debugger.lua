@@ -48,6 +48,49 @@ local function fixUTF8(...)
   return unpack(t)
 end
 
+local debug_file_name, bp_file_name do
+  local iscaseinsensitive = wx.wxFileName("A"):SameAs(wx.wxFileName("a"))
+
+  local function isSameAs(f1, f2)
+    return f1 == f2 or iscaseinsensitive and f1:lower() == f2:lower()
+  end
+
+  local function filePathMatch(file, pattern)
+    return (#file >= #pattern) and isSameAs(file:sub(1, #pattern), pattern)
+  end
+
+  local function fix_file_name(reverse, file)
+    local pathmap = ide.config.debugger and ide.config.debugger.pathmap
+
+    if pathmap then
+      local projectDir = ide:GetProject() or ide.cwd or wx.wxGetCwd()
+      for _, map in ipairs(pathmap) do
+        local remote_path, local_path = map[1], MergeFullPath(projectDir, map[2]) or map[2]
+
+        local pattern, substitution = remote_path, local_path
+        if reverse then
+            pattern, substitution = substitution, pattern
+        end
+
+        if filePathMatch(file, pattern) then
+          file = substitution .. file:sub(#pattern + 1)
+          break
+        end
+      end
+    end
+
+    return file
+  end
+
+  debug_file_name = function (file)
+      return fix_file_name(false, file)
+  end
+
+  bp_file_name = function (file)
+    return fix_file_name(true, file)
+  end
+end
+
 local q = EscapeMagic
 local MORE = "{...}"
 
@@ -310,6 +353,7 @@ function debugger:ActivateDocument(file, line, activatehow)
   local debugger = self
   if not file then return end
   line = tonumber(line)
+  file = debug_file_name(file)
 
   -- file can be a filename or serialized file content; deserialize first.
   -- check if the filename starts with '"' and is deserializable
@@ -400,8 +444,8 @@ function debugger:ActivateDocument(file, line, activatehow)
         if not debugger.editormap[editor] and filePath then
           local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
           while filePath and line ~= -1 do
-            debugger:handle("delb " .. filePath .. " " .. (line+1))
-            debugger:handle("setb " .. file .. " " .. (line+1))
+            debugger:handle("delb " .. bp_file_name(filePath) .. " " .. (line+1))
+            debugger:handle("setb " .. bp_file_name(file) .. " " .. (line+1))
             line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
           end
         end
@@ -453,7 +497,7 @@ function debugger:reSetBreakpoints()
       local filePath = document:GetFilePath()
       local line = editor:MarkerNext(0, BREAKPOINT_MARKER_VALUE)
       while filePath and line ~= -1 do
-        debugger:handle("setb " .. filePath .. " " .. (line+1))
+        debugger:handle("setb " .. bp_file_name(filePath) .. " " .. (line+1))
         line = editor:MarkerNext(line + 1, BREAKPOINT_MARKER_VALUE)
       end
     end
@@ -1114,9 +1158,9 @@ end
 function debugger:breakpoint(file, line, state)
   local debugger = self
   if debugger.running then
-    return debugger:handleDirect((state and "asetb " or "adelb ") .. file .. " " .. line)
+    return debugger:handleDirect((state and "asetb " or "adelb ") .. bp_file_name(file) .. " " .. line)
   end
-  return debugger:handleAsync((state and "setb " or "delb ") .. file .. " " .. line)
+  return debugger:handleAsync((state and "setb " or "delb ") .. bp_file_name(file) .. " " .. line)
 end
 function debugger:EvalAsync(var, callback, params)
   local debugger = self
