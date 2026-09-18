@@ -102,7 +102,7 @@ elseif(APPLE)
   install_from_manifest(PROGRAMS ${TOPDIR}/zbstudio/MANIFEST-bin-macos ${DATADIR} "^$")
 else()
   # check the available Lua modules
-  check_lua_module(wx TRUE)
+  find_package(wxLua REQUIRED)
   check_lua_module(socket TRUE)
   check_lua_module(copas ${USE_SYSTEM_COPAS})
   check_lua_module(luainspect ${USE_SYSTEM_LUAINSPECT})
